@@ -1,261 +1,382 @@
-# Architecture Separation Plan
-## Launch Website vs Kursskifte Match 2.0
+# Matching and Complexity Rules: Kurskifte-Match
 
 **Date:** June 27, 2026  
-**Status:** APPROVED  
-**Version:** 1.0 (V2 Final)
+**Status:** APPROVED (blocking document for Tech Spec)  
+**Purpose:** Define complexity calculation, matching algorithm, and related business rules
 
 ---
 
-## EXECUTIVE SUMMARY
+## PART 1: CASE COMPLEXITY CALCULATION
 
-The launch package (`kursskifte-launch/`) is a **temporary static website** for marketing, recruitment, and initial contact capture.
+### Complexity Factors (Binary)
 
-**Kursskifte Match 2.0** is a **single unified Next.js application** with Supabase backend for case management and professional operations.
+CaseComplexityFactors entity has 8 boolean factors:
 
-These are completely separate systems with no shared code or database.
-
----
-
-## LAUNCH WEBSITE (TEMPORARY)
-
-### Current State (Netlify)
-- Static HTML (homepage, recruitment page, privacy policy)
-- Netlify Forms contact capture → email
-- Tally form for professional recruitment → email
-- Optional basic HTTP auth demo
-- **Lifetime:** 3-6 months (until Match 2.0 public site is live)
-- **URL:** kursskifte.dk (temporary)
-
-### Content Reused in Match 2.0
-- Color palette, typography, design tokens
-- Logo, branding assets
-- Homepage copy & messaging
-- Professional recruitment copy
-- Privacy policy text
-
-### Content NOT Reused
-- Static HTML files (discarded)
-- localStorage demo data (never production)
-- Netlify Forms workflow (replaced by API)
-- Tally temporary integration (eventual webhook only)
-- Basic HTTP auth (replaced by Supabase Auth)
-
----
-
-## MATCH 2.0 UNIFIED APPLICATION
-
-### Architecture
 ```
-Single Next.js Application
-├─ /(public)/         Public website (reused branding from launch)
-├─ /admin/            Admin portal (Kursskifte staff)
-├─ /pro/              Professional portal (fagperson)
-├─ /api/              API routes
-├─ /components/       Shared UI
-├─ /lib/              Domain logic, auth, services
-├─ /supabase/         Migrations, RLS, audit functions
-└─ /docs/             Architecture & decisions
+├─ mental_health: Boolean (mental health diagnosis or concerns)
+├─ family_instability: Boolean (family disruption, domestic issues)
+├─ school: Boolean (school attendance, education concerns)
+├─ violence: Boolean (violence history or exposure)
+├─ substance_use: Boolean (substance abuse issues)
+├─ criminality: Boolean (criminal behavior or justice system involvement)
+├─ multiple_agencies: Boolean (multiple agencies involved in case)
+└─ diagnosis: String | NULL (specific diagnosis if relevant)
 ```
 
-### Backend
-- **Supabase (PostgreSQL + Auth + RLS)**
-- One database, one auth model, one deployment
-- No separate backend service
+### Calculation Rule
 
-### Domains
-- kursskifte.dk (primary, public site)
-- admin.kursskifte.dk (admin portal, via Vercel alias)
-- portal.kursskifte.dk (professional portal, via Vercel alias)
+**Complexity level is calculated from factor COUNT + WEIGHT:**
 
-### Authentication
-- Supabase Auth (email/password, MFA-ready)
-- Two roles: admin, professional
-- No sagsbehandler users (contact info only)
-- No citizen users (no citizen portal in MVP)
+```
+LOW:      0-1 factors
+MEDIUM:   2-3 factors
+HIGH:     4-5 factors
+CRITICAL: 6+ factors OR (violence=true AND substance_use=true) OR (violence=true AND criminality=true)
+```
+
+**Special Rules:**
+- If violence=true AND substance_use=true → minimum CRITICAL (override count-based)
+- If violence=true AND criminality=true → minimum CRITICAL (override count-based)
+- If family_instability=true AND multiple_agencies=true → minimum HIGH (override count-based)
+- multiple_agencies alone does NOT make HIGH (must have 4+ other factors)
+
+**Implementation:**
+```python
+def calculate_complexity_level(factors):
+    count = sum([
+        factors.mental_health,
+        factors.family_instability,
+        factors.school,
+        factors.violence,
+        factors.substance_use,
+        factors.criminality,
+        factors.multiple_agencies,
+    ])
+    
+    # Check special rules first
+    if factors.violence and factors.substance_use:
+        return "CRITICAL"
+    if factors.violence and factors.criminality:
+        return "CRITICAL"
+    if factors.family_instability and factors.multiple_agencies and count >= 3:
+        return "HIGH"
+    
+    # Default count-based
+    if count >= 6:
+        return "CRITICAL"
+    elif count >= 4:
+        return "HIGH"
+    elif count >= 2:
+        return "MEDIUM"
+    else:
+        return "LOW"
+```
+
+### Who Sets Complexity?
+
+- **Input:** Case Coordinator (during case creation or assessment)
+- **When:** When case created from municipality inquiry (WF-002)
+- **Review:** Can be updated if new information emerges
+- **Immutable:** NO - can change as situation evolves
+
+### Complexity Factor Notes
+
+Optional text field (max 500 chars) for coordinator to explain reasoning:
+- Example: "Youth has dual diagnosis (ADHD + anxiety) and recent school exclusion. Stable family but needs structure."
 
 ---
 
-## REUSABLE DESIGN SYSTEM
+## PART 2: MATCHING RULES & ALGORITHM
 
-### What Gets Extracted
+### Matching Inputs
+
+When a match run is triggered for a case, system considers:
+
+**From Case:**
+- Complexity level (LOW|MEDIUM|HIGH|CRITICAL)
+- Weekly hours needed (e.g., 4.5 hours)
+- Citizen age range (0-5, 6-12, 13-18, 18+)
+- Special needs/factors (from complexity assessment)
+
+**From Professional Pool (Available Only):**
+- Status = ACTIVE (not REGISTERED, INACTIVE, ARCHIVED)
+- Not already at max_concurrent_cases
+- Remaining capacity >= case weekly hours
+- max_complexity_level >= case complexity level
+- Has credentials verified (all VERIFIED documents)
+- Not all credentials expiring in <30 days
+- availability_status = AVAILABLE (not ON_LEAVE, UNAVAILABLE)
+
+### Matching Scoring Factors
+
+MatchCandidate has 4 score components (0-100 each):
+
 ```
-Color Palette:
-  --ink: #1a2e24
-  --gold: #a07a3d
-  --green-dark: #1a3a2a
-  --cream: #faf8f3
-  (all custom properties)
-
-Typography:
-  Serif: Instrument Serif (headlines)
-  Sans: DM Sans (body)
-  Scale: defined sizes & weights
-
-Components:
-  Buttons (primary, ghost, warm, outline)
-  Cards & containers
-  Hero sections
-  Navigation
-  Form inputs
-  Modals
-
-Spacing & Layout:
-  Grid system (1200px max-width)
-  Responsive breakpoints
-  Padding/margin scale
+├─ qualifications_score: Decimal(0-100)
+│  └─ Based on: experience_years, profession match, certifications
+│
+├─ availability_score: Decimal(0-100)
+│  └─ Based on: hours available this week, max concurrent cases, current load
+│
+├─ capacity_score: Decimal(0-100)
+│  └─ Based on: total hours remaining, complexity ceiling, specialization
+│
+└─ complexity_fit_score: Decimal(0-100)
+   └─ Based on: target_age_groups match, complexity experience, special skills
 ```
 
-### Implementation in Match 2.0
-```
-/shared/design-system/
-├─ colors.ts
-├─ typography.ts
-├─ tailwind.config.js (custom colors, fonts)
-└─ README.md
+### MVP Matching Weights (Suggested)
 
-All routes (/(public)/, /admin/, /pro/) use same design tokens.
-Consistency enforced at build time.
+**Overall Score = Weighted Average:**
+
 ```
+overall_score = (
+  qualifications_score * 0.25 +
+  availability_score * 0.25 +
+  capacity_score * 0.25 +
+  complexity_fit_score * 0.25
+)
+```
+
+**Individual Scoring (Each 0-100):**
+
+**Qualifications Score:**
+```
+base = 50
++ (experience_years × 2) [0-50 max]
++ (profession_match × 25) [yes=25, no=0]
++ (certifications × 25) [yes=25, no=0]
+= 0-100
+```
+
+**Availability Score:**
+```
+capacity_available = remaining_hours_this_week / required_hours
+capacity_score = (capacity_available × 100) [capped at 100]
+concurrent_load = current_concurrent_cases / max_concurrent_cases
+load_penalty = (concurrent_load × 20) [penalty 0-20]
+score = capacity_score - load_penalty
+= 0-100
+```
+
+**Capacity Score:**
+```
+complexity_margin = (professional.max_complexity_level - case.complexity_level)
+if complexity_margin < 0:
+  score = 0  # Professional cannot handle complexity
+elif complexity_margin == 0:
+  score = 50  # Borderline fit
+else:
+  score = 50 + (complexity_margin × 25)  # Comfort margin
+= 0-100
+```
+
+**Complexity Fit Score:**
+```
+age_match = (citizen_age_range in target_age_groups) ? 50 : 0
+complexity_experience = years_at_case_complexity * 5 [0-50 max]
+special_skills = check factors (violence, substance, etc) ? 25 : 0
+score = age_match + complexity_experience + special_skills
+= 0-100
+```
+
+### Score Interpretation
+
+```
+80-100: Excellent fit → Rank 1
+60-79:  Good fit → Rank 2
+40-59:  Acceptable fit → Rank 3
+20-39:  Poor fit → Not recommended (may show if no others)
+< 20:   Not suitable → Do not show
+```
+
+### Matching Output
+
+For each match run:
+1. **Score** all eligible professionals (deterministic, same inputs = same score)
+2. **Rank** by score (80+, then 60+, then 40+)
+3. **Generate explanation** for each candidate:
+   - "Excellent qualifications (15 years pedagogue) + strong availability (3/4 hours) but some complexity margin. Familiar with school-based support."
+   - No score details shown to coordinator (opaque algorithm, not manipulable)
+4. **Recommend** top 3 candidates
+5. **Record decision** when coordinator selects professional
+6. **Create CaseAssignment** (not automatic)
+
+### Deterministic Requirement
+
+**Same inputs MUST always produce same scores.** Algorithm must NOT use randomization, time-based variation, or external data that changes.
+
+If algorithm is changed (v1.0 → v1.1):
+- All future match runs use v1.1
+- Historical match runs preserve v1.0 scores
+- Version visible in MatchRun.algorithm_version
+
+### Human-in-the-Loop Requirement
+
+**NEVER auto-assign.** Process:
+1. Admin triggers match run
+2. System scores candidates
+3. System recommends top 3
+4. **Admin reviews recommendations**
+5. **Admin explicitly selects professional** (may choose different from top 3)
+6. Admin explains reason if overriding top choice
+7. System creates CaseAssignment
+
+Admin can:
+- ✅ Accept recommendation
+- ✅ Choose different candidate
+- ✅ Reject all and try different match criteria
+- ✅ Manually select if no suitable candidates
+- ❌ Cannot auto-confirm
+- ❌ Cannot assign based only on algorithm
+
+### No Automatic Assignment
+
+Explicitly forbidden:
+- ❌ Assign top-ranked candidate automatically
+- ❌ Assign if score > threshold without review
+- ❌ Auto-reassign when better candidate appears
+- ❌ Batch assignments without review
+
+Every assignment is explicit human decision with potential override reason logged.
 
 ---
 
-## CONTENT MIGRATION
+## PART 3: EDGE CASES & EXCEPTIONS
 
-### Homepage Content
-Migrate from launch HTML to Match 2.0 `/(public)/page.tsx`:
-- Hero section (value proposition, services)
-- Service cards (what Kursskifte does)
-- FAQ section
-- CTA buttons
+### What if no candidates meet complexity ceiling?
 
-### Professional Recruitment Page
-Migrate from `bromaking.html` to `/pro/register` (eventually):
-- Recruitment messaging
-- Process explanation
-- Application form (Tally initially, native form in Phase 2)
+**Rule:** Show anyway with note "No professionals at required complexity level"
+- Admin must make decision:
+  - Train professional to higher level (not MVP)
+  - Accept slightly overqualified professional (underutilized)
+  - Refer case to external agency
+- Decision is logged
 
-### Privacy Policy
-Migrate from static HTML to `/privatlivspolitik/page.tsx`:
-- GDPR compliance text
-- Data handling procedures
-- Contact information
+### What if no candidates have capacity?
 
-### Contact Form
-Migrate from Netlify Forms to `/api/forms/contact`:
-- Form submission handler
-- Inquiry creation
-- Email notification
+**Rule:** Show anyway with note "No available capacity this week"
+- Admin can:
+  - Wait for professional to have capacity
+  - Reduce hours (discuss with municipality)
+  - Refer case
+- Decision is logged
 
----
+### What if professional is perfect but just went ON_LEAVE?
 
-## MIGRATION TIMELINE
+**Rule:** Professional doesn't appear in candidate pool (status = INACTIVE)
+- System doesn't match
+- Coordinator must wait or choose different professional
 
-### Phase 1: Development (Weeks 1-8)
-- Launch site: Still live on Netlify
-- Match 2.0: Built in private repo
-- Result: kursskifte.local:3000 fully functional
+### What if case complexity drops?
 
-### Phase 2: Staging & Prep (Weeks 9-10)
-- Launch site: Still live
-- Match 2.0: Deployed to staging (private Vercel)
-- Data migration scripts: Created & tested
-- Result: Staging environment production-ready
-
-### Phase 3: Internal Launch (Week 11)
-- Launch site: Still live
-- Match 2.0: Live at admin.kursskifte.dk (internal only)
-- Kursskifte staff: Begins using admin portal
-- First cases: Migrated manually
-- Result: Internal validation complete
-
-### Phase 4: Public Launch (Week 12)
-- Launch site: Archived, DNS points to Vercel
-- Match 2.0: Live at kursskifte.dk (public site)
-- All data: Migrated from Netlify/Tally
-- Result: Public site served from Match 2.0 Next.js app
-
-### Phase 5: Sunset (Weeks 13+)
-- Netlify deployment: Archived
-- Netlify Forms: Disabled
-- Tally forms: Disabled (or webhook integration in place)
-- Result: All traffic served from Match 2.0
+**Rule:** Can run new match (e.g., CRITICAL → HIGH case)
+- Previous match run is preserved
+- New match run starts fresh
+- Both are audited
 
 ---
 
-## DEPLOYMENT SEPARATION
+## PART 4: ALGORITHM VERSIONING
 
-### Launch Site (Netlify)
-```
-Git: kursskifte-launch/ (separate repo)
-Build: Static HTML (no code)
-Deploy: Drag-drop to Netlify, or git push → auto-deploy
-Storage: None (forms → email)
-Database: None
-```
+### Versioning Rules
 
-### Match 2.0 (Vercel + Supabase)
-```
-Git: kursskifte-match-2/ (main repo)
-Build: Next.js (pnpm build)
-Deploy: Vercel (auto on main branch)
-Storage: Supabase Storage (signed URLs)
-Database: Supabase PostgreSQL
-Auth: Supabase Auth
-```
+**Format:** X.Y (major.minor)
+- v1.0: Initial algorithm (weights, factors, formulas)
+- v1.1: Minor adjustment (e.g., weight tweak)
+- v2.0: Major change (e.g., new scoring factor)
 
----
+**On Version Change:**
+1. New version used for all future match runs
+2. Old match runs preserve version used (immutable)
+3. Explanation for version change documented (in commit message, architecture notes)
+4. Backwards compatibility considered (can v2.0 reproduce v1.0?)
 
-## NO SHARED CODE
-
-**Critical rule:**
-
-Launch website and Match 2.0 have **zero shared code**, **zero shared database**, **zero shared infrastructure**.
-
-- Separate git repos
-- Separate deployment systems
-- Separate authentication
-- Separate data
-
-This ensures:
-- ✅ Launch can be archived without affecting Match 2.0
-- ✅ Match 2.0 development unblocked by launch changes
-- ✅ Data clean separation (no residual launch data)
+**Immutability:**
+- MatchRun records which version created the scores
+- Cannot re-score historical match runs with new algorithm
+- Explainability preserved (can see why v1.0 recommended person X)
 
 ---
 
-## PHASED SUNSET
+## PART 5: EXAMPLE SCENARIOS
 
-**When Match 2.0 is live:**
+### Scenario 1: Simple MEDIUM Complexity Case
 
-1. **Week 1:** Launch site still live, document archived
-2. **Week 2:** Verify all traffic moved to Match 2.0
-3. **Week 3:** Netlify deployment archived (kept in git for reference)
-4. **Week 4+:** Netl​ify account can be cancelled
+**Case:**
+- Citizen age: 14
+- Complexity: MEDIUM (school issues + family instability)
+- Hours needed: 3/week
 
-**Data kept:**
-- Git history of launch site (for reference)
-- Backup of all contact/inquiry data (migrated to Match 2.0)
-- Backup of Tally responses (migrated to professionals table)
+**Professional Candidates:**
+- Alice: Pedagogue, 5 years exp, target_age=13-18, max_complexity=HIGH, capacity=4h/week available
+  - Qualifications: 70 (5 years × 2 + 25 profession + 25 cert)
+  - Availability: 100 (3/4 hours needed)
+  - Capacity: 75 (can handle HIGH, case is MEDIUM)
+  - Complexity fit: 75 (age match + experience)
+  - **Overall: 80** → Excellent fit
+
+- Bob: Nurse, 8 years exp, target_age=0-12 (no match), max_complexity=CRITICAL, capacity=5h/week
+  - Qualifications: 80 (8 years × 2 + 25 profession + 25 cert)
+  - Availability: 100 (5/3 hours needed)
+  - Capacity: 100 (can handle CRITICAL easily)
+  - Complexity fit: 25 (age mismatch, no experience with 13-18)
+  - **Overall: 51** → Acceptable fit
+
+**Recommendation:** Alice (80). Admin accepts.
+
+### Scenario 2: Complex CRITICAL Case, No Suitable Candidates
+
+**Case:**
+- Citizen age: 16
+- Complexity: CRITICAL (violence + substance + multiple agencies)
+- Hours: 6/week
+
+**Professional Candidates:**
+- Carl: Social worker, 12 years, target=13-18, max_complexity=HIGH (not CRITICAL)
+  - Capacity score: 0 (cannot handle CRITICAL, max is HIGH)
+  - **Overall: 25** → Not suitable
+
+- Diana: Psychologist, 6 years, target=13-18, max_complexity=CRITICAL, but at capacity
+  - Availability: 30 (only 1/6 hours available)
+  - **Overall: 40** → Poor fit
+
+**System output:** "No professionals at required complexity level with adequate capacity"
+
+**Admin options:**
+1. Assign Diana anyway (underutilized)
+2. Assign Carl with note "Exceeds complexity ceiling, monitor closely"
+3. Refer to external specialist
+4. Wait for Diana to free up
+
+Admin decision logged.
 
 ---
 
-## SUMMARY
+## PART 6: FUTURE ENHANCEMENTS (NOT MVP)
 
-| Aspect | Launch | Match 2.0 |
-|--------|--------|-----------|
-| Purpose | Marketing, recruitment | Case management, operations |
-| Database | None | PostgreSQL (Supabase) |
-| Auth | Basic HTTP auth (demo) | Supabase JWT + RBAC |
-| Hosting | Netlify (static) | Vercel (Next.js) |
-| Lifetime | 3-6 months | Indefinite |
-| Deployment | Manual/Netlify | Auto via git |
-| Reusable | Design system, messaging | Not applicable |
-| Discard | All HTML/CSS/JS | Not applicable |
+Phase 2+ could include:
+- Machine learning for scoring weights
+- Citizen preference matching
+- Geographic/transport matching
+- Professional specialization scoring
+- Outcome-based algorithm optimization
+- A/B testing different algorithms
+
+**For MVP:** Deterministic, explainable, human-validated algorithm.
 
 ---
 
-**Document by:** Kursskifte ApS — Architecture  
-**Approved by:** Hassan  
-**Status:** FINALIZED  
-**Reference:** Master Directive
+## OPEN QUESTIONS FOR TECH SPEC
+
+1. Should Professional have a "specialization" field? (violence, substance, family, education, etc.)
+2. Should matching consider geographic proximity?
+3. Should matching consider professional gender preference (if provided)?
+4. How far back does "experience_years" calculation go?
+5. Should rejected candidates be re-shown in future match runs?
+6. How is experience at a particular complexity level tracked?
+
+---
+
+**This document locks the matching and complexity rules for Technical Specification.**  
+**Algorithm weights are suggested; final calibration may happen in Phase 2 based on real data.**

@@ -1,743 +1,779 @@
-# Technical Specification: Kurskifte-Match 2.0
-## Phase 3: Backend Specification
+# Ubiquitous Language
 
-**Document Type:** Technical Specification (Implementation Blueprint)  
-**Version:** 1.0 (Based on Architecture v1.0)  
-**Audience:** Backend developers, architects  
-**Date:** June 27, 2026  
-**Status:** APPROVED FOR IMPLEMENTATION  
+**Document Purpose:** Define all core domain concepts exactly once. This is the single source of truth for terminology across all workflows, architecture documents, technical specifications, and eventually code.
 
-**Reference:** PERMISSION_MODEL.md, all domain specifications
+**Inspiration:** Domain-Driven Design principle of establishing shared language across business and technical teams.
 
----
-
-## PART 3: BACKEND SPECIFICATION
-
-## 3.1 ARCHITECTURE OVERVIEW
-
-**Framework:** Next.js 15 (backend via API Routes)  
-**Database Client:** Supabase JavaScript client or direct PostgreSQL  
-**Business Logic:** Domain services (one per domain)  
-**Event Publishing:** Audit event logging (built-in, not external)  
-**Transaction Control:** Database-level + application validation  
-
-**Rationale:** Source: MASTER_DIRECTIVE.md (Technology Stack)
+**Status:** DRAFT  
+**Version:** 1.0  
+**Last Updated:** June 27, 2026
 
 ---
 
-## 3.2 DOMAIN SERVICES
+## HOW TO USE THIS DOCUMENT
 
-Six domain services correspond to the six frozen domains.
+This document defines terms that appear in DOMAIN_ACTORS_AND_RESPONSIBILITY_MODEL.md, workflows (WF-001 through WF-013), architecture documents, and technical specifications.
 
-### 3.2.1 Professional Service
+**For each term you will find:**
+1. **Definition** — What the term means in Kurshshifte's domain
+2. **Is NOT** — Common misconceptions to avoid
+3. **Used by** — Which actors/roles use this term
+4. **Used in** — Which documents/workflows reference this term
 
-**File:** `services/professionalService.ts`  
-**Responsibilities:** Manage professional lifecycle (onboard → activate → archive)
-
-**Methods:**
-
-```typescript
-class ProfessionalService {
-  // Create professional (admin)
-  async createProfessional(input: CreateProfessionalInput): Promise<Professional>
-    - Validate input
-    - Create profile in auth.users
-    - Create professionals record
-    - Log audit event: PROFESSIONAL_RECRUITED
-    - Return professional with status = REGISTERED
-
-  // Approve professional (admin) - WF-001
-  async approveProfessional(professionalId: string): Promise<Professional>
-    - Check all documents are VERIFIED
-    - If not: throw error "All documents must be verified"
-    - Update status REGISTERED → ACTIVE
-    - Log audit event: PROFESSIONAL_APPROVED
-    - Return updated professional
-
-  // Update professional (professional or admin)
-  async updateProfessional(id: string, updates: Partial<Professional>): Promise<Professional>
-    - Professional can update: availability_days, availability_status
-    - Admin can update: all fields
-    - Check permission (RLS will enforce)
-    - Log audit event: PROFESSIONAL_UPDATED
-
-  // Upload document (professional or admin)
-  async uploadDocument(professionalId: string, file: File, docType: string): Promise<ProfessionalDocument>
-    - Hash file (SHA-256)
-    - Store to file system (path: /documents/{professionalId}/{docType}_{timestamp})
-    - Create ProfessionalDocument record with status = UNVERIFIED
-    - Log audit event: DOCUMENT_UPLOADED
-    - Return document
-
-  // Verify document (compliance officer - admin role)
-  async verifyDocument(docId: string, verified: boolean, expiry?: Date): Promise<ProfessionalDocument>
-    - Update document status to VERIFIED or UNVERIFIED
-    - Set verified_by, verified_at
-    - Set expiry_date if provided
-    - Log audit event: DOCUMENT_VERIFIED or DOCUMENT_FAILED
-    - Return document
-
-  // Get professional (for self or admin)
-  async getProfessional(id: string, requesterId: string): Promise<Professional>
-    - Check permission: requesterId = id OR requesterId.role = admin
-    - Query professionals + documents + current assignments
-    - Return full professional object
-}
-```
-
-**Exports:** Public static interface, instantiated in API handlers
+**Golden Rule:** If you encounter a term not defined here, add it before using it in any document.
 
 ---
 
-### 3.2.2 Case Service
+## CORE DOMAIN TERMS
 
-**File:** `services/caseService.ts`  
-**Responsibilities:** Manage case lifecycle (create → assign → close → archive)
+### Municipality (Kommune)
 
-**Methods:**
+**Definition:** A Danish municipality government organization responsible for social services to citizens within its geographic area. Examples: Aalborg Kommune, Aarhus Kommune, Copenhagen Municipality.
 
-```typescript
-class CaseService {
-  // Create case from inquiry - WF-002
-  async createCase(input: CreateCaseInput): Promise<Case>
-    - Input: municipality_id, citizen_initials, age_range, complexity_factors, hours
-    - Validate: citizen_initials 2 chars, age_range in enum, hours > 0
-    - Calculate complexity_level from factors (per MATCHING_AND_COMPLEXITY_RULES.md)
-    - Create Case record with status = OPEN
-    - Create CaseComplexityFactors linked record
-    - Set data_retention_expires_at = NULL (set when archived)
-    - Log audit event: CASE_CREATED
-    - Return case
+**Is NOT:**
+- A person or individual role
+- Part of Kurshshifte ApS
+- A platform user (in MVP)
+- Able to access Kurshshifte-Match directly
 
-  // Get case with details
-  async getCase(caseId: string, requesterId: string): Promise<CaseWithDetails>
-    - Check permission: admin OR assigned professional
-    - Query: case + municipality + current assignment + grant + sessions
-    - Calculate derived: remaining_hours, is_over_grant
-    - Return full case object
+**Used by:** Sagsbehandler (as contact point), Kurshshifte (receives requests from municipality)
 
-  // Update complexity assessment
-  async updateComplexity(caseId: string, factors: CaseComplexityFactors): Promise<Case>
-    - Validate factors (at least one must be true)
-    - Calculate new complexity_level
-    - Update CaseComplexityFactors record
-    - Update cases.complexity_level
-    - Log audit event: CASE_COMPLEXITY_UPDATED
-    - Return updated case
+**Used in:** 
+- DOMAIN_ACTORS_AND_RESPONSIBILITY_MODEL.md (Actor definition)
+- All workflows WF-001 through WF-013 (external party)
+- Technical specifications (contract partner)
 
-  // Add/amend grant
-  async addGrant(caseId: string, input: AddGrantInput): Promise<CaseGrant>
-    - Validate: granted_hours > 0, period_end > period_start
-    - Create CaseGrant record with status = PENDING
-    - Log audit event: GRANT_CREATED
-    - Return grant
-
-  // Close case (ACTIVE → COMPLETED → ARCHIVED)
-  async closeCase(caseId: string, reason: string): Promise<Case>
-    - Check case.status = ACTIVE
-    - Update status to COMPLETED
-    - Update archived_at = NOW
-    - Calculate data_retention_expires_at = NOW + 7 years
-    - Log audit event: CASE_CLOSED
-    - Trigger background task to monitor for deletion (WF-013)
-    - Return updated case
-
-  // List cases (admin)
-  async listCases(filters: CaseFilters, pagination: Pagination): Promise<PaginatedResult<Case>>
-    - Filters: status, municipality, complexity
-    - Return paginated case list with counts
-}
-```
+**Related:** Sagsbehandler, Grant
 
 ---
 
-### 3.2.3 Delivery Service
+### Citizen (Borger)
 
-**File:** `services/deliveryService.ts`  
-**Responsibilities:** Manage session logs, hours, contact logs
+**Definition:** A young person or adult who is identified by a municipality as needing social support and who becomes the subject of a Case managed by Kurshshifte.
 
-**Methods:**
+**Is NOT:**
+- A platform user (in MVP)
+- Able to log into Kurshshifte-Match
+- Identified by full name or CPR number in the system
+- Responsible for case management
 
-```typescript
-class DeliveryService {
-  // Create session log - from WF-003 (professional starts documentation)
-  async createSessionLog(input: CreateSessionLogInput): Promise<SessionLog>
-    - Validate: case assigned to professional, session_date <= TODAY
-    - Encrypt sensitive fields: observations, safeguarding_detail, participant_names, location
-    - Create SessionLog record with status = DRAFT
-    - Log audit event: SESSION_LOG_CREATED
-    - Return session (encrypted fields not returned to API, decrypted in service)
+**Used by:** Sagsbehandler (on behalf of citizen), Case Coordinator (manages support for citizen), Professional (provides support to citizen)
 
-  // Update session (DRAFT only)
-  async updateSessionLog(sessionId: string, updates: Partial<SessionLog>): Promise<SessionLog>
-    - Check status = DRAFT
-    - Encrypt updated fields
-    - Update record
-    - Log audit event: SESSION_LOG_UPDATED
-    - Return updated session
+**Used in:**
+- DOMAIN_ACTORS_AND_RESPONSIBILITY_MODEL.md (Actor definition)
+- All workflows (subject of case)
+- Technical specifications (data minimization rules)
 
-  // Finalize session (DRAFT → FINAL) - WF-003
-  async finalizeSessionLog(sessionId: string): Promise<SessionLog>
-    - Check status = DRAFT
-    - Update status = FINAL
-    - Prevent future edits (next update will fail)
-    - Log audit event: SESSION_LOG_FINALIZED
-    - Return session
+**Data in system:** Age range, initials only, situation notes (encrypted)
 
-  // Correct finalized session - WF-003
-  async correctSessionLog(sessionId: string, correction: CorrectionInput): Promise<SessionLogCorrection>
-    - Check status = FINAL
-    - Create SessionLogCorrection record (immutable, describes change)
-    - Do NOT update SessionLog
-    - Update SessionLog.status = CORRECTED
-    - Log audit event: SESSION_LOG_CORRECTED
-    - Return correction record
-
-  // Register hours - WF-006
-  async registerHours(input: RegisterHoursInput): Promise<RegisteredHours>
-    - Input: case_id, work_date, work_type, hours, [session_log_id], description
-    - Validate: hours in [0.25, 8.0], work_date <= TODAY
-    - Create RegisteredHours with status = PENDING
-    - Log audit event: HOURS_REGISTERED
-    - Return hours
-
-  // Submit hours for approval - WF-006
-  async submitHours(hoursId: string): Promise<RegisteredHours>
-    - Check status = PENDING
-    - Auto-check grant remaining:
-      - approved_hours + this.hours > grant.granted_hours?
-      - If YES: status = OUTSIDE_GRANT (triggers WF-007 review)
-      - If NO: status = SUBMITTED (ready for approval)
-    - Log audit event: HOURS_SUBMITTED
-    - Return hours
-
-  // Approve hours - WF-006 (admin only)
-  async approveHours(hoursId: string, adminId: string): Promise<RegisteredHours>
-    - Check status = SUBMITTED or OUTSIDE_GRANT
-    - Update status = APPROVED
-    - Recalculate grant.remaining_hours
-    - Log audit event: HOURS_APPROVED
-    - Return hours
-
-  // Reject hours - WF-006 (admin only)
-  async rejectHours(hoursId: string, reason: string): Promise<RegisteredHours>
-    - Check status = SUBMITTED or OUTSIDE_GRANT
-    - Update status = REJECTED
-    - Log audit event: HOURS_REJECTED
-    - Return hours
-
-  // Review outside grant - WF-007
-  async reviewOutsideGrant(hoursId: string, decision: 'APPROVE'|'REJECT', note: string): Promise<RegisteredHours>
-    - Check status = OUTSIDE_GRANT
-    - If APPROVE: status = APPROVED
-    - If REJECT: status = REJECTED
-    - Log audit event: HOURS_OUTSIDE_GRANT_REVIEWED
-    - Return hours
-
-  // Log contact with sagsbehandler
-  async logContact(input: ContactLogInput): Promise<ContactLog>
-    - Input: case_id, contact_type, logged_at, note, outcome
-    - Encrypt: note, outcome
-    - Create ContactLog record
-    - Log audit event: CONTACT_LOGGED
-    - Return contact
-
-  // Get sessions for case
-  async getSessionLogs(caseId: string): Promise<SessionLog[]>
-    - Check permission: admin or assigned professional
-    - Query all sessions for case
-    - Decrypt sensitive fields in response
-    - Return array
-}
-```
+**Related:** Case, Support, Assignment
 
 ---
 
-### 3.2.4 Matching Service
+### Case
 
-**File:** `services/matchingService.ts`  
-**Responsibilities:** Scoring and ranking (WF-003)
+**Definition:** A formal record of a citizen requesting or receiving support from Kurshshifte. A case contains citizen information, support needs, complexity assessment, grant allocation, and history of matched professionals and sessions.
 
-**Methods:**
+**Is NOT:**
+- A municipality's internal case (stored in municipality systems)
+- A shared database record (owned by Kurshshifte)
+- Open-ended (has defined start and end)
+- Visible to municipality in platform (only status updates provided externally)
 
-```typescript
-class MatchingService {
-  // Trigger match run
-  async triggerMatchRun(caseId: string, triggeredBy: string): Promise<MatchRun>
-    - Check case.status = OPEN
-    - Create MatchRun with status = INITIATED
-    - Queue background task: scoreMatchRun(matchRunId)
-    - Log audit event: MATCH_RUN_TRIGGERED
-    - Return match run
+**Lifecycle:**
+1. Inquiry received (from municipality)
+2. Case created (by Case Coordinator)
+3. Professional matched
+4. Case active (sessions and hours recorded)
+5. Case completed (handover or closure)
+6. Case archived (data retained per GDPR)
 
-  // Score match run (background task)
-  async scoreMatchRun(matchRunId: string): Promise<MatchRun>
-    - Fetch case + complexity factors
-    - Fetch eligible professionals (status = ACTIVE, capacity available, complexity ceiling)
-    - For each professional: calculateScores()
-    - Sort by overall_score DESC
-    - Create MatchCandidate records for each
-    - Update MatchRun.status = SCORED
-    - Log audit event: CANDIDATES_SCORED
-    - Return match run
+**Used by:** Case Coordinator (creates and manages), Professional (works on case), Sagsbehandler (initiates)
 
-  // Calculate scores for one professional - implements MATCHING_AND_COMPLEXITY_RULES.md
-  private async calculateScores(case: Case, professional: Professional): Promise<MatchCandidates> {
-    
-    // Qualifications Score
-    qualifications_score = calculateQualificationsScore({
-      experience_years: professional.experience_years,
-      profession_match: isProfessionMatch(case, professional),
-      certifications: hasRelevantCertifications(professional)
-    })
-    // Formula from MATCHING_AND_COMPLEXITY_RULES.md:
-    // base = 50
-    // + (experience_years × 2) [0-50 max]
-    // + (profession_match × 25) [yes=25, no=0]
-    // + (certifications × 25) [yes=25, no=0]
-    // = 0-100
+**Used in:**
+- All workflows WF-001 through WF-013
+- DOMAIN_ACTORS_AND_RESPONSIBILITY_MODEL.md (responsibility boundaries)
+- Technical specifications (case schema, access control)
 
-    // Availability Score
-    availability_score = calculateAvailabilityScore({
-      capacity_available: professional.capacity_hours_week,
-      required_hours: case.weekly_hours,
-      current_load: countHoursFromActiveAssignments(professional),
-      max_concurrent: professional.max_concurrent_cases
-    })
-    // Formula:
-    // capacity_available = remaining_hours_this_week / required_hours
-    // capacity_score = (capacity_available × 100) [capped at 100]
-    // concurrent_load = current_assignments / max_concurrent
-    // load_penalty = (concurrent_load × 20) [0-20]
-    // score = capacity_score - load_penalty [0-100]
-
-    // Capacity Score
-    capacity_score = calculateCapacityScore({
-      professional_max_complexity: professional.max_complexity_level,
-      case_complexity: case.complexity_level
-    })
-    // Formula:
-    // if case_complexity > professional_max_complexity: score = 0
-    // if case_complexity = professional_max_complexity: score = 50
-    // else: score = 50 + ((delta × 25)) [capped at 100]
-
-    // Complexity Fit Score
-    complexity_fit_score = calculateComplexityFitScore({
-      age_match: caseAgeInRanges(case.citizen_age_range, professional.target_age_groups),
-      experience_at_complexity: yearsAtComplexityLevel(professional, case.complexity_level),
-      special_skills: matchFactorsToSkills(case.complexity_factors, professional)
-    })
-    // Formula:
-    // age_match = 50 if match, 0 if not
-    // complexity_exp = experience_at_complexity × 5 [0-50 max]
-    // special_skills = 25 if has skills for violence/substance/etc, 0 if not
-    // score = age_match + complexity_exp + special_skills [0-100]
-
-    // Overall Score
-    overall_score = (
-      qualifications_score × 0.25 +
-      availability_score × 0.25 +
-      capacity_score × 0.25 +
-      complexity_fit_score × 0.25
-    )
-
-    return {
-      professional_id: professional.id,
-      qualifications_score,
-      availability_score,
-      capacity_score,
-      complexity_fit_score,
-      overall_score,
-      algorithm_version: "1.0"
-    }
-  }
-
-  // Get match run with candidates
-  async getMatchRun(matchRunId: string): Promise<MatchRunWithCandidates>
-    - Check permission: admin only
-    - Fetch MatchRun + all MatchCandidates sorted by rank
-    - For each candidate: generateExplanation()
-    - Return with explanations (but NOT detailed scores)
-
-  // Generate explanation for candidate (human-readable, opaque scores)
-  private generateExplanation(candidate: MatchCandidate, professional: Professional): string
-    - Example: "Excellent qualifications (8 years pedagogue experience) + available capacity (5.5 of 4.5 hours/week) + strong fit for school-based cases"
-    - Do NOT include: "qualifications_score=90, availability_score=100"
-    - Goal: Professional knows WHY recommended, not raw algorithm
-
-  // Assign professional to case - WF-003 (human decision)
-  async assignProfessional(matchRunId: string, professionalId: string, reason?: string): Promise<CaseAssignment>
-    - Fetch match run + get rank of selected professional
-    - Create CaseAssignment (case_id, professional_id, started_at=NOW)
-    - Update MatchRun.status = ASSIGNED or OVERRIDDEN (if rank > 1)
-    - Update Case.status = MATCHED
-    - Log audit event: HUMAN_DECISION_RECORDED
-    - Log audit event: HUMAN_DECISION_OVERRIDE (if rank > 1, with reason)
-    - Return assignment
-}
-```
+**Related:** Citizen, Assignment, Session, Grant, Complexity
 
 ---
 
-### 3.2.5 Case Assignment Service
+### Sagsbehandler (Case Worker / Socialrådgiver)
 
-**File:** `services/caseAssignmentService.ts`  
-**Responsibilities:** Manage professional assignments (temporal model - WF-008)
+**Definition:** A social services case worker or social counselor employed by a municipality. The sagsbehandler initiates contact with Kurshshifte, provides case information, and serves as the municipality's contact point for ongoing case communication.
 
-**Methods:**
+**Is NOT:**
+- A Kurshshifte-Match platform user
+- The matched professional
+- An employee of Kurshshifte
+- The support provider (role belongs to Professional)
 
-```typescript
-class CaseAssignmentService {
-  // Get current assignment for case
-  async getCurrentAssignment(caseId: string): Promise<CaseAssignment | null>
-    - Query: SELECT * FROM case_assignments WHERE case_id = X AND ended_at IS NULL
-    - Return null if none
+**Used by:** Municipality (employee role), Case Coordinator (communication partner)
 
-  // Get assignment history for case
-  async getAssignmentHistory(caseId: string): Promise<CaseAssignment[]>
-    - Query all assignments (including ended)
-    - Return ordered by started_at DESC
+**Used in:**
+- DOMAIN_ACTORS_AND_RESPONSIBILITY_MODEL.md (Actor definition)
+- All workflows (initiates case, provides information)
+- Technical specifications (external contact information)
 
-  // Handover: end current assignment and start new - WF-008
-  async startHandover(caseId: string, incomingProfessionalId?: string, reason: string): Promise<CaseHandover>
-    - Create CaseHandover record with status = INITIATED
-    - Log audit event: HANDOVER_INITIATED
-    - Return handover
-
-  // Transfer session logs during handover
-  async transferSessionLogs(handoverId: string, sessionLogIds: string[]): Promise<SessionLogTransfer[]>
-    - For each session_log_id:
-      - Create SessionLogTransfer record (from_professional_id, to_professional_id)
-      - Grant visibility to incoming professional
-    - Log audit event: SESSION_LOG_TRANSFERRED
-    - Return transfers
-
-  // Complete handover
-  async completeHandover(handoverId: string): Promise<CaseAssignment>
-    - Fetch CaseHandover
-    - End current assignment: UPDATE case_assignments SET ended_at = NOW WHERE case_id = X AND ended_at IS NULL
-    - If incoming_professional_id:
-      - Create new assignment: INSERT INTO case_assignments (case_id, professional_id, started_at, assigned_by)
-    - Update CaseHandover.status = COMPLETED
-    - Log audit event: HANDOVER_COMPLETED
-    - Return new assignment (or null if terminating)
-}
-```
+**Related:** Case, Municipality, Professional
 
 ---
 
-### 3.2.6 Governance Service
+### Professional (Fagperson, Støttekontaktperson, Mentor)
 
-**File:** `services/governanceService.ts`  
-**Responsibilities:** Audit logging, GDPR deletion, permissions
+**Definition:** A trained, educated, experienced, or otherwise approved person who provides direct support to a citizen. Professional qualifications are determined by Kurshshifte. Professionals have profiles in Kurshshifte-Match and are candidates for case matching.
 
-**Methods:**
+**Is NOT:**
+- A caseworker (that's sagsbehandler)
+- A Kurshshifte employee (typically independent contractor or partner)
+- Able to create cases
+- Able to see other professionals' work
+- Able to approve own hours
 
-```typescript
-class GovernanceService {
-  // Log audit event (called by other services)
-  async logAuditEvent(input: AuditEventInput): Promise<AuditEvent>
-    - Input: event_type, actor_id, resource_type, resource_id, metadata
-    - Validate metadata per event_type schema
-    - Ensure no sensitive data in metadata (privacy-safe)
-    - Create AuditEvent record (insert-only, immutable)
-    - Return event
+**Titles:** Mentor, pedagogue, counselor, coach, support contact person, etc. (Title varies; the concept "Professional" is consistent.)
 
-  // Query audit trail
-  async getAuditEvents(filters: AuditFilters): Promise<AuditEvent[]>
-    - Filters: event_type, actor_id, resource_type, from_date, to_date
-    - Apply pagination
-    - Return events (metadata safe to read)
+**Platform access:** Can view own profile, own assigned case, write session logs for own case, register own hours, upload credentials.
 
-  // Schedule deletion for expired records - WF-013 (background job)
-  async scheduleExpiredDeletions(): Promise<void>
-    - Find all archived records where data_retention_expires_at < NOW
-    - Create DeletionSchedule entries for each
-    - Log audit event: DATA_DELETION_SCHEDULED
+**Used by:** Case Coordinator (selects and matches), Citizen (receives support from), Sagsbehandler (coordinates with)
 
-  // Execute scheduled deletions - WF-013 (background job, nightly)
-  async executeDeletions(): Promise<void>
-    - Find DeletionSchedule where scheduled_for_deletion_at < NOW AND executed_at IS NULL
-    - For each:
-      - READ record completely (for audit)
-      - Update record.status = DELETED (soft delete)
-      - Update deletion_schedule.executed_at = NOW
-      - Log audit event: DATA_DELETED
-    - Do NOT hard delete
+**Used in:**
+- DOMAIN_ACTORS_AND_RESPONSIBILITY_MODEL.md (Actor definition)
+- All workflows WF-003 onwards (matched to cases)
+- Technical specifications (professional profile schema, session logging)
 
-  // Handle right-to-be-forgotten request
-  async processDataSubjectDeletion(userId: string): Promise<void>
-    - Flag all user's records for deletion (after 30-day delay)
-    - Create DeletionSchedule entries with scheduled_for_deletion_at = NOW + 30 days
-    - Log audit event: DATA_SUBJECT_DELETION_REQUESTED
-    - (Actual deletion happens via executeDeletions after 30-day window)
-
-  // Disclose sagsbehandler contact - WF-009
-  async discloseContact(input: DisclosureInput): Promise<ContactDisclosure>
-    - Input: case_id, professional_id, contact_method, sagsbehandler contact snapshot
-    - Create ContactDisclosure (immutable record)
-    - Log audit event: CONTACT_DISCLOSED
-    - Return disclosure
-    - (Professional notified via email if contact_method=EMAIL)
-}
-```
+**Related:** Match, Assignment, Session, Credentials
 
 ---
 
-## 3.3 TRANSACTION BOUNDARIES
+### Case Coordinator
 
-### Atomic Operations (Database Level)
+**Definition:** A staff member working for Kurshshifte ApS who manages cases and case coordination using the platform. The Case Coordinator creates cases, assesses complexity, allocates grants, selects professionals, monitors progress, and approves hours.
 
-**Auto-Atomic (single INSERT/UPDATE/DELETE):**
-- Create professional
-- Create case
-- Register hours
-- Approve hours (single UPDATE)
+**Business Roles (titles that fulfill the Case Coordinator function):**
+- Intake Coordinator
+- Match Coordinator
+- Operations Coordinator
+- Case Manager
+- Case Specialist
 
-**Multi-Statement Transactions (Supabase transactions):**
+**System Role:** Admin (in RBAC/platform terms)
 
-**Transaction 1: Create Case + Assessment**
-```sql
-BEGIN;
-  INSERT INTO cases (municipality_id, ...);
-  INSERT INTO case_complexity_factors (case_id, ...);
-COMMIT;
-```
+**Is NOT:**
+- A single person (organization may have multiple Case Coordinators)
+- A system role in the RBAC sense (Admin is the system role)
+- A professional providing direct support
 
-**Transaction 2: Approve Professional (WF-001)**
-```sql
-BEGIN;
-  UPDATE professionals SET status = 'ACTIVE' WHERE id = X;
-  INSERT INTO audit_events (event_type, ...);
-COMMIT;
-```
+**Platform access:** Full administrative access in MVP. Can create cases, manage all data, approve hours, generate reports.
 
-**Transaction 3: Submit + Auto-Grant-Check Hours (WF-006)**
-```sql
-BEGIN;
-  UPDATE registered_hours SET status = 'SUBMITTED' WHERE id = X;
-  -- Check if over grant (application logic determines next status)
-  -- If over: UPDATE registered_hours SET status = 'OUTSIDE_GRANT'
-  -- If within: status = 'SUBMITTED'
-  INSERT INTO audit_events (event_type, ...);
-COMMIT;
-```
+**Used by:** Kurshshifte ApS (role filled by staff members), Professional (works with Case Coordinator), Sagsbehandler (communicates with Case Coordinator)
 
-**Transaction 4: Complete Handover (WF-008)**
-```sql
-BEGIN;
-  UPDATE case_assignments SET ended_at = NOW() WHERE case_id = X AND ended_at IS NULL;
-  INSERT INTO case_assignments (case_id, professional_id, ...) VALUES (...);
-  INSERT INTO audit_events (event_type, ...);
-COMMIT;
-```
+**Used in:**
+- DOMAIN_ACTORS_AND_RESPONSIBILITY_MODEL.md (Actor definition, business role vs system role)
+- All workflows WF-001 through WF-013 (primary actor)
+- Technical specifications (Admin role permissions)
+
+**Related:** Case, Match, Assignment
 
 ---
 
-## 3.4 BUSINESS RULE ENFORCEMENT
+### Match / Professional Matching
 
-Rules enforced at three levels (defense-in-depth):
+**Definition:** The process of identifying and assigning a suitable Professional to a Case. Matching is initiated by Case Coordinator, who searches the professional database, evaluates candidates, and selects the best fit based on professional qualifications, availability, and case complexity.
 
-### Database Level (PostgreSQL Constraints)
-- Check constraints (status enums, ranges)
-- Foreign keys (referential integrity)
-- NOT NULL constraints
-- Unique constraints (one active assignment per case)
+**Is NOT:**
+- Automatic or algorithmic (human decision)
+- Guaranteed to be perfect (judgment-based)
+- One-to-one permanently (professional can change)
 
-### Application Level (TypeScript Services)
-- Validate business rules before database operations
-- Check state transitions (e.g., PENDING → SUBMITTED, not SUBMITTED → PENDING)
-- Enforce permissions (though RLS is final check)
-- Prevent double-processing (idempotent operations where possible)
+**Outcomes:**
+- Match successful (professional accepts assignment)
+- Match declined (professional declines, new candidate selected)
+- Match failed (no suitable candidate available)
 
-### RLS Level (Supabase Policies)
-- Final authorization check
-- Row-level filtering
-- Prevents admin from bypassing application logic
+**Used by:** Case Coordinator (makes match decision), Professional (accepts or declines match)
 
-**Example: Submit Hours (WF-006)**
-```typescript
-// Application validates business rule
-if (registeredHours.status !== 'PENDING') {
-  throw new BadRequestError('Can only submit PENDING hours');
-}
+**Used in:**
+- WF-003: Professional Matching & Assignment
+- DOMAIN_ACTORS_AND_RESPONSIBILITY_MODEL.md (responsibility boundaries)
+- Technical specifications (matching workflow, candidate evaluation)
 
-// Check grant remaining
-const grant = await getActiveGrant(caseId);
-const approved = await getSumApprovedHours(caseId, grant.id);
-if (approved + registeredHours.hours > grant.granted_hours) {
-  newStatus = 'OUTSIDE_GRANT';
-} else {
-  newStatus = 'SUBMITTED';
-}
-
-// Database enforces state with CHECK constraint
-// RLS ensures only own or admin can update
-```
+**Related:** Professional, Assignment, Case, Match Candidate
 
 ---
 
-## 3.5 ERROR HANDLING
+### Match Candidate
 
-**Philosophy:** Fail fast with clear errors, log to audit trail
+**Definition:** A Professional who is evaluated by Case Coordinator as potentially suitable for a specific Case, before a final Match decision is made.
 
-**Hierarchy:**
-1. Validation error → 422 with details
-2. Permission error → 403 (RLS denies)
-3. Business rule violation → 409 Conflict
-4. Resource not found → 404
-5. Unhandled error → 500 + alert
+**Is NOT:**
+- A matched professional (candidate becomes matched only after decision)
+- Automatically notified (Case Coordinator controls notification)
 
-**Example: Try-Catch Pattern**
+**Used by:** Case Coordinator (evaluates candidates)
 
-```typescript
-async function approveProfessional(req: NextApiRequest, res: NextApiResponse) {
-  try {
-    const { professionalId } = req.body;
-    
-    // 1. Validate input
-    if (!professionalId || !isValidUUID(professionalId)) {
-      return res.status(400).json({ error: { code: 'INVALID_INPUT' } });
-    }
-    
-    // 2. Check permission (RLS will also enforce)
-    if (req.auth.role !== 'admin') {
-      return res.status(403).json({ error: { code: 'FORBIDDEN' } });
-    }
-    
-    // 3. Call service (throws on business rule violation)
-    const professional = await professionalService.approveProfessional(professionalId);
-    
-    // 4. Return success
-    return res.status(200).json(professional);
-    
-  } catch (error) {
-    // 5. Handle service errors
-    if (error instanceof ValidationError) {
-      return res.status(422).json({ error: error.toJSON() });
-    }
-    if (error instanceof BusinessRuleViolation) {
-      return res.status(409).json({ error: error.toJSON() });
-    }
-    if (error instanceof NotFoundError) {
-      return res.status(404).json({ error: error.toJSON() });
-    }
-    
-    // 6. Log unexpected error + alert
-    logger.error('Unexpected error in approveProfessional', error);
-    monitoring.alert('approveProfessional failed', error);
-    return res.status(500).json({ error: { code: 'INTERNAL_ERROR' } });
-  }
-}
-```
+**Used in:**
+- WF-003: Professional Matching & Assignment
+- Technical specifications (candidate selection workflow)
+
+**Related:** Professional, Match
 
 ---
 
-## 3.6 BACKGROUND JOBS
+### Assignment
 
-**Tool:** Node.js scheduler (e.g., node-schedule or Bull)  
-**Frequency:** Nightly (00:05 UTC)
+**Definition:** The formal pairing of a Professional with a Case, created after Match decision is confirmed. An Assignment has a start date and (eventually) an end date, and generates Session records and Registered Hours.
 
-### Job 1: Score Pending Match Runs
-```
-Trigger: Nightly (if any match_runs with status = INITIATED)
-Action: scoreMatchRun() for each
-Time: 5 minutes (async)
-```
+**Is NOT:**
+- A match (match is the selection process; assignment is the result)
+- Permanent (can be ended, changed, or handed over)
+- Visible to municipality in platform (status only)
 
-### Job 2: Schedule Expired Deletions
-```
-Trigger: Nightly (00:05 UTC)
-Action: Find archived records with data_retention_expires_at < NOW
-        Create DeletionSchedule entries
-Time: 5 minutes
-```
+**Lifecycle:**
+1. Created (after professional accepts match)
+2. Active (sessions and hours recorded)
+3. Changed (professional changed, handover to new professional)
+4. Ended (support completed or terminated)
 
-### Job 3: Execute Scheduled Deletions
-```
-Trigger: Nightly (00:10 UTC)
-Action: Soft-delete records where scheduled_for_deletion_at < NOW
-        Log audit events
-Time: 5 minutes (concurrent limit)
-```
+**Used by:** Case Coordinator (creates and manages), Professional (works under assignment)
+
+**Used in:**
+- WF-004: Case Activation
+- WF-008: Professional Change & Handover
+- All subsequent workflows
+- Technical specifications (assignment schema)
+
+**Related:** Match, Professional, Case, Session
 
 ---
 
-## 3.7 LOGGING STRATEGY
+### Session
 
-**Logger:** Built-in Node.js logger + structured JSON logs
+**Definition:** A meeting, interaction, or period of support provided by a Professional to a Citizen under an Assignment. Each Session is documented with a Session Log and generates Registered Hours.
 
-**Log Levels:**
-- ERROR: Service-level failures (database down, validation error)
-- WARN: Business rule violations (outside grant, rejected hours)
-- INFO: Operations (case created, professional approved)
-- DEBUG: Data transformations (score calculations)
+**Is NOT:**
+- Administrative (it's direct support work)
+- Guaranteed length (varies by need)
+- Visible to municipality (case status only)
 
-**Structured Logging Example:**
-```json
-{
-  "timestamp": "2026-06-27T14:30:00Z",
-  "level": "INFO",
-  "service": "professionalService",
-  "method": "approveProfessional",
-  "actor_id": "admin-uuid",
-  "resource_type": "professional",
-  "resource_id": "prof-uuid",
-  "result": "SUCCESS",
-  "duration_ms": 245
-}
-```
+**Generated by:** Professional (during support work)
+
+**Used by:** Professional (creates sessions), Case Coordinator (reviews/approves)
+
+**Used in:**
+- WF-005: Session Documentation & Hour Registration
+- All workflows involving ongoing support
+- Technical specifications (session schema, logging)
+
+**Related:** Assignment, Session Log, Registered Hours
 
 ---
 
-## 3.8 IDEMPOTENCY
+### Session Log
 
-**Strategy:** Operations should be idempotent where possible (safe to retry)
+**Definition:** A detailed written record created by Professional documenting a Session. The log describes what was discussed, what was done, outcomes, and citizen/professional observations. Session Logs are submitted for Case Coordinator review and approval.
 
-**Idempotent Operations:**
-- GET requests (always safe)
-- POST to create with unique constraint (fails on retry, idempotent in effect)
-- PATCH to set status (if already set, no change)
+**Is NOT:**
+- Automatically approved (requires Case Coordinator review)
+- Visible to citizen or municipality (confidential)
+- A billing record (billing comes from Registered Hours)
 
-**Non-Idempotent (requires deduplication):**
-- Submit hours: Could create duplicates if retried
-  - Solution: Timestamp-based deduplication or UUID-based idempotency key
-- Approve professional: Could double-log if retried
-  - Solution: Check status before updating
+**Content expectations:** Participant(s), date/time, duration, activities, observations, next steps
 
-**Idempotency Key Header (Recommendation for Phase 2):**
-```
-Idempotency-Key: client-generated-uuid
-Backend stores (request_id, resource_id, response) for retry safety
-```
+**Used by:** Professional (writes), Case Coordinator (reviews/approves)
+
+**Used in:**
+- WF-005: Session Documentation & Hour Registration
+- Technical specifications (session log schema)
+
+**Related:** Session, Registered Hours
 
 ---
 
-## 3.9 CACHING STRATEGY
+### Registered Hours
 
-**Minimal for MVP** (data changes frequently)
+**Definition:** A formal record of hours worked by a Professional on a Case, submitted and tracked in Kurshshifte-Match. Hours are submitted by Professional, reviewed by Case Coordinator, and must stay within the allocated Grant.
 
-**Cache Candidates:**
-- Professional list (static for 1 hour)
-- Municipality list (static for 1 day)
-- Match run candidates (immutable, cache indefinitely)
+**Is NOT:**
+- Automatically approved (requires Case Coordinator review)
+- Visible to professional other than own hours
+- Flexible beyond grant allocation
 
-**Cache Layer:** Redis (future) or in-memory (MVP)
+**Approval:** Case Coordinator must approve hours before they count toward grant.
 
-**Invalidation:**
-- Professional updated → clear professional list cache
-- Match run created → no cache needed (result not repeated)
+**Used by:** Professional (submits), Case Coordinator (approves), Grant tracking (constrains total)
+
+**Used in:**
+- WF-006: Grant Tracking & Hour Management
+- WF-007: Grant Review & Adjustment
+- Technical specifications (hour tracking, grant constraints)
+
+**Related:** Grant, Session, Session Log
 
 ---
 
-**End of Part 3: Backend Specification**
+### Grant
 
-**Next:** Part 4 — Frontend Specification (routes, screens, state management)
+**Definition:** The budget allocated by a Municipality for support services on a specific Case. The Grant specifies total budget amount and the period it covers. Kurshshifte tracks Registered Hours against the Grant to ensure spending stays within budget.
+
+**Is NOT:**
+- Flexible (cannot be exceeded without municipality approval)
+- Visible to Professional (Professional only sees remaining balance)
+- Fixed forever (can be adjusted if municipality approves)
+
+**Information stored:**
+- Total budget amount
+- Start date
+- End date
+- Allocated per case (not per professional)
+
+**Used by:** Case Coordinator (allocates and monitors), Municipality (provides funding)
+
+**Used in:**
+- WF-005: Session Documentation & Hour Registration
+- WF-006: Grant Tracking & Hour Management
+- WF-007: Grant Review & Adjustment
+- Technical specifications (grant tracking, financial constraints)
+
+**Related:** Case, Registered Hours
 
 ---
 
-This Backend Specification is complete and implementation-ready.
+### Complexity (Kompleksitet)
 
-Every service, method, transaction, and error is defined.
+**Definition:** An assessment of the difficulty, risk, and support intensity required for a Case. Complexity is determined by Case Coordinator based on citizen situation, support needs, and environmental factors. Complexity levels inform matching, grant allocation, and monitoring intensity.
 
-**Status:** Ready for Part 4 (Frontend Specification)
+**Levels:**
+- LOW — Minimal complexity factors, straightforward support
+- MEDIUM — 2+ complexity factors, moderate support needs
+- HIGH — Mental health or diagnosis combined with family instability
+- CRITICAL — Safety concerns OR (substance use AND multiple agencies involved)
+
+**Is NOT:**
+- Subjective (determined by defined rules)
+- Permanent (can be reassessed)
+- Known before Case Coordinator assessment
+
+**Factors considered:**
+- Safeguarding concerns
+- Mental health needs
+- Substance use issues
+- Family instability
+- Multiple agency involvement
+- Previous failed interventions
+
+**Used by:** Case Coordinator (assesses and documents), Professional (influences matching decisions)
+
+**Used in:**
+- WF-002: Municipality Inquiry to Case Creation (complexity assessment)
+- All matching and monitoring workflows
+- Technical specifications (complexity rules, reassessment)
+
+**Related:** Case, Grant allocation
+
+---
+
+### Credentials
+
+**Definition:** Documentation that verifies a Professional's qualifications, education, training, or background clearances required for supporting citizens. Credentials are uploaded to the platform and verified by Case Coordinator or quality officer.
+
+**Types:** Education certificates, training completion, background checks, references, licenses, etc.
+
+**Is NOT:**
+- Automatic verification (human review required)
+- Stored in same location as case data (separate security)
+- Visible to citizen or municipality
+
+**Lifecycle:**
+1. Professional uploads credential
+2. Case Coordinator reviews
+3. Verified or rejected
+4. Credential valid or expired
+
+**Used by:** Professional (uploads), Case Coordinator (verifies)
+
+**Used in:**
+- WF-011: Document Verification & Professional Approval
+- Professional profile management
+- Technical specifications (credential schema, verification workflow)
+
+**Related:** Professional, Assignment
+
+---
+
+### Contact Disclosure
+
+**Definition:** The deliberate act of providing a Professional's contact information to a Citizen or vice versa, enabling direct communication. In MVP, Contact Disclosure is controlled by Case Coordinator and documented for audit purposes.
+
+**Is NOT:**
+- Automatic (Case Coordinator must approve)
+- Reversible without decision (privacy protection)
+- Done without audit trail
+
+**When it happens:** Typically at case activation when professional and citizen can begin coordinating
+
+**Used by:** Case Coordinator (controls), Professional (receives citizen contact), Citizen (receives professional contact via sagsbehandler)
+
+**Used in:**
+- WF-009: Contact Disclosure & Communication Setup
+- Technical specifications (disclosure workflow, audit events)
+
+**Related:** Assignment, Audit Event
+
+---
+
+### Handover
+
+**Definition:** The formal transfer of support from one Professional to another, or from a Professional to a different provider/organization. Handover involves documenting progress, transferring knowledge, and formally ending one Assignment while beginning another.
+
+**Is NOT:**
+- Abrupt (includes transition period)
+- Without documentation (must be logged)
+- Professional's choice alone (Case Coordinator decides)
+
+**Reasons for handover:**
+- Professional unavailable/departed
+- Better match found
+- Changed needs requiring different professional
+- Mutual agreement to change
+
+**Used by:** Case Coordinator (initiates and manages), Professional (participates)
+
+**Used in:**
+- WF-008: Professional Change & Handover
+- Case archival workflows
+- Technical specifications (handover workflow, state transitions)
+
+**Related:** Assignment, Professional
+
+---
+
+### Audit Event
+
+**Definition:** A formal record of a significant action, decision, or state change within a Case or Assignment, created automatically by the system or triggered by Case Coordinator. Audit Events prove what happened, who decided, and when it happened.
+
+**Purpose:** Compliance, transparency, dispute resolution, quality assurance
+
+**Types:**
+- CASE_CREATED
+- CASE_ELIGIBILITY_CHECKED
+- CASE_READY_FOR_MATCHING
+- PROFESSIONAL_MATCHED
+- ASSIGNMENT_CREATED
+- SESSION_LOGGED
+- HOURS_REGISTERED
+- HOURS_APPROVED
+- CONTACT_DISCLOSED
+- HANDOVER_INITIATED
+- CASE_COMPLETED
+
+**Is NOT:**
+- Automatically generated for every action (only significant events)
+- Deletable (immutable record)
+- Visible to citizen or external parties
+
+**Retention:** 7 years (social services compliance)
+
+**Used by:** All workflows (generate audit events), Case Coordinator (triggers some events), Compliance/Quality review
+
+**Used in:**
+- All workflows WF-001 through WF-013 (audit events section)
+- Technical specifications (audit log schema, retention)
+
+**Related:** Case, Assignment, all actions
+
+---
+
+### Workflow
+
+**Definition:** A defined sequence of steps and decision points that accomplish a specific business process. Workflows are numbered WF-001 through WF-013 and together make up the complete Kurshshifte-Match system process.
+
+**Characteristics:**
+- Sequential (steps happen in defined order)
+- Decision-driven (gates require human judgment)
+- Documented (business rules and alternatives documented)
+- Auditable (creates audit events)
+- Testable (success criteria defined)
+
+**Examples:**
+- WF-002: Municipality Inquiry to Case Creation
+- WF-003: Professional Matching & Assignment
+- WF-005: Session Documentation & Hour Registration
+
+**Is NOT:**
+- Technical (workflow is business process, not code)
+- Rigid (alternatives and exceptions documented)
+- Automatic (humans make decisions at gates)
+
+**Used by:** All actors (follow workflows), Kurshshifte (defines workflows)
+
+**Used in:**
+- All workflow documents WF-001 through WF-013
+- Architecture documentation
+- Technical specifications
+
+**Related:** Capability, Decision Gate, Responsibility
+
+---
+
+### Capability
+
+**Definition:** A business function or service that the organization provides. Capabilities are what the organization *can do*; they may be performed by one or multiple human roles, and may or may not require platform support.
+
+**Examples:**
+- Case Reception
+- Information Gathering
+- Complexity Assessment
+- Professional Matching
+- Session Documentation
+- Hour Approval
+- Quality Oversight
+
+**Is NOT:**
+- A human role (role performs capability)
+- A workflow stage (capability may span multiple stages)
+- A system feature (capability may be manual or automated)
+
+**Used by:** All roles (perform capabilities), Kurshshifte (defines capabilities)
+
+**Used in:**
+- DOMAIN_ACTORS_AND_RESPONSIBILITY_MODEL.md (capability model)
+- Architecture documentation
+- Workflow documentation (step outcomes)
+
+**Related:** Role, Workflow, Responsibility
+
+---
+
+### Role
+
+**Definition:** A position or responsibility holder in the Kurshshifte domain. Roles have responsibilities, access levels, and participate in workflows. Roles can be Business Roles (what the person does) or System Roles (what permissions they have).
+
+**Business Roles:**
+- Case Coordinator (business function: manages cases)
+- Professional (business function: provides support)
+- Sagsbehandler (business function: initiates cases)
+
+**System Roles:**
+- Admin (platform permissions: full access)
+- Professional (platform permissions: limited to own case)
+
+**Is NOT:**
+- A person (role is position; person is employee)
+- A job title (role is function; title may vary)
+- Unchanging (person may fulfill multiple roles)
+
+**Used by:** All governance documents, all workflows
+
+**Used in:**
+- DOMAIN_ACTORS_AND_RESPONSIBILITY_MODEL.md (role definitions)
+- All workflows (responsibility assignments)
+- Technical specifications (RBAC, access control)
+
+**Related:** Capability, Permission, Responsibility
+
+---
+
+### Permission
+
+**Definition:** A specific access right or capability granted to a System Role. Permissions determine what actions a person can perform in Kurshshifte-Match.
+
+**Examples:**
+- CreateCase
+- AssessComplexity
+- SelectProfessional
+- ApproveHours
+- VerifyCredentials
+- ViewAllCases
+
+**Is NOT:**
+- A role (permission is specific right; role is collection of permissions)
+- Automatic (must be assigned explicitly)
+- Equal across roles (different roles have different permissions)
+
+**Used by:** Technical specifications (RBAC design), system administration
+
+**Used in:**
+- Technical specifications (access control)
+- System design documents
+
+**Related:** Role, System Role
+
+---
+
+### Decision Gate
+
+**Definition:** A checkpoint in a workflow where a human decision-maker (usually Case Coordinator) must review information and make a choice that determines the workflow's path. Decision Gates prevent automatic processing and ensure human judgment.
+
+**Example gates in WF-002:**
+- Gate 1: Accept Inquiry (ACCEPT / REQUEST MORE INFO / REJECT)
+- Gate 2: Create or Link Municipality (USE EXISTING / CREATE NEW / CANNOT IDENTIFY)
+- Gate 3: Complexity Assessment Approved (LOW / MEDIUM / HIGH / CRITICAL)
+
+**Is NOT:**
+- Automatic (requires human decision)
+- Bypassable (must pass to proceed)
+- Without criteria (decision rules documented)
+
+**Used by:** Case Coordinator (decides at gates), Workflow documentation
+
+**Used in:**
+- All workflow documents (decision gates section)
+- Technical specifications (workflow logic)
+
+**Related:** Workflow, Decision, Responsibility
+
+---
+
+### Responsibility Handoff
+
+**Definition:** A transition point where responsibility for a Case or process moves from one human role to another. Handoffs are explicitly documented to ensure clear ownership and prevent gaps.
+
+**Types:**
+- Role-to-Role handoff (e.g., Sagsbehandler → Case Coordinator)
+- Workflow Stage Transition (e.g., WF-002 → WF-003)
+
+**Is NOT:**
+- Automatic (requires trigger and audit event)
+- Loss of information (handoff includes required information transfer)
+- Loss of communication (previous role may remain involved)
+
+**Used by:** All workflows (document handoffs), Governance (ensure no gaps)
+
+**Used in:**
+- All workflow documents (handoffs section)
+- DOMAIN_ACTORS_AND_RESPONSIBILITY_MODEL.md (responsibility boundaries)
+
+**Related:** Role, Workflow, Audit Event
+
+---
+
+### System Role / RBAC
+
+**Definition:** A role in the Kurshshifte-Match platform's access control system (Role-Based Access Control). System Roles determine what permissions a user has within the platform.
+
+**Roles in MVP:**
+- Admin (full access, all permissions)
+- Professional (limited access, own case and profile only)
+
+**Is NOT:**
+- A business role (business role is what person does in organization)
+- A job title (multiple people may have same system role)
+- Permanent (permissions can change)
+
+**Used by:** Platform administration, technical security
+
+**Used in:**
+- Technical specifications (RBAC design)
+- User management documentation
+
+**Related:** Role, Permission, Business Role
+
+---
+
+## USAGE EXAMPLES
+
+### Correct usage:
+
+"The **Case Coordinator** (business role) with **Admin** (system role) permissions reviews the **Session Log** and approves the **Registered Hours** within the **Grant** allocation."
+
+### Incorrect usage:
+
+"The **Administrator** reviews the case log."  
+Problem: "Administrator" conflates business and system roles; "case log" is ambiguous (Case record? Session log? Audit log?)
+
+### Correct version:
+
+"The **Case Coordinator** reviews the **Session Log**."
+
+---
+
+### Correct usage:
+
+"When a **Professional** accepts the **Match**, an **Assignment** is created, and the **Audit Event** ASSIGNMENT_CREATED is generated."
+
+### Incorrect usage:
+
+"When a professional is matched, the system creates an assignment."  
+Problem: Passive voice obscures decision-maker; ambiguous whether automatic or human-decided.
+
+### Correct version:
+
+"When a **Professional** accepts the **Match**, the **Case Coordinator** confirms the decision, creating an **Assignment** and generating the **Audit Event** ASSIGNMENT_CREATED."
+
+---
+
+## ADDITIONS TO THIS DOCUMENT
+
+If you encounter a term not defined here while writing workflows or documentation:
+
+1. **Stop** — Do not use undefined terms
+2. **Define** — Add the term to this document
+3. **Use** — Now use the defined term consistently
+4. **Notify** — Tell the team the term was added
+
+This keeps terminology synchronized across all documentation.
+
+---
+
+## MAINTAINING THIS DOCUMENT
+
+**This document is the single source of truth for terminology.**
+
+When adding a new term:
+- Follow the template: Definition, Is NOT, Used by, Used in
+- Add to the appropriate section (alphabetical within sections)
+- Reference related terms
+- Notify team of new term
+
+When changing a definition:
+- Update this document first
+- Then update all documents that reference the term
+- Do not use conflicting definitions in other documents
+- Notify team of the change
+
+---
+
+## TERMS BY CATEGORY
+
+### People/Roles
+- Citizen
+- Professional
+- Sagsbehandler
+- Case Coordinator
+- Role
+- Business Role
+- System Role
+
+### Processes
+- Workflow
+- Capability
+- Decision Gate
+- Responsibility Handoff
+- Match / Professional Matching
+
+### Cases & Assignments
+- Case
+- Assignment
+- Complexity
+- Credentials
+
+### Support Documentation
+- Session
+- Session Log
+- Registered Hours
+- Contact Disclosure
+
+### Governance
+- Grant
+- Audit Event
+- Permission
+- Handover
+
+### Administrative
+- Municipality
+- Match Candidate
+
+---
+
+**Next Steps:** All documents WF-001 through WF-013, technical specifications, and architecture documents must use these exact definitions.

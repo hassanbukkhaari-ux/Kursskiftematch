@@ -25,7 +25,17 @@ Convert a professional application into a REGISTERED professional profile, verif
 
 ## TRIGGER
 
-Recruiter submits professional application (manual form or admin intake).
+Recruiter initiates professional profile creation from one of two paths:
+
+**Path A — Public website intake (via WF-015):**
+- Professional applicant submits application form on kursskifte.dk
+- WF-015 stages the submission as an `inbound_inquiries` record (`status = PENDING`, `submission_type = PROFESSIONAL_APPLICATION`)
+- Admin (Recruiter) receives `INQUIRY_RECEIVED` notification and opens the staged record
+- Recruiter initiates conversion — WF-001 begins with the staged application data pre-filled
+
+**Path B — Direct recruiter entry:**
+- Recruiter manually enters the professional application directly in the admin portal
+- WF-001 begins immediately (no `inbound_inquiries` record created)
 
 ---
 
@@ -33,6 +43,7 @@ Recruiter submits professional application (manual form or admin intake).
 
 - Professional has provided application information (CV, contact, qualifications)
 - Recruiter has reviewed application
+- For Path A: a staged `inbound_inquiries` record exists with `submission_type = PROFESSIONAL_APPLICATION` and `status = PENDING` or `REVIEWED`
 
 ---
 
@@ -110,6 +121,20 @@ Recruiter submits professional application (manual form or admin intake).
 - `DOCUMENT_REJECTED` — Document failed verification (re-upload required)
 - `PROFESSIONAL_APPROVED` — Professional transitioned to ACTIVE
 - `PROFESSIONAL_REJECTED` — Professional application rejected
+
+---
+
+## NOTIFICATION EVENTS
+
+WF-001 emits the following notification event. The workflow records the notification type and recipient — it does not specify delivery channel. Channel assignment is owned by WF-014 (Notification Dispatch, ADR-010).
+
+| Notification Type | Recipient | Trigger |
+|---|---|---|
+| `PROFESSIONAL_APPLICATION_RECEIVED` | Admin (system email) | Professional profile created with status=REGISTERED — requires Compliance Officer review and document verification |
+
+**Notes:**
+- `PROFESSIONAL_APPLICATION_RECEIVED` fires at step 1 when the recruiter creates the professional profile. It signals to the admin team that a new application is in the credential verification queue.
+- This is the only MVP notification event for WF-001. Subsequent events (`PROFESSIONAL_APPROVED`, `PROFESSIONAL_REJECTED`) are deferred to Phase 2.
 
 ---
 

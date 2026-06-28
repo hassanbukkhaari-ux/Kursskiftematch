@@ -126,6 +126,22 @@ Manual: Admin may flag historical hours if grant amended or error found.
 
 ---
 
+## NOTIFICATION EVENTS
+
+WF-007 does not emit outbound notification events in MVP.
+
+Outside-grant overages appear in the admin dashboard approval queue. No separate outbound notification is generated for `HOURS_OUTSIDE_GRANT_FLAGGED` in MVP — admin reviews via the queue, not via email.
+
+**Future notification (via WF-014, Phase 2):**
+
+| Notification Type | Recipient | Trigger |
+|---|---|---|
+| `HOURS_OUTSIDE_GRANT_FLAGGED` | Admin (system email) | Hours auto-flagged as exceeding municipal grant — requires outside-grant review |
+
+The workflow does not specify delivery channel. Channel assignment is owned by WF-014.
+
+---
+
 ## OUTPUTS
 
 - RegisteredHours status updated (APPROVED or REJECTED)

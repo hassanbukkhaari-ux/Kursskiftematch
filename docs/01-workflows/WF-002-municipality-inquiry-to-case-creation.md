@@ -26,21 +26,31 @@ Transform a municipality's initial contact requesting support for a citizen into
 
 ## 3. TRIGGER
 
-A municipality requests support for a citizen through one of these methods:
-- Direct contact with Kurshshifte
-- Email inquiry
-- Online contact form submission
-- Automated submission (future capability)
+Admin opens a municipality inquiry for review. The inquiry originates from one of two paths:
+
+**Path A — Public website intake (via WF-015):**
+- Sagsbehandler submits municipality inquiry form on kursskifte.dk
+- WF-015 stages the submission as an `inbound_inquiries` record (`status = PENDING`, `submission_type = MUNICIPALITY_INQUIRY`)
+- Admin receives `INQUIRY_RECEIVED` notification and opens the staged record in the admin portal
+- Admin initiates conversion — WF-002 begins with the staged data pre-filled
+
+**Path B — Direct admin entry:**
+- Sagsbehandler contacts Kursskifte by phone or email
+- Admin manually enters the inquiry directly in the admin portal
+- WF-002 begins immediately (no `inbound_inquiries` record created for phone/email intake)
+
+Note: "Online contact form submission" is **not** a direct trigger for WF-002. Public website form submissions are owned by WF-015. WF-002 begins only after admin initiates case creation from a staged or manually-entered inquiry.
 
 ---
 
 ## 4. PRECONDITIONS
 
-- Kurshshifte is operational
-- Authorized Kurshshifte staff available to process inquiries
-- Municipality reference data is accessible
+- Kursskifte is operational
+- Authorized Kursskifte staff available to process inquiries
+- Municipality reference data is accessible (or admin creates a new municipality record as part of WF-002 Step 1)
 - Complexity assessment factors are defined
 - Grant determination process is established
+- For Path A: a staged `inbound_inquiries` record exists with `submission_type = MUNICIPALITY_INQUIRY` and `status = PENDING` or `REVIEWED`
 
 ---
 
@@ -398,6 +408,21 @@ Every significant action in this workflow generates an audit event for accountab
 
 ---
 
+## NOTIFICATION EVENTS
+
+WF-002 emits the following notification event. The workflow records the notification type and recipient — it does not specify delivery channel. Channel assignment is owned by WF-014 (Notification Dispatch, ADR-010).
+
+| Notification Type | Recipient | Trigger |
+|---|---|---|
+| `CASE_CREATED` | Admin (system email) | Case record created with status = OPEN — case is queued for professional assignment |
+
+**Notes:**
+- `CASE_CREATED` fires at Step 6 when all required information is verified and the case record is successfully created.
+- The notification signals to admin that a new case has entered the matching queue. It does not include citizen details, complexity information, or grant amounts in the notification body (ADR-004 — no sensitive operational data in notifications).
+- Recipient is the system admin inbox configured via `SYSTEM_ADMIN_EMAIL`. WF-014 owns recipient resolution and delivery.
+
+---
+
 ## 9. STATE TRANSITIONS
 
 ### Inquiry Status
@@ -683,7 +708,7 @@ The workflow is complete only when ALL of the following conditions are met:
 - Audit trail complete
 
 ✅ **Case Status Confirmed Ready for Matching**
-- Case status = READY_FOR_MATCHING
+- Case status = OPEN (case is queued for matching — OPEN is the database status at this point)
 - All validation passed
 - Case prepared for WF-003
 
@@ -853,10 +878,10 @@ The workflow includes five critical decision gates where authorized staff review
 - Complexity assessment documented
 - Grant budget confirmed
 - Audit trail complete
-- Case status confirmed as READY_FOR_MATCHING
+- Case status is OPEN (case passes all quality checks and is ready for matching)
 
 **Possible Outcomes:**
-- **READY_FOR_MATCHING** — Case passes all quality checks, proceed to WF-003
+- **OPEN (ready for matching)** — Case passes all quality checks; status = OPEN in the database, case is queued for matching, proceed to WF-003
 - **RETURN TO PREVIOUS STEP** — Information gap identified, case returned to earlier step for correction
 
 **Next Step:** If ready, proceed to WF-003 (Match Run and Assignment)
@@ -909,7 +934,7 @@ The workflow involves three critical handoffs where responsibility for the case 
 
 ### Handoff 2: Kurshshifte Administrator → Kurshshifte Case Management
 
-**Trigger:** Case created (Gate 5 passes, case status = READY_FOR_MATCHING)
+**Trigger:** Case created (Gate 5 passes, case status = OPEN — case is queued for matching)
 
 **Responsibility Ending:**
 - Administrator's responsibility for case creation ends
@@ -920,7 +945,7 @@ The workflow involves three critical handoffs where responsibility for the case 
 - Case Management assumes ownership of case lifecycle
 - Case Management becomes responsible for case coordination throughout support
 - Case Management monitors case status, grant usage, professional assignment
-- Case Management tracks case from READY_FOR_MATCHING through completion
+- Case Management tracks case from OPEN (matching queue) through completion
 
 **Information That Must Exist Before Handoff:**
 - Case record created and linked to municipality
@@ -928,7 +953,7 @@ The workflow involves three critical handoffs where responsibility for the case 
 - Complexity level determined (LOW, MEDIUM, HIGH, CRITICAL)
 - Grant budget allocated and confirmed
 - All audit events generated for case creation
-- Case status confirmed as READY_FOR_MATCHING
+- Case status is OPEN (case is ready for matching)
 - All required documentation complete and validated
 
 **Information That Must NEVER Be Transferred:**
@@ -952,7 +977,7 @@ The workflow involves three critical handoffs where responsibility for the case 
 
 ### Handoff 3: Kurshshifte Case Management → WF-003 Matching Process
 
-**Trigger:** Case status = READY_FOR_MATCHING (formal queue entry)
+**Trigger:** Case status = OPEN (formal queue entry — case is queued for matching)
 
 **Responsibility Ending:**
 - Case Management responsibility for case creation and validation ends
@@ -972,7 +997,7 @@ The workflow involves three critical handoffs where responsibility for the case 
 - Municipality and sagsbehandler contact information verified
 - All audit trail complete for case creation workflow
 - No outstanding questions or clarifications needed
-- Case status explicitly = READY_FOR_MATCHING
+- Case status is OPEN (case is queued for matching)
 
 **Information That Must NEVER Be Transferred:**
 - Internal assessment discussions about complexity level accuracy
@@ -983,7 +1008,7 @@ The workflow involves three critical handoffs where responsibility for the case 
 
 **Audit Event Proving Handoff:**
 - **CASE_READY_FOR_MATCHING** — Case formally queued for WF-003
-- Audit entry shows: case_id, status=READY_FOR_MATCHING, timestamp, ready_for_next_workflow=true
+- Audit entry shows: case_id, status=OPEN, timestamp, ready_for_next_workflow=true
 
 **Outcome After Handoff:**
 - Matching Process begins professional search

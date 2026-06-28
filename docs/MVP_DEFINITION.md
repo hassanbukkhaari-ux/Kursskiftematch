@@ -483,42 +483,45 @@ MVP must support the following reports. Based on Governance Domain and existing 
 
 ## 12. REQUIRED NOTIFICATIONS
 
-MVP must send notifications for the following events. Based on workflow triggers and business rules.
+MVP delivers outbound email for a targeted set of high-value operational events. The Notification Service is defined in ADR-010. Delivery is owned by WF-014 (Notification Dispatch).
 
-**Note:** MVP does NOT include in-app messaging or email sending (deferred to Phase 2). But the system must track what notifications SHOULD be sent.
+**Architecture:** Event-driven, channel-agnostic. Workflows emit business events only; WF-014 owns delivery. MVP channel is email only (via Resend). In-app, SMS, push, and Slack notifications are Phase 2.
 
-### Notifications Required (Workflow Triggers)
+**Recipient model:**
+- Admin system recipient: configured via `SYSTEM_ADMIN_EMAIL` environment variable (role inbox, not a user account)
+- Professional recipient: resolved from `profiles.email` at dispatch time; personal email is never stored in `notification_log`
 
-| Event | Recipient | Trigger | MVP Status | Notes |
-|-------|-----------|---------|-----------|-------|
-| Application Received | Admin | Professional applies | REQUIRED | Track application |
-| Document Uploaded | Admin | Professional uploads credential | REQUIRED | Track upload |
-| Document Verification Needed | Admin | Document expires soon (30 days) | REQUIRED | Renewal reminder |
-| Professional Approved | Professional | Admin approves for assignment | REQUIRED | Activation notification |
-| Case Created | Admin | Inquiry received | REQUIRED | Workflow trigger |
-| Case Ready for Matching | Admin | Complexity assessed | REQUIRED | Workflow trigger |
-| Match Run Started | Admin | Admin triggers matching | REQUIRED | Workflow trigger |
-| Candidates Recommended | Admin | Matching complete | REQUIRED | Decision needed |
-| Case Assigned | Professional, Sagsbehandler | Admin assigns professional | REQUIRED | Work begins |
-| Session Logged | Admin | Professional submits session | REQUIRED | Work recorded |
-| Hours Submitted | Admin | Professional submits hours | REQUIRED | Approval needed |
-| Hours Approved | Professional | Admin approves hours | REQUIRED | Payment processing |
-| Hours Rejected | Professional | Admin rejects hours | REQUIRED | Resubmission needed |
-| Grant Exceeded | Admin | Hours exceed grant | REQUIRED | Override needed |
-| Handover Initiated | Professional | Admin initiates handover | REQUIRED | Work transfer |
-| Case Closed | Admin, Sagsbehandler | Admin closes case | REQUIRED | Work complete |
-| Data Deletion Scheduled | Admin | 7-year retention expires | REQUIRED | Deletion queued |
+### MVP Notification Events (6 events — active in MVP)
 
-**MVP Approach to Notifications:**
-- System tracks all notification triggers
-- Stores notification state (not sent, pending, sent, read, failed)
-- **Does NOT send email/SMS/in-app in MVP** (Phase 2)
-- **Admin can manually notify** (copy phone/email from system and contact manually)
-- **Audit trail records** what notifications were needed
+| Notification Type | Source | Recipient | Trigger |
+|---|---|---|---|
+| `INQUIRY_RECEIVED` | WF-015 | Admin (system email) | Public form submission staged as inbound_inquiries record — admin review required |
+| `PROFESSIONAL_APPLICATION_RECEIVED` | WF-001 | Admin (system email) | Professional profile created (status=REGISTERED) — requires review and credential verification |
+| `CASE_CREATED` | WF-002 | Admin (system email) | New municipality case submitted — requires assignment |
+| `SAFEGUARDING_FLAGGED` | WF-005 | Admin (system email) | Session log finalized with safeguarding_concern_flag=TRUE — requires immediate acknowledgement |
+| `HOURS_SUBMITTED` | WF-006 | Admin (system email) | Professional submits hours for approval |
+| `DOCUMENT_ACTION_REQUIRED` | WF-011 | Admin (system email) or Professional | Document uploaded and pending verification; approaching expiry (30 days); re-upload required by admin |
 
-**Source:** Implied by WF-001 through WF-013 and domain capabilities
+**`DOCUMENT_ACTION_REQUIRED` recipient resolution:**
+- Upload pending verification → Admin (system email)
+- Approaching expiry → Admin (system email)
+- Re-upload required → Professional (`recipient_profile_id`)
 
-**Gap:** No explicit notification requirements document. No email template definitions. No notification delivery mechanism specified.
+### Deferred Notification Events (Phase 2)
+
+The following events are tracked via `audit_events` in MVP but do not generate outbound notifications until Phase 2:
+
+`PROFESSIONAL_APPROVED`, `CASE_ASSIGNMENT_TERMINATED`, `HOURS_APPROVED`, `HOURS_REJECTED`, `HOURS_OUTSIDE_GRANT_FLAGGED`, `HANDOVER_INITIATED`, `CASE_ASSIGNED`, `CANDIDATES_RECOMMENDED`, `CASE_CLOSED`, `DATA_DELETION_SCHEDULED`, and all other events listed in the architecture event catalogue.
+
+### Delivery Infrastructure
+
+- `notification_log` table: Governance Domain, 3rd table (after `audit_events` and `deletion_schedules`)
+- `inbound_inquiries` table: Governance Domain, 4th table — staging table for all public website submissions (WF-015)
+- WF-014 Edge Function: dispatches pending records, updates status + attempt_count
+- Max retry attempts: 3 (manual re-queue after exhaustion)
+- `failure_reason` field: stores provider error codes (no PII per ADR-004)
+
+**Source:** ADR-010 (Notification Service), WF-014 (Notification Dispatch), WF-015 (Public Intake Reception), WF-001/WF-002/WF-005/WF-006/WF-011
 
 ---
 

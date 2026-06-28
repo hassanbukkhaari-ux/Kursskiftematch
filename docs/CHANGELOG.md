@@ -7,6 +7,59 @@
 
 ## [Unreleased]
 
+### Notification Service — ADR-010, WF-014, TS-001 Amendment
+**Date:** June 28, 2026  
+**ADR:** ADR-010  
+**Status:** APPROVED
+
+#### Added
+
+- **ADR-010** (`docs/adr/ADR-010-notification-service.md`) — Formalizes the Notification Service architecture: event-driven, channel-agnostic, company email as system recipient via env var, 5 MVP event set, `attempt_count` in MVP, Resend as delivery provider
+- **WF-014** (`docs/01-workflows/WF-014-notification-dispatch.md`) — Notification Dispatch workflow: delivery lifecycle, retry policy (max 3 attempts), MVP notification type registry, recipient resolution rules, GDPR notes, environment variable contracts
+
+#### Changed
+
+**TS-001** (`docs/02-technical-specification/TECHNICAL_SPECIFICATION_PHASE_1_DATABASE.md`):
+- Schema Overview: Total tables updated 19 → 20; Governance Domain updated 1 → 3 tables (`audit_events`, `deletion_schedules`, `notification_log`); System Tables updated 4 → 3 tables (removal of `deletion_schedules` to correct its owner to Governance Domain)
+- New table: `notification_log` — Governance Domain, 3rd table; includes `attempt_count`, `failure_reason`, dual-recipient model (`recipient_profile_id` for users, `recipient_email` for system recipients), full future `delivery_channel` constraint set
+- New RLS policies for `notification_log` (SELECT/INSERT/UPDATE: admin or system; DELETE: blocked)
+- **Security fix** — `contact_logs` INSERT RLS policy corrected (documented in WF-010): replaced permissive role-based check with EXISTS subquery through `case_assignments`, preventing any professional from logging contacts on unassigned cases
+- Migration ordering: `20_create_notification_log.sql` added to Phase 8 (Governance)
+- Production verification count: 19 → 20 tables
+
+**MVP_DEFINITION.md** (Section 12):
+- Removed: "Does NOT send email/SMS/in-app in MVP"
+- Removed: "Admin can manually notify"
+- Added: 5 MVP notification events with delivery infrastructure description
+- Added: Deferred notification events list (Phase 2)
+- Added: Notification Service architecture summary
+
+**ROADMAP.md**:
+- Phase 2 Section 3 updated: email is now MVP; Phase 2 expands event coverage and adds subscriber preferences
+- External Dependencies Phase 1: Added Resend (transactional email)
+- External Dependencies Phase 2: Removed SendGrid/Postmark references (replaced by Resend)
+- Nice-to-Have section: clarified SMS, real-time notifications, subscriber preferences remain Phase 2
+
+**NOTIFICATION EVENTS sections added to workflows:**
+- WF-001: `PROFESSIONAL_APPLICATION_RECEIVED` (MVP)
+- WF-003: No MVP events; Phase 2 `CASE_ASSIGNED` noted
+- WF-005: `SAFEGUARDING_FLAGGED` (MVP)
+- WF-006: `HOURS_SUBMITTED` (MVP)
+- WF-007: No MVP events; Phase 2 `HOURS_OUTSIDE_GRANT_FLAGGED` noted
+- WF-008: No MVP events; Phase 2 `HANDOVER_INITIATED`, `CASE_ASSIGNED` noted
+- WF-013: No MVP events; Phase 2 `DATA_DELETION_SCHEDULED` noted
+
+WF-010, WF-011, WF-012 already had NOTIFICATION EVENTS stubs from their initial drafts.
+
+#### Rationale
+
+- Event-driven, channel-agnostic pattern prevents delivery coupling from polluting business workflows
+- 5-event MVP set creates operational signal without notification noise
+- Personal email addresses are kept out of `notification_log` (resolved at dispatch time)
+- `attempt_count` included in MVP to enable reliable retry tracking without a future migration
+
+---
+
 ### Architecture: Shift to Domain-Integrated Operations Platform
 **Date:** June 27, 2026  
 **ADR:** ADR-009  

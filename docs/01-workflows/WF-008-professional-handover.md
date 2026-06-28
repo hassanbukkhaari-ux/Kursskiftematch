@@ -138,6 +138,25 @@ Case Coordinator initiates handover when:
 
 ---
 
+## NOTIFICATION EVENTS
+
+WF-008 does not emit outbound notification events in MVP.
+
+Both the outgoing and incoming professionals are informed of the handover via direct admin contact (phone/email) in MVP. The admin portal shows the handover status; no automated outbound message is generated.
+
+`CASE_ASSIGNMENT_TERMINATED` (outgoing professional) is distinct from the WF-012 closure event of the same name. For handovers, the outgoing assignment receives `assignment_status = TRANSITIONED`, not TERMINATED.
+
+**Future notifications (via WF-014, Phase 2):**
+
+| Notification Type | Recipient | Trigger |
+|---|---|---|
+| `HANDOVER_INITIATED` | Outgoing Professional | Admin initiates handover — professional is being transitioned off the case |
+| `CASE_ASSIGNED` | Incoming Professional | Handover completed — professional has been assigned as new case owner |
+
+The workflow does not specify delivery channel. Channel assignment is owned by WF-014.
+
+---
+
 ## OUTPUTS
 
 - Old CaseAssignment ended (ended_at set)

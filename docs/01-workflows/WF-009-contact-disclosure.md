@@ -94,7 +94,8 @@ Admin initiates when professional needs to contact sagsbehandler:
 ### A2: Contact Already Known
 - Professional indicates they already have sagsbehandler contact
 - System still creates ContactDisclosure (for audit purposes)
-- Records: method=VERBAL_EXISTING, reason="Professional already had contact"
+- Records: contact_method = 'MEETING', reason = "Professional already had contact — no new disclosure needed"
+- Note: `VERBAL_EXISTING` is not a valid contact_method value. Use `MEETING` to record that a verbal/in-person confirmation occurred; capture the "already known" context in the reason field.
 
 ### A3: Sagsbehandler Contact Changes
 - Municipality updates sagsbehandler details

@@ -147,6 +147,22 @@ Case Coordinator clicks "Find Professional" or "Re-Match" for a case that is sta
 
 ---
 
+## NOTIFICATION EVENTS
+
+WF-003 does not emit outbound notification events in MVP.
+
+The assignment decision (step 7–8) results in a `CaseAssignment` record and `HUMAN_DECISION_RECORDED` audit event. The assigned professional gains access to the case immediately but is not notified via outbound message in MVP.
+
+**Future notification (via WF-014, Phase 2):**
+
+| Notification Type | Recipient | Trigger |
+|---|---|---|
+| `CASE_ASSIGNED` | Professional | Admin confirms assignment — professional now has an active case |
+
+The workflow does not specify delivery channel. Channel assignment is owned by WF-014.
+
+---
+
 ## OUTPUTS
 
 - CaseAssignment created (professional now assigned to case)

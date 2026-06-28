@@ -150,18 +150,20 @@ One of:
 
 ## NOTIFICATION EVENTS
 
-WF-011 emits the following notification events. The workflow records the notification type and recipient — it does not specify delivery channel. Channel assignment is owned by WF-014 (Notification Dispatch, pending ADR-010 ratification).
+WF-011 emits the following notification events. The workflow records the notification type and recipient — it does not specify delivery channel. Channel assignment is owned by WF-014 (Notification Dispatch, ADR-010).
 
-| Notification Type | Recipient | Trigger |
-|---|---|---|
-| `DOCUMENT_UPLOADED` | Admin (Compliance Officer) | Professional uploads a document (status → UNVERIFIED) — requires verification action |
-| `DOCUMENT_EXPIRING` | Admin | Nightly scheduled check detects a VERIFIED document with expiry_date within 30 days — admin must request re-upload |
-| `DOCUMENT_RE_UPLOAD_REQUIRED` | Professional | Admin sets re_upload_required = TRUE — professional must upload a new document |
+All three document-related triggers produce a single canonical `notification_type` of `DOCUMENT_ACTION_REQUIRED` in `notification_log`. The trigger context determines the recipient field and the message template resolved by WF-014 — not the notification type. Do not use `DOCUMENT_UPLOADED`, `DOCUMENT_EXPIRING`, or `DOCUMENT_RE_UPLOAD_REQUIRED` as `notification_type` values; these are trigger context names only.
+
+| Trigger Context | `notification_type` | Recipient | `notification_log` Recipient Field |
+|---|---|---|---|
+| Professional uploads a document (status → UNVERIFIED) — requires admin verification | `DOCUMENT_ACTION_REQUIRED` | Admin (Compliance Officer) | `recipient_email = SYSTEM_ADMIN_EMAIL` |
+| Nightly scheduled check detects a VERIFIED document with expiry_date within 30 days | `DOCUMENT_ACTION_REQUIRED` | Admin | `recipient_email = SYSTEM_ADMIN_EMAIL` |
+| Admin sets re_upload_required = TRUE — professional must upload a new document | `DOCUMENT_ACTION_REQUIRED` | Professional | `recipient_profile_id = professional's profiles.id` |
 
 **Notes:**
-- `DOCUMENT_UPLOADED` fires on every upload, including proactive uploads (A3) and admin uploads on behalf of professional (A4)
-- `DOCUMENT_EXPIRING` is triggered by a scheduled process (nightly job), not a real-time event. The document record itself does not change; is_expiring_soon is a derived value (ADR-008). The notification is the only signal sent to admin.
-- `DOCUMENT_RE_UPLOAD_REQUIRED` fires at the moment admin sets re_upload_required = TRUE, regardless of whether a note has been added. It is the system's mechanism for telling the professional to act.
+- The upload trigger fires on every upload, including proactive uploads (A3) and admin uploads on behalf of professional (A4).
+- The expiry trigger is produced by a scheduled background job (nightly), not by a user action. The document record itself does not change; is_expiring_soon is a derived value (ADR-008). This trigger requires a scheduler mechanism to be operational.
+- The re-upload trigger fires at the moment admin sets re_upload_required = TRUE, regardless of whether a verification note has been added. WF-014 resolves the professional's email from `profiles.email` at dispatch time using `recipient_profile_id`.
 
 ---
 

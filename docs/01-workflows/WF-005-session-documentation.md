@@ -146,6 +146,21 @@ Professional completes a session with a citizen and navigates to "Log Session" f
 
 ---
 
+## NOTIFICATION EVENTS
+
+WF-005 emits the following notification event. The workflow records the notification type and recipient — it does not specify delivery channel. Channel assignment is owned by WF-014 (Notification Dispatch, ADR-010).
+
+| Notification Type | Recipient | Trigger |
+|---|---|---|
+| `SAFEGUARDING_FLAGGED` | Admin (system email) | Session log finalized with safeguarding_concern_flag = TRUE — requires immediate Case Coordinator acknowledgement |
+
+**Notes:**
+- `SAFEGUARDING_FLAGGED` fires at step 3 of the main flow (and A1), immediately when a session log with `safeguarding_concern_flag = TRUE` is finalized.
+- The safeguarding detail itself (`safeguarding_detail`) is an encrypted field and is never included in the notification body. The email contains only a reference to the case ID and a link to the admin dashboard for acknowledgement.
+- No automatic external escalation (e.g., to authorities) occurs in MVP. Escalation is a Phase 2 feature.
+
+---
+
 ## OUTPUTS
 
 - session_log record with status=FINAL (or CORRECTED if corrected after finalization)

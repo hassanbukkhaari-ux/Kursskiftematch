@@ -1394,7 +1394,12 @@ CREATE POLICY "session_logs_delete_blocked" ON session_logs
 CREATE POLICY "session_log_corrections_select_policy" ON session_log_corrections
   FOR SELECT
   USING (
-    professional_id = auth.uid()  -- Professional sees own corrections
+    EXISTS (
+      SELECT 1
+      FROM session_logs sl
+      WHERE sl.id = session_log_id
+        AND sl.professional_id = auth.uid()
+    )  -- Professional sees corrections on their own session logs
     OR auth.jwt()->>'role' = 'admin'  -- Admins see all
   );
 ```
@@ -1405,7 +1410,13 @@ CREATE POLICY "session_log_corrections_select_policy" ON session_log_corrections
 CREATE POLICY "session_log_corrections_insert_policy" ON session_log_corrections
   FOR INSERT
   WITH CHECK (
-    auth.jwt()->>'role' IN ('admin', 'professional')  -- Both can create
+    auth.jwt()->>'role' = 'admin'  -- Admin can create corrections on any session log
+    OR EXISTS (
+      SELECT 1
+      FROM session_logs sl
+      WHERE sl.id = session_log_id
+        AND sl.professional_id = auth.uid()
+    )  -- Professional may only correct their own session logs
   );
 ```
 

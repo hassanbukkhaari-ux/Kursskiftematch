@@ -41,14 +41,15 @@ Automatic: Runs nightly. For each archived record, checks if retention_expires_a
 ### Phase 1: Schedule for Deletion (Week of expiry)
 
 1. **System identifies expired records**
-   - Query: WHERE archived_at IS NOT NULL AND data_retention_expires_at < TODAY
-   - Check tables:
-     - cases (if archived)
-     - professionals (if archived)
-     - session_logs (if archived)
-     - registered_hours (if archived)
-     - professional_documents (if archived)
-   - Each record marked for deletion
+   - Primary query targets the `cases` table — the only table with both `archived_at` and `data_retention_expires_at`:
+     ```sql
+     SELECT * FROM cases
+     WHERE archived_at IS NOT NULL
+       AND data_retention_expires_at < TODAY;
+     ```
+   - Child records linked to an expired case (session_logs, registered_hours, professional_documents, contact_disclosures) are identified via their FK relationship to the case — not by querying individual retention columns on each child table (those columns do not exist on child tables)
+   - `professionals` with `status = 'ARCHIVED'` require `archived_at` and `data_retention_expires_at` columns to be added (see TS-001 amendments); in MVP the nightly job targets cases only
+   - Each expired case (and its child records) marked for deletion
 
 2. **System creates retention schedule**
    - For each expired record: Create DeletionSchedule entry
@@ -69,10 +70,10 @@ Automatic: Runs nightly. For each archived record, checks if retention_expires_a
 4. **System executes deletion**
    - For each DeletionSchedule where scheduled_for_deletion_at < NOW:
      - Read record completely (for audit)
-     - **Soft-delete** (not hard delete):
-       - Set status=DELETED
-       - Set deleted_at=NOW
-       - Keep all other data intact
+     - **Confirm soft-delete state** (not hard delete):
+       - Record is already `status = 'ARCHIVED'` and `archived_at` is set — no further status change is applied (there is no `DELETED` status or `deleted_at` column in any table)
+       - ARCHIVED is the terminal soft-delete state; records in this state are already excluded from all user-facing API queries
+       - Child records (session_logs, registered_hours, professional_documents, contact_disclosures) have no independent retention columns; they are processed as part of the parent case deletion schedule
      - **DO NOT:** Hard delete from database
      - Event: `DATA_DELETED` logged (audit-only, no sensitive content)
 
@@ -80,12 +81,12 @@ Automatic: Runs nightly. For each archived record, checks if retention_expires_a
    - Create AuditEvent: DATA_DELETED
    - Metadata:
      - record_type, record_id
-     - deleted_at, reason="Retention period expired"
+     - executed_at (from deletion_schedules.executed_at), reason="Retention period expired"
      - retention_period_years: 7
    - This event is immutable (can never be deleted)
 
 6. **Workflow complete**
-   - Record is soft-deleted (logical removal)
+   - Record is in terminal ARCHIVED state (logical removal — already excluded from all user-facing API queries)
    - Cannot be queried in user-facing API
    - Audit trail remains (DATA_DELETED event immutable)
    - Data still recoverable via database if needed for legal investigation
@@ -149,7 +150,7 @@ Automatic: Runs nightly. For each archived record, checks if retention_expires_a
 
 - `DATA_DELETION_SCHEDULED` — Record marked for future deletion
 - `RETENTION_EXTENDED` — Deletion postponed by admin decision
-- `DATA_DELETED` — Record soft-deleted (status=DELETED, deleted_at set)
+- `DATA_DELETED` — Record confirmed in terminal ARCHIVED state; deletion schedule executed
 - `DATA_SUBJECT_DELETION_REQUESTED` — Manual request from user
 - `DATA_SUBJECT_DELETION_APPROVED` — Admin approved deletion request
 - `DATA_SUBJECT_DELETION_EXECUTED` — Deletion executed post 30-day delay
@@ -174,10 +175,10 @@ The workflow does not specify delivery channel. Channel assignment is owned by W
 
 ## OUTPUTS
 
-- Record status changed to DELETED (soft delete)
-- deleted_at timestamp recorded
+- Record confirmed in terminal `status = 'ARCHIVED'` state (soft delete — ARCHIVED is the terminal state; no further status change occurs)
+- `archived_at` already set at archival time (no new column written at deletion time)
 - Audit event logged (immutable)
-- Record no longer visible in user-facing API
+- Record no longer visible in user-facing API (excluded by status filter)
 - Record recoverable via direct database query (if needed for legal)
 
 ---
@@ -209,10 +210,10 @@ The workflow does not specify delivery channel. Channel assignment is owned by W
 
 **2026-07-01 (Nightly deletion run):**
 - scheduled_for_deletion_at < NOW
-- Case.status = DELETED
-- Case.deleted_at = 2026-07-01
+- Case confirmed status = 'ARCHIVED' and archived_at is set — no further status change (ARCHIVED is the terminal state)
+- deletion_schedules.executed_at = 2026-07-01
 - Event: `DATA_DELETED` logged
-- Case no longer queryable in API
+- Case no longer queryable in user-facing API (already excluded by ARCHIVED status filter)
 - AuditEvent of deletion remains immutable
 
 **Future (2030):**

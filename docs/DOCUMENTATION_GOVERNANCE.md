@@ -218,7 +218,7 @@ This document uses all terminology as defined in those documents.
 CREATE TABLE cases (
   id UUID PRIMARY KEY,
   citizen_identifier VARCHAR(10),  -- initials only, per Citizen def
-  status VARCHAR(50),  -- READY_FOR_MATCHING per workflow defs
+  status VARCHAR(50),  -- OPEN, MATCHED, ACTIVE, COMPLETED, ARCHIVED per TS-001 cases.status CHECK constraint
   complexity_level VARCHAR(20),  -- LOW, MEDIUM, HIGH, CRITICAL per Complexity def
   ...
 )

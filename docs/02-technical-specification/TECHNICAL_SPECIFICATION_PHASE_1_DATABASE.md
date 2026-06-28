@@ -2141,7 +2141,11 @@ supabase db push --dry-run  # Shows what would happen
 DROP TABLE table_name;  -- Use soft-delete instead (archived_at)
 
 -- INSTEAD use:
-UPDATE table_name SET status = 'DELETED', deleted_at = NOW();
+UPDATE table_name SET status = 'ARCHIVED', archived_at = NOW();
+-- For cases, also set:
+-- data_retention_expires_at = NOW() + INTERVAL '7 years'
+-- Note: status='DELETED' and deleted_at do not exist in any table schema.
+-- ARCHIVED is the terminal soft-delete status for all applicable tables.
 ```
 
 ### Migration Idempotency
@@ -2554,11 +2558,13 @@ Audit events themselves are never encrypted (must be searchable for compliance).
 **Default Retention:** 7 years after archival  
 **Process:**
 1. Record archived (status = ARCHIVED, archived_at set)
-2. data_retention_expires_at = archived_at + 7 years
-3. Deletion scheduled (deletion_schedules entry)
-4. At scheduled time, status = DELETED (soft delete)
-5. Record no longer queryable in API
+2. For `cases`: data_retention_expires_at = archived_at + INTERVAL '7 years'
+3. Deletion scheduled (deletion_schedules entry created by nightly job)
+4. At scheduled time: record confirmed still status = ARCHIVED — no further status change applied (ARCHIVED is the terminal state; there is no DELETED status)
+5. Record no longer visible in user-facing API queries (filtered by status != 'ARCHIVED')
 6. Audit event logged (immutable proof of deletion)
+
+**Retention root:** `cases` is the primary retention table (has both `archived_at` and `data_retention_expires_at`). Child records (session_logs, registered_hours, professional_documents) are processed via their FK relationship to the parent case, not by querying individual retention columns on each child table.
 
 **Right-to-Forget:** 30-day delay after request
 

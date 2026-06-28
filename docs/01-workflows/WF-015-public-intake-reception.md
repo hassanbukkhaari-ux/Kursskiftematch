@@ -62,10 +62,10 @@ Partner/organization lead forms are deferred to Phase 2.
    - Route is unauthenticated — no JWT required
    - CORS policy: allows only `kursskifte.dk` origin
 
-3. **System validates CAPTCHA**
-   - Cloudflare Turnstile token validated server-side against Cloudflare API
-   - If invalid: return 400, write nothing to database
-   - If honeypot field is filled: silently accept (return 201) but set `status = 'SPAM'` and `captcha_verified = false`
+3. **System checks honeypot, then validates CAPTCHA**
+   - **Honeypot check (evaluated first):** If the hidden honeypot field is filled, processing stops immediately. System silently accepts (returns 201) and creates an `inbound_inquiries` record with `status = 'SPAM'`, `captcha_verified = false`. No Cloudflare API call is made — obvious bot traffic does not consume external verification quota.
+   - **CAPTCHA validation (evaluated second):** Cloudflare Turnstile token validated server-side against Cloudflare API
+   - If CAPTCHA invalid: return 400, write nothing to database
 
 4. **System validates request body**
    - Schema validation (zod or equivalent) enforced server-side
@@ -229,7 +229,7 @@ No audit event is emitted for SPAM records (honeypot-detected). No audit event i
 | `reviewed_at` | TIMESTAMPTZ | NULL until reviewed |
 | `rejection_reason` | TEXT | Set on REJECTED |
 | `converted_to_type` | TEXT | e.g., `'case'`, `'professional'` — set on CONVERTED |
-| `converted_to_id` | UUID | FK to the created canonical record — set on CONVERTED |
+| `converted_to_id` | UUID | Polymorphic reference to the created canonical record — set on CONVERTED. No DB FK constraint exists (target table varies by `converted_to_type`). See TS-001. |
 | `created_at` | TIMESTAMPTZ | Same as submitted_at for normal flow |
 
 ---
@@ -269,7 +269,8 @@ No audit event is emitted for SPAM records (honeypot-detected). No audit event i
 
 | Variable | Purpose |
 |---|---|
-| `CLOUDFLARE_TURNSTILE_SECRET_KEY` | Server-side CAPTCHA validation against Cloudflare API |
+| `CLOUDFLARE_TURNSTILE_SECRET_KEY` | Server-side CAPTCHA validation against Cloudflare API (never exposed to browser) |
+| `CLOUDFLARE_TURNSTILE_SITE_KEY` | Public site key embedded in the kursskifte.dk Turnstile widget — safe to expose; must be provisioned per environment |
 | `SYSTEM_ADMIN_EMAIL` | Recipient for `INQUIRY_RECEIVED` notification (shared with WF-014) |
 | `INTAKE_RATE_LIMIT_WINDOW_SECONDS` | Rate limit window (default: 3600) |
 | `INTAKE_RATE_LIMIT_MAX_SUBMISSIONS` | Max submissions per IP per window (default: 5) |

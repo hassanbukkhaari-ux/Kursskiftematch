@@ -49,7 +49,21 @@ Automatic: Runs nightly. For each archived record, checks if retention_expires_a
      ```
    - Child records linked to an expired case (session_logs, registered_hours, professional_documents, contact_disclosures) are identified via their FK relationship to the case — not by querying individual retention columns on each child table (those columns do not exist on child tables)
    - `professionals` with `status = 'ARCHIVED'` require `archived_at` and `data_retention_expires_at` columns to be added (see TS-001 amendments); in MVP the nightly job targets cases only
-   - Each expired case (and its child records) marked for deletion
+   - `inbound_inquiries` staging records are identified by a separate time-based query (the table does not use `archived_at` / `data_retention_expires_at`):
+     ```sql
+     -- SPAM, PENDING, REVIEWED (never converted) — 90 days from created_at
+     SELECT * FROM inbound_inquiries
+     WHERE status IN ('SPAM', 'PENDING', 'REVIEWED')
+       AND created_at < NOW() - INTERVAL '90 days'
+       AND converted_to_id IS NULL
+     UNION ALL
+     -- REJECTED — 90 days from reviewed_at
+     SELECT * FROM inbound_inquiries
+     WHERE status = 'REJECTED'
+       AND reviewed_at < NOW() - INTERVAL '90 days';
+     ```
+   - CONVERTED `inbound_inquiries` records are excluded from the 90-day schedule — they are retained until the canonical object they reference reaches its own retention expiry (see RETENTION BY RECORD TYPE below)
+   - Each expired case (and its child records) marked for deletion; expired `inbound_inquiries` records scheduled for purge
 
 2. **System creates retention schedule**
    - For each expired record: Create DeletionSchedule entry
@@ -141,8 +155,13 @@ Automatic: Runs nightly. For each archived record, checks if retention_expires_a
 | ProfessionalDocument | archived_at | 7 years | Soft delete |
 | AuditEvents | created_at | Never (perpetual) | Never |
 | ContactDisclosure | created_at | 7 years | Soft delete |
+| `inbound_inquiries` (SPAM / PENDING / REVIEWED, not converted) | `created_at` | 90 days | Hard delete — staging records only; audit events preserved in `audit_events` |
+| `inbound_inquiries` (REJECTED) | `reviewed_at` | 90 days | Hard delete — staging records only; `INQUIRY_REJECTED` audit event preserved |
+| `inbound_inquiries` (CONVERTED) | Canonical object `archived_at` | 7 years | Retained until canonical record retention expires; serves as intake audit trail |
 
 **Note:** AuditEvents are perpetual (never deleted) to maintain immutable audit trail.
+
+**`inbound_inquiries` deletion note:** Unlike core operational tables, SPAM, REJECTED, and expired PENDING/REVIEWED staging records are hard-deleted from the database after their retention period. This is intentional: staging records contain no clinical or case data, SPAM records must be purged for GDPR data minimization, and the immutable audit trail (`INQUIRY_RECEIVED`, `INQUIRY_REJECTED` events) persists in `audit_events`. CONVERTED records are not deleted by the nightly job — they are retained as intake audit evidence alongside the canonical object until that object's own 7-year retention expires.
 
 ---
 

@@ -120,7 +120,7 @@ WF-010 does not emit outbound notification events in MVP.
 
 Contact logs with `follow_up_required = TRUE` surface as a dashboard indicator for admin operational review. No push notification is generated for individual contact log entries — the volume would be too high and the urgency too low to justify outbound delivery in MVP.
 
-**Future notification (via WF-014, pending ADR-010 ratification):**
+**Future notification (via WF-014, Phase 2):**
 
 | Notification Type | Recipient | Trigger |
 |---|---|---|

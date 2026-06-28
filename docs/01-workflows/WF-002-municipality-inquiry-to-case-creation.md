@@ -398,6 +398,21 @@ Every significant action in this workflow generates an audit event for accountab
 
 ---
 
+## NOTIFICATION EVENTS
+
+WF-002 emits the following notification event. The workflow records the notification type and recipient — it does not specify delivery channel. Channel assignment is owned by WF-014 (Notification Dispatch, ADR-010).
+
+| Notification Type | Recipient | Trigger |
+|---|---|---|
+| `CASE_CREATED` | Admin (system email) | Case record created and status confirmed as READY_FOR_MATCHING — case is queued for professional assignment |
+
+**Notes:**
+- `CASE_CREATED` fires at Step 6 when all required information is verified and the case record is successfully created.
+- The notification signals to admin that a new case has entered the matching queue. It does not include citizen details, complexity information, or grant amounts in the notification body (ADR-004 — no sensitive operational data in notifications).
+- Recipient is the system admin inbox configured via `SYSTEM_ADMIN_EMAIL`. WF-014 owns recipient resolution and delivery.
+
+---
+
 ## 9. STATE TRANSITIONS
 
 ### Inquiry Status

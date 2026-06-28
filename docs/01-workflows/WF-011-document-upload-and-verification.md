@@ -150,7 +150,7 @@ One of:
 
 ## NOTIFICATION EVENTS
 
-WF-011 emits the following notification events. The workflow records the notification type and recipient — it does not specify delivery channel. Channel assignment is owned by WF-014 (Notification Dispatch, pending ADR-010 ratification).
+WF-011 emits the following notification events. The workflow records the notification type and recipient — it does not specify delivery channel. Channel assignment is owned by WF-014 (Notification Dispatch, ADR-010).
 
 | Notification Type | Recipient | Trigger |
 |---|---|---|

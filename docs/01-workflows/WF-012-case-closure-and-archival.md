@@ -88,8 +88,9 @@ Case Coordinator determines that professional support for a citizen is complete 
 5. **Post-closure state**
    - No new session_logs may be created for this case
    - No new registered_hours may be submitted for this case
-   - Existing DRAFT session logs: **see Open Question 3 — this rule is not yet locked**
-   - Case is visible to admin; professional may still view historical records
+   - Existing DRAFT session logs may be edited and finalized by the professional during the COMPLETED review window
+   - Once the case reaches ARCHIVED status, all remaining DRAFT session logs are permanently locked from further editing or finalization
+   - Case is visible to admin; professional may still view and complete documentation on historical records
    - Case does not advance to ARCHIVED automatically
 
 ---
@@ -127,6 +128,7 @@ Case Coordinator is satisfied that all post-closure review is complete and initi
 
 3. **Post-archival state**
    - Case is immutable
+   - All remaining DRAFT session logs are permanently locked — no further editing or finalization is permitted
    - GDPR retention countdown has started (data_retention_expires_at set)
    - Case becomes eligible for GDPR deletion via WF-013 after data_retention_expires_at
    - Case remains readable by admin until deleted
@@ -161,6 +163,15 @@ Case Coordinator is satisfied that all post-closure review is complete and initi
 - Admin closes and archives on the same day
 - Both steps are permitted in sequence without a mandatory waiting period
 - MVP imposes no minimum time between closure and archival
+- If DRAFT session logs exist, archiving immediately locks them permanently — admin should consider whether documentation should be completed first
+
+### A5: Professional Finalizes DRAFT Session Log During COMPLETED Window
+- After case closure, professional navigates to the COMPLETED case
+- Professional can still access and edit existing DRAFT session logs
+- Professional finalizes the DRAFT: session_log.status transitions DRAFT → FINAL (per WF-005 main flow)
+- No new session_logs may be created — only existing DRAFTs may be finalized
+- The finalized session log joins the case record; it is visible to admin alongside previously FINAL logs
+- Once admin archives the case (COMPLETED → ARCHIVED), this window closes permanently
 
 ---
 
@@ -173,12 +184,13 @@ Case Coordinator is satisfied that all post-closure review is complete and initi
 4. **DRAFT session logs are advisory only** — Admin sees a warning but may close regardless
 5. **Closure ends all active assignments atomically** — All CaseAssignments with ended_at IS NULL receive ended_at = NOW() and assignment_status = TERMINATED in the same transaction as cases.status → COMPLETED
 6. **No new activity after COMPLETED** — No new session_logs or registered_hours can be created for a COMPLETED case
+7. **DRAFT session logs may be finalized during the COMPLETED window** — Professional may edit and finalize existing DRAFT session logs while the case is COMPLETED; this access ends permanently when the case is ARCHIVED
 
 ### Archival Rules
-7. **Archival is a separate manual step** — No automatic archival after closure
-8. **Grant archival is atomic with case archival** — All ACTIVE case_grants receive status=ARCHIVED and archived_at=NOW() in the same transaction
-9. **data_retention_expires_at is set at archival** — Value is archived_at + 7 years (INTERVAL); set once and never changed
-10. **Archived cases are immutable** — No status change, field edit, or content change after status=ARCHIVED
+8. **Archival is a separate manual step** — No automatic archival after closure
+9. **Grant archival is atomic with case archival** — All ACTIVE case_grants receive status=ARCHIVED and archived_at=NOW() in the same transaction
+10. **data_retention_expires_at is set at archival** — Value is archived_at + 7 years (INTERVAL); set once and never changed
+11. **Archived cases are immutable** — No status change, field edit, or content change after status=ARCHIVED; all remaining DRAFT session logs are permanently locked at this point
 
 ---
 
@@ -284,7 +296,7 @@ None. All fields required by this workflow (cases.status, cases.archived_at, cas
 | Reference | Direction | Description |
 |-----------|-----------|-------------|
 | WF-004 | Upstream | Case must have been activated (status=ACTIVE) via WF-004 before closure |
-| WF-005 | Upstream | DRAFT session logs generate advisory warning at closure; should be finalized before closing |
+| WF-005 | Upstream | DRAFT session logs generate advisory warning at closure; may still be finalized during the COMPLETED window; locked permanently at ARCHIVED |
 | WF-006 | Upstream | PENDING registered_hours BLOCK closure; must be resolved first |
 | WF-007 | Upstream | Unreviewed OUTSIDE_GRANT hours generate advisory warning at closure; WF-007 review clears the warning |
 | WF-008 | Lateral | Professional handover (WF-008) ends the outgoing assignment via TRANSITIONED status; WF-012 closure ends assignments via TERMINATED status |
@@ -296,36 +308,9 @@ None. All fields required by this workflow (cases.status, cases.archived_at, cas
 
 1. Should admin be required to enter a closure reason (e.g., GOAL_MET, WITHDRAWN, FUNDING_ENDED)?
 2. Should there be a mandatory review period between closure and archival (e.g., 30-day minimum)?
-3. **[DECISION REQUIRED] Can DRAFT session logs be finalized after case closure?**
-
-   This rule has not been locked. The following options exist:
-
-   **Option A — Permanently locked at closure**
-   - Logic: Case is COMPLETED; active documentation should be finished before closure. The advisory warning gave admin the opportunity to delay closure.
-   - Consequence: Any DRAFT log at the moment of closure is permanently frozen. The professional has no recourse. The session may have occurred but is never formally finalized. The correction flow (WF-005 A2) is also unavailable, as it requires FINAL status first.
-   - Risk: Creates a permanent documentation gap for any session not finalized before closure. Punishes professionals for administrative delays outside their control.
-
-   **Option B — Finalization permitted after closure, no time limit**
-   - Logic: Session logs document real sessions that occurred before closure. The right to finalize that documentation does not expire when the case closes. Creating new session logs is blocked; finalizing existing ones is completing work already in progress.
-   - Consequence: Professional can finalize DRAFT session logs on a COMPLETED case at any time. Finalized logs appear on the case record retroactively.
-   - Risk: A DRAFT log finalized weeks or months after closure appears as new final content on a closed case. Could create confusion if the case is also being prepared for archival.
-
-   **Option C — Grace period after closure (e.g., 7 or 14 days)**
-   - Logic: Give professionals a defined window; then lock.
-   - Consequence: Requires tracking grace period start (closure date) and enforcing a cutoff, either via a scheduled job or at-query enforcement. Adds implementation complexity.
-   - Risk: Window length is arbitrary and requires a separate policy decision. Likely over-engineered for MVP.
-
-   **Option D — Finalization permitted while COMPLETED; locked at ARCHIVED**
-   - Logic: The COMPLETED → ARCHIVED gap is specifically designed as a review window. Allow session log finalization during that window. ARCHIVED = fully and truly immutable.
-   - Consequence: Natural cutoff using the existing two-step lifecycle. No additional timer or enforcement logic required. Professional retains access to their DRAFT logs until admin archives the case. Admin controls the archival timeline.
-   - Risk: Admin must deliberately archive when they intend to close out documentation. In practice, this means the review window is the operative finalization deadline.
-
-   **Recommendation: Option D.** It uses the existing lifecycle correctly — COMPLETED is a review state, ARCHIVED is an immutable state. It requires no new enforcement logic, respects professional accountability, and does not create an arbitrary time limit. The advisory warning at closure still serves its purpose: it signals to admin that documentation is incomplete, giving them a reason to delay archival.
-
-   **This question is blocking the implementation-ready declaration for WF-012 and must be explicitly locked before this workflow is marked APPROVED.**
-4. Should admin receive a summary of all case activity (hours total, sessions count, duration) at the closure confirmation screen?
-5. Should the system allow re-opening a COMPLETED case to ACTIVE (e.g., if support resumes after a short break)?
+3. Should admin receive a summary of all case activity (hours total, sessions count, duration) at the closure confirmation screen?
+4. Should the system allow re-opening a COMPLETED case to ACTIVE (e.g., if support resumes after a short break)?
 
 ---
 
-**This workflow is APPROVED except for one pending decision: Open Question 3 (DRAFT session log finalization after closure) has not been locked. All other business rules, flows, and TS-001 amendments are approved. Owned by Case Domain. Depends on WF-004 (activation), WF-005 (session logs), WF-006 (registered hours), and WF-007 (outside-grant review). Triggers GDPR data retention countdown via WF-013.**
+**This workflow is implementation-ready. No TS-001 schema amendments are required. Owned by Case Domain. Depends on WF-004 (activation), WF-005 (session logs), WF-006 (registered hours), and WF-007 (outside-grant review). Triggers GDPR data retention countdown via WF-013. DRAFT session log finalization window: permitted during COMPLETED status, permanently locked at ARCHIVED (Decision: Option D, locked).**

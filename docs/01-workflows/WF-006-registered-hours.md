@@ -124,6 +124,21 @@ Professional navigates to "Register Hours" after completing sessions or other bi
 
 ---
 
+## NOTIFICATION EVENTS
+
+WF-006 emits the following notification event. The workflow records the notification type and recipient — it does not specify delivery channel. Channel assignment is owned by WF-014 (Notification Dispatch, ADR-010).
+
+| Notification Type | Recipient | Trigger |
+|---|---|---|
+| `HOURS_SUBMITTED` | Admin (system email) | Professional submits hours (status → PENDING/SUBMITTED) — requires admin approval decision |
+
+**Notes:**
+- `HOURS_SUBMITTED` fires at step 2 when the professional confirms and submits their hours entry.
+- The notification signals to the admin that a submission is in the approval queue. It does not include the number of hours or work description in the email body (ADR-004 — no sensitive operational data in notifications).
+- `HOURS_APPROVED` and `HOURS_REJECTED` notifications to the professional are deferred to Phase 2.
+
+---
+
 ## OUTPUTS
 
 - RegisteredHours record with status=APPROVED

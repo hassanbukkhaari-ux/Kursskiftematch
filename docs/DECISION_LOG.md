@@ -332,6 +332,50 @@ LOW if: 0-1 factors
 
 ---
 
+### [June 28, 2026] Decision #13: Notification Service Architecture
+
+**Title:** Event-driven, channel-agnostic Notification Service for operational alerts
+
+**Status:** ✅ APPROVED (ADR-010)
+
+**Rationale:**
+- Decouples delivery mechanics from business workflows (source workflows emit event types, WF-014 owns all delivery knowledge)
+- Channel-agnostic design allows adding SMS, Slack, push without touching source workflow code
+- Company email address stored as env var (SYSTEM_ADMIN_EMAIL), not in database, keeping operations configuration out of schema
+- 5-event MVP set provides operational signal (new applications, safeguarding flags, hours needing approval) without notification noise
+- `attempt_count` included in MVP to enable reliable retry tracking without a future migration
+
+**Recipient Model:**
+- `recipient_profile_id` — user-targeted notifications; WF-014 resolves email from `profiles.email` at dispatch time (personal email never stored in notification_log)
+- `recipient_email` — system/company notifications only (e.g., SYSTEM_ADMIN_EMAIL env var)
+- At least one must be set per record (CHECK constraint enforced)
+
+**MVP Event Set (5 events):**
+1. `PROFESSIONAL_APPLICATION_RECEIVED` — Admin when a professional profile is created (WF-001)
+2. `CASE_CREATED` — Admin when a new case is opened (WF-002)
+3. `SAFEGUARDING_FLAGGED` — Admin when a session log raises a safeguarding concern (WF-005)
+4. `HOURS_SUBMITTED` — Admin when a professional submits hours for approval (WF-006)
+5. `DOCUMENT_ACTION_REQUIRED` — Professional when a credential document needs upload or re-upload (WF-004)
+
+**Delivery Provider (MVP):** Resend (transactional email; aligns with Next.js/Vercel stack)
+
+**Trade-offs:**
+- Adds `notification_log` table and WF-014 Edge Function to MVP scope
+- Resend dependency (acceptable; easily replaceable via channel adapter pattern in Phase 2)
+- Phase 2 notifications (CASE_ASSIGNED, HOURS_OUTSIDE_GRANT_FLAGGED, DATA_DELETION_SCHEDULED, HANDOVER_INITIATED) explicitly deferred
+
+**Depends on:**
+- Decision #2 (Supabase — notification_log lives in the same database)
+- Decision #7 (Privacy-Safe Audit Events — no PII in failure_reason)
+- Decision #8 (No Derived Values — attempt_count is a counter, not a derived state)
+- Decision #12 (No Hard Deletes — notification_log records are permanent)
+
+**Blocking:** WF-014 implementation, `notification_log` migration, Resend API integration
+
+**References:** ADR-010, WF-014, TS-001 Amendment (notification_log schema), MVP_DEFINITION.md Section 12, ROADMAP.md External Dependencies
+
+---
+
 ## PENDING DECISIONS
 
 ### Technical Specification Phase
@@ -428,6 +472,7 @@ LOW if: 0-1 factors
 | Algorithm Versioning | ✅ | ✅ | — | ✅ | ✅ |
 | Audit Contracts | ✅ | ✅ | — | ✅ | — |
 | No Hard Deletes | ✅ | ✅ | — | ✅ | ✅ |
+| Notification Service | ✅ | ✅ | — | ✅ | — |
 
 ---
 
@@ -444,6 +489,7 @@ LOW if: 0-1 factors
 7. ✅ **Privacy-safe audit events** (vs. full value dumps)
 8. ✅ **No derived storage** (vs. caching columns)
 9. ✅ **Unified soft delete** (vs. mixed strategies)
+10. ✅ **Notification Service architecture** (event-driven, channel-agnostic, Resend for MVP)
 
 ---
 

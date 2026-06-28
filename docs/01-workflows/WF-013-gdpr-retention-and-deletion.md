@@ -156,6 +156,22 @@ Automatic: Runs nightly. For each archived record, checks if retention_expires_a
 
 ---
 
+## NOTIFICATION EVENTS
+
+WF-013 does not emit outbound notification events in MVP.
+
+Scheduled deletions appear on the admin dashboard retention report. No outbound email is generated for `DATA_DELETION_SCHEDULED` in MVP. Admin monitors via the dashboard; automated outbound delivery is deferred to Phase 2.
+
+**Future notification (via WF-014, Phase 2):**
+
+| Notification Type | Recipient | Trigger |
+|---|---|---|
+| `DATA_DELETION_SCHEDULED` | Admin (system email) | Record scheduled for deletion after 7-year retention expiry — admin review window opens |
+
+The workflow does not specify delivery channel. Channel assignment is owned by WF-014.
+
+---
+
 ## OUTPUTS
 
 - Record status changed to DELETED (soft delete)

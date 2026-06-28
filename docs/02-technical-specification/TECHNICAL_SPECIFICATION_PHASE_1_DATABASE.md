@@ -42,7 +42,7 @@
 **Database Name:** kursskifte_match  
 **Encoding:** UTF-8  
 **Timezone:** UTC  
-**Total Tables:** 19 (13 core + 6 supporting)
+**Total Tables:** 20 (13 core + 7 supporting)
 
 **Tables by Domain:**
 
@@ -70,14 +70,15 @@
 ### Municipality Domain (1 table)
 - municipalities
 
-### Governance Domain (1 table)
+### Governance Domain (3 tables)
 - audit_events
+- deletion_schedules
+- notification_log
 
-### System Tables (4 tables)
+### System Tables (3 tables)
 - profiles (auth sync)
 - session_log_transfers
 - contact_disclosures
-- deletion_schedules
 
 ---
 
@@ -1020,6 +1021,70 @@ CREATE INDEX idx_deletion_schedules_executed_at ON deletion_schedules(executed_a
 
 ---
 
+### TABLE: notification_log
+
+**Purpose:** Outbound notification delivery record — one row per notification event  
+**Owner:** Governance Domain  
+**Cardinality:** N:1 with related entities (case, professional, document, etc.)  
+**Source:** ADR-010 (Notification Service)
+
+```sql
+CREATE TABLE notification_log (
+  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  notification_type     TEXT NOT NULL,
+  related_entity_type   TEXT NOT NULL,
+  related_entity_id     UUID NOT NULL,
+  recipient_profile_id  UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  recipient_email       TEXT,
+    CONSTRAINT recipient_required CHECK (
+      recipient_profile_id IS NOT NULL OR recipient_email IS NOT NULL
+    ),
+  delivery_channel      TEXT NOT NULL DEFAULT 'EMAIL',
+    CONSTRAINT valid_channel CHECK (
+      delivery_channel IN ('EMAIL', 'IN_APP', 'SMS', 'PUSH', 'TEAMS', 'SLACK')
+    ),
+  status                TEXT NOT NULL DEFAULT 'PENDING',
+    CONSTRAINT valid_status CHECK (
+      status IN ('PENDING', 'SENT', 'FAILED')
+    ),
+  attempt_count         INTEGER NOT NULL DEFAULT 0,
+  failure_reason        TEXT,
+  created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  sent_at               TIMESTAMPTZ,
+  failed_at             TIMESTAMPTZ
+);
+
+CREATE INDEX idx_notification_log_recipient_profile_id ON notification_log(recipient_profile_id);
+CREATE INDEX idx_notification_log_status ON notification_log(status);
+CREATE INDEX idx_notification_log_notification_type ON notification_log(notification_type);
+CREATE INDEX idx_notification_log_created_at ON notification_log(created_at DESC);
+CREATE INDEX idx_notification_log_pending ON notification_log(status, attempt_count)
+  WHERE status = 'PENDING' OR (status = 'FAILED' AND attempt_count < 3);
+```
+
+**Constraints:**
+- `recipient_profile_id` and `recipient_email` are mutually exclusive recipient references; at least one is required
+  - `recipient_profile_id`: for user-targeted notifications (professional receiving DOCUMENT_ACTION_REQUIRED); WF-014 resolves email from `profiles.email` at dispatch time — personal email addresses are NOT stored in this table
+  - `recipient_email`: for system recipients only (e.g., value of `SYSTEM_ADMIN_EMAIL` env var); used when target is a role inbox rather than a named profile
+- `delivery_channel` constrained to the full future set so Phase 2 channel additions require no migration; MVP uses EMAIL only
+- `status` transitions: PENDING → SENT (delivery success) or FAILED (delivery failed after max attempts)
+- `attempt_count` incremented by WF-014 on each delivery attempt; retry query: `WHERE status = 'FAILED' AND attempt_count < 3`; max 3 attempts in MVP
+- `failure_reason` stores provider-level error codes or messages; must not contain PII (ADR-004)
+- `sent_at` and `failed_at` are set by WF-014 on terminal status transition; only one is ever set per record
+- Records are permanent (ADR-007 — no hard deletes)
+
+**Recipient Resolution at Dispatch:**
+- If `recipient_profile_id` IS NOT NULL: WF-014 queries `profiles.email` to get delivery address
+- If `recipient_email` IS NOT NULL: WF-014 uses that address directly (system inbox)
+
+**RLS Policy:**
+- SELECT: Admin only (professionals do not need visibility into notification delivery logs)
+- INSERT: Admin or system role (application layer — API route or Edge Function trigger)
+- UPDATE: Admin or system role (WF-014 updates status, attempt_count, sent_at, failed_at)
+- DELETE: Never (ADR-007)
+
+---
+
 ## 1.4 VIEWS
 
 ### VIEW: v_cases_with_professional
@@ -1497,9 +1562,19 @@ CREATE POLICY "contact_logs_select_policy" ON contact_logs
 CREATE POLICY "contact_logs_insert_policy" ON contact_logs
   FOR INSERT
   WITH CHECK (
-    auth.jwt()->>'role' IN ('admin', 'professional')  -- Both can log
+    auth.jwt()->>'role' = 'admin'
+    OR EXISTS (
+      SELECT 1 FROM case_assignments ca
+      WHERE ca.case_id = contact_logs.case_id
+        AND ca.professional_id = auth.uid()
+        AND ca.ended_at IS NULL
+    )
   );
 ```
+
+-- Corrected per WF-010 TS-001 amendment: restricts INSERT to admin or the currently
+-- assigned professional for the case, preventing any professional from logging
+-- contacts on cases they are not assigned to.
 
 ### Policy: contact_logs (UPDATE)
 
@@ -1748,6 +1823,39 @@ CREATE POLICY "deletion_schedules_delete_blocked" ON deletion_schedules
   USING (FALSE);  -- Never delete (immutable schedule)
 ```
 
+### Policy: notification_log (SELECT)
+
+```sql
+CREATE POLICY "notification_log_select_policy" ON notification_log
+  FOR SELECT
+  USING (auth.jwt()->>'role' = 'admin');  -- Admin only
+```
+
+### Policy: notification_log (INSERT)
+
+```sql
+CREATE POLICY "notification_log_insert_policy" ON notification_log
+  FOR INSERT
+  WITH CHECK (auth.jwt()->>'role' IN ('admin', 'system'));  -- Application layer only
+```
+
+### Policy: notification_log (UPDATE)
+
+```sql
+CREATE POLICY "notification_log_update_policy" ON notification_log
+  FOR UPDATE
+  USING (auth.jwt()->>'role' IN ('admin', 'system'))
+  WITH CHECK (auth.jwt()->>'role' IN ('admin', 'system'));  -- WF-014 dispatch updates status
+```
+
+### Policy: notification_log (DELETE)
+
+```sql
+CREATE POLICY "notification_log_delete_blocked" ON notification_log
+  FOR DELETE
+  USING (FALSE);  -- Never delete (ADR-007)
+```
+
 ### Policy: audit_events (SELECT)
 
 ```sql
@@ -1780,7 +1888,7 @@ CREATE POLICY "audit_events_immutable" ON audit_events
 
 ## RLS Policy Summary
 
-All 19 tables have complete RLS policies following PostgreSQL best practices:
+All 20 tables have complete RLS policies following PostgreSQL best practices:
 
 **SELECT Policies:** Use USING to filter readable rows
 **INSERT Policies:** Use WITH CHECK to validate new rows
@@ -1861,6 +1969,7 @@ PHASE 7: Matching (depends on: cases, professionals)
 PHASE 8: Governance (depends on: all tables)
   18_create_audit_events.sql          (FK: profiles.id, polymorphic)
   19_create_deletion_schedules.sql
+  20_create_notification_log.sql      (FK: profiles.id — ADR-010)
 
 PHASE 9: Materialized Views (depends on: all tables)
   20_create_views.sql
@@ -2001,7 +2110,7 @@ supabase db push --linked --remote-url {production_url}
 
 # 3. Post-deployment verification
 SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';
-# Expected: 19 tables
+# Expected: 20 tables
 
 # 4. Monitor for errors (first 30 minutes)
 # Check Supabase dashboard for errors
@@ -2104,7 +2213,7 @@ logger.info('Applied migrations', appliedMigrations);
 
 | Constraint Type | Count | Examples |
 |---|---|---|
-| PRIMARY KEY | 19 | Each table |
+| PRIMARY KEY | 20 | Each table |
 | FOREIGN KEY | 35+ | case_assignments.case_id, session_logs.professional_id |
 | UNIQUE | 5+ | municipalities.name, case_complexity_factors.case_id |
 | UNIQUE INDEX (Partial) | 1 | case_assignments(case_id) WHERE ended_at IS NULL |

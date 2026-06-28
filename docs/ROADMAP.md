@@ -133,12 +133,13 @@
 - ❌ **Clinical Journal System** — No diagnosis tracking; refer to external systems
 - ❌ **Automatic Assignment** — All assignments require human (admin) decision
 
-### Nice-to-Have (Out of Scope)
+### Nice-to-Have (Out of Scope for MVP)
 - ❌ Mobile app (responsive web for now)
-- ❌ SMS notifications (email only)
-- ❌ Slack integration
+- ❌ SMS notifications (Phase 2)
+- ❌ Slack integration (Phase 2)
 - ❌ Advanced matching optimization
-- ❌ Real-time notifications (email batch only)
+- ❌ Real-time notifications (Phase 2 — MVP sends transactional email only for 5 operational events)
+- ❌ Subscriber-level notification preferences (Phase 2)
 
 ---
 
@@ -161,9 +162,10 @@
    - Auto-reject unsuitable candidates
    - Recommendation engine
 
-3. **Notifications & Alerts**
-   - Email when case assigned
-   - Email when hours pending approval
+3. **Notifications & Alerts (expanded)**
+   - MVP delivers 5 operational email events via Notification Service (ADR-010, WF-014)
+   - Phase 2 expands to remaining event types: PROFESSIONAL_APPROVED, HOURS_APPROVED, HOURS_REJECTED, CASE_ASSIGNED, HANDOVER_INITIATED, DATA_DELETION_SCHEDULED, and others
+   - Phase 2 adds subscriber-level notification preferences per user
    - Slack integration (optional)
    - SMS alerts (optional)
 
@@ -271,13 +273,14 @@
 
 ### Phase 1 (MVP)
 - Vercel (deployment)
-- Supabase (database, auth, storage)
+- Supabase (database, auth, storage, Edge Functions)
 - GitHub (version control)
+- Resend (transactional email — Notification Service, 5 MVP events)
 
 ### Phase 2
 - Potential: Slack API
 - Potential: SMS provider (Twilio)
-- Potential: Email service (SendGrid, Postmark)
+- Potential: Additional email volume scaling (Resend paid tier)
 
 ### Phase 3
 - Potential: Azure AD / SAML for SSO

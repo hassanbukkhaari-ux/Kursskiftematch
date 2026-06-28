@@ -113,6 +113,20 @@ Recruiter submits professional application (manual form or admin intake).
 
 ---
 
+## NOTIFICATION EVENTS
+
+WF-001 emits the following notification event. The workflow records the notification type and recipient — it does not specify delivery channel. Channel assignment is owned by WF-014 (Notification Dispatch, ADR-010).
+
+| Notification Type | Recipient | Trigger |
+|---|---|---|
+| `PROFESSIONAL_APPLICATION_RECEIVED` | Admin (system email) | Professional profile created with status=REGISTERED — requires Compliance Officer review and document verification |
+
+**Notes:**
+- `PROFESSIONAL_APPLICATION_RECEIVED` fires at step 1 when the recruiter creates the professional profile. It signals to the admin team that a new application is in the credential verification queue.
+- This is the only MVP notification event for WF-001. Subsequent events (`PROFESSIONAL_APPROVED`, `PROFESSIONAL_REJECTED`) are deferred to Phase 2.
+
+---
+
 ## OUTPUTS
 
 - Professional entity with status=ACTIVE (ready for assignment)

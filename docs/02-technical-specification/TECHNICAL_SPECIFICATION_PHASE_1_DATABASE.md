@@ -435,6 +435,7 @@ CREATE TABLE case_grants (
     CONSTRAINT valid_status CHECK (status IN ('PENDING', 'ACTIVE', 'ARCHIVED', 'REVOKED')),
   created_by UUID NOT NULL REFERENCES profiles(id),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  activated_at TIMESTAMPTZ,
   archived_at TIMESTAMPTZ
 );
 
@@ -475,6 +476,8 @@ CREATE TABLE session_logs (
   case_id UUID NOT NULL REFERENCES cases(id),
   professional_id UUID NOT NULL REFERENCES professionals(id),
   session_date DATE NOT NULL,
+  duration_minutes INTEGER NOT NULL,
+    CONSTRAINT valid_duration CHECK (duration_minutes >= 1),
   status TEXT NOT NULL DEFAULT 'DRAFT',
     CONSTRAINT valid_status CHECK (status IN ('DRAFT', 'FINAL', 'CORRECTED', 'ARCHIVED')),
   observations TEXT,
@@ -483,6 +486,8 @@ CREATE TABLE session_logs (
   follow_up_reason TEXT,
   safeguarding_concern_flag BOOLEAN DEFAULT FALSE,
   safeguarding_detail TEXT,
+  safeguarding_acknowledged_at TIMESTAMPTZ,
+  safeguarding_acknowledged_by UUID REFERENCES profiles(id),
   participant_names TEXT[],
   location TEXT,
   created_by UUID NOT NULL REFERENCES professionals(id),
@@ -954,9 +959,16 @@ CREATE INDEX idx_audit_events_created_at ON audit_events(created_at DESC);
 **Event Metadata Examples:**
 ```json
 CASE_CREATED: { "citizen_initials": "AB", "municipality_id": "..." }
+CASE_ACTIVATED: { "case_id": "...", "activated_by": "...", "grant_id": "..." }
 PROFESSIONAL_APPROVED: { "profession": "PEDAGOGUE", "max_complexity": "HIGH" }
+GRANT_ACTIVATED: { "grant_id": "...", "case_id": "...", "activated_by": "..." }
 HOURS_APPROVED: { "case_id": "...", "hours": 4.5, "status": "APPROVED" }
+SESSION_LOG_CREATED: { "case_id": "...", "professional_id": "...", "session_date": "..." }
+SESSION_LOG_FINALIZED: { "session_log_id": "...", "professional_id": "...", "case_id": "..." }
 SESSION_LOG_CORRECTED: { "correction_reason": "TYPO", "session_log_id": "..." }
+SESSION_LOG_CORRECTION_SUBMITTED: { "session_log_id": "...", "correction_reason": "TYPO" }
+SAFEGUARDING_CONCERN_FLAGGED: { "session_log_id": "...", "case_id": "...", "professional_id": "..." }
+SAFEGUARDING_CONCERN_ACKNOWLEDGED: { "session_log_id": "...", "acknowledged_by": "..." }
 DATA_DELETED: { "record_type": "case", "retention_years": 7 }
 ```
 

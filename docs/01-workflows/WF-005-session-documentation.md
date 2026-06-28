@@ -90,11 +90,9 @@ Professional completes a session with a citizen and navigates to "Log Session" f
 - Professional identifies an error in a FINAL session log
 - Professional cannot edit the original record (immutable)
 - Professional creates a correction via session_log_corrections:
-  - correction_type: FACTUAL_CORRECTION / OMISSION / TRANSCRIPTION_ERROR / OTHER
-  - field_corrected: which field was incorrect
-  - original_value: the incorrect content (preserved for audit)
-  - corrected_value: the replacement content
-  - correction_reason: explanation of why correction is needed (required)
+  - correction_note: human-readable description of what was corrected and how (required)
+  - correction_reason: TYPO / WRONG_TIME / CLARIFICATION / OMISSION / OTHER (required)
+- The correction record does not store original or corrected field values — this is intentional per ADR-004 (privacy-safe pattern). The correction_note provides a human-readable explanation without reproducing sensitive content.
 - Correction is appended — original FINAL record is not modified
 - session_log.status transitions: FINAL → CORRECTED
 - Event: `SESSION_LOG_CORRECTION_SUBMITTED` logged
@@ -167,20 +165,17 @@ Professional completes a session with a citizen and navigates to "Log Session" f
 - observations TEXT (encrypted), citizen_mood_tone TEXT (encrypted)
 - safeguarding_concern_flag BOOLEAN DEFAULT FALSE
 - safeguarding_detail TEXT (encrypted, nullable)
-- safeguarding_acknowledged_at TIMESTAMPTZ NULL  ← requires TS-001 amendment
-- safeguarding_acknowledged_by UUID REFERENCES profiles(id) NULL  ← requires TS-001 amendment
+- safeguarding_acknowledged_at TIMESTAMPTZ NULL
+- safeguarding_acknowledged_by UUID REFERENCES profiles(id) NULL
 - status IN ('DRAFT', 'FINAL', 'CORRECTED', 'ARCHIVED')
 - created_at TIMESTAMPTZ, updated_at TIMESTAMPTZ
 
 **session_log_corrections:**
-- session_log_id UUID REFERENCES session_logs(id)
-- professional_id UUID REFERENCES profiles(id)
-- correction_type IN ('FACTUAL_CORRECTION', 'OMISSION', 'TRANSCRIPTION_ERROR', 'OTHER')
-- field_corrected TEXT
-- original_value TEXT
-- corrected_value TEXT
-- correction_reason TEXT (required)
-- created_at TIMESTAMPTZ (immutable)
+- session_log_id UUID NOT NULL REFERENCES session_logs(id) ON DELETE CASCADE
+- correction_note TEXT NOT NULL (human-readable description of what was corrected — no sensitive content reproduced, per ADR-004)
+- correction_reason TEXT NOT NULL IN ('TYPO', 'WRONG_TIME', 'CLARIFICATION', 'OMISSION', 'OTHER')
+- created_by UUID NOT NULL REFERENCES profiles(id)
+- created_at TIMESTAMPTZ NOT NULL (immutable)
 
 ---
 
@@ -205,22 +200,14 @@ Professional completes a session with a citizen and navigates to "Log Session" f
 
 ---
 
-## TS-001 AMENDMENTS REQUIRED
+## TS-001 AMENDMENTS
 
-Before implementation the following additions must be made to `docs/02-technical-specification/TECHNICAL_SPECIFICATION_PHASE_1_DATABASE.md`:
+All required amendments have been applied to `docs/02-technical-specification/TECHNICAL_SPECIFICATION_PHASE_1_DATABASE.md`:
 
-**1. session_logs table — add two columns:**
-```sql
-safeguarding_acknowledged_at  TIMESTAMPTZ NULL,
-safeguarding_acknowledged_by  UUID        NULL REFERENCES profiles(id)
-```
-
-**2. Audit event contracts — add the following entries:**
-- `SESSION_LOG_CREATED` — metadata: case_id, professional_id, session_date
-- `SESSION_LOG_FINALIZED` — metadata: session_log_id, professional_id, case_id
-- `SESSION_LOG_CORRECTION_SUBMITTED` — metadata: session_log_id, correction_type, field_corrected
-- `SAFEGUARDING_CONCERN_FLAGGED` — metadata: session_log_id, case_id, professional_id
-- `SAFEGUARDING_CONCERN_ACKNOWLEDGED` — metadata: session_log_id, acknowledged_by
+- `session_logs.duration_minutes INTEGER NOT NULL` — added
+- `session_logs.safeguarding_acknowledged_at TIMESTAMPTZ` — added
+- `session_logs.safeguarding_acknowledged_by UUID REFERENCES profiles(id)` — added
+- Audit event contracts added: `SESSION_LOG_CREATED`, `SESSION_LOG_FINALIZED`, `SESSION_LOG_CORRECTION_SUBMITTED`, `SAFEGUARDING_CONCERN_FLAGGED`, `SAFEGUARDING_CONCERN_ACKNOWLEDGED`
 
 ---
 
@@ -233,4 +220,4 @@ safeguarding_acknowledged_by  UUID        NULL REFERENCES profiles(id)
 
 ---
 
-**This workflow is implementation-ready pending TS-001 amendments listed above. Owned by Delivery Domain. Enables WF-006 (optional session log reference in hour registration) and WF-008 (handover log transfer).**
+**This workflow is implementation-ready. Owned by Delivery Domain. Enables WF-006 (optional session log reference in hour registration) and WF-008 (handover log transfer).**

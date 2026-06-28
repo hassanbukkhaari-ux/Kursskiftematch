@@ -1972,10 +1972,10 @@ PHASE 8: Governance (depends on: all tables)
   20_create_notification_log.sql      (FK: profiles.id — ADR-010)
 
 PHASE 9: Materialized Views (depends on: all tables)
-  20_create_views.sql
+  21_create_views.sql
 
 PHASE 10: Security (depends on: all tables)
-  21_enable_rls_policies.sql
+  22_enable_rls_policies.sql
 ```
 
 ### Migration Execution Standards

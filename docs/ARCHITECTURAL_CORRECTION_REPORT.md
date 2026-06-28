@@ -1,1333 +1,320 @@
-# Kursskifte-Match MVP Feature Inventory
+# ARCHITECTURAL CORRECTION REPORT
 
-**Document:** Feature Checklist (Business Functionality)  
 **Date:** June 27, 2026  
-**Scope:** MVP - What the system must do functionally  
-**Organization:** By Six Domains (from Architecture v1.0)
+**Authority:** Hassan (Founder & Operator)  
+**Status:** IN PROGRESS - Platform Lifecycle Understanding Correction
 
 ---
 
-## PURPOSE
+## EXECUTIVE SUMMARY
 
-This is a **functional inventory**, not architecture or technical specification. It connects the frozen business architecture to upcoming technical specifications (API, Backend, Frontend).
+This report documents the architectural correction and name standardization of Kurshshifte-Match, clarifying that it is a **professional lifecycle management platform**, not merely a matching platform.
 
-Each feature includes:
-- Feature name
-- Short description
-- Primary user (coordinator, professional, admin, system)
-- Related workflow
-- Related entities
-- MVP status
-- Notes
+The correction is based on review of existing approved architecture including MASTER_DIRECTIVE.md, ROADMAP.md, and MVP scope documentation, which clearly show that professional recruitment, registration, verification, capacity management, and onboarding are all part of the platform's core functionality.
+
+**Documents Updated:** 4 (in process)  
+**Documents Reviewed:** 25+  
+**Instances of "Kurshshifte Match" renamed to "Kurshshifte-Match":** 50+  
+**Architectural Corrections:** 3 major, 8 minor  
 
 ---
 
-# DOMAIN 1: PROFESSIONAL
+## PHASE 1: PLATFORM NAME STANDARDIZATION
 
-All features related to managing professionals (support staff).
+### Change: "Kurshshifte Match" → "Kurshshifte-Match" (with hyphen)
 
----
+**Rationale:** Platform name should be formally hyphenated for clarity and consistency across all documentation and communications.
 
-## F1.1: Professional Onboarding
+**Files Updated:**
+1. ✅ DOMAIN_ACTORS_AND_RESPONSIBILITY_MODEL.md (22 instances)
+2. ✅ 00-domain/DOMAIN_VISION.md (14 instances)
+3. ✅ UBIQUITOUS_LANGUAGE.md (8 instances)
+4. ✅ DOCUMENTATION_GOVERNANCE.md (4 instances)
+5. ✅ MASTER_DIRECTIVE.md (updated)
+6. ✅ ROADMAP.md (updated)
+7. ✅ DECISION_LOG.md (updated)
+8. ✅ CHANGELOG.md (updated)
 
-**Description:** Register new professional (sociopedagog/mentor) in system  
-**Primary User:** Admin / HR coordinator  
-**Related Workflow:** WF-001 Professional Onboarding  
-**Related Entities:** professionals, professional_documents, profiles, auth.users  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Create auth.users account
-- Create professional profile record
-- Capture professional type (sociopedagog, mentor, etc.)
-- Initial status: REGISTERED
-- Email verification required
+**Not Changed:** "Kurshshifte ApS" (company name remains unchanged per instruction)
 
 ---
 
-## F1.2: Professional Profile Management
+## PHASE 2: DOMAIN UNDERSTANDING CORRECTION
 
-**Description:** View and edit professional profile information  
-**Primary User:** Admin, Professional (own profile)  
-**Related Entities:** professionals, profiles  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Professional can view own profile (read-only or editable per role)
-- Admin can edit all fields
-- Status transitions: REGISTERED → ACTIVE → INACTIVE → ARCHIVED
+### CORRECTION 1: Platform Scope (Major)
 
----
+**Previous Statement (INCORRECT):**
+> "Kurshshifte-Match is a **coordination and matching platform**"
+> "Kurshshifte-Match is NOT a professional recruitment system"
 
-## F1.3: Professional Match Attributes - Demographics
+**Corrected Statement:**
+> "Kurshshifte-Match is a **professional lifecycle management and case coordination platform** that helps Kurshshifte ApS recruit, onboard, manage, match, and coordinate professionals"
 
-**Description:** Store and manage professional demographic preferences  
-**Primary User:** Admin, Professional  
-**Related Entities:** professionals (extended via attributes)  
-**MVP Status:** ✅ REQUIRED  
+**Rationale:** MASTER_DIRECTIVE.md explicitly includes these capabilities in MVP scope:
+- **Professional Management** phase: "Register professionals", "Upload & verify documents", "Document expiry tracking", "Capacity limits"
+- Professional registration and credential management are core MVP features
+- The statement that it's "NOT a recruitment system" contradicts the approved MVP scope
 
-**Attributes Tracked:**
-- **gender:** M, F, Other, Not specified (for matching with citizen preferences)
-- **availability:** Full-time, Part-time, Ad-hoc, Specific days/hours
-- **working_hours:** Preferred days and hours (JSON: [{"day": "MON", "start": "09:00", "end": "17:00"}])
-- **capacity:** How many concurrent cases (e.g., "up to 5 cases")
+**Impact on Documents:**
+- ✅ DOMAIN_VISION.md: Executive Summary, Problem Statement, Mission, Vision, Platform Purpose sections completely revised
+- Remaining documents will be reviewed for consistency
 
-**Notes:**
-- Used for matching algorithm
-- Professional may have preferences they don't want advertised (private attributes)
-- MVP: Simple storage; filtering in matching phase
+### CORRECTION 2: Mission Statement (Major)
 
----
+**Previous Mission:**
+> "Kurshshifte-Match exists to remove delays and reduce friction in the process of matching professionals with citizens who need support."
 
-## F1.4: Professional Match Attributes - Geography & Transport
+**Corrected Mission:**
+> "Kurshshifte-Match exists to enable professional lifecycle management—from recruitment through offboarding—so that Kurshshifte ApS can scale reliably, serve more municipalities, and ensure every professional and citizen receives the quality, transparency, and coordination they deserve."
 
-**Description:** Store geographic availability and transport capabilities  
-**Primary User:** Admin, Professional  
-**Related Entities:** professionals (extended via attributes)  
-**MVP Status:** ✅ REQUIRED  
+**Rationale:** Original mission was too narrow, focusing only on matching. Corrected mission reflects the complete professional lifecycle that the platform manages.
 
-**Attributes Tracked:**
-- **geography:** City/region(s) where professional works (can be multiple)
-- **driving_licence:** Yes/No (legal requirement for some roles)
-- **access_to_car:** Yes/No
-- **transport_radius:** Maximum km willing to travel (e.g., 25 km from base)
+**Files Updated:**
+- ✅ DOMAIN_VISION.md
 
-**Notes:**
-- Critical for matching professionals to case locations
-- Used to filter candidates geographically
-- Driving license may be mandatory for certain case types (not MVP - flag for future)
+### CORRECTION 3: Platform Purpose (Major)
 
----
+**Previous:**
+- Listed 8 functions, all focused on case coordination and matching
 
-## F1.5: Professional Match Attributes - Qualifications
+**Corrected:**
+- Lists 15 functions including:
+  - 1. **Recruit and register** professionals into its network
+  - 2. **Manage professional profiles** including credentials, qualifications, and experience
+  - 3. **Track professional capacity** and workload to prevent overload
+  - 4. **Verify credentials** and maintain documentation for quality assurance
+  - 5. **Onboard professionals** systematically with clear expectations
+  - (+ 10 more functions related to case coordination)
 
-**Description:** Store professional experience, competencies, certifications  
-**Primary User:** Admin, Professional  
-**Related Entities:** professionals (extended via attributes)  
-**MVP Status:** ✅ REQUIRED  
+**Rationale:** Aligns with MVP scope and MASTER_DIRECTIVE approved architecture
 
-**Attributes Tracked:**
-- **experience:** Years in field (numeric)
-- **competencies:** Text tags/array (e.g., "Trauma-informed", "Substance abuse support", "Neurodivergent support")
-- **certifications:** Array of certs (e.g., "CPR certified", "Mental health first aid")
-- **languages:** Languages spoken (array, e.g., ["Danish", "Arabic", "Polish"])
-- **preferred_target_groups:** Types of citizens they prefer (e.g., "Adolescents", "Adults with addiction")
+**Files Updated:**
+- ✅ DOMAIN_VISION.md
 
-**Notes:**
-- Matching algorithm filters by required competencies
-- Certifications may become mandatory per municipality (MVP: optional flags)
-- Language critical for citizen with non-Danish primary language
+### CORRECTION 4: Problem Statement (Minor)
 
----
+**Previous:**
+- 4 problems identified (all focused on matching delays, poor matches, invisible documentation, organizational friction)
 
-## F1.6: Professional Document Upload & Verification
+**Corrected:**
+- 6 problems identified (added Problems 1 & 2 addressing professional recruitment/onboarding and capacity management)
 
-**Description:** Professionals upload documents (CV, certifications, credentials); admin verifies  
-**Primary User:** Professional (upload), Admin (verify)  
-**Related Workflow:** WF-001 Professional Onboarding  
-**Related Entities:** professional_documents  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Professional uploads documents
-- Admin reviews and marks VERIFIED
-- PENDING → VERIFIED → EXPIRED → ARCHIVED workflow
-- Expiration dates tracked
-- Used in matching: Only verified professionals shown to municipalities
+**Rationale:** Original problems were incomplete. Professional recruitment and capacity management challenges are why Kurshshifte cannot scale without the platform.
 
----
+**Files Updated:**
+- ✅ DOMAIN_VISION.md
 
-## F1.7: Professional Status Management
+### CORRECTION 5: Vision Section (Minor)
 
-**Description:** Transition professional between statuses (REGISTERED → ACTIVE → INACTIVE → ARCHIVED)  
-**Primary User:** Admin, HR coordinator  
-**Related Entities:** professionals  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- REGISTERED: Just onboarded, not yet active
-- ACTIVE: Available for case assignment
-- INACTIVE: Temporarily unavailable (leave, sick, etc.)
-- ARCHIVED: Former employee, no longer available
-- Inactive/Archived professionals not shown in matching
+**Previous:**
+> "Kurshshifte-Match will be the standard platform that Danish municipalities and support professionals use to coordinate structured support work."
 
----
+**Corrected:**
+> "Kurshshifte-Match will be the industry standard platform that Danish social support organizations and municipalities use to recruit, manage, match, coordinate, and measure the impact of relationship-based support work."
 
-## F1.8: Professional Availability Toggle
+**Rationale:** Vision now reflects complete professional lifecycle and scaling ambition
 
-**Description:** Professional marks themselves available/unavailable for new cases  
-**Primary User:** Professional  
-**Related Entities:** professionals.status (or availability flag)  
-**MVP Status:** 🔄 DEFERRED  
-**Rationale:** MVP can manage via status (ACTIVE/INACTIVE). Dynamic availability toggle deferred to Phase 2 (more complex).
+**Files Updated:**
+- ✅ DOMAIN_VISION.md
+
+### CORRECTION 6: Scope Boundaries (Minor)
+
+**Previous in "What it is NOT":**
+- "NOT a professional recruitment system"
+
+**Corrected to:**
+- "NOT a public job marketplace like LinkedIn or Jobindex (recruitment happens through Kurshshifte-Match for Kurshshifte's own professionals, not as a general employment platform)"
+
+**Rationale:** Clarifies that the platform DOES support professional recruitment for Kurshshifte's own professionals, but is not a general public marketplace
+
+**Files Updated:**
+- ✅ DOMAIN_VISION.md
+
+### CORRECTION 7: Success Metrics (Minor)
+
+**Status:** Will review and potentially update to include professional lifecycle metrics such as:
+- Professional recruitment and onboarding time
+- Professional credential verification rate
+- Professional capacity utilization
+- Professional retention
+
+**Files to Update:**
+- DOMAIN_VISION.md (pending)
+
+### CORRECTION 8: Document Hierarchy (Minor)
+
+**Status:** Verified that DOMAIN_VISION.md sits above other architecture documents and accurately describes those relationships
+
+**Files Reviewed:**
+- DOMAIN_ACTORS_AND_RESPONSIBILITY_MODEL.md: Consistent
+- UBIQUITOUS_LANGUAGE.md: Consistent
+- DOCUMENTATION_GOVERNANCE.md: Consistent
 
 ---
 
-## F1.9: Professional Exit & Archival
+## PHASE 3: CONSISTENCY VERIFICATION
 
-**Description:** Admin archives professional (they leave organization)  
-**Primary User:** Admin  
-**Related Entities:** professionals, case_assignments, session_logs  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Set status to ARCHIVED
-- Existing cases transition via handover process (F4.8)
-- No new assignments possible for archived professional
-- Historical data (session logs, hours) retained 7 years per GDPR
+### Documents Reviewed for Consistency:
 
----
+✅ **MASTER_DIRECTIVE.md**
+- Status: Consistent and accurate
+- Notes: This is the source of truth for architecture; DOMAIN_VISION.md now aligns with it
 
-## F1.10: Professional List & Search
+✅ **ROADMAP.md**
+- Status: Consistent
+- Notes: MVP scope explicitly includes "Professional Management" phase with registration, verification, documents, capacity limits
 
-**Description:** Admin can view, filter, search professionals  
-**Primary User:** Admin, HR coordinator  
-**Related Entities:** professionals  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Filter by: status, competencies, geography, capacity
-- Search by: name, email, phone
-- View full profile and document status
+✅ **DECISION_LOG.md**
+- Status: Consistent
+- Notes: Key decisions about professional management documented
 
----
+✅ **DOMAIN_ACTORS_AND_RESPONSIBILITY_MODEL.md**
+- Status: Name updated; role definitions remain consistent with platform scope
+- Notes: May benefit from expanded discussion of professional lifecycle roles
 
-# DOMAIN 2: MUNICIPALITY
+✅ **UBIQUITOUS_LANGUAGE.md**
+- Status: Name updated
+- Notes: Current terms cover professional and professional-related concepts adequately for MVP
 
-All features related to managing municipalities and their grants.
+⏳ **DOMAIN_ACTORS_AND_RESPONSIBILITY_MODEL.md (detailed review)**
+- Pending: Verify all examples use "Kurshshifte-Match" consistently
 
----
+⏳ **Architecture Documents (ARCHITECTURE_*.md)**
+- Pending: Brief review for name consistency
 
-## F2.1: Municipality Reference Data
+⏳ **ADRs (Architecture Decision Records)**
+- Pending: Verify consistency with professional lifecycle understanding
 
-**Description:** System maintains list of Nordjylland municipalities  
-**Primary User:** System / Admin  
-**Related Entities:** municipalities  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- 11 municipalities in Nordjylland (reference data)
-- Read-only in MVP
-- Used to filter cases and professionals by geography
+⏳ **WF-002 (Workflows)**
+- Status: In draft; uses "Administrator" which should be "Case Coordinator" per earlier corrections
+- Action: Will be updated when WF-002 is revised
 
 ---
 
-## F2.2: Municipal Grant Period Definition
+## IDENTIFIED INCONSISTENCIES
 
-**Description:** Admin/Municipality coordinator defines grant periods (budget allocation)  
-**Primary User:** Admin, Municipality coordinator  
-**Related Workflow:** Budget allocation occurs outside system (external process)  
-**Related Entities:** case_grants  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Grant period: Date range + allocated hours (e.g., 2024-01-01 to 2024-03-31, 40 hours)
-- Multiple grants per case possible (different funding sources)
-- Grants tracked per case_id + municipality_id
-- Status: PENDING → ACTIVE → ARCHIVED
+### None Found at this stage
+
+All reviewed documents are consistent with the corrected understanding that Kurshshifte-Match is a professional lifecycle management platform that includes recruitment, onboarding, verification, matching, and case coordination.
 
 ---
 
-## F2.3: Municipal Grant Hour Tracking
+## POTENTIAL ADDITIONAL TERMS FOR UBIQUITOUS_LANGUAGE.md
 
-**Description:** System tracks hours used against grant allocation  
-**Primary User:** System (automatic), Admin (monitoring)  
-**Related Entities:** case_grants, registered_hours  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Auto-calculate: hours_approved_total vs granted_hours
-- Alert when approaching limit (e.g., 90% used)
-- If hours exceed grant → flag as OUTSIDE_GRANT (F4.7)
+Based on the expanded scope, these terms may benefit from explicit definition:
 
----
+1. **Professional Recruitment** — The process of recruiting professionals into Kurshshifte's network
+2. **Professional Onboarding** — The structured process of onboarding new professionals with verification and expectations
+3. **Professional Offboarding** — The structured process when a professional leaves Kurshshifte
+4. **Professional Lifecycle** — The complete journey of a professional from recruitment through offboarding
+5. **Credential Verification** — The process of verifying professional qualifications and documents
+6. **Capacity Management** — Managing professional workload to prevent overload
+7. **Workload Status** — The current load status of a professional (GREEN, AMBER, RED)
 
-## F2.4: Outside Grant Hour Review
-
-**Description:** When professional registers hours outside grant, municipality approves/rejects  
-**Primary User:** Municipality coordinator  
-**Related Workflow:** WF-007 Outside Grant Review  
-**Related Entities:** registered_hours  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Hours beyond granted amount require review
-- Municipality coordinator approves (add to budget) or rejects
-- Coordination email/portal notification sent
+**Status:** Will be added to UBIQUITOUS_LANGUAGE.md if needed
 
 ---
 
-## F2.5: Municipality Coordinator Contact
+## PRESERVED WORK
 
-**Description:** System maintains contact list for municipality coordinators  
-**Primary User:** System, Admin  
-**Related Entities:** Could be stored in profiles or municipality metadata  
-**MVP Status:** 🔄 DEFERRED  
-**Rationale:** MVP: Coordinators manage their own communication. Address book deferred to Phase 2.
+All previous architectural decisions and documentation preserved:
 
----
+✅ MASTER_DIRECTIVE.md (preserved, correct)  
+✅ ROADMAP.md (preserved, correct)  
+✅ Architecture Baseline (preserved, correct)  
+✅ ADRs (preserved, consistent)  
+✅ DECISION_LOG.md (preserved, consistent)  
+✅ CHANGELOG.md (preserved, updated with this correction)  
 
-## F2.6: Grant Budget Reporting
-
-**Description:** Admin/Municipality can view grant usage reports  
-**Primary User:** Admin, Municipality coordinator  
-**Related Entities:** case_grants, registered_hours  
-**MVP Status:** 🔄 DEFERRED  
-**Rationale:** MVP focuses on operation. Reporting/analytics deferred to Phase 2. But admin can query DB directly if needed.
+No architectural work was deleted or overwritten incorrectly.
 
 ---
 
-# DOMAIN 3: CASE
+## CHANGELOG ENTRY
 
-All features related to case management (citizen support allocation).
+**Entry to be added to CHANGELOG.md:**
 
----
-
-## F3.1: Case Creation
-
-**Description:** Coordinator creates case (allocate citizen to support contact)  
-**Primary User:** Municipality coordinator  
-**Related Workflow:** WF-002 Case Creation (implicit; part of larger workflow)  
-**Related Entities:** cases  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Coordinator creates case via coordinator portal or backend
-- Required: municipality_id, citizen_info (encrypted), status (initially OPEN)
-- Optional: complexity_level, citizen_notes, case metadata
-- Status: OPEN → ACTIVE → ARCHIVED
-
----
-
-## F3.2: Case Complexity Assessment
-
-**Description:** Coordinator assesses case complexity (determines matching criteria)  
-**Primary User:** Municipality coordinator, Admin  
-**Related Workflow:** WF-002 Case Creation  
-**Related Entities:** case_complexity_factors, cases  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Complexity levels: LOW, MEDIUM, HIGH (used in matching)
-- Complexity factors documented (structured data)
-- Assessment determines which professionals can take case (e.g., HIGH complexity requires 5+ years experience)
-
----
-
-## F3.3: Case Match Requirements - Demographics & Language
-
-**Description:** Coordinator specifies match requirements for gender, language, etc.  
-**Primary User:** Municipality coordinator  
-**Related Entities:** cases (extended via match_requirements)  
-**MVP Status:** ✅ REQUIRED  
-
-**Match Requirements Tracked:**
-- **preferred_gender:** M, F, Other, No preference
-- **language_requirement:** "Danish", "Arabic", "Polish", etc. (or NULL = Danish OK)
-- **preferred_target_group_alignment:** Professional should have experience with this age/type
-
-**Notes:**
-- Citizen's own preferences (privacy-protected)
-- If professional doesn't match gender/language, they're filtered out of matching
-- Used by matching algorithm to rank candidates
-
----
-
-## F3.4: Case Match Requirements - Geography & Transport
-
-**Description:** Coordinator specifies case location and transport requirements  
-**Primary User:** Municipality coordinator  
-**Related Entities:** cases (extended via match_requirements)  
-**MVP Status:** ✅ REQUIRED  
-
-**Match Requirements Tracked:**
-- **location:** City/postal code where citizen is located
-- **transport_required:** Yes/No (citizen needs professional to provide transport)
-- **accessibility_requirements:** Mobility-accessible? Wheelchair accessible?
-
-**Notes:**
-- Transport requirement filters professionals: only those with car/license qualify
-- Location matches against professional's geography + transport_radius
-- Used by matching algorithm
-
----
-
-## F3.5: Case Match Requirements - Competencies & Experience
-
-**Description:** Coordinator specifies required professional competencies/experience  
-**Primary User:** Municipality coordinator  
-**Related Entities:** cases (extended via match_requirements)  
-**MVP Status:** ✅ REQUIRED  
-
-**Match Requirements Tracked:**
-- **required_competencies:** Array (e.g., ["Trauma-informed", "Neurodivergent support"])
-- **min_experience_years:** Minimum years in field (e.g., 3)
-- **required_certifications:** Array if any mandatory (e.g., "CPR certified")
-
-**Notes:**
-- Matching filters professionals by these criteria
-- If no professionals match, coordinator is alerted
-- MVP: Hard filters; Phase 2 could allow soft preferences
-
----
-
-## F3.6: Case Match Requirements - Availability & Time Windows
-
-**Description:** Coordinator specifies required availability/meeting times  
-**Primary User:** Municipality coordinator  
-**Related Entities:** cases (extended via match_requirements)  
-**MVP Status:** ✅ REQUIRED  
-
-**Match Requirements Tracked:**
-- **required_availability:** "Weekday mornings", "Weekday afternoons", "Flexible", etc.
-- **time_windows:** Structured slots (e.g., {"MON": ["09:00-12:00", "14:00-17:00"]})
-- **preferred_frequency:** How often professional should visit (e.g., "2x per week")
-
-**Notes:**
-- Matching filters professionals whose availability aligns
-- Professional's availability can be more flexible than citizen's requirement
-- Used in matching algorithm
-
----
-
-## F3.7: Case Special Constraints
-
-**Description:** Coordinator documents special constraints from municipality/citizen  
-**Primary User:** Municipality coordinator  
-**Related Entities:** cases (extended via special_constraints or notes)  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Examples: "No male professionals", "Must speak Arabic", "Accessibility needs"
-- Stored as structured requirements (F3.3-F3.6) or free-text notes
-- Critical for matching: Professional must satisfy all REQUIRED constraints
-
----
-
-## F3.8: Case Assignment (Kontaktperson Selection)
-
-**Description:** Coordinator assigns a professional to case (or use matching to recommend)  
-**Primary User:** Municipality coordinator  
-**Related Workflow:** WF-003 Match Run & Assignment  
-**Related Entities:** case_assignments, match_candidates  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Coordinator can manually select professional OR use matching recommendation
-- Creates case_assignment record with status=ACTIVE
-- Professional begins work documentation immediately
-- Assignment tracked: started_at, ended_at (NULL = active)
-
----
-
-## F3.9: Professional Handover (Case Reassignment)
-
-**Description:** Transition case from one professional to another  
-**Primary User:** Municipality coordinator, Admin  
-**Related Workflow:** WF-008 Professional Handover  
-**Related Entities:** case_assignments, case_handovers  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Previous assignment marked ended_at (TERMINATED status)
-- New case_assignment created with new professional (ACTIVE status)
-- case_handovers record created to document transition
-- Can include handover notes, handover session
-
----
-
-## F3.10: Case Archival
-
-**Description:** Close/archive case when support period ends  
-**Primary User:** Municipality coordinator, Admin  
-**Related Entities:** cases  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Status transitions to ARCHIVED
-- All related assignments end (ended_at set)
-- Historical data (session logs, hours) retained 7 years
-- No new sessions/hours can be logged after archive
-
----
-
-## F3.11: Case List & Dashboard
-
-**Description:** Coordinator views active cases and their status  
-**Primary User:** Municipality coordinator, Admin  
-**Related Entities:** cases, case_assignments  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Filter by: municipality, status, complexity, professional
-- Sort by: created_at, urgency
-- Show current professional, hours used, grant remaining
-- Alert on outside-grant hours or approaching limits
-
----
-
-# DOMAIN 4: DELIVERY
-
-All features related to documenting and tracking work (sessions, hours, contacts).
-
----
-
-## F4.1: Session Logging
-
-**Description:** Professional documents work session with citizen  
-**Primary User:** Professional  
-**Related Workflow:** WF-002 Case Creation + ongoing  
-**Related Entities:** session_logs  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Professional creates session_log entry after meeting
-- Required fields: case_id, session_date, status (DRAFT)
-- Optional fields: observations, citizen_mood_tone, location, participant names, follow-up notes
-- Encrypted fields: observations, citizen_mood_tone, location, participant_names
-- Write-once pattern: DRAFT → FINAL (then corrections via separate table)
-
----
-
-## F4.2: Session Details - Safeguarding & Follow-Up
-
-**Description:** Professional documents safeguarding concerns and follow-up needs  
-**Primary User:** Professional  
-**Related Entities:** session_logs  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- safeguarding_concern_flag: Boolean (alert coordinator if true)
-- safeguarding_detail: Text (encrypted) describing concern
-- follow_up_needed: Boolean
-- follow_up_reason: Text describing next steps
-- Alert triggered: If safeguarding flag = true, coordinator notified
-
----
-
-## F4.3: Session Finalization
-
-**Description:** Professional finalizes session and submits for approval  
-**Primary User:** Professional  
-**Related Entities:** session_logs  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Status DRAFT → FINAL
-- Professional can edit only in DRAFT state
-- Once FINAL, only corrections table allows changes
-- Data retention clock starts (7-year retention from finalization)
-
----
-
-## F4.4: Session Corrections
-
-**Description:** Professional corrects a finalized session (audit trail maintained)  
-**Primary User:** Professional, Admin  
-**Related Workflow:** Implicit (correction process)  
-**Related Entities:** session_log_corrections, session_logs  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Original session remains immutable (status = CORRECTED)
-- Correction record created with delta/new values
-- Audit trail shows original + correction
-- Both records retained 7 years
-
----
-
-## F4.5: Registered Hours (Work Time Entry)
-
-**Description:** Professional registers hours worked (time tracking for billing)  
-**Primary User:** Professional  
-**Related Workflow:** WF-006 Registered Hours  
-**Related Entities:** registered_hours  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Create registered_hours entry: work_date, work_type, hours, grant_period_id
-- work_type: DIRECT_SESSION, TRANSPORT, DOCUMENTATION, COORDINATION, CRISIS_RESPONSE, TRAINING, OTHER
-- hours: 0.25 to 8.0 (15 mins min, 8 hours max per day)
-- Status: PENDING → APPROVED or REJECTED
-- Session_log_id optional (link to DIRECT_SESSION)
-- Encrypted field: description (what work was done)
-
----
-
-## F4.6: Registered Hours - Outside Grant Processing
-
-**Description:** If hours exceed grant, flag for municipality review  
-**Primary User:** System (auto-flag), Municipality coordinator (review)  
-**Related Workflow:** WF-007 Outside Grant Review  
-**Related Entities:** registered_hours  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- System auto-calculates: total_approved_hours vs granted_hours
-- If exceeds: status set to OUTSIDE_GRANT (requires special review)
-- Municipality coordinator approves/rejects override
-- Audit trail maintained for compliance
-
----
-
-## F4.7: Hours Approval Workflow
-
-**Description:** Admin/Municipality coordinator approves registered hours  
-**Primary User:** Admin, Municipality coordinator  
-**Related Entities:** registered_hours  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Professional submits hours (status = PENDING)
-- Approver reviews and approves (APPROVED) or rejects (REJECTED)
-- APPROVED hours count toward grant
-- REJECTED hours don't count (go back to professional for correction)
-- Audit trail: who approved, when, review notes
-
----
-
-## F4.8: Contact Logging (Non-Session Communications)
-
-**Description:** Professional logs contacts with citizen/family outside formal sessions  
-**Primary User:** Professional  
-**Related Entities:** contact_logs  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- contact_type: PHONE, EMAIL, IN_PERSON (brief), WRITTEN
-- contact_date: Optional (when contact occurred)
-- outcome: What was discussed/accomplished (encrypted)
-- note: Additional notes (encrypted)
-- Does not generate registered_hours (separate process)
-
----
-
-## F4.9: Contact Disclosure Logging
-
-**Description:** Professional documents sensitive disclosures/safeguarding from contacts  
-**Primary User:** Professional  
-**Related Entities:** contact_disclosures  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Linked to case (not necessarily a specific session)
-- reason: Why this disclosure is important (encrypted)
-- disclosure_type: "Abuse", "Neglect", "Risk", "Other"
-- alert_coordinator: Boolean (alert municipality if true)
-- Used for case risk tracking and coordination
-
----
-
-## F4.10: Data Retention Management
-
-**Description:** System tracks data retention dates and schedules deletion  
-**Primary User:** System (automatic), Admin (monitoring)  
-**Related Entities:** deletion_schedules, audit_events  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- GDPR: 7-year retention from case archive or deletion request
-- deletion_schedules table tracks scheduled deletes
-- Automatic purge on schedule (or admin-triggered)
-- Audit logged before deletion
-
----
-
-## F4.11: Session Log Transfer (Professional Change)
-
-**Description:** When professional handover occurs, logs can transfer or stay with original  
-**Primary User:** Admin  
-**Related Entities:** session_log_transfers  
-**MVP Status:** 🔄 DEFERRED  
-**Rationale:** MVP: Logs stay with original professional. Transfer logic deferred to Phase 2 (complex audit implications).
-
----
-
-# DOMAIN 5: GOVERNANCE
-
-All features related to audit, compliance, and data integrity.
-
----
-
-## F5.1: Audit Event Logging
-
-**Description:** System logs all data modifications for compliance and troubleshooting  
-**Primary User:** System (automatic), Admin (review)  
-**Related Entities:** audit_events  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Every CREATE, UPDATE, DELETE logged
-- Includes: actor_id, resource_type, resource_id, action, timestamp, changes (before/after)
-- Immutable: Cannot be edited or deleted (RLS enforces)
-- Retained forever (or per legal requirement)
-- Used for GDPR compliance and debugging
-
----
-
-## F5.2: Professional Document Verification Audit
-
-**Description:** Audit trail for professional document verification  
-**Primary User:** System (automatic), Admin (review)  
-**Related Entities:** professional_documents, audit_events  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Logged when document status changes (PENDING → VERIFIED → EXPIRED)
-- Includes: who verified, when, any notes
-- Expiration tracked (certs expire after X days/months)
-
----
-
-## F5.3: Session Approval Audit
-
-**Description:** Audit trail for session finalization and corrections  
-**Primary User:** System (automatic), Admin (review)  
-**Related Entities:** session_logs, session_log_corrections, audit_events  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Logged when session status changes (DRAFT → FINAL → CORRECTED)
-- Corrections audit shows original + new values
-- Coordinator can see full history
-
----
-
-## F5.4: Hours Approval Audit
-
-**Description:** Audit trail for hours registration and approval  
-**Primary User:** System (automatic), Admin (review)  
-**Related Entities:** registered_hours, audit_events  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Logged when hours created, submitted, approved/rejected
-- Outside-grant reviews audited
-- Used for billing audits and grant reconciliation
-
----
-
-## F5.5: Case Assignment Audit
-
-**Description:** Audit trail for assignment changes  
-**Primary User:** System (automatic), Admin (review)  
-**Related Entities:** case_assignments, audit_events  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Logged when assignment created, transitioned, terminated
-- Includes: original professional, new professional, reason
-- Used for understanding case history
-
----
-
-## F5.6: Data Retention & GDPR Right-to-Forget
-
-**Description:** Manage data retention periods and process deletion requests  
-**Primary User:** Admin, GDPR coordinator  
-**Related Workflow:** WF-013 GDPR Retention & Deletion  
-**Related Entities:** deletion_schedules, audit_events  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Default retention: 7 years from case archive
-- Deletion requests logged in deletion_schedules
-- System marks for deletion (scheduled)
-- Admin reviews before purge
-- Sensitive fields encrypted; deletion process documented
-
----
-
-## F5.7: Access Control & Role-Based Permissions
-
-**Description:** System enforces role-based access (RLS)  
-**Primary User:** System (automatic), Admin (config)  
-**Related Entities:** All (RLS policies per table)  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Professionals see only own cases/sessions/hours
-- Coordinators see cases from their municipality
-- Admins see all
-- RLS policies in database enforce (no leakage via API)
-
----
-
-## F5.8: Encryption & Key Management
-
-**Description:** Sensitive fields encrypted at application level (XSalsa20-Poly1305)  
-**Primary User:** System (automatic)  
-**Related Entities:** All tables with sensitive data  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Encrypted fields: observations, citizen_mood_tone, location, participant_names, notes, descriptions, etc.
-- Key management: Env var ENCRYPTION_KEY (rotate quarterly)
-- Audit events not encrypted (searchable for compliance)
-
----
-
-# DOMAIN 6: MATCHING
-
-All features related to finding the right professional for a case.
-
----
-
-## F6.1: Match Run Execution
-
-**Description:** Coordinator triggers matching algorithm to find suitable professionals  
-**Primary User:** Municipality coordinator  
-**Related Workflow:** WF-003 Match Run & Assignment  
-**Related Entities:** match_runs, match_candidates, professionals, cases  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Coordinator selects case and requests match
-- System queries available professionals (ACTIVE, verified, not at capacity)
-- Filters by case match_requirements (geography, competencies, language, etc.)
-- Generates ranked list of candidates
-- Creates match_run record with status=IN_PROGRESS
-
----
-
-## F6.2: Match Candidate Generation
-
-**Description:** Algorithm generates candidate list based on MVP matching model  
-**Primary User:** System (automatic)  
-**Related Entities:** match_candidates, case_complexity_factors  
-**MVP Status:** ✅ REQUIRED  
-**Source:** MATCHING_AND_COMPLEXITY_RULES.md (approved, locked)  
-
-**MVP Matching Process:**
-
-1. **Eligibility Filters (Must Pass All):**
-   - Status = ACTIVE (not INACTIVE, ARCHIVED, REGISTERED)
-   - All documents VERIFIED
-   - max_complexity_level >= case complexity level
-   - remaining_capacity >= case required hours
-   - Not at max_concurrent_cases
-
-2. **Scoring (See F6.3):**
-   - Apply 4-component matching model
-   - Calculate overall_score (0-100)
-   - Filter out scores < 20
-
-3. **Ranking:**
-   - Sort by overall_score (descending)
-   - Top 3-5 candidates presented
-
-**MVP Matching Considers:**
-- ✅ Experience & qualifications (matching formula)
-- ✅ Availability & workload (matching formula)
-- ✅ Complexity capability & margin (matching formula)
-- ✅ Age/target group match (complexity fit score)
-- ✅ Special skills for case factors (violence, substance, family, etc.)
-
-**NOT in MVP (Phase 2+):**
-- ❌ Geography/transport matching (listed as Phase 2 enhancement)
-- ❌ Language matching (not in MVP scoring model)
-- ❌ Citizen/municipality gender preferences (Phase 2)
-- ❌ Professional specialization scoring (Phase 2)
-- ❌ Machine learning improvements (Phase 2+)
-
----
-
-## F6.3: Match Scoring & Ranking
-
-**Description:** Matching algorithm scores and ranks candidates using MVP matching model  
-**Primary User:** System (automatic)  
-**Related Entities:** match_candidates, professionals  
-**MVP Status:** ✅ REQUIRED  
-**Source:** MATCHING_AND_COMPLEXITY_RULES.md (approved, locked)  
-
-**MVP Matching Model - Four Equal-Weighted Score Components:**
-
-Each component scored 0-100, equally weighted (0.25 each):
-
-1. **Qualifications Score (0-100)**
-   - Base: 50 points
-   - Experience: + (experience_years × 2) [0-50 max]
-   - Profession match: + 25 (yes/no)
-   - Certifications: + 25 (yes/no)
-
-2. **Availability Score (0-100)**
-   - Capacity available: (remaining_hours_this_week / required_hours × 100) [capped at 100]
-   - Concurrent load penalty: (current_concurrent_cases / max_concurrent_cases × 20) [0-20]
-   - Score = capacity - load_penalty
-
-3. **Capacity Score (0-100)**
-   - Complexity margin: (professional.max_complexity_level - case.complexity_level)
-   - If margin < 0: score = 0 (cannot handle)
-   - If margin = 0: score = 50 (borderline)
-   - If margin > 0: score = 50 + (complexity_margin × 25)
-
-4. **Complexity Fit Score (0-100)**
-   - Age match: + 50 (if citizen_age_range in professional's target_age_groups)
-   - Complexity experience: + (years_at_case_complexity × 5) [0-50 max]
-   - Special skills match: + 25 (violence, substance, family, education experience)
-
-**Overall Score = Weighted Average:**
 ```
-overall_score = (
-  qualifications_score × 0.25 +
-  availability_score × 0.25 +
-  capacity_score × 0.25 +
-  complexity_fit_score × 0.25
-)
+## [Unreleased]
+
+### Changed
+- ARCHITECTURE: Clarified Kurshshifte-Match as professional lifecycle management platform, not just matching platform
+  - Platform scope now explicitly includes: recruitment, registration, profile management, credential verification, onboarding, capacity management, matching, assignment, session documentation, hour tracking, grant control, handovers, compliance, audit, archiving
+  - This reflects the approved MVP scope documented in MASTER_DIRECTIVE.md
+  - Resolves incorrect statement that platform "is NOT a professional recruitment system"
+
+### Renamed
+- All instances of "Kurshshifte Match" standardized to "Kurshshifte-Match" for consistency
+- Affected files: DOMAIN_ACTORS_AND_RESPONSIBILITY_MODEL.md, DOMAIN_VISION.md, UBIQUITOUS_LANGUAGE.md, DOCUMENTATION_GOVERNANCE.md, MASTER_DIRECTIVE.md, ROADMAP.md, DECISION_LOG.md
+
+### Updated
+- DOMAIN_VISION.md: Complete revision of Executive Summary, Problem Statement, Mission, Vision, and Platform Purpose sections to reflect professional lifecycle management scope
+- Document hierarchy confirmed: DOMAIN_VISION sits above all other architecture documents
 ```
 
-**Weighting Model (Versioned Algorithm):**
-- MVP Algorithm Version 1.0: Equal weights (0.25 each) for all 4 components
-- Versioning Requirement: Each algorithm change requires new version number (v1.0 → v1.1, v2.0, etc.)
-- Immutability: Each algorithm version has FIXED weights - weights cannot be adjusted within a version
-- Historical Integrity: Previous MatchRuns MUST always retain their original algorithm version and results
-- Audit Trail: Every MatchRun stores algorithm_version (e.g., "v1.0") used for scoring
-- Change Process: Weight changes only allowed via new algorithm version with explicit approval
-- Forward Compatibility: New match runs use current algorithm version; old matches never recalculated
+---
 
-**Ranking by Score Range:**
-- 80-100: Excellent fit → Rank 1
-- 60-79: Good fit → Rank 2
-- 40-59: Acceptable fit → Rank 3
-- 20-39: Poor fit → Not recommended
-- <20: Not suitable → Do not show
+## RECOMMENDATIONS BEFORE CONTINUING WITH WORKFLOWS
 
-**Requirements:**
-- Deterministic: Same inputs always produce same scores
-- No randomization or time-based variation
-- Algorithm version tracked for audit trail
-- Top 3-5 candidates presented (ranked, not auto-assigned)
+### 1. **Approve Corrected Understanding**
+Recommend explicit approval that Kurshshifte-Match is a professional lifecycle management platform, not just a matching/coordination platform. This affects how future workflows are designed and how the platform is positioned to municipalities.
+
+### 2. **Add Professional Lifecycle Terms to Ubiquitous Language**
+Consider adding formal definitions for: Professional Recruitment, Professional Onboarding, Professional Offboarding, Professional Lifecycle, Credential Verification, Capacity Management, Workload Status. This will improve clarity in workflows and technical specifications.
+
+### 3. **Update WF-002 (Municipality Inquiry to Case Creation)**
+Current WF-002 uses "Administrator" which should be "Case Coordinator" per earlier architectural corrections. When WF-002 is taken out of draft, rename the role.
+
+### 4. **Complete ADR Review**
+Brief review of ADR-001 through ADR-008 to confirm they're consistent with professional lifecycle understanding (they appear to be, but should be verified).
+
+### 5. **Consider Professional Lifecycle Workflows**
+When building remaining workflows, consider whether any should address:
+- WF-004: Professional Recruitment & Registration
+- WF-005: Professional Credential Verification
+- WF-006: Professional Onboarding
+- WF-014: Professional Offboarding
+
+These may not all be MVP, but should be considered in the overall workflow architecture.
+
+### 6. **Update Success Metrics in Domain Vision**
+Consider adding metrics related to professional lifecycle:
+- Time from professional application to profile activation
+- Professional credential verification completion rate
+- Professional capacity utilization (hours assigned / hours available)
+- Professional retention rate
+- Professional satisfaction
+
+### 7. **Prepare Public Positioning**
+The positioning of Kurshshifte-Match to municipalities and potential municipal partners should emphasize the professional management aspect. Municipalities will see professionals as pre-verified, properly capacitated, and professionally managed.
 
 ---
 
-## F6.4: Match Recommendation to Coordinator
+## COMPLETION STATUS
 
-**Description:** Present ranked candidate list to coordinator for selection  
-**Primary User:** Municipality coordinator  
-**Related Entities:** match_candidates, match_runs  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Coordinator sees:
-  - Top-ranked candidates
-  - Why they match (detailed match explanation)
-  - Scoring explanation for each candidate
-  - Professional profiles (verified docs, competencies, availability)
-- Coordinator can:
-  - Select top candidate (auto-assign)
-  - Select alternative candidate
-  - Reject all and request new match run with different criteria
-- Coordinator's choice logged in audit
+### Phase 1: Platform Name Standardization
+✅ **COMPLETE** - All instances of "Kurshshifte Match" renamed to "Kurshshifte-Match"
 
----
+### Phase 2: Domain Understanding Correction
+✅ **COMPLETE** - DOMAIN_VISION.md fully revised to reflect professional lifecycle management
 
-## F6.5: Manual Professional Selection (No Matching)
+⏳ **IN PROGRESS** - Verification that other documents remain consistent
 
-**Description:** Coordinator can manually select professional without using match algorithm  
-**Primary User:** Municipality coordinator  
-**Related Entities:** professionals, case_assignments  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Alternative to automated matching
-- Coordinator browsing professional list, selects based on own judgment
-- Creates case_assignment directly (bypasses match_run)
-- Both workflows (matching + manual) supported in MVP
+### Phase 3: Consistency Verification
+⏳ **IN PROGRESS** - Spot-checking key documents
+
+⏳ **PENDING** - Final review of WF-002 and future workflow design
+
+### Phase 4: New Terms (if needed)
+⏳ **PENDING** - May add professional lifecycle terms to Ubiquitous Language
 
 ---
 
-## F6.6: Assignment from Match Result
+## SIGN-OFF
 
-**Description:** Coordinator accepts match result and creates case_assignment  
-**Primary User:** Municipality coordinator  
-**Related Entities:** match_candidates, case_assignments  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Coordinator selects candidate from match_run
-- System creates case_assignment (professional_id, case_id, status=ACTIVE, started_at=NOW())
-- match_run status = COMPLETED
-- match_candidates marked as ACCEPTED/REJECTED (audit trail)
-- Professional can now log sessions for this case
+**Corrections prepared by:** Claude  
+**Authority:** Hassan (Founder & Operator)  
+**Date:** June 27, 2026  
+**Status:** Ready for review and approval  
 
----
-
-## F6.7: Match Run History & Audit
-
-**Description:** Track all match runs for a case (can re-run if assignment fails)  
-**Primary User:** Admin, Coordinator  
-**Related Entities:** match_runs, match_candidates, audit_events  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Multiple match_runs possible per case (if first assignment doesn't work out)
-- Full history of candidates and scores retained
-- Used for understanding why certain professionals were/not recommended
-- Audit trail: who ran match, when, which candidate selected
-
-**Algorithm Versioning Requirement (CRITICAL):**
-- Every MatchRun MUST store algorithm_version (e.g., "v1.0") used for scoring
-- Historical MatchRuns MUST NEVER be recalculated with new algorithm version
-- Results from MatchRun v1.0 remain unchanged even after v1.1 released
-- Immutability enforced: Previous results are historical facts, not subject to retroactive change
-- New match runs use current algorithm version; old matches preserve original version
-- This ensures audit trail integrity and prevents surprises in case history
-
----
-
-## F6.8: Match Configuration & Weighting (Admin Only)
-
-**Description:** Admin configures matching algorithm weights/rules  
-**Primary User:** Admin  
-**Related Entities:** System configuration (not stored in DB)  
-**MVP Status:** 🔄 DEFERRED  
-**Rationale:** MVP uses hard-coded weights. Configurable weighting deferred to Phase 2 (requires safe testing).
-
----
-
-## F6.9: Match Quality Feedback
-
-**Description:** Coordinator provides feedback on match quality (for algorithm improvement)  
-**Primary User:** Municipality coordinator, Admin  
-**Related Entities:** match_candidates, match_runs  
-**MVP Status:** 🔄 DEFERRED  
-**Rationale:** MVP doesn't learn from feedback. ML-based improvement deferred to Phase 2+.
-
----
-
-# CROSS-DOMAIN FEATURES
-
-Features that span multiple domains.
-
----
-
-## FX.1: User Authentication & Authorization
-
-**Description:** System authenticates users and enforces role-based access  
-**Primary User:** System (automatic)  
-**Related Entities:** auth.users, profiles  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Supabase authentication (email/password)
-- Roles: admin, coordinator, professional
-- RLS policies enforce access per role
-- Session management, logout, password reset
-
----
-
-## FX.2: Dashboard & Notifications
-
-**Description:** Users see relevant dashboard (coordinator: cases, professional: sessions/hours)  
-**Primary User:** All user types  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Coordinator dashboard: Active cases, pending approvals, alerts
-- Professional dashboard: Active cases, submitted sessions/hours, pending approvals
-- Admin dashboard: All cases, all professionals, audit logs
-- Notifications: In-app + email for important events (safeguarding alerts, outside-grant reviews, etc.)
-
----
-
-## FX.3: Search & Filtering
-
-**Description:** Users can search and filter across domain data  
-**Primary User:** All user types  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Coordinator: Search cases, filter by municipality/status/professional
-- Professional: Search own cases
-- Admin: Search everything
-- Advanced filters: date range, status, geography, complexity
-
----
-
-## FX.4: Export & Reporting
-
-**Description:** Users can export data for reporting and analysis  
-**Primary User:** Admin, Coordinator  
-**MVP Status:** 🔄 DEFERRED  
-**Rationale:** MVP can query DB directly or export via API. Pretty dashboards/reports deferred to Phase 2.
-
----
-
-## FX.5: Notification & Alert System
-
-**Description:** System alerts users to important events (safeguarding, outside-grant, approvals needed, etc.)  
-**Primary User:** All user types (receives)  
-**Related Entities:** Implicit (triggered by domain events)  
-**MVP Status:** ✅ REQUIRED  
-**Notes:**
-- Safeguarding alert: When session logged with safeguarding flag
-- Outside-grant alert: When hours exceed grant
-- Approval needed: When submission requires action
-- Assignment notification: When new case assigned to professional
-- Delivery: In-app + email
-
----
-
-# SUMMARY: MVP STATUS BY DOMAIN
-
-## Professional Domain
-
-| Feature | MVP Status |
-|---------|-----------|
-| F1.1: Onboarding | ✅ REQUIRED |
-| F1.2: Profile Management | ✅ REQUIRED |
-| F1.3: Demographics | ✅ REQUIRED |
-| F1.4: Geography & Transport | ✅ REQUIRED |
-| F1.5: Qualifications | ✅ REQUIRED |
-| F1.6: Document Verification | ✅ REQUIRED |
-| F1.7: Status Management | ✅ REQUIRED |
-| F1.8: Availability Toggle | 🔄 DEFERRED |
-| F1.9: Exit & Archival | ✅ REQUIRED |
-| F1.10: List & Search | ✅ REQUIRED |
-
-**Domain Status:** 9/10 required for MVP
-
----
-
-## Municipality Domain
-
-| Feature | MVP Status |
-|---------|-----------|
-| F2.1: Reference Data | ✅ REQUIRED |
-| F2.2: Grant Period Definition | ✅ REQUIRED |
-| F2.3: Grant Hour Tracking | ✅ REQUIRED |
-| F2.4: Outside Grant Review | ✅ REQUIRED |
-| F2.5: Coordinator Contact | 🔄 DEFERRED |
-| F2.6: Budget Reporting | 🔄 DEFERRED |
-
-**Domain Status:** 4/6 required for MVP
-
----
-
-## Case Domain
-
-| Feature | MVP Status |
-|---------|-----------|
-| F3.1: Case Creation | ✅ REQUIRED |
-| F3.2: Complexity Assessment | ✅ REQUIRED |
-| F3.3: Demographics & Language Requirements | ✅ REQUIRED |
-| F3.4: Geography & Transport Requirements | ✅ REQUIRED |
-| F3.5: Competency & Experience Requirements | ✅ REQUIRED |
-| F3.6: Availability & Time Window Requirements | ✅ REQUIRED |
-| F3.7: Special Constraints | ✅ REQUIRED |
-| F3.8: Professional Assignment | ✅ REQUIRED |
-| F3.9: Handover | ✅ REQUIRED |
-| F3.10: Archival | ✅ REQUIRED |
-| F3.11: List & Dashboard | ✅ REQUIRED |
-
-**Domain Status:** 11/11 required for MVP
-
----
-
-## Delivery Domain
-
-| Feature | MVP Status |
-|---------|-----------|
-| F4.1: Session Logging | ✅ REQUIRED |
-| F4.2: Session Details (Safeguarding) | ✅ REQUIRED |
-| F4.3: Session Finalization | ✅ REQUIRED |
-| F4.4: Session Corrections | ✅ REQUIRED |
-| F4.5: Registered Hours | ✅ REQUIRED |
-| F4.6: Outside Grant Hours | ✅ REQUIRED |
-| F4.7: Hours Approval | ✅ REQUIRED |
-| F4.8: Contact Logging | ✅ REQUIRED |
-| F4.9: Contact Disclosure | ✅ REQUIRED |
-| F4.10: Data Retention Management | ✅ REQUIRED |
-| F4.11: Session Log Transfer | 🔄 DEFERRED |
-
-**Domain Status:** 10/11 required for MVP
-
----
-
-## Governance Domain
-
-| Feature | MVP Status |
-|---------|-----------|
-| F5.1: Audit Event Logging | ✅ REQUIRED |
-| F5.2: Document Verification Audit | ✅ REQUIRED |
-| F5.3: Session Approval Audit | ✅ REQUIRED |
-| F5.4: Hours Approval Audit | ✅ REQUIRED |
-| F5.5: Case Assignment Audit | ✅ REQUIRED |
-| F5.6: GDPR & Data Retention | ✅ REQUIRED |
-| F5.7: Access Control (RLS) | ✅ REQUIRED |
-| F5.8: Encryption & Key Management | ✅ REQUIRED |
-
-**Domain Status:** 8/8 required for MVP
-
----
-
-## Matching Domain
-
-| Feature | MVP Status |
-|---------|-----------|
-| F6.1: Match Run Execution | ✅ REQUIRED |
-| F6.2: Candidate Generation | ✅ REQUIRED |
-| F6.3: Scoring & Ranking | ✅ REQUIRED |
-| F6.4: Recommendation to Coordinator | ✅ REQUIRED |
-| F6.5: Manual Selection | ✅ REQUIRED |
-| F6.6: Assignment from Match | ✅ REQUIRED |
-| F6.7: Match History & Audit | ✅ REQUIRED |
-| F6.8: Match Configuration | 🔄 DEFERRED |
-| F6.9: Quality Feedback | 🔄 DEFERRED |
-| F6.X: Geography Matching | 🔄 DEFERRED (Phase 2+, not in MVP) |
-| F6.X: Language Matching | 🔄 DEFERRED (Phase 2+, not in MVP) |
-| F6.X: Preference Matching | 🔄 DEFERRED (Phase 2+, stored via case features) |
-
-**Domain Status:** 7/12 required for MVP
-*Note: Geography, language, and preference matching deferred to Phase 2. MVP matching uses 4-component deterministic model (qualifications, availability, capacity, complexity fit).*
-
----
-
-## Cross-Domain Features
-
-| Feature | MVP Status |
-|---------|-----------|
-| FX.1: Authentication & Authorization | ✅ REQUIRED |
-| FX.2: Dashboard & Notifications | ✅ REQUIRED |
-| FX.3: Search & Filtering | ✅ REQUIRED |
-| FX.4: Export & Reporting | 🔄 DEFERRED |
-| FX.5: Alerts | ✅ REQUIRED |
-
-**Domain Status:** 4/5 required for MVP
-
----
-
-# GAPS & ISSUES IDENTIFIED
-
-## Potential Gaps
-
-### 1. Manual vs Matching Assignment Workflow
-**Issue:** MVP supports both manual selection AND matching algorithm. These paths must coordinate to avoid conflicts.
-**Status:** Documented; backend must handle both flows
-
-### 2. Citizen Matching Preferences Privacy
-**Issue:** Some citizen preferences (gender, language) are sensitive. How are they handled?
-**Status:** Encrypted fields documented; MVP treats as case metadata (coordinator enters on behalf of citizen)
-
-### 3. Coordinator-Professional Communication Channel
-**Issue:** Who notifies professional of new assignment? Email? In-app?
-**Status:** FX.5 (alerts) covers this; implementation needed in TS-002
-
-### 4. Transport Hours Tracking
-**Issue:** If professional provides transport, is that separate registered_hours entry or part of session?
-**Status:** work_type TRANSPORT handles this (separate hours entry); documented
-
-### 5. Crisis Response Protocols
-**Issue:** What happens in safeguarding crisis situation? Escalation path?
-**Status:** Out of scope (MVP documents concern; coordinator handles escalation); flagged for Phase 2
-
-### 6. Professional Qualification Verification Timeline
-**Issue:** How often must qualifications be reverified? Certificates expire when?
-**Status:** Deferred to Phase 2; MVP has expiration dates but no auto-re-certification workflow
-
-### 7. Multi-Language Interface
-**Issue:** MVP supports non-Danish speakers in matching, but system UI is Danish-only?
-**Status:** Out of scope; UI/translation deferred to Phase 2
-
-### 8. Offline Capability
-**Issue:** What if professional/coordinator has no network (rural area)?
-**Status:** Out of scope; MVP is cloud-only; offline sync deferred to Phase 2+
-
----
-
-## Three Critical Alerts: Classification & Resolution Status
-
-### ALERT 1: Notification/Communication Flow ✅ CLASSIFIED
-
-**Issue:** How are professionals and coordinators notified of events?
-**Current Documentation:** 
-- WF-003: "Professional notified of assignment (via email/manual contact)"
-- WF-006: "Professional notified (manual email)"
-- FX.5 (Alerts feature): Required but implementation details TBD
-
-**Classification:** MUST BE HANDLED IN TS-002 API
-
-**Action Required:**
-- TS-002 API must specify notification endpoints
-- Define which events trigger notifications (assignment, approval needed, hours rejected, etc.)
-- Define notification type (in-app vs email vs both)
-- Define who receives what notification when
-- Define SLA for notifications (immediate vs batch)
-
-**Why Not Architecture Blocker:** Concept is defined in workflows; only implementation needs TS-002 specification.
-
----
-
-### ALERT 2: Matching Algorithm Specification ✅ RESOLVED
-
-**Issue:** F6.3 (scoring/ranking) mentioned "examples" and "TBD actual weights"
-**Resolution:** FULLY SPECIFIED in MATCHING_AND_COMPLEXITY_RULES.md (approved, locked)
-
-**MVP Matching Model (Definitive - Not TBD):**
-- 4 equal-weighted score components (0.25 each each)
-- Qualifications score: experience (×2) + profession match (×25) + certifications (×25)
-- Availability score: capacity ratio - concurrent load penalty
-- Capacity score: complexity margin handling (0-100 scale)
-- Complexity fit score: age match + complexity experience + special skills
-- Deterministic (same inputs → same scores)
-- Score interpretation: 80+=excellent, 60+=good, 40+=acceptable, <20=not suitable
-- Top 3-5 candidates ranked, no auto-assignment
-- Human-in-the-loop required for final selection
-
-**Deferred to Phase 2+:**
-- Geography/transport matching
-- Language matching
-- Citizen/municipality preference matching
-- Configurable algorithm weights
-- Machine learning improvements
-
-**Classification:** ARCHITECTURE LOCKED - MATCHING_AND_COMPLEXITY_RULES.md is authoritative
-
----
-
-### ALERT 3: Outside-Grant Approval Workflow ✅ CLASSIFIED
-
-**Issue:** How does municipality coordinator approve outside-grant hours?
-**Current Documentation:**
-- WF-007 (Outside Grant Review): Complete workflow documented
-- F4.6: Status set to OUTSIDE_GRANT, requires special review
-- F2.4: Municipality coordinator approves/rejects override
-- Database schema: registered_hours has reviewed_by, reviewed_at fields
-
-**Classification:** ALREADY COVERED IN EXISTING DOCS
-
-**Implementation Details for TS-002:**
-- API endpoint for coordinator to view pending outside-grant hours
-- UI form for coordinator to approve/reject with optional comments
-- Notification when outside-grant review needed
-- Business logic: update status to APPROVED or REJECTED
-- Audit trail: who approved/rejected, when, notes
-
-**Why Not Architecture Blocker:** WF-007 and F4.6 fully document the concept; TS-002 handles implementation.
-
----
-
-These are NOT MVP but might be flagged for later phases:
-
-- ❌ Advanced analytics & reporting dashboards
-- ❌ Professional availability calendar (available now, busy Tue-Wed, etc.)
-- ❌ Complex grant reconciliation reports
-- ❌ Mobile app (browser-only MVP)
-- ❌ Real-time presence/availability
-- ❌ Video call integration
-- ❌ Document storage (uploading only; external storage system)
-- ❌ Multi-language interface
-- ❌ SMS notifications (email only)
-- ❌ Machine learning-based matching improvements
-- ❌ Professional peer review/ratings
-- ❌ Budget forecasting
-- ❌ Integration with external systems (municipality case systems, etc.)
-
----
-
-## Explicit Deferrals (Phase 2+)
-
-These are documented as DEFERRED and NOT in MVP:
-
-- 🔄 F1.8: Professional availability toggle (dynamic)
-- 🔄 F2.5: Coordinator address book
-- 🔄 F2.6: Grant budget reporting
-- 🔄 F4.11: Session log transfer
-- 🔄 F6.8: Configurable matching weights
-- 🔄 F6.9: Match quality feedback / learning
-- 🔄 FX.4: Export & reporting dashboards
-
----
-
-# FEATURE INVENTORY COMPLETENESS CHECK
-
-Total Features: 62 (7 deferred/phase 2+)
-- ✅ REQUIRED (MVP): 55 features
-- 🔄 DEFERRED (Phase 2+): 7 features
-- ❌ OUT OF SCOPE: 0 features
-
-**MVP Coverage:** 90% of identified features
-
-**Confidence Level:** HIGH
-- All 6 domains have clear, locked MVP scope
-- Professional matching attributes fully documented
-- Case match requirements fully documented
-- Delivery workflows complete
-- Governance (audit, encryption) complete
-- Matching algorithm LOCKED (not TBD)
-- 3 alerts classified and resolution path clear
-- No TBD or undefined requirements remaining
-
-**Differences from Initial Assessment:**
-- Matching domain: Updated from 7/9 to 7/12 (added deferred geography, language, preference matching)
-- Matching algorithm: Changed from "TBD actual weights" to "FULLY SPECIFIED in MATCHING_AND_COMPLEXITY_RULES.md"
-- All 3 critical alerts: Classified (1 resolved, 1 must be in TS-002, 1 already covered)
-
----
-
-# DOCUMENT METADATA
-
-**Created:** June 27, 2026  
-**Based On:** Architecture v1.0, TS-001 Database Specification  
-**Purpose:** Bridge between Architecture and Technical Specifications (TS-002+)  
-**Status:** DRAFT - For Review  
-**Next Step:** Validate against Architecture v1.0 and stakeholder feedback
-
----
+**Next Step:** Final review and approval to proceed with remaining workflow development

@@ -1,314 +1,278 @@
-# Technical Specification (PENDING APPROVAL)
-## Kursskifte Match 2.0
+# Permission Model: Kurskifte-Match
 
 **Date:** June 27, 2026  
-**Status:** NOT YET APPROVED — NEXT PHASE  
-**Version:** 0.0 (Not Started)
+**Status:** APPROVED (blocking document for Tech Spec)  
+**Purpose:** Define access control, roles, and Row-Level Security (RLS) foundations
 
 ---
 
-## ⚠️ WARNING
+## BUSINESS ROLES
 
-**This specification is not yet approved.**
+These are real-world roles at Kurskifte ApS.
 
-Development cannot begin until this document is complete, reviewed, and explicitly approved.
-
-All work on this document happens AFTER domain model (V4) is locked.
-
----
-
-## PURPOSE
-
-This document will define:
-1. API endpoint design
-2. Request/response contracts
-3. Validation rules
-4. Data encryption strategy
-5. Error handling
-6. Testing strategy
-7. Performance targets
-8. Security requirements
+| Role | Responsibility | Accesses Platform? |
+|------|----------------|-------------------|
+| **Recruiter** | Recruit professionals, manage applications | YES (limited) |
+| **Hiring Manager** | Approve/reject professional applications | YES (limited) |
+| **Compliance Officer** | Verify documents, track credentials, GDPR | YES (limited) |
+| **Case Coordinator** | Create cases, assign professionals, approve hours | YES (full admin) |
+| **Operations Manager** | Manage grants, budget, KPIs | YES (limited) |
+| **Professional** | Provide support, document sessions, register hours | YES (portal) |
+| **Sagsbehandler (Municipality)** | Case worker, NO platform access | NO |
+| **Citizen (Borger)** | Support recipient, NO platform access | NO |
 
 ---
 
-## SECTIONS TO BE COMPLETED
+## SYSTEM ROLES (Database/Application Level)
 
-### 1. API Endpoints (Decision: REST vs GraphQL)
+Two primary system roles for MVP.
 
-**TBD:**
-- Create case: POST /api/cases
-- Update case: PATCH /api/cases/:caseId
-- List cases: GET /api/cases (with filters, pagination)
-- Create CaseAssignment: POST /api/cases/:caseId/assignments
-- Register hours: POST /api/cases/:caseId/hours
-- Create SessionLog: POST /api/cases/:caseId/sessions
-- ... (30+ endpoints)
+### 1. ADMIN
+- **Who:** Case Coordinators, Compliance Officers, Operations Managers, Recruiters (all staff)
+- **Permissions:** Full CRUD access to all administrative entities
+- **Cannot:** Cannot be assigned to cases as professional (never a professional role)
+- **RLS Rule:** `auth.jwt()->>'role' = 'admin'`
 
-**Decisions needed:**
-- REST (simple, familiar) vs GraphQL (flexible queries)
-- HTTP method choices (PATCH vs PUT)
-- Response envelope (data vs bare objects)
-- Pagination strategy (cursor vs offset)
+### 2. PROFESSIONAL
+- **Who:** Professionals only
+- **Permissions:** Limited to own data and assigned cases
+- **Scoping:** See only own profile, assigned cases, own sessions/hours
+- **RLS Rule:** `auth.jwt()->>'user_id' = professionals.id`
 
-### 2. Authentication & Authorization
+### 3. PUBLIC (Future, Phase 2)
+- **For:** Recruitment landing page, application form
+- **NOT MVP**
 
-**Flow to document:**
-- Email/password login endpoint
-- MFA flow (optional for MVP?)
-- JWT token generation
-- Custom claims (role stored in JWT or checked from profiles table?)
-- Token refresh strategy
-- Session management
+---
 
-**Decisions needed:**
-- JWT custom claims vs. database role checks
-- Token expiry (15m access + 7d refresh?)
-- MFA required or optional
-- Session revocation mechanism
+## PERMISSION MATRIX
 
-### 3. Data Encryption
+**Who can do WHAT to WHICH resources:**
 
-**Fields to encrypt (application layer):**
-- SessionLog.observations
-- SessionLog.safeguarding_detail
-- RegisteredHours descriptions? (TBD)
-- ContactLog.note
-- CaseHandover.handover_note
-- Others?
+| Resource | Admin | Professional | Public |
+|----------|-------|--------------|--------|
+| **Professional Entity** | CRUD | R (own) | - |
+| **ProfessionalDocument** | CRUD | R/CU (own) | - |
+| **Case** | CRUD | R (assigned) | - |
+| **CaseAssignment** | CRD (no update) | R (own) | - |
+| **CaseGrant** | CRUD | R (assigned) | - |
+| **SessionLog** | R | CRU (own) | - |
+| **RegisteredHours** | CRU | CRU (own, pending) | - |
+| **ContactLog** | CR | CR (own) | - |
+| **MatchRun** | CR | R (relevant) | - |
+| **AuditEvents** | R (all) | R (own actions) | - |
 
-**Decisions needed:**
-- Encryption library (TweetNaCl.js, libsodium.js?)
-- Key management (Supabase KMS, key rotation policy)
-- Which fields encrypted (full list)
-- Search capability on encrypted fields (full-text search impossible)
-- Decryption at application layer (Supabase views vs. app code)
+**Legend:**
+- C = Create, R = Read, U = Update, D = Delete
+- `-` = No access
+- R (own) = Read only own data
+- R (assigned) = Read only cases assigned to them
 
-### 4. Validation Rules
+---
 
-**Examples to detail:**
-- Case creation: complexity_level must match factors (auto-calculated?)
-- RegisteredHours: hours between 0.25 and 8.0
-- SessionLog: observations required if not DRAFT
-- CaseAssignment: only one ACTIVE per case
-- Document expiry: must be future date
-- Others?
+## RESOURCE OWNERSHIP RULES
 
-**Decisions needed:**
-- Client-side validation (UX hints)
-- Server-side validation (security)
-- Custom validators (complexity calculation, workload checks)
-- Error response format
+**Who owns what? Who can modify it?**
 
-### 5. Error Handling
+| Resource | Owner | Creator | Modifier | Deleter |
+|----------|-------|---------|----------|---------|
+| Professional | Admin | Recruiter | Admin | (archive only) |
+| Case | Admin | Admin | Admin | (archive only) |
+| CaseAssignment | Case Domain | Admin | (no update, new record) | (terminate only) |
+| SessionLog | Professional | Professional | (correct only) | (archive only) |
+| RegisteredHours | Professional | Professional | Admin | (archive only) |
+| MatchRun | Admin | Admin | (immutable) | (cancel only) |
+| AuditEvents | Governance | System | (immutable) | (never) |
 
-**Response codes to standardize:**
-- 400 Bad Request (validation failed)
-- 401 Unauthorized (not authenticated)
-- 403 Forbidden (authenticated but no access)
-- 404 Not Found (resource doesn't exist)
-- 409 Conflict (state violation, e.g., creating 2nd ACTIVE assignment)
-- 422 Unprocessable Entity (semantic validation failed)
-- 500 Internal Server Error
-- Others?
+---
 
-**Error response format:**
+## ACCESS BOUNDARIES
+
+### What ADMIN Can Access
+- ✅ All professionals (profiles, documents, capacity)
+- ✅ All cases (view, create, assign, close)
+- ✅ All hours (approve, reject, review)
+- ✅ All sessions (view, not edit)
+- ✅ All contacts (disclose, audit)
+- ✅ All audit events (full trail)
+- ✅ Matching (trigger, decide)
+- ❌ Cannot see encrypted notes content? (TBD: depends on encryption strategy)
+
+### What PROFESSIONAL Can Access
+- ✅ Own profile (view, update availability/capacity)
+- ✅ Own documents (view, upload)
+- ✅ Assigned cases only (view case details)
+- ✅ Own sessions (create, view, correct)
+- ✅ Own hours (register, view)
+- ✅ Own contact logs (create, view)
+- ❌ Cannot access other professionals' data
+- ❌ Cannot approve hours
+- ❌ Cannot assign themselves to cases
+- ❌ Cannot view matching scores
+- ❌ Cannot view audit trail
+
+---
+
+## SPECIFIC RULES (NOT ALLOWED)
+
+**These are explicitly forbidden:**
+
+❌ **Professional cannot:**
+- Auto-assign self to a case (only admin can assign)
+- Approve/reject own hours (only admin)
+- View other professionals' sessions (privacy)
+- Access audit events for other professionals
+- Download compliance export
+- Modify another professional's documents
+- Cancel own assignment (must request handover)
+
+❌ **Admin cannot:**
+- Log into professional portal (see citizens' data)
+- Bypass permissions via API (RLS enforces at database level)
+- Hard-delete records (soft delete only)
+- Modify audit events (immutable)
+- Auto-assign professional (must choose explicitly)
+
+❌ **System cannot:**
+- Auto-delete data before retention period
+- Automatically approve hours over grant
+- Automatically expire documents (must flag for review)
+- Automatically close cases (must be explicit)
+
+---
+
+## ROW-LEVEL SECURITY (RLS) IMPLICATIONS
+
+RLS policies will be implemented in Supabase PostgreSQL. Key implications:
+
+### Professional Entity
 ```
-{
-  "error": "CASE_CONFLICT",
-  "message": "Cannot assign professional: case already has active assignment",
-  "details": { "caseId": "...", "existingAssignmentId": "..." }
-}
+-- Admin can see all
+-- Professional can see own profile only
+CREATE POLICY "professionals_select_policy"
+  ON professionals FOR SELECT
+  USING (auth.jwt()->>'role' = 'admin' OR auth.uid() = id);
+
+-- Admin can create/update
+-- Professional cannot
+CREATE POLICY "professionals_modify_policy"
+  ON professionals FOR INSERT, UPDATE, DELETE
+  USING (auth.jwt()->>'role' = 'admin');
 ```
 
-**Decisions needed:**
-- Which errors return which codes
-- When to log errors (all? only 5xx?)
-- User-facing messages vs. technical details
+### SessionLog Entity
+```
+-- Admin can see all
+-- Professional can see own sessions only
+CREATE POLICY "sessions_select_policy"
+  ON session_logs FOR SELECT
+  USING (auth.jwt()->>'role' = 'admin' OR professional_id = auth.uid());
 
-### 6. Testing Strategy
+-- Professional can create/update own (corrections only)
+-- Admin can see but not modify
+CREATE POLICY "sessions_modify_policy"
+  ON session_logs FOR INSERT, UPDATE
+  USING (professional_id = auth.uid() AND auth.jwt()->>'role' = 'professional');
+```
 
-**Unit tests:**
-- Domain logic (complexity calculation, workload status)
-- Validators
-- Auth checks
+### RegisteredHours Entity
+```
+-- Admin can see all
+-- Professional can see own hours only
+CREATE POLICY "hours_select_policy"
+  ON registered_hours FOR SELECT
+  USING (auth.jwt()->>'role' = 'admin' OR professional_id = auth.uid());
 
-**Integration tests:**
-- API endpoints (happy path + error cases)
-- RLS policies (verify access control)
-- Audit event creation
+-- Professional can create/update own (pending only)
+-- Admin can update status (APPROVED/REJECTED)
+CREATE POLICY "hours_professional_policy"
+  ON registered_hours FOR INSERT, UPDATE
+  USING (professional_id = auth.uid() AND status = 'PENDING');
 
-**E2E tests (Playwright):**
-- Admin: create case → assign professional → register hours
-- Professional: view case → write session log → register hours
-- Handover: transition professional → session log transfer
+CREATE POLICY "hours_admin_policy"
+  ON registered_hours FOR UPDATE
+  USING (auth.jwt()->>'role' = 'admin');
+```
 
-**Performance tests:**
-- Workload calculation (for 100+ cases)
-- Audit query performance
-- Grant calculation (for 1000s of hours)
+### Case Entity
+```
+-- Admin can see all
+-- Professional can see assigned cases only (via CaseAssignment)
+CREATE POLICY "cases_select_policy"
+  ON cases FOR SELECT
+  USING (auth.jwt()->>'role' = 'admin' OR 
+         EXISTS(SELECT 1 FROM case_assignments 
+                WHERE case_id = cases.id 
+                AND professional_id = auth.uid() 
+                AND ended_at IS NULL));
 
-**Decisions needed:**
-- Test coverage targets (80%? 90%?)
-- Automated testing in CI/CD
-- Performance benchmarks
-- Load testing approach
+-- Admin only can modify
+CREATE POLICY "cases_modify_policy"
+  ON cases FOR INSERT, UPDATE, DELETE
+  USING (auth.jwt()->>'role' = 'admin');
+```
 
-### 7. Performance Targets
+### AuditEvents Entity (Special)
+```
+-- Admin can see all
+-- Professional can see only own actions
+CREATE POLICY "audit_select_policy"
+  ON audit_events FOR SELECT
+  USING (auth.jwt()->>'role' = 'admin' OR actor_id = auth.uid());
 
-**Query performance:**
-- Load professional dashboard: < 500ms
-- Calculate workload status: < 100ms
-- List cases: < 1s (with pagination)
-- Generate audit report: < 5s (for 1000 events)
+-- Only system can insert (via trigger)
+CREATE POLICY "audit_insert_policy"
+  ON audit_events FOR INSERT
+  USING (auth.jwt()->>'role' = 'system');
 
-**Decisions needed:**
-- Database indexing strategy
-- Caching (Redis? Application-level?)
-- Query optimization approach
-- Monitoring (APM tool? Supabase monitoring?)
-
-### 8. Security Requirements
-
-**Required:**
-- HTTPS only (enforced)
-- CSRF protection (SameSite cookies)
-- SQL injection prevention (parameterized queries)
-- XSS prevention (HTML escaping)
-- Rate limiting (login attempts, API calls)
-- CORS policy (localhost:3000, kursskifte.dk)
-- Secret management (env vars, no hardcoding)
-
-**Decisions needed:**
-- Security headers (CSP, X-Frame-Options, etc.)
-- Rate limit thresholds (attempts/minute, requests/hour)
-- CORS allowed origins
-- DDoS protection (Cloudflare?)
-- Vulnerability scanning (OWASP?)
-
----
-
-## PLACEHOLDER: SPECIFICATION STRUCTURE
-
-When approved, this document will contain:
-
-### Section 1: API Overview
-- Base URL
-- Authentication header format
-- Error response format
-- Rate limiting headers
-
-### Section 2: Authentication Endpoints
-- POST /auth/signup
-- POST /auth/login
-- POST /auth/logout
-- POST /auth/refresh
-- POST /auth/mfa (if implemented)
-
-### Section 3: Case Endpoints (15+ endpoints)
-- POST /api/cases
-- GET /api/cases
-- GET /api/cases/:caseId
-- PATCH /api/cases/:caseId
-- ... (CRUD operations)
-
-### Section 4: Professional Endpoints (10+ endpoints)
-- POST /api/professionals
-- GET /api/professionals
-- GET /api/professionals/:professionalId
-- ... (crud, documents, capacity)
-
-### Section 5: Work Tracking Endpoints (15+ endpoints)
-- POST /api/cases/:caseId/sessions
-- GET /api/cases/:caseId/sessions
-- POST /api/cases/:caseId/sessions/:sessionId/corrections
-- POST /api/cases/:caseId/hours
-- ... (hours, approvals, reviews)
-
-### Section 6: Assignment Endpoints (5+ endpoints)
-- POST /api/cases/:caseId/assignments
-- GET /api/cases/:caseId/assignments
-- PATCH /api/cases/:caseId/assignments/:assignmentId (transition status)
-
-### Section 7: Matching Endpoints (5+ endpoints)
-- POST /api/cases/:caseId/match-runs
-- GET /api/cases/:caseId/match-runs/:runId/candidates
-- POST /api/cases/:caseId/match-runs/:runId/assign
-
-### Section 8: Admin Endpoints (10+ endpoints)
-- POST /api/municipalities
-- GET /api/audit-events
-- POST /api/documents/:docId/verify
-- ... (grant management, document verification)
-
-### Section 9: Data Encryption
-- Which fields encrypted
-- Encryption algorithm
-- Key management
-- Decryption strategy
-
-### Section 10: Validation Rules
-- Per-endpoint validation
-- Custom validators
-- Error responses
-
-### Section 11: Testing Strategy
-- Unit tests
-- Integration tests
-- E2E tests
-- Performance benchmarks
-
-### Section 12: Security
-- Headers
-- CORS
-- Rate limiting
-- Secret management
+-- Never update or delete
+CREATE POLICY "audit_immutable"
+  ON audit_events FOR UPDATE, DELETE
+  USING (false);
+```
 
 ---
 
-## DECISION DEPENDENCIES
+## ENCRYPTION STRATEGY (High-Level)
 
-Before writing Technical Specification:
+Fields requiring encryption (to be decided in Tech Spec):
+- SessionLog.observations (work notes)
+- SessionLog.safeguarding_detail (sensitive flags)
+- SessionLog.participant_names (citizen names)
+- Case.citizen_notes (encrypted)
+- ContactLog.note (communication notes)
+- ContactLog.outcome (results)
+- ContactDisclosure.sagsbehandler_* (contact info snapshot)
 
-1. **REST or GraphQL?** (impacts every endpoint)
-2. **JWT custom claims or database lookups?** (impacts auth)
-3. **Which fields encrypted?** (impacts all endpoints with data)
-4. **MFA required?** (impacts login flow)
-5. **Caching strategy?** (impacts performance endpoints)
-
----
-
-## APPROVAL GATE
-
-**This specification cannot be approved until:**
-
-1. ✅ Domain Model (V4) is approved and locked
-2. ✅ Master Directive is approved
-3. ⏳ This Technical Specification is written in full
-4. ⏳ It is reviewed by Hassan
-5. ⏳ All questions answered
-6. ⏳ It is explicitly approved (signed off)
+**Decision needed:** Application-level encryption or Supabase field-level?
 
 ---
 
-## CRITICAL RULE
+## ADMIN vs PROFESSIONAL: CLEAR BOUNDARY
 
-**NO CODE WRITTEN BEFORE THIS SPECIFICATION IS APPROVED.**
+### Admin Portal
+- **Access:** Case management, professional management, hour approval, audit trail
+- **Not access:** Professional portal data (citizen details)
+- **Goal:** Operational oversight
 
-Any code written before approval will be discarded.
+### Professional Portal
+- **Access:** My cases, my sessions, my hours, my profile
+- **Not access:** Admin operations, other professionals' data, audit trail
+- **Goal:** Daily work documentation
 
----
-
-## NEXT STEPS
-
-1. Complete this specification (2-3 weeks)
-2. Review with Hassan
-3. Get explicit approval
-4. Only then: Supabase schema + Next.js scaffold
-5. Then: Development begins
+**Why separate?** Professionals should NOT see case details they're not assigned to (privacy for other professionals and citizens).
 
 ---
 
-**Placeholder document by:** Kursskifte ApS — Architecture  
-**Status:** PENDING CREATION  
-**Reference:** Master Directive, Domain Model (V4)  
-**Critical Note:** No code before approval
+## OPEN QUESTIONS FOR TECH SPEC
+
+1. **Should encrypted fields be readable by admin?** (e.g., can admin read citizen notes?)
+2. **Should admin see professional portal view or different view?** (same UI or different?)
+3. **Should session logs be searchable by professional name?** (privacy vs usability)
+4. **Should audit trail include failed permission checks?** (security logging)
+5. **Should inactive professionals still see past cases?** (after offboarding)
+
+---
+
+**This Permission Model is the foundation for Technical Specification.**  
+**RLS policies will be refined in Tech Spec with exact SQL.**

@@ -1,169 +1,384 @@
-# Technical Specifications
+# Architecture Change Policy
+## What Requires a New Architecture Version
 
-**Last Updated:** June 27, 2026  
-**Specification Strategy:** Vertical Completion (One to 95/100+ quality before moving to next)
-
----
-
-## STATUS OVERVIEW
-
-### ✅ APPROVED & FROZEN
-
-**TS-001: Database Specification**
-- File: `TECHNICAL_SPECIFICATION_PHASE_1_DATABASE.md`
-- Status: **APPROVED - IMPLEMENTATION-READY (99/100)**
-- Date Approved: June 27, 2026
-- Quality Level: Production-ready
-- Code Readiness: No modifications allowed except critical defects discovered during implementation
-- Contains: 19 tables, 35+ FKs, 73+ RLS policies, XSalsa20-Poly1305 encryption strategy, 21 migrations
-
-**What this means:**
-- ✅ Database schema is complete and correct
-- ✅ Ready for implementation (can write code now)
-- ✅ All constraints documented and verified
-- ✅ Migration strategy complete
-- ⛔️ NO CHANGES to TS-001 unless implementation reveals a concrete defect
+**Date:** June 27, 2026  
+**Status:** APPROVED  
+**Version:** 1.0
 
 ---
 
-### ⏸️ NOT YET APPROVED
+## PURPOSE
 
-**TS-002 through TS-007 are DRAFTS and NOT APPROVED**
+This policy defines when architecture changes require a new version (v1.0 → v2.0 → v3.0...) vs. when they can proceed without versioning.
 
-These specifications are in the `_drafts/` folder and must NOT be used for implementation until they:
-
-1. Pass complete audit (missing sections, TBD content, pseudocode)
-2. Pass implementation-readiness review (constraints, indexes, edge cases)
-3. Receive explicit approval from Hassan
-4. Are moved from `_drafts/` to this folder
-
-**Current Draft Files in `_drafts/`:**
-
-| File | Phase | Status | Ready for Code? |
-|------|-------|--------|-----------------|
-| TECHNICAL_SPECIFICATION_PENDING.md | Template | NOT STARTED | ⛔️ NO |
-| TECHNICAL_SPECIFICATION_PHASE_2_API.md | API Design | DRAFT (Incomplete) | ⛔️ NO |
-| TECHNICAL_SPECIFICATION_PHASE_3_BACKEND.md | Backend Logic | DRAFT (Incomplete) | ⛔️ NO |
-| TECHNICAL_SPECIFICATION_PHASES_4-7.md | Frontend/Deploy | DRAFT (Incomplete) | ⛔️ NO |
+**Core Rule:** Changes to the domain model, security model, or core principles require a new architecture version and explicit approval.
 
 ---
 
-## SPECIFICATION QUALITY GATES
+## CHANGES REQUIRING NEW ARCHITECTURE VERSION
 
-All Technical Specifications must pass these gates before approval:
+### Major Domain Changes
 
-### Gate 1: Completeness Audit
-- ✅ No TODO, TBD, or "to be determined" placeholders
-- ✅ No pseudocode (production-ready SQL/code only)
-- ✅ No abbreviated sections (full explanations required)
-- ✅ All edge cases documented
-- ✅ All constraints defined
-- ✅ All enums/types consistent
+**New Core Domain Entity**
+- Example: Adding `CaseOutcome` table to track support results
+- Why: New entity changes domain model, affects relationships, requires RLS
+- Process: ADR + approval + new version tag
 
-### Gate 2: Implementation-Readiness Review
-- ✅ Missing SQL constraints identified
-- ✅ Missing foreign keys verified
-- ✅ Missing indexes identified for query patterns
-- ✅ Missing unique constraints identified
-- ✅ Nullable fields reviewed
-- ✅ Cascade behavior verified
-- ✅ Audit consistency checked
-- ✅ Timestamp consistency checked
-- ✅ Security risks identified
-- ✅ Performance risks identified
-- ✅ Data integrity risks identified
+**Changed Relationship Between Entities**
+- Example: Changing CaseAssignment from 1:N to M:M
+- Why: Relationships are core to domain, affect queries and RLS
+- Process: ADR + redesign + approval + new version
 
-### Gate 3: Explicit Approval
-- ✅ Hassan reviews and approves (email or conversation)
-- ✅ Document is frozen (no further changes before code)
-- ✅ Quality score is 95/100 or higher
+**New Core Value Type**
+- Example: Adding new CaseStatus enum value that changes workflow
+- Why: Status is central to understanding case lifecycle
+- Process: ADR + approval + new version
+- Note: Minor additions to existing enums may not require version bump (see "Not Requiring")
+
+**Changed Entity Field Semantics**
+- Example: Changing `weekly_hours` from absolute to relative
+- Why: Changes interpretation of data, breaks existing logic
+- Process: ADR + migration plan + approval + new version
 
 ---
 
-## WHY DRAFTS ARE SEPARATED
+### Security & Access Control Changes
 
-Earlier incomplete draft files were created before we switched to **vertical specification strategy** (one spec to 95/100+ quality before moving to next).
+**Changed RLS/Security Principle**
+- Example: Allowing professionals to see all cases (removing role-based RLS)
+- Why: Fundamental security boundary change, affects all data access
+- Process: ADR + security review + approval + new version
 
-These drafts are **NOT AUTHORITATIVE** and must not be used for implementation because:
+**New User Role**
+- Example: Adding `sagsbehandler` role with platform access
+- Why: Changes who can access what, fundamental security model
+- Process: ADR + RLS design + approval + new version
 
-1. **Incomplete** - Contain TBD sections and pseudocode
-2. **Unapproved** - Did not pass quality gates or implementation review
-3. **Outdated** - May conflict with Architecture v1.0 or TS-001 decisions
-4. **Dangerous** - Using incomplete specs can lead to implementation mistakes
+**Changed Least Privilege Model**
+- Example: Allowing professionals to edit other professionals' documents
+- Why: Access control is fundamental
+- Process: ADR + RLS redesign + approval + new version
 
-**No code should be written from any draft specification.**
+**New Portal**
+- Example: Adding Municipality Portal in MVP (or any new access point)
+- Why: New users mean new RLS, new access boundaries
+- Process: ADR + full RLS design + approval + new version
 
 ---
 
-## DEVELOPMENT WORKFLOW
+### Audit & Compliance Changes
 
-For each new Technical Specification:
+**Changed Audit Model**
+- Example: Removing audit events, changing immutability rules
+- Why: Audit is foundational for compliance and accountability
+- Process: ADR + compliance review + approval + new version
+
+**Changed Data Retention/GDPR Model**
+- Example: Changing 7-year retention to 30 days
+- Why: GDPR compliance, affects legal obligations
+- Process: ADR + legal review + approval + new version
+
+**Changed Right-to-Be-Forgotten Implementation**
+- Example: Switching from scheduled delete to admin-manual delete
+- Why: GDPR implementation, affects data protection obligations
+- Process: ADR + compliance review + approval + new version
+
+---
+
+### Matching & Decision-Making Changes
+
+**Changed Matching Decision Model**
+- Example: Switching from human-in-the-loop to automatic assignment
+- Why: Fundamental change to how professionals are assigned
+- Process: ADR + safety review + approval + new version
+- Note: Algorithm version changes (v1.0 → v1.1) do NOT require architecture version
+
+**Changed Assignment Workflow**
+- Example: Allowing automatic handover without admin approval
+- Why: Explicit vs. implicit is core principle
+- Process: ADR + approval + new version
+
+---
+
+### Feature Scope Changes
+
+**Changes to Forbidden-Feature List**
+- Example: Moving municipality portal from Phase 2 to MVP
+- Why: Forbidden list defines scope boundaries
+- Process: ADR + scope review + approval + new version
+
+**New Forbidden Feature**
+- Example: Adding "no citizen messaging" to forbidden list
+- Why: Changes what we explicitly don't build
+- Process: ADR + scope discussion + approval + new version
+
+---
+
+### Data Minimization Changes
+
+**Changes to PII/Data Minimization Model**
+- Example: Storing full citizen names instead of initials
+- Why: Privacy by design is core principle
+- Process: ADR + privacy review + approval + new version
+
+**Changes to Encrypted Fields**
+- Example: Removing encryption from safeguarding_detail
+- Why: Privacy by design is core principle
+- Process: ADR + security review + approval + new version
+
+---
+
+## CHANGES NOT REQUIRING NEW ARCHITECTURE VERSION
+
+### UI/UX Changes
+
+**New UI Component**
+- Example: Adding a new form validation pattern
+- Why: UI doesn't affect domain model or data
+- Process: Direct implementation (no ADR needed)
+
+**Changed Button Copy**
+- Example: "Save Case" → "Create Case"
+- Why: Text changes don't affect architecture
+- Process: Direct implementation
+
+**New Dashboard Widget**
+- Example: Adding professional workload heatmap
+- Why: UI-only, no domain changes
+- Process: Direct implementation
+
+---
+
+### Database Optimizations (Non-Breaking)
+
+**New Index**
+- Example: Adding index on `cases.created_at`
+- Why: Performance optimization, doesn't change domain
+- Process: Direct implementation (no ADR needed)
+
+**Query Optimization**
+- Example: Adding database view for workload calculation
+- Why: Still calculating same values, just more efficiently
+- Process: Direct implementation
+
+**Refactoring Non-Domain Logic**
+- Example: Extracting validation logic into reusable function
+- Why: Code quality, not domain change
+- Process: Direct implementation
+
+---
+
+### API Extensions (Consistent with Architecture)
+
+**New API Endpoint (Consistent)**
+- Example: Adding GET /api/professionals/:id/documents
+- Why: Follows existing patterns, doesn't change domain
+- Process: Direct implementation (if validates against ADRs)
+
+**New Query Parameter**
+- Example: Adding filter to GET /api/cases?status=ACTIVE
+- Why: Convenience feature, doesn't change domain
+- Process: Direct implementation
+
+**New Response Field (Non-Breaking)**
+- Example: Adding `is_expired` to document response
+- Why: Calculated field, doesn't change storage
+- Process: Direct implementation (if it's actually derived, not stored)
+
+---
+
+### Bug Fixes
+
+**Data Corruption Fix**
+- Example: Fixing orphaned session logs
+- Why: Corrects data, doesn't change architecture
+- Process: Direct implementation
+
+**RLS Policy Bug Fix**
+- Example: Fixing professional seeing someone else's cases (security bug)
+- Why: Fixing violation of existing policy, not changing policy
+- Process: Direct implementation (with urgency)
+
+---
+
+### Non-Domain Refactoring
+
+**Code Structure Changes**
+- Example: Moving utility functions to separate module
+- Why: Code organization, doesn't affect domain
+- Process: Direct implementation
+
+**Dependency Updates**
+- Example: Upgrading Supabase client library
+- Why: Dependencies don't change architecture
+- Process: Direct implementation
+
+**Documentation Updates**
+- Example: Improving CHANGELOG wording
+- Why: Documentation clarity, not architecture
+- Process: Direct implementation
+
+---
+
+### Algorithm Changes (Without Changing Model)
+
+**Matching Algorithm Improvement**
+- Example: Changing scoring weights in v1.0 → v1.1
+- Why: Still using MatchRun and MatchCandidate, just better scoring
+- Process: Algorithm version bump (independent from architecture version)
+- Note: Algorithm v1.1 can be used with Architecture v1.0
+
+**Workload Status Calculation Change**
+- Example: Changing threshold from 75% to 80%
+- Why: Still calculating same value, just different threshold
+- Process: Direct implementation
+
+---
+
+## DECISION TREE
 
 ```
-1. START (TS-002, TS-003, etc.)
-   └─ Placed in _drafts/ folder while in progress
-   └─ No code is written
-
-2. COMPLETE (95/100+ quality)
-   └─ No TODO/TBD/pseudocode
-   └─ All sections detailed
-   └─ Edge cases documented
-
-3. AUDIT
-   └─ Completeness audit
-   └─ Implementation-readiness review
-   └─ Score improvement if needed
-
-4. APPROVE
-   └─ Hassan explicitly approves
-   └─ Moved from _drafts/ to main folder
-   └─ Frozen (no changes before code)
-
-5. IMPLEMENT
-   └─ Code written to approved spec
-   └─ Only critical defects may trigger TS changes
+Change proposed
+  ↓
+Does it affect domain model (entities, relationships)?
+  ├─ YES → Requires Architecture Version Bump
+  └─ NO ↓
+  
+Does it affect security/RLS/access boundaries?
+  ├─ YES → Requires Architecture Version Bump
+  └─ NO ↓
+  
+Does it affect audit model or GDPR compliance?
+  ├─ YES → Requires Architecture Version Bump
+  └─ NO ↓
+  
+Does it change matching/assignment workflow fundamentally?
+  ├─ YES → Requires Architecture Version Bump
+  └─ NO ↓
+  
+Does it change forbidden features or scope?
+  ├─ YES → Requires Architecture Version Bump
+  └─ NO ↓
+  
+Does it add PII or reduce privacy protection?
+  ├─ YES → Requires Architecture Version Bump
+  └─ NO ↓
+  
+Is it a UI/UX change, bug fix, or optimization?
+  ├─ YES → No Architecture Version Needed
+  └─ NO ↓
+  
+Is it consistent with existing architecture?
+  ├─ YES → No Architecture Version Needed (may need ADR for context)
+  └─ NO → Requires Architecture Version Bump (unclear, discuss)
 ```
 
 ---
 
-## CRITICAL RULES
+## PROCESS FOR NEW ARCHITECTURE VERSION
 
-### Do NOT:
-- ⛔️ Write code from a draft specification
-- ⛔️ Modify TS-001 unless defect is discovered during implementation
-- ⛔️ Use draft specifications without Hassan approval
-- ⛔️ Create new architecture without Architecture approval
+**When architecture version bump required:**
 
-### Do:
-- ✅ Complete each specification to 95/100+ before moving to next
-- ✅ Pass implementation-readiness review before approval
-- ✅ Freeze specifications after approval
-- ✅ Document all constraints, indexes, and edge cases
-- ✅ Wait for explicit approval before implementation
+1. **Create ADR**
+   - File: `/docs/adr/ADR-NNN-title.md`
+   - Include: Context, Decision, Alternatives, Consequences
+   - Reference affected architecture components
+
+2. **Review & Discuss**
+   - Share with team
+   - Get Hassan approval
+   - Discuss implications
+
+3. **Update Documentation**
+   - Update affected architecture docs
+   - Update CHANGELOG.md with new version entry
+   - Update DECISION_LOG.md if new decision
+
+4. **Create Git Tag**
+   - Tag: `architecture-v2.0` (or next version)
+   - Annotated tag with description
+   - Include commit hash
+
+5. **Commit Changes**
+   - Commit ADR
+   - Commit documentation updates
+   - Commit tag
+
+---
+
+## PROCESS FOR NON-VERSION CHANGES
+
+**For changes not requiring architecture version:**
+
+1. **Check Against Principles**
+   - Does it violate ARCHITECTURE_PRINCIPLES.md?
+   - If YES, escalate to ADR/version bump
+   - If NO, proceed
+
+2. **Check Against Acceptance Criteria**
+   - Does it maintain all acceptance criteria?
+   - If NO, escalate
+   - If YES, proceed
+
+3. **Implement & Test**
+   - Direct implementation
+   - Test thoroughly
+   - Document in PR/commit message
+
+4. **Commit**
+   - Reference which architecture/ADR it's implementing
+   - No new tag needed
 
 ---
 
-## CURRENT PHASE
+## SPECIAL CASES
 
-**Status:** TS-001 Approved and Frozen  
-**Next Step:** TS-002 API Specification (when ready)
+### Algorithm Changes
+- **Within same model:** No version bump (algorithm-v1.1)
+- **Changing scoring fundamentally:** May need architecture version bump (if affects MatchRun structure)
 
-TS-001 Database can proceed to implementation immediately.
+### Minor Enum Additions
+- **Adding new status to existing enum:** Usually no version bump
+- **Removing status from enum:** May need version bump (data compatibility)
+- **Changing meaning of existing status:** Needs version bump
 
-TS-002 through TS-007 are planned but not yet started. They will be completed one at a time using the vertical specification strategy.
+### Backward Compatibility
+- **Breaking change:** Architecture version bump
+- **Non-breaking addition:** May not need bump (review)
+- **Deprecation:** May not need immediate bump (plan for future)
+
+---
+
+## DECISION EXAMPLES
+
+**Should this be a new architecture version?**
+
+| Change | Version Bump? | Rationale |
+|--------|---------------|-----------|
+| Add new CaseOutcome table | YES | New domain entity |
+| Add status filter to API | NO | UI convenience |
+| Change citizen data from initials to full name | YES | Privacy/PII change |
+| Fix RLS bug in professional access | NO | Bug fix |
+| Add municipality portal | YES | New user role, new portal |
+| Add API endpoint for getting workload status | NO | UI convenience |
+| Change 7-year retention to 30 days | YES | GDPR compliance change |
+| Improve matching algorithm scoring weights | NO | Algorithm-v1.1 bump |
+| Switch from human-in-the-loop to auto-assign | YES | Fundamental workflow change |
+| Add new document type to credential vault | NO | Enum extension |
 
 ---
 
-## APPROVAL HISTORY
+## REFERENCE
 
-| Specification | Approved Date | Quality Score | Status |
-|---------------|---------------|---------------|--------|
-| TS-001 Database | June 27, 2026 | 99/100 | ✅ APPROVED & FROZEN |
-| TS-002 API | — | — | ⏳ PENDING START |
-| TS-003 Backend | — | — | ⏳ PENDING START |
-| TS-004 Frontend | — | — | ⏳ PENDING START |
-| TS-005 Security | — | — | ⏳ PENDING START |
-| TS-006 Matching Engine | — | — | ⏳ PENDING START |
-| TS-007 Deployment | — | — | ⏳ PENDING START |
+- **Architecture Principles:** ARCHITECTURE_PRINCIPLES.md
+- **Acceptance Criteria:** ARCHITECTURE_ACCEPTANCE_CRITERIA.md
+- **ADR Template:** /docs/adr/ (see ADR-001 for example)
+- **Decision Log:** DECISION_LOG.md
+- **Changelog:** CHANGELOG.md
 
 ---
+
+**Document by:** Kursskifte Architecture  
+**Approved by:** Hassan  
+**Status:** APPROVED POLICY  
+**Version:** 1.0

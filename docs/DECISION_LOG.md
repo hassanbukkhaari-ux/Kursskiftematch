@@ -1,364 +1,463 @@
-# Architecture Acceptance Criteria
-## Quality Gates for Match 2.0 Design
+# Decision Log
+## Kursskifte Match 2.0 Architecture Decisions
 
 **Date:** June 27, 2026  
-**Status:** APPROVED  
+**Status:** APPROVED DECISIONS FROZEN  
 **Version:** 1.0
 
 ---
 
-## PURPOSE
+## DECISION RECORD FORMAT
 
-These criteria define what "good architecture" looks like for Kursskifte Match 2.0.
-
-Use these as a checklist when:
-- Reviewing new architecture changes (ADRs)
-- Validating Technical Specification against architecture
-- Reviewing code for architecture compliance
-- Assessing whether design meets approved architecture
-
----
-
-## 13 ACCEPTANCE CRITERIA
-
-### 1. All Tables Have RLS Strategy
-
-**Definition:** Every table with sensitive data must have Row-Level Security policies defined.
-
-**Checklist:**
-- ✅ Table has explicit RLS policy for each role (admin, professional)
-- ✅ RLS policies are documented in architecture docs
-- ✅ Public/unauthenticated access explicitly blocked
-- ✅ Foreign keys check role via profiles table, not JWT alone
-- ✅ All SELECT, INSERT, UPDATE, DELETE operations have policy
-- ✅ RLS tested in test suite
-
-**Examples:**
-- ✅ cases table: Admin sees all, professional sees own cases only
-- ❌ cases table: No RLS policy (everyone sees everything)
-
-**Criteria Owner:** Security/Database Architect
-
----
-
-### 2. All Sensitive Access Has Audit Event
-
-**Definition:** Every access to sensitive data (reading or modifying) is logged.
-
-**Checklist:**
-- ✅ Sensitive table mutations trigger audit events
-- ✅ Sensitive data access (if exposed via API) is logged
-- ✅ Document signing (signed URL creation) logged
-- ✅ Contact info disclosure logged
-- ✅ Session log transfer logged
-- ✅ Professional assignment logged
-
-**Examples:**
-- ✅ Accessing professional documents via signed URL triggers DOCUMENT_SIGNED_URL_CREATED
-- ❌ Admin loads all cases without audit event
-
-**Note:** Not every SELECT needs logging (too noisy), but unusual/sensitive access does.
-
-**Criteria Owner:** Compliance/Audit
-
----
-
-### 3. No PII in Audit Metadata
-
-**Definition:** Audit events contain no personally identifiable information or sensitive details.
-
-**Checklist:**
-- ✅ Audit metadata contains only: IDs, statuses, decision reasons (not content)
-- ✅ No citizen notes in audit metadata
-- ✅ No safeguarding details in audit metadata
-- ✅ No passwords/credentials in audit metadata
-- ✅ No contact phone/email in audit metadata (unless disclosure event itself)
-- ✅ No diagnoses in audit metadata
-
-**Examples:**
-- ✅ SESSION_LOG_CREATED metadata: {session_log_id, safeguarding_flagged: true}
-- ❌ SESSION_LOG_CREATED metadata: {observations: "child has depression and anger issues"}
-
-**Criteria Owner:** Privacy/Security
-
----
-
-### 4. All State Transitions Documented
-
-**Definition:** Every enum value (status) has a clear workflow showing what states can transition to what.
-
-**Checklist:**
-- ✅ CaseStatus transitions documented (OPEN → MATCHED → ACTIVE → COMPLETED → ARCHIVED)
-- ✅ ProfessionalStatus transitions documented (REGISTERED → ACTIVE → INACTIVE → ARCHIVED)
-- ✅ AssignmentStatus transitions documented (ACTIVE → TRANSITIONED → TERMINATED → ARCHIVED)
-- ✅ DocumentStatus transitions documented (PENDING_UPLOAD → UNVERIFIED → VERIFIED → ARCHIVED)
-- ✅ RegisteredHoursStatus transitions documented (PENDING → APPROVED/REJECTED/OUTSIDE_GRANT)
-- ✅ Each transition has explicit action (what triggers it, who does it, why)
-- ✅ No unexpected transitions allowed
-
-**Examples:**
-- ✅ CaseStatus: OPEN → MATCHED only via admin matching decision
-- ❌ CaseStatus: Can transition from COMPLETED back to ACTIVE (not allowed)
-
-**Criteria Owner:** Domain Architect
-
----
-
-### 5. All Enums Documented
-
-**Definition:** Every enum in the domain has clear documentation of its values and meaning.
-
-**Checklist:**
-- ✅ Each enum has enum values listed (e.g., CaseStatus = OPEN | MATCHED | ACTIVE | ...)
-- ✅ Each value has a one-line definition
-- ✅ Workflow for status enums is documented (state diagram)
-- ✅ Constraints for enum values are clear (when can a value be set)
-- ✅ Forbidden combinations are documented
-
-**Examples:**
-- ✅ ComplexityLevel enum with definitions: LOW = single issue, MEDIUM = multiple concerns, etc.
-- ❌ ComplexityLevel enum with no definitions (ambiguous)
-
-**Criteria Owner:** Domain Architect
-
----
-
-### 6. All Foreign Keys Documented
-
-**Definition:** Every FK relationship has clear documentation of cardinality, semantics, and cascading behavior.
-
-**Checklist:**
-- ✅ Each FK has documented cardinality (1:1, 1:N, N:1, M:M)
-- ✅ Semantics clear (what does this FK mean in business terms?)
-- ✅ Nullability documented (can FK be NULL? When?)
-- ✅ Cascading behavior documented (DELETE CASCADE vs. SET NULL vs. RESTRICT)
-- ✅ Bidirectional relationships are clear (if bidirectional)
-- ✅ No circular dependencies (unless explicitly allowed)
-
-**Examples:**
-- ✅ case.professional_id → CaseAssignment (eliminated, now history table)
-- ✅ CaseAssignment.professional_id (1:N) → Professional, cardinality clear
-- ❌ Undocumented FK with unclear semantics
-
-**Criteria Owner:** Database Architect
-
----
-
-### 7. No Derived Values Stored
-
-**Definition:** No columns exist that are purely calculated from other columns.
-
-**Checklist:**
-- ✅ No `remaining_hours` column (calculated at query time)
-- ✅ No `used_hours` column (calculated at query time)
-- ✅ No `current_assigned_load` column (calculated at query time)
-- ✅ No `workload_status` column (calculated at query time)
-- ✅ No `is_expired` column (calculated from expiry_date < TODAY)
-- ✅ Views may exist for calculated values (read-only, clearly marked)
-- ✅ Application layer doesn't cache derived values (or caches with clear TTL)
-
-**Examples:**
-- ✅ Query: `SELECT granted_hours - SUM(approved_hours) as remaining`
-- ❌ Column: `case_grants.remaining_hours` (stored, gets stale)
-
-**Criteria Owner:** Database Architect
-
----
-
-### 8. No Hard Deletes in MVP
-
-**Definition:** No records are permanently deleted; only archived/soft-deleted.
-
-**Checklist:**
-- ✅ No DELETE operations in RLS policies (MVP phase)
-- ✅ All entities use `status` + `archived_at` for deletion
-- ✅ Hard delete only via scheduled cleanup job (after retention period)
-- ✅ Audit logs immutable (never deleted)
-- ✅ Can restore data from status=ARCHIVED
-
-**Examples:**
-- ✅ Soft delete: `UPDATE cases SET status='ARCHIVED', archived_at=NOW()`
-- ❌ Hard delete: `DELETE FROM cases WHERE id = ?`
-
-**Criteria Owner:** Data Protection Officer
-
----
-
-### 9. Retention Rules Documented
-
-**Definition:** Every entity has clear data retention rules.
-
-**Checklist:**
-- ✅ Cases: 7 years from archived
-- ✅ Professionals: Until archived + 1 year
-- ✅ SessionLogs: 7 years from case archived
-- ✅ RegisteredHours: 7 years from case archived
-- ✅ Documents: With professional + 1 year
-- ✅ AuditEvents: 7 years (archive after 2 years to cold storage)
-- ✅ Inquiries: 2 years
-- ✅ All retention rules have business justification documented
-
-**Examples:**
-- ✅ Case retention: 7 years = statute of limitations for social services
-- ✅ Audit retention: 7 years = standard compliance requirement
-
-**Criteria Owner:** Compliance Officer / Data Protection Officer
-
----
-
-### 10. Forbidden Features Checked
-
-**Definition:** The implementation respects the forbidden feature list.
-
-**Checklist:**
-- ✅ No municipality portal login in MVP (contact info only)
-- ✅ No citizen portal
-- ✅ No in-app messaging platform (email/phone only)
-- ✅ No billing/ERP integration
-- ✅ No clinical journal system
-- ✅ No automatic professional assignment (human-in-the-loop)
-- ✅ Code has no markers/placeholders for forbidden features
-- ✅ PR review explicitly checks DO_NOT_BUILD.md
-
-**Criteria Owner:** Product Manager / Architecture
-
----
-
-### 11. GDPR Data Minimisation Documented
-
-**Definition:** Architecture demonstrates GDPR-compliant data minimization.
-
-**Checklist:**
-- ✅ Citizen data: initials only (no full name, no CPR)
-- ✅ Professional data: contact + qualifications (no SSN, no full history)
-- ✅ Sagsbehandler: contact info only (no credentials, no login)
-- ✅ Sensitive fields encrypted: notes, safeguarding details, contact info
-- ✅ No undocumented PII storage
-- ✅ Right-to-be-forgotten implemented (7-year retention, then delete)
-- ✅ No "because we might need it later" data
-- ✅ Data collection justification documented
-
-**Examples:**
-- ✅ Citizen initials (2 chars) sufficient for identification within kommune
-- ❌ Full citizen name (unnecessary, increases risk)
-
-**Criteria Owner:** Data Protection Officer
-
----
-
-### 12. Professional/Case/Municipality Access Boundaries Clear
-
-**Definition:** Access control is explicit; no ambiguous who-can-see-what.
-
-**Checklist:**
-- ✅ Professional: Own cases only (cannot see other professionals' cases)
-- ✅ Professional: Own documents only
-- ✅ Professional: Own hours only
-- ✅ Professional: Own session logs only
-- ✅ Professional: Other cases only via explicit handover + transfer approval
-- ✅ Admin: All cases, all professionals, all documents
-- ✅ Municipality: Contact info only (no login, no platform access)
-- ✅ Citizen: No access (no portal)
-- ✅ Public: Homepage, recruitment, contact form only
-- ✅ Boundary conditions documented and tested
-
-**Examples:**
-- ✅ Professional can see case only if assigned (RLS enforced)
-- ❌ Professional can search all cases by citizen name (inappropriate access)
-
-**Criteria Owner:** Security Architect
-
----
-
-### 13. Human Decision Points Documented
-
-**Definition:** Every place where a human (usually admin) makes a critical decision is explicit and audited.
-
-**Checklist:**
-- ✅ Professional assignment: Admin reviews candidates, selects one, logged
-- ✅ Handover initiation: Admin decides when to handover
-- ✅ Session log transfer: Admin approves sharing of previous logs
-- ✅ Contact disclosure: Admin approves sharing sagsbehandler info
-- ✅ Outside_grant review: Admin approves/rejects hours
-- ✅ Document verification: Admin verifies document authenticity
-- ✅ Each decision logged with reason
-- ✅ No automatic workflows that impact professional/citizen
-
-**Examples:**
-- ✅ MatchRun shows candidates, admin selects, selection_reason logged
-- ❌ System auto-assigns if score > threshold (no human decision)
-
-**Criteria Owner:** Product Manager / UX Designer
-
----
-
-## USING ACCEPTANCE CRITERIA
-
-### During Architecture Review
-
-**Before approving new architecture decision:**
-
-1. Check all 13 criteria
-2. Mark which are satisfied ✅
-3. For unsatisfied criteria, determine: Is it in scope? Does it need to be?
-4. Approve only if all applicable criteria are met
-
-### During Technical Specification Review
-
-**Before approving API design:**
-
-1. Verify RLS strategy defined (Criterion 1)
-2. Verify audit events planned (Criterion 2)
-3. Verify PII not in audit metadata (Criterion 3)
-4. Verify state transitions handled correctly (Criterion 4)
-5. Verify access boundaries enforced (Criterion 12)
-
-### During Code Review
-
-**PR checklist:**
-
-- ✅ Matches approved architecture?
-- ✅ Respects all 13 acceptance criteria?
-- ✅ No forbidden features?
-- ✅ No hard deletes?
-- ✅ No derived values stored?
-- ✅ All audit events logged?
-- ✅ RLS policies enforced?
-- ✅ Human decision points preserved?
-
----
-
-## ACCEPTANCE CRITERIA EXCEPTIONS
-
-**If a criterion cannot be met:**
-
-1. **Document the exception** (why it cannot be met)
-2. **Get Hassan approval** (explicit exception grant)
-3. **Create ADR** (Architecture Decision Record) explaining tradeoff
-4. **Plan remediation** (when/how criterion will be met)
-5. **Review regularly** (ensure exception doesn't become permanent)
-
-**Example Exception:**
 ```
-Exception: Criterion 1 (RLS strategy)
-Table: future_municipalities (for Phase 2, not MVP)
-Reason: Table doesn't exist yet; not part of MVP
-Remediation: RLS will be designed in v2.0 architecture
-ADR: ADR-009-phase-2-municipalities
+[DATE] Decision #[N]: [Title]
+Status: APPROVED | PENDING | REJECTED
+Rationale: Why this choice
+Trade-offs: What we give up
+Depends on: Prerequisites
+Blocking: What depends on this
+References: V2/V3/V4 sections
 ```
 
 ---
 
-## REFERENCE
+## APPROVED DECISIONS
 
-- **Architecture Principles:** ARCHITECTURE_PRINCIPLES.md
-- **Change Policy:** ARCHITECTURE_CHANGE_POLICY.md
-- **Decision Log:** DECISION_LOG.md
-- **ADRs:** /docs/adr/
+### [June 2026] Decision #1: Unified Next.js Application
+
+**Title:** Single unified Next.js application vs. separate backend/admin/portal services
+
+**Status:** ✅ APPROVED (V2)
+
+**Rationale:**
+- Simpler deployment pipeline (one Vercel project)
+- Easier authentication (one JWT model)
+- Better code reuse (shared components, shared utils)
+- Easier to maintain (single codebase)
+- Faster initial development (no IPC, no API contract negotiation)
+
+**Trade-offs:**
+- Cannot scale services independently
+- Must deploy all together (not microservices)
+- Decision: Split only if data models fundamentally diverge (unlikely)
+
+**Implementation:**
+```
+/(public)/    Public website
+/admin/       Admin portal (role: admin)
+/pro/         Professional portal (role: professional)
+/api/         API routes (shared auth, RLS)
+```
+
+**References:** Master Directive, Architecture Separation Plan
 
 ---
 
-**Document by:** Kursskifte Architecture  
-**Approved by:** Hassan  
-**Status:** APPROVED CRITERIA  
-**Version:** 1.0
+### [June 2026] Decision #2: Supabase Backend
+
+**Title:** Supabase (PostgreSQL + Auth + RLS) vs. custom backend
+
+**Status:** ✅ APPROVED (V2)
+
+**Rationale:**
+- Zero backend infrastructure to manage
+- PostgreSQL RLS enforces security at database level
+- Built-in auth (Supabase Auth)
+- GDPR-friendly (EU data centers available)
+- No custom authentication code to maintain
+
+**Trade-offs:**
+- Less flexibility (must use Supabase stack)
+- Cannot self-host (Supabase dependency)
+- Vendor lock-in (but acceptable for MVP)
+
+**Implementation:**
+- Supabase project for each environment (dev, staging, prod)
+- Custom RLS policies per table
+- Audit triggers for event logging
+
+**References:** Master Directive, Domain Model (V4)
+
+---
+
+### [June 2026] Decision #3: No Municipality Portal in MVP
+
+**Title:** Sagsbehandler access to platform
+
+**Status:** ✅ APPROVED (Master Directive)
+
+**Rationale:**
+- Municipalities provide cases + budgets, not platform users
+- Sagsbehandler contact info stored, but no login required
+- Reduces scope (no SSO integration, no municipal user management)
+- Reduces data exposure (sagsbehandler credentials never stored)
+- Professional can access contact info via disclosure audit trail
+
+**Trade-offs:**
+- Cannot self-serve case status lookup (post-MVP: Phase 2)
+- Must contact Kursskifte admin for case info
+- Reports prepared by admin, shared externally
+
+**Deferred to Phase 2:**
+- Municipality portal (read-only, low-trust design)
+
+**References:** Master Directive (Section: WHAT WE ARE NOT BUILDING)
+
+---
+
+### [June 2026] Decision #4: Separate SessionLog from RegisteredHours
+
+**Title:** Work documentation vs. administrative time tracking
+
+**Status:** ✅ APPROVED (V2)
+
+**Rationale:**
+- SessionLog = what happened (clinical, permanent)
+- RegisteredHours = time tracked (administrative, changeable for payroll)
+- Different workflows (documentation vs. approval)
+- Different retention (7 years vs. payroll retention)
+- Hours can be rejected without affecting documentation
+
+**Trade-offs:**
+- Must maintain two tables instead of one
+- Must link them explicitly (session_log_id FK in RegisteredHours)
+
+**Implementation:**
+- SessionLog: write-once (FINAL status immutable)
+- RegisteredHours: mutable (admin can update, approve/reject)
+- SessionLogCorrection: separate table for documentation corrections
+
+**References:** Domain Model (V4), V2 Corrections
+
+---
+
+### [June 2026] Decision #5: CaseAssignment Entity (V4)
+
+**Title:** Replace cases.professional_id + case_handovers with dedicated assignment table
+
+**Status:** ✅ APPROVED (V4)
+
+**Rationale:**
+- Single source of truth (not split between cases.professional_id and case_handovers)
+- Temporal tracking (when assignment started/ended)
+- Audit trail (who made assignment, why)
+- Supports complex workflows (ACTIVE → TRANSITIONED → ACTIVE)
+- Immutable history (CaseAssignment records never updated)
+
+**Trade-offs:**
+- One more join to get current professional
+- Slightly more complex queries
+- Worth it for data integrity
+
+**Current professional derived as:**
+```
+SELECT professional_id FROM case_assignments
+WHERE case_id = ? AND ended_at IS NULL LIMIT 1
+```
+
+**References:** Architecture (V4), Section 1
+
+---
+
+### [June 2026] Decision #6: Structured Complexity Factors (V4)
+
+**Title:** Complexity calculation from factors instead of subjective text
+
+**Status:** ✅ APPROVED (V4)
+
+**Rationale:**
+- Deterministic rules (not subjective)
+- Queryable factors (reporting, matching)
+- Consistency (everyone uses same factors)
+- Rules engine approach (complexity calculated, not stored)
+- Matching algorithm can query deterministically
+
+**Trade-offs:**
+- Less flexible initially (fixed factors)
+- Requires periodic rule review
+- Cannot capture unique nuances initially (future: notes field)
+
+**Factors:**
+- mental_health, family_instability, school, violence, substance_use, criminality, diagnosis, multiple_agencies
+
+**Calculated rules:**
+```
+CRITICAL if: violence=TRUE OR (substance_use AND multiple_agencies)
+HIGH if: (mental_health OR diagnosis) AND family_instability
+MEDIUM if: 2+ factors present
+LOW if: 0-1 factors
+```
+
+**References:** Architecture (V4), Section 3
+
+---
+
+### [June 2026] Decision #7: Privacy-Safe Audit Events (V3/V4)
+
+**Title:** Audit metadata contracts instead of full value dumps
+
+**Status:** ✅ APPROVED (V3, enforced in V4)
+
+**Rationale:**
+- No sensitive data in audit log (safer if breached)
+- Queryable audit data (schema validation)
+- Prevents accidental PII exposure
+- Audit events explain what changed, not the sensitive details
+
+**Trade-offs:**
+- Cannot reconstruct exact old values from audit log
+- Must rely on SessionLogCorrection for corrections
+- Requires discipline in event design
+
+**Example:**
+❌ DON'T: audit metadata contains citizen notes or safeguarding details
+✅ DO: audit metadata contains fact that notes were updated
+
+**References:** Privacy-Safe Corrections (V3), Audit Contracts (V4)
+
+---
+
+### [June 2026] Decision #8: No Derived Values Stored (V4)
+
+**Title:** Calculate at query time instead of storing derived columns
+
+**Status:** ✅ APPROVED (V4)
+
+**Rationale:**
+- Single source of truth (no data inconsistency)
+- Automatic updates (no manual refresh)
+- Easy to change business rules
+- Storage efficiency
+
+**Never store:**
+- remaining_hours = granted_hours - SUM(approved)
+- used_hours = SUM(approved hours)
+- current_assigned_load = SUM(weekly_hours for active cases)
+- workload_status = calculated from load vs. capacity
+- is_expired = expiry_date < TODAY
+
+**Trade-off:** Slightly slower queries (acceptable, can optimize with views if needed)
+
+**References:** Architecture (V4), Section 9
+
+---
+
+### [June 2026] Decision #9: Unified Soft Delete Strategy (V4)
+
+**Title:** Standardize soft delete across all entities
+
+**Status:** ✅ APPROVED (V4)
+
+**Rationale:**
+- Consistent pattern (easier to query, maintain)
+- Less cognitive load for developers
+- Easier to implement retention policies
+- Status can support future states (SUSPENDED, etc.)
+
+**Strategy:**
+- status field for workflow (ACTIVE, DRAFT, PENDING, etc.)
+- archived_at for "soft deleted" marker
+- data_retention_expires_at for "can hard delete"
+- Never use boolean active fields
+
+**Trade-off:** Requires standardization discipline
+
+**References:** Architecture (V4), Section 6
+
+---
+
+### [June 2026] Decision #10: Algorithm Versioning in Matching (V4)
+
+**Title:** Store algorithm_version in match results for historical explainability
+
+**Status:** ✅ APPROVED (V4)
+
+**Rationale:**
+- Historical scores remain explainable if algorithm changes
+- Can run A/B testing (v1.0 vs v2.0 performance)
+- Supports gradual rollout (some users v1.1, others v2.0)
+- Audit trail shows which version made decision
+
+**Trade-off:** Requires version management discipline
+
+**Implementation:**
+- match_runs.algorithm_version (e.g., "1.0")
+- When algorithm changes: v1.0 → v1.1 (minor) or v1.0 → v2.0 (major)
+- Code: conditional logic by version flag
+
+**References:** Architecture (V4), Section 7
+
+---
+
+### [June 2026] Decision #11: Audit Metadata Contracts (V4)
+
+**Title:** Define schema per audit event type
+
+**Status:** ✅ APPROVED (V4)
+
+**Rationale:**
+- Queryable, consistent audit data
+- Application validates before insert
+- Prevents silent data loss
+- Historical queries reliable
+
+**Implementation:**
+- Per-event-type metadata schema documented
+- Application validates against contract
+- Rejects mismatched metadata
+
+**Trade-off:** More upfront work
+
+**References:** Architecture (V4), Section 8, Technical Specification (pending)
+
+---
+
+### [June 2026] Decision #12: No Hard Deletes in MVP
+
+**Title:** Soft delete only (status/archived_at, no DELETE in RLS)
+
+**Status:** ✅ APPROVED (V3/V4)
+
+**Rationale:**
+- Data preservation (can restore if needed)
+- Audit trail completeness (no gaps)
+- GDPR compliance (can show what was deleted and when)
+- Operational safety (no accidental data loss)
+
+**Trade-off:** Storage cost, slower queries (minor)
+
+**Hard delete allowed:** Only via scheduled cleanup job after retention period (7 years)
+
+**References:** V3 Corrections, Architecture (V4), Section 6
+
+---
+
+## PENDING DECISIONS
+
+### Technical Specification Phase
+
+**Decision: REST vs GraphQL for API**
+- Status: PENDING
+- Blocks: Technical Specification
+- Impact: Every API endpoint design
+- Timeline: Week 1 of Technical Specification phase
+
+**Decision: JWT custom claims or database role checks**
+- Status: PENDING
+- Blocks: Authentication implementation
+- Impact: Auth performance, token payload
+- Timeline: Week 2 of Technical Specification phase
+
+**Decision: Which fields encrypted & how**
+- Status: PENDING
+- Blocks: All data handling code
+- Impact: Searchability, performance
+- Timeline: Week 2 of Technical Specification phase
+
+**Decision: MFA required or optional**
+- Status: PENDING
+- Blocks: Authentication flow
+- Impact: User experience, security posture
+- Timeline: Week 1 of Technical Specification phase
+
+**Decision: Caching strategy (Redis, app-level, etc.)**
+- Status: PENDING
+- Blocks: Performance optimization
+- Impact: Scalability, complexity
+- Timeline: Week 3 of Technical Specification phase
+
+---
+
+## REJECTED DECISIONS (For Reference)
+
+### Rejected: Municipality Portal in MVP
+- Status: ❌ REJECTED
+- Reason: Out of scope, sagsbehandler has no platform access
+- Deferred: Phase 2
+
+### Rejected: Citizen Portal
+- Status: ❌ REJECTED
+- Reason: Citizens do not access platform; support is professional-delivered
+- Deferred: Never (out of business model)
+
+### Rejected: In-App Messaging
+- Status: ❌ REJECTED
+- Reason: No messaging platform in MVP; contact via email/phone only
+- Deferred: Phase 3 (if ever needed)
+
+### Rejected: Billing/ERP Integration
+- Status: ❌ REJECTED
+- Reason: No invoice generation in MVP; payroll is separate system
+- Deferred: Phase 2+ (if ever needed)
+
+### Rejected: Automatic Assignment
+- Status: ❌ REJECTED
+- Reason: Human-in-the-loop required; admin confirms final decision
+- Deferred: Phase 2+ (if matching improves enough to auto-assign)
+
+### Rejected: Free-Text Complexity Reason
+- Status: ❌ REJECTED (V4)
+- Reason: Replaced with structured CaseComplexityFactors
+- Replacement: Structured boolean fields + deterministic rules
+
+### Rejected: Storing EXPIRED as status
+- Status: ❌ REJECTED (V4)
+- Reason: is_expired is calculated condition, not workflow state
+- Replacement: VERIFIED status, is_expired calculated at query time
+
+### Rejected: Storing derived values (remaining_hours, workload_status, etc.)
+- Status: ❌ REJECTED (V4)
+- Reason: Single source of truth, automatic updates preferred
+- Replacement: Query-time calculation with views if needed
+
+---
+
+## DECISION IMPACT MATRIX
+
+| Decision | Domain | API | Auth | Database | Frontend |
+|----------|--------|-----|------|----------|----------|
+| Unified Next.js | — | ✅ | ✅ | — | ✅ |
+| Supabase | — | ✅ | ✅ | ✅ | — |
+| No Municipality Portal | ✅ | ✅ | ✅ | ✅ | ✅ |
+| SessionLog + RegisteredHours | ✅ | ✅ | — | ✅ | ✅ |
+| CaseAssignment Entity | ✅ | ✅ | — | ✅ | ✅ |
+| Structured Complexity | ✅ | ✅ | — | ✅ | ✅ |
+| Privacy-Safe Audit | ✅ | ✅ | — | ✅ | — |
+| No Derived Storage | ✅ | ✅ | — | ✅ | ✅ |
+| Unified Soft Delete | ✅ | ✅ | — | ✅ | ✅ |
+| Algorithm Versioning | ✅ | ✅ | — | ✅ | ✅ |
+| Audit Contracts | ✅ | ✅ | — | ✅ | — |
+| No Hard Deletes | ✅ | ✅ | — | ✅ | ✅ |
+
+---
+
+## LOCKED DECISIONS (Cannot Change)
+
+**These decisions are locked and cannot be revisited without explicit escalation:**
+
+1. ✅ **Unified Next.js application** (vs. separate services)
+2. ✅ **Supabase backend** (vs. custom backend)
+3. ✅ **No municipality portal MVP** (vs. open access)
+4. ✅ **No citizen portal** (vs. citizen-facing)
+5. ✅ **CaseAssignment entity** (vs. cases.professional_id + handovers)
+6. ✅ **Structured complexity factors** (vs. free text)
+7. ✅ **Privacy-safe audit events** (vs. full value dumps)
+8. ✅ **No derived storage** (vs. caching columns)
+9. ✅ **Unified soft delete** (vs. mixed strategies)
+
+---
+
+## NEXT PHASE
+
+**Technical Specification phase will add:**
+- REST vs GraphQL decision
+- JWT vs DB role check decision
+- Encryption strategy decision
+- MFA decision
+- Caching strategy decision
+
+---
+
+**Document by:** Kursskifte ApS — Architecture Leadership  
+**Status:** DECISION LOG LOCKED (until Technical Specification review)  
+**Reference:** Master Directive, Domain Model (V4)

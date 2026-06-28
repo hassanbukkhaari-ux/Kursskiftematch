@@ -350,12 +350,13 @@ LOW if: 0-1 factors
 - `recipient_email` — system/company notifications only (e.g., SYSTEM_ADMIN_EMAIL env var)
 - At least one must be set per record (CHECK constraint enforced)
 
-**MVP Event Set (5 events):**
-1. `PROFESSIONAL_APPLICATION_RECEIVED` — Admin when a professional profile is created (WF-001)
-2. `CASE_CREATED` — Admin when a new case is opened (WF-002)
-3. `SAFEGUARDING_FLAGGED` — Admin when a session log raises a safeguarding concern (WF-005)
-4. `HOURS_SUBMITTED` — Admin when a professional submits hours for approval (WF-006)
-5. `DOCUMENT_ACTION_REQUIRED` — Professional when a credential document needs upload or re-upload (WF-004)
+**MVP Event Set (6 events):**
+1. `INQUIRY_RECEIVED` — Admin when a public website form submission is staged (WF-015)
+2. `PROFESSIONAL_APPLICATION_RECEIVED` — Admin when a professional profile is created (WF-001)
+3. `CASE_CREATED` — Admin when a new case is opened (WF-002)
+4. `SAFEGUARDING_FLAGGED` — Admin when a session log raises a safeguarding concern (WF-005)
+5. `HOURS_SUBMITTED` — Admin when a professional submits hours for approval (WF-006)
+6. `DOCUMENT_ACTION_REQUIRED` — Professional when a credential document needs upload or re-upload (WF-011)
 
 **Delivery Provider (MVP):** Resend (transactional email; aligns with Next.js/Vercel stack)
 

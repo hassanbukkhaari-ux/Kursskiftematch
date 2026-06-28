@@ -60,12 +60,13 @@ This minimizes PII exposure in `notification_log`: personal email addresses are 
 
 Step 1 is synchronous with or immediately following the workflow transaction. Steps 2–4 are asynchronous. A workflow is complete once step 1 succeeds, regardless of delivery outcome.
 
-### 6. MVP Event Set (5 Events Only)
+### 6. MVP Event Set (6 Events)
 
-The following 5 notification types are active in MVP. All others are deferred to Phase 2.
+The following 6 notification types are active in MVP. All others are deferred to Phase 2.
 
 | Notification Type | Source Workflow | Recipient | Trigger |
 |---|---|---|---|
+| `INQUIRY_RECEIVED` | WF-015 | Admin (system email) | Public form submission staged as inbound_inquiries record — admin review required |
 | `PROFESSIONAL_APPLICATION_RECEIVED` | WF-001 | Admin (system email) | Professional profile created (status=REGISTERED) — requires review |
 | `CASE_CREATED` | WF-002 | Admin (system email) | New municipality case created — requires assignment |
 | `SAFEGUARDING_FLAGGED` | WF-005 | Admin (system email) | Session log finalized with safeguarding_concern_flag=TRUE |
@@ -152,7 +153,7 @@ The table is append-one-insert-per-notification. WF-014 updates `status`, `sent_
 
 **Why company email via env var:** Avoids creating a system user account that would appear in profiles, audit logs, and RLS checks. A monitored inbox is operationally equivalent for MVP and introduces no identity management burden.
 
-**Why 5 events only:** Notification noise trains users to ignore all notifications. Five high-value operational events create strong signal. Volume grows with user maturity, not with implementation enthusiasm.
+**Why 6 events:** Notification noise trains users to ignore all notifications. Six high-value operational events create strong signal — one for each major external intake or internal action requiring admin attention. Volume grows with user maturity, not with implementation enthusiasm.
 
 **Why `attempt_count`:** Negligible schema cost; prevents a migration in the middle of delivery implementation. See decision text above.
 
@@ -182,7 +183,8 @@ The table is append-one-insert-per-notification. WF-014 updates `status`, `sent_
 - ADR-007: No Hard Deletes (`notification_log` records are permanent)
 - ADR-008: No Derived Values (`delivery_channel` and `status` are recorded state, not derived)
 - WF-014: Notification Dispatch (delivery lifecycle)
-- MVP_DEFINITION.md Section 12: Narrowed to 5 MVP notification events
+- WF-015: Public Intake Reception (source of INQUIRY_RECEIVED event)
+- MVP_DEFINITION.md Section 12: 6 MVP notification events
 
 ---
 

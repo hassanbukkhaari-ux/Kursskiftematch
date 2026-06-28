@@ -491,10 +491,11 @@ MVP delivers outbound email for a targeted set of high-value operational events.
 - Admin system recipient: configured via `SYSTEM_ADMIN_EMAIL` environment variable (role inbox, not a user account)
 - Professional recipient: resolved from `profiles.email` at dispatch time; personal email is never stored in `notification_log`
 
-### MVP Notification Events (5 events — active in MVP)
+### MVP Notification Events (6 events — active in MVP)
 
 | Notification Type | Source | Recipient | Trigger |
 |---|---|---|---|
+| `INQUIRY_RECEIVED` | WF-015 | Admin (system email) | Public form submission staged as inbound_inquiries record — admin review required |
 | `PROFESSIONAL_APPLICATION_RECEIVED` | WF-001 | Admin (system email) | Professional profile created (status=REGISTERED) — requires review and credential verification |
 | `CASE_CREATED` | WF-002 | Admin (system email) | New municipality case submitted — requires assignment |
 | `SAFEGUARDING_FLAGGED` | WF-005 | Admin (system email) | Session log finalized with safeguarding_concern_flag=TRUE — requires immediate acknowledgement |
@@ -515,11 +516,12 @@ The following events are tracked via `audit_events` in MVP but do not generate o
 ### Delivery Infrastructure
 
 - `notification_log` table: Governance Domain, 3rd table (after `audit_events` and `deletion_schedules`)
+- `inbound_inquiries` table: Governance Domain, 4th table — staging table for all public website submissions (WF-015)
 - WF-014 Edge Function: dispatches pending records, updates status + attempt_count
 - Max retry attempts: 3 (manual re-queue after exhaustion)
 - `failure_reason` field: stores provider error codes (no PII per ADR-004)
 
-**Source:** ADR-010 (Notification Service), WF-014 (Notification Dispatch), WF-001/WF-002/WF-005/WF-006/WF-011
+**Source:** ADR-010 (Notification Service), WF-014 (Notification Dispatch), WF-015 (Public Intake Reception), WF-001/WF-002/WF-005/WF-006/WF-011
 
 ---
 

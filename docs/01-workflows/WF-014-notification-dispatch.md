@@ -18,7 +18,7 @@ Own the delivery of all outbound notifications emitted by business workflows. WF
 
 - **Notification Service (WF-014 Edge Function)** — Dispatches pending notification records, updates delivery status
 - **Governance Domain** — Owns `notification_log` table and delivery audit trail
-- **Source Workflows (WF-001, WF-002, WF-005, WF-006, WF-011)** — Emit notification events by creating `notification_log` records with status=PENDING
+- **Source Workflows (WF-015, WF-001, WF-002, WF-005, WF-006, WF-011)** — Emit notification events by creating `notification_log` records with status=PENDING
 
 ---
 
@@ -108,11 +108,18 @@ Retry scheduling (exponential backoff, automated queue) is Phase 2.
 
 | Notification Type | Source Workflow | Recipient | Channel | Subject Template |
 |---|---|---|---|---|
+| `INQUIRY_RECEIVED` | WF-015 | System admin email | EMAIL | New public inquiry received — review required |
 | `PROFESSIONAL_APPLICATION_RECEIVED` | WF-001 | System admin email | EMAIL | New professional application received |
 | `CASE_CREATED` | WF-002 | System admin email | EMAIL | New municipality case submitted |
 | `SAFEGUARDING_FLAGGED` | WF-005 | System admin email | EMAIL | Safeguarding concern flagged — immediate action required |
 | `HOURS_SUBMITTED` | WF-006 | System admin email | EMAIL | Hours submitted for approval |
 | `DOCUMENT_ACTION_REQUIRED` | WF-011 | See recipient rules below | EMAIL | Document action required |
+
+**`INQUIRY_RECEIVED` recipient rules:**
+- All public intake submissions: Admin system email (`recipient_email = SYSTEM_ADMIN_EMAIL`)
+- Not emitted for SPAM-flagged records (honeypot-detected submissions)
+- Not emitted for failed submissions (CAPTCHA failure, rate limit, validation error)
+- Notification body: submission ID and admin review link only — no PII, no form content (ADR-004)
 
 **`DOCUMENT_ACTION_REQUIRED` recipient rules:**
 - Upload pending verification (trigger: DOCUMENT_UPLOADED): Admin system email
@@ -201,6 +208,7 @@ All fields required by this workflow are defined in TS-001 (notification_log sch
 
 | Reference | Direction | Description |
 |-----------|-----------|-------------|
+| WF-015 | Upstream | Emits `INQUIRY_RECEIVED` notification on public form submission |
 | WF-001 | Upstream | Emits `PROFESSIONAL_APPLICATION_RECEIVED` notification |
 | WF-002 | Upstream | Emits `CASE_CREATED` notification |
 | WF-005 | Upstream | Emits `SAFEGUARDING_FLAGGED` notification |

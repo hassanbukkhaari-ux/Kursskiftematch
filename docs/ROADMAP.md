@@ -60,9 +60,10 @@
 - Audit & compliance: AuditEvents, GDPR workflows
 - Admin portal: Case CRUD, professional management, document verification
 - Professional portal: View cases, write sessions, register hours
-- Public website: Homepage, recruitment page, privacy policy
-- Data migration: Tally → professionals, contact forms → inquiries
-- Launch preparation: Domain, DNS, Vercel deploy
+- Public website: Homepage, municipality inquiry form, professional application form, privacy policy
+- **Public intake boundary (WF-015):** `inbound_inquiries` table, public API routes (`POST /api/public/intake/inquiry`, `POST /api/public/intake/professional-application`), Cloudflare Turnstile CAPTCHA, rate limiting, admin review queue in admin portal
+- **Data migration:** Tally professional applications → `inbound_inquiries` (CONVERTED); existing contact form submissions → `inbound_inquiries` (CONVERTED where applicable)
+- Launch preparation: Domain, DNS, Vercel deploy, Cloudflare Turnstile site key configured
 
 ---
 
@@ -111,15 +112,24 @@
 - ✅ GDPR: 7-year retention, right-to-be-forgotten (scheduled delete)
 
 ### Portals
-- ✅ Admin portal: Full case, professional, document management
+- ✅ Admin portal: Full case, professional, document management, inbound inquiry review queue
 - ✅ Professional portal: View cases, write sessions, register hours, upload docs
-- ✅ Public website: Homepage, recruitment (Tally initially), contact form
+- ✅ Public website: Homepage, municipality inquiry form, professional application form, privacy policy
+
+### Public Intake Boundary (WF-015)
+- ✅ `inbound_inquiries` staging table (Governance Domain)
+- ✅ Public API routes: `POST /api/public/intake/inquiry`, `POST /api/public/intake/professional-application`
+- ✅ Cloudflare Turnstile CAPTCHA (server-side validation, GDPR-safe)
+- ✅ Honeypot field, rate limiting (5 submissions/IP/hour)
+- ✅ `INQUIRY_RECEIVED` notification event (6th MVP notification type)
+- ✅ Admin review + convert/reject workflow in admin portal
 
 ### Infrastructure
 - ✅ Supabase PostgreSQL database with RLS
 - ✅ Supabase Auth (email/password, JWT)
 - ✅ Vercel deployment (Next.js)
 - ✅ Document storage (Supabase Storage, signed URLs)
+- ✅ Cloudflare Turnstile (CAPTCHA for public intake)
 
 ---
 
@@ -275,7 +285,8 @@
 - Vercel (deployment)
 - Supabase (database, auth, storage, Edge Functions)
 - GitHub (version control)
-- Resend (transactional email — Notification Service, 5 MVP events)
+- Resend (transactional email — Notification Service, 6 MVP events)
+- Cloudflare Turnstile (CAPTCHA for public intake — WF-015)
 
 ### Phase 2
 - Potential: Slack API

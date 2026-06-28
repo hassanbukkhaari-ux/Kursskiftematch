@@ -42,7 +42,7 @@
 **Database Name:** kursskifte_match  
 **Encoding:** UTF-8  
 **Timezone:** UTC  
-**Total Tables:** 20 (13 core + 7 supporting)
+**Total Tables:** 21 (13 core + 8 supporting)
 
 **Tables by Domain:**
 
@@ -70,10 +70,11 @@
 ### Municipality Domain (1 table)
 - municipalities
 
-### Governance Domain (3 tables)
+### Governance Domain (4 tables)
 - audit_events
 - deletion_schedules
 - notification_log
+- inbound_inquiries
 
 ### System Tables (3 tables)
 - profiles (auth sync)
@@ -1085,6 +1086,89 @@ CREATE INDEX idx_notification_log_pending ON notification_log(status, attempt_co
 
 ---
 
+### TABLE: inbound_inquiries (Governance Domain — Public Intake staging table)
+
+**Purpose:** Stage all public website form submissions before admin review and conversion. No public form may write directly to core operational tables. This is the sole entry point for external submissions from kursskifte.dk. (WF-015)  
+**Domain:** Governance  
+**Source:** WF-015
+
+```sql
+CREATE TABLE IF NOT EXISTS inbound_inquiries (
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  -- Submission classification
+  submission_type     TEXT NOT NULL,
+    CONSTRAINT valid_submission_type CHECK (
+      submission_type IN ('MUNICIPALITY_INQUIRY', 'PROFESSIONAL_APPLICATION', 'PARTNER_LEAD')
+    ),
+  status              TEXT NOT NULL DEFAULT 'PENDING',
+    CONSTRAINT valid_intake_status CHECK (
+      status IN ('PENDING', 'REVIEWED', 'CONVERTED', 'REJECTED', 'SPAM')
+    ),
+
+  -- Submitter information (from form)
+  submitted_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  submitter_name      TEXT NOT NULL,
+  submitter_email     TEXT NOT NULL,
+  submitter_phone     TEXT,
+  organization_name   TEXT,                        -- Free text; not FK to municipalities
+
+  -- Submission content
+  message             TEXT,
+  form_data           JSONB NOT NULL,              -- Complete validated payload; immutable after creation
+
+  -- Intake metadata
+  source_url          TEXT,                        -- Referring kursskifte.dk page URL
+  ip_hash             TEXT,                        -- SHA-256 hashed submitter IP; not reversible
+  captcha_verified    BOOLEAN NOT NULL DEFAULT FALSE,
+
+  -- Admin review
+  reviewed_by         UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  reviewed_at         TIMESTAMPTZ,
+  rejection_reason    TEXT,
+
+  -- Conversion tracking (set when status = CONVERTED)
+  converted_to_type   TEXT,                        -- e.g., 'case', 'professional'
+  converted_to_id     UUID,                        -- PK of the created canonical record
+
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_inbound_inquiries_status
+  ON inbound_inquiries(status);
+CREATE INDEX IF NOT EXISTS idx_inbound_inquiries_submission_type
+  ON inbound_inquiries(submission_type);
+CREATE INDEX IF NOT EXISTS idx_inbound_inquiries_submitted_at
+  ON inbound_inquiries(submitted_at DESC);
+CREATE INDEX IF NOT EXISTS idx_inbound_inquiries_reviewed_by
+  ON inbound_inquiries(reviewed_by);
+CREATE INDEX IF NOT EXISTS idx_inbound_inquiries_pending
+  ON inbound_inquiries(status, submitted_at)
+  WHERE status = 'PENDING';
+```
+
+**Constraints:**
+- `submission_type` constrained to MVP types; `PARTNER_LEAD` included in CHECK constraint for Phase 2 without migration
+- `status` transitions: `PENDING` → `REVIEWED` (admin opens but doesn't act) → `CONVERTED` or `REJECTED`; `PENDING` → `SPAM` (honeypot detection at intake)
+- `form_data` JSONB stores the complete validated payload at submission time; never modified after creation
+- `converted_to_type` and `converted_to_id` are set together when `status = CONVERTED`; NULL until conversion
+- `reviewed_by` SET NULL on profile deletion (admin account removed — submission record preserved for audit)
+- No FK on `converted_to_id` — the target table varies by `converted_to_type` (polymorphic reference)
+
+**Retention:**
+- `SPAM` and `REJECTED` records: 90 days from `created_at` / `reviewed_at`, then eligible for WF-013 deletion scheduling
+- `PENDING` / `REVIEWED` records never converted: 90 days from `created_at`
+- `CONVERTED` records: retained for the same period as the canonical object (case or professional) — 7 years from archival
+
+**RLS Policy:**
+- SELECT: Admin only — public submitters have no read access to their own submission
+- INSERT: System/service role only (via public API route server-side handler; never from browser)
+- UPDATE: Admin only (review, convert, reject actions)
+- DELETE: Never (ADR-007; soft-delete via status transitions only)
+
+---
+
 ## 1.4 VIEWS
 
 ### VIEW: v_cases_with_professional
@@ -1970,12 +2054,13 @@ PHASE 8: Governance (depends on: all tables)
   18_create_audit_events.sql          (FK: profiles.id, polymorphic)
   19_create_deletion_schedules.sql
   20_create_notification_log.sql      (FK: profiles.id — ADR-010)
+  21_create_inbound_inquiries.sql     (FK: profiles.id for reviewed_by — WF-015)
 
 PHASE 9: Materialized Views (depends on: all tables)
-  21_create_views.sql
+  22_create_views.sql
 
 PHASE 10: Security (depends on: all tables)
-  22_enable_rls_policies.sql
+  23_enable_rls_policies.sql
 ```
 
 ### Migration Execution Standards

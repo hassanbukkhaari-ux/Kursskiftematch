@@ -26,21 +26,31 @@ Transform a municipality's initial contact requesting support for a citizen into
 
 ## 3. TRIGGER
 
-A municipality requests support for a citizen through one of these methods:
-- Direct contact with Kurshshifte
-- Email inquiry
-- Online contact form submission
-- Automated submission (future capability)
+Admin opens a municipality inquiry for review. The inquiry originates from one of two paths:
+
+**Path A — Public website intake (via WF-015):**
+- Sagsbehandler submits municipality inquiry form on kursskifte.dk
+- WF-015 stages the submission as an `inbound_inquiries` record (`status = PENDING`, `submission_type = MUNICIPALITY_INQUIRY`)
+- Admin receives `INQUIRY_RECEIVED` notification and opens the staged record in the admin portal
+- Admin initiates conversion — WF-002 begins with the staged data pre-filled
+
+**Path B — Direct admin entry:**
+- Sagsbehandler contacts Kursskifte by phone or email
+- Admin manually enters the inquiry directly in the admin portal
+- WF-002 begins immediately (no `inbound_inquiries` record created for phone/email intake)
+
+Note: "Online contact form submission" is **not** a direct trigger for WF-002. Public website form submissions are owned by WF-015. WF-002 begins only after admin initiates case creation from a staged or manually-entered inquiry.
 
 ---
 
 ## 4. PRECONDITIONS
 
-- Kurshshifte is operational
-- Authorized Kurshshifte staff available to process inquiries
-- Municipality reference data is accessible
+- Kursskifte is operational
+- Authorized Kursskifte staff available to process inquiries
+- Municipality reference data is accessible (or admin creates a new municipality record as part of WF-002 Step 1)
 - Complexity assessment factors are defined
 - Grant determination process is established
+- For Path A: a staged `inbound_inquiries` record exists with `submission_type = MUNICIPALITY_INQUIRY` and `status = PENDING` or `REVIEWED`
 
 ---
 

@@ -25,7 +25,17 @@ Convert a professional application into a REGISTERED professional profile, verif
 
 ## TRIGGER
 
-Recruiter submits professional application (manual form or admin intake).
+Recruiter initiates professional profile creation from one of two paths:
+
+**Path A — Public website intake (via WF-015):**
+- Professional applicant submits application form on kursskifte.dk
+- WF-015 stages the submission as an `inbound_inquiries` record (`status = PENDING`, `submission_type = PROFESSIONAL_APPLICATION`)
+- Admin (Recruiter) receives `INQUIRY_RECEIVED` notification and opens the staged record
+- Recruiter initiates conversion — WF-001 begins with the staged application data pre-filled
+
+**Path B — Direct recruiter entry:**
+- Recruiter manually enters the professional application directly in the admin portal
+- WF-001 begins immediately (no `inbound_inquiries` record created)
 
 ---
 
@@ -33,6 +43,7 @@ Recruiter submits professional application (manual form or admin intake).
 
 - Professional has provided application information (CV, contact, qualifications)
 - Recruiter has reviewed application
+- For Path A: a staged `inbound_inquiries` record exists with `submission_type = PROFESSIONAL_APPLICATION` and `status = PENDING` or `REVIEWED`
 
 ---
 

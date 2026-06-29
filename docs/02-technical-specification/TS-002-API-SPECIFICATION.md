@@ -1901,20 +1901,55 @@ GET /api/match-runs/:id/candidates
       "capacity_score": 88.00,
       "complexity_fit_score": 87.00,
       "algorithm_version": "1.0",
-      "scoring_explanation": "string (encrypted, decrypted before return)",
-      "created_at": "2026-06-27T10:05:00Z"
+      "scoring_explanation": "string (decrypted before return — human-readable explanation of the overall score)",
+      "created_at": "2026-06-27T10:05:00Z",
+      "professional": {
+        "full_name": "string | null",
+        "profession": "string",
+        "experience_years": 5,
+        "availability_status": "AVAILABLE",
+        "capacity_hours_week": 20,
+        "max_concurrent_cases": 4,
+        "availability_days": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
+        "qualifications": ["Socialrådgiver", "Familieterapeut"],
+        "profile_photo_url": "string | null"
+      },
+      "match_strengths": ["string"],
+      "attention_points": ["string"]
     }
   ],
   "count": 5
 }
 ```
 
-**TS-001 columns used:** `match_candidates.id`, `.match_run_id`, `.professional_id`, `.rank`, `.overall_score`, `.qualifications_score`, `.availability_score`, `.capacity_score`, `.complexity_fit_score`, `.algorithm_version`, `.scoring_explanation`, `.created_at`
+**TS-001 columns used:**
+- `match_candidates`: `id`, `match_run_id`, `professional_id`, `rank`, `overall_score`, `qualifications_score`, `availability_score`, `capacity_score`, `complexity_fit_score`, `algorithm_version`, `scoring_explanation`, `created_at`
+- `professionals` (joined): `profession`, `experience_years`, `availability_status`, `capacity_hours_week`, `max_concurrent_cases`, `availability_days`, `qualifications`
+- `profiles` (joined): `full_name`
+
+**Derived fields (computed at API layer — not stored in DB):**
+
+| Field | Source | Logic |
+|---|---|---|
+| `professional.profile_photo_url` | Supabase Storage | Signed URL generated at API layer for the professional's photo object; `null` if no photo uploaded |
+| `match_strengths` | Score dimensions | Array of human-readable strings derived from score components: dimension scores ≥ 80 become a strength bullet. E.g. `qualifications_score ≥ 80` → `"Stærke kvalifikationer inden for feltet"`. Computed by the API, never stored |
+| `attention_points` | Score dimensions | Array of human-readable strings derived from score components: dimension scores < 60 become an attention bullet. E.g. `capacity_score < 60` → `"Begrænset kapacitet — verificér ugentlige timer"`. Computed by the API, never stored |
+
+**Thresholds for match_strengths / attention_points:**
+
+| Dimension | Strength (≥) | Attention (<) | Example strength text | Example attention text |
+|---|---|---|---|---|
+| `qualifications_score` | 80 | 60 | "Stærke faglige kvalifikationer" | "Kvalifikationer matcher ikke fuldt ud — gennemgå CV" |
+| `availability_score` | 80 | 60 | "God tilgængelighed i sagperioden" | "Begrænset tilgængelighed — tjek datoer" |
+| `capacity_score` | 80 | 60 | "Kapacitet til nye sager" | "Tæt på kapacitetsgrænsen — verificér ugentlige timer" |
+| `complexity_fit_score` | 80 | 60 | "Erfaring med tilsvarende kompleksitet" | "Har primært erfaring med enklere sager" |
 
 **Notes:**
 - Ordered by `rank ASC` (1 = best)
 - **No `selected BOOLEAN` field** — not in TS-001
 - **No single `score` field** — TS-001 has 5 separate score columns
+- `match_strengths` and `attention_points` are **never stored in the database** — they are computed on each API call from the stored score dimensions (ADR-008: no derived values stored)
+- UI rendering spec: see §16 (Match UI/UX Requirements)
 
 ---
 
@@ -2575,6 +2610,101 @@ These fields appeared in TS-002 v1.0 but are **not in TS-001** and must never be
 | `run_at`, `selected_candidate_id`, `status = 'PENDING'/'COMPLETED'/'FAILED'` | match_runs | TS-001 uses `triggered_at`, `final_assignment_id FK case_assignments`, status `INITIATED/SCORED/ASSIGNED/OVERRIDDEN/CANCELLED` |
 | `score` (single field), `selected BOOLEAN` | match_candidates | TS-001 has 5 separate score columns; no `selected` field |
 | `related_entity_type`, `related_entity_id`, `actor_role` | audit_events | TS-001 uses `resource_type`, `resource_id`; no `actor_role` |
+
+---
+
+---
+
+## 16. Match UI/UX Requirements
+
+> **Scope:** Specifies what the frontend must render when displaying matching candidates to admin. These requirements derive from §8.4 (GET /api/match-runs/:id/candidates) — no additional backend endpoints are required for MVP.
+
+---
+
+### 16.1 Candidate Card (list view)
+
+Displayed for each candidate in the match result list. All data comes from the §8.4 response.
+
+| UI Element | Data Field | Notes |
+|---|---|---|
+| Circular match score | `overall_score` | Displayed as a percentage ring (e.g., 87%). Color: green ≥ 80, yellow 60–79, red < 60 |
+| Profile photo | `professional.profile_photo_url` | Round avatar. If `null`: show initials from `professional.full_name` |
+| Name | `professional.full_name` | Falls back to `professional.profession` if `null` |
+| Profession | `professional.profession` | e.g. "Socialrådgiver", "Pædagog" |
+| Key qualifications | `professional.qualifications` | Show first 3 items as chips/tags |
+| "Hvorfor dette match?" | `match_strengths[0]` | First strength bullet shown inline on card |
+| Rank badge | `rank` | "#1 Match", "#2 Match" etc. |
+| Availability indicator | `professional.availability_status` | "Tilgængelig" / "Delvist tilgængelig" |
+
+**Interaction:** Clicking a card opens the Detailed Profile View (§16.2).
+
+---
+
+### 16.2 Detailed Profile View
+
+Full-screen or modal view for a single candidate. All data from §8.4 (single candidate object).
+
+**Section: Score Breakdown**
+
+| UI Element | Data Field |
+|---|---|
+| Overall score (large) | `overall_score` |
+| Kvalifikationer | `qualifications_score` |
+| Tilgængelighed | `availability_score` |
+| Kapacitet | `capacity_score` |
+| Kompleksitet | `complexity_fit_score` |
+| Score-forklaring (expandable) | `scoring_explanation` |
+
+**Section: Matchstyrker & Opmærksomhedspunkter**
+
+| UI Element | Data Field |
+|---|---|
+| Styrker (green checkmarks) | `match_strengths` (array — show all) |
+| Opmærksomhedspunkter (yellow warnings) | `attention_points` (array — show all) |
+| Empty state | If both arrays empty: "Ingen fremhævede styrker eller opmærksomhedspunkter" |
+
+**Section: Kapacitet & Tilgængelighed**
+
+| UI Element | Data Field |
+|---|---|
+| Tilgængelighed | `professional.availability_status` |
+| Ugentlige timer | `professional.capacity_hours_week` |
+| Max samtidige sager | `professional.max_concurrent_cases` |
+| Tilgængelige dage | `professional.availability_days` (rendered as day chips) |
+
+**Section: Erfaring & Uddannelse**
+
+| UI Element | Data Field |
+|---|---|
+| Erhvervserfaring | `professional.experience_years` years |
+| Profession | `professional.profession` |
+| Kvalifikationer | `professional.qualifications` (full list) |
+
+> **Phase 2 note:** Structured education history, multi-profession tables, certifications, and specialization tags are deferred to Phase 2. In MVP, `profession` is a single text field and `qualifications` is a text array on the `professionals` table. No schema changes are needed to render this view.
+
+**Section: Dokumentstatus** (requires separate API call)
+
+| UI Element | Endpoint | Notes |
+|---|---|---|
+| Dokumentliste med status | `GET /api/professionals/:id/documents` (§4.5) | Show document type, status (VERIFIED / UNVERIFIED / PENDING_UPLOAD), expiry_date |
+| CRIMINAL_RECORD badge | From documents list | Required for assignment; show warning if not VERIFIED |
+
+**Admin Actions**
+
+| Action | Endpoint | Notes |
+|---|---|---|
+| Vælg denne fagperson | `POST /api/match-runs/:id/assign` (§8.5) | Assigns the professional; transitions match_run status |
+| Afvis kandidat | No endpoint — admin simply selects another | No rejection record stored in MVP |
+
+---
+
+### 16.3 UI Constraints
+
+1. **No additional API calls beyond §8.4 + §4.5** — The candidate list and all score/profile data are returned in a single §8.4 call. Only the document status section requires a separate §4.5 call (lazy-loaded when admin opens document tab).
+2. **match_strengths / attention_points are frontend-displayable directly** — No frontend logic needed to compute them; the API delivers ready-to-render strings.
+3. **profile_photo_url is a signed URL** — It expires after a configurable TTL (default: 1 hour). The frontend should not cache it beyond this window.
+4. **Score color thresholds** — green ≥ 80, yellow 60–79, red < 60. Apply consistently across both card and detail views.
+5. **Encryption** — `scoring_explanation` is decrypted server-side before the API response. The frontend never receives encrypted ciphertext from §8.4.
 
 ---
 

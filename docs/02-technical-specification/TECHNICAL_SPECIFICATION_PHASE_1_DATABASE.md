@@ -94,6 +94,7 @@
 CREATE TABLE public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT UNIQUE NOT NULL,
+  full_name TEXT,
   role TEXT NOT NULL DEFAULT 'professional',
     CONSTRAINT valid_role CHECK (role IN ('admin', 'professional')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -107,7 +108,7 @@ CREATE INDEX idx_profiles_email ON profiles(email);
 **RLS Policy:**
 - SELECT: Users can see own profile, admins can see all
 - UPDATE: Users can update own profile only
-- DELETE: Disallowed (profiles archived, not deleted)
+- DELETE: Disallowed (profiles are never deleted — the auth.users ON DELETE CASCADE removes the row if the Supabase auth account is deleted, but the platform never calls DELETE directly)
 
 ---
 
@@ -626,7 +627,7 @@ CREATE TABLE session_log_corrections (
   correction_note TEXT NOT NULL,
   correction_reason TEXT NOT NULL,
     CONSTRAINT valid_reason CHECK (correction_reason IN (
-      'TYPO', 'WRONG_TIME', 'CLARIFICATION', 'OMISSION', 'OTHER'
+      'TYPO', 'WRONG_TIME', 'CLARIFICATION', 'OMISSION', 'SAFEGUARDING', 'OTHER'
     )),
   created_by UUID NOT NULL REFERENCES profiles(id),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -923,6 +924,11 @@ CREATE TABLE match_runs (
 CREATE INDEX idx_match_runs_case_id ON match_runs(case_id);
 CREATE INDEX idx_match_runs_status ON match_runs(status);
 CREATE INDEX idx_match_runs_algorithm_version ON match_runs(algorithm_version);
+
+-- Prevents concurrent active match runs for the same case (at most one INITIATED or SCORED run per case)
+CREATE UNIQUE INDEX idx_match_runs_active_per_case
+  ON match_runs(case_id)
+  WHERE status IN ('INITIATED', 'SCORED');
 ```
 
 **Constraints:**
@@ -1150,7 +1156,12 @@ CREATE TABLE deletion_schedules (
 );
 
 CREATE INDEX idx_deletion_schedules_scheduled_for_deletion_at ON deletion_schedules(scheduled_for_deletion_at);
-CREATE INDEX idx_deletion_schedules_executed_at ON deletion_schedules(executed_at) 
+CREATE INDEX idx_deletion_schedules_executed_at ON deletion_schedules(executed_at)
+  WHERE executed_at IS NULL;
+
+-- Prevents duplicate deletion entries for the same record (idempotency guard)
+CREATE UNIQUE INDEX idx_deletion_schedules_unique_pending
+  ON deletion_schedules(record_type, record_id)
   WHERE executed_at IS NULL;
 ```
 
@@ -1186,11 +1197,24 @@ SELECT
   ca.professional_id,
   ca.id as assignment_id,
   ca.started_at as assignment_started_at,
-  (SELECT granted_hours FROM case_grants WHERE case_id = c.id AND status = 'ACTIVE' LIMIT 1) as active_grant_hours,
-  (SELECT SUM(hours) FROM registered_hours WHERE case_id = c.id AND status = 'APPROVED') as approved_hours_used
+  cg.granted_hours as active_grant_hours,
+  rh.approved_hours_used
 FROM cases c
-LEFT JOIN case_assignments ca ON c.id = ca.case_id AND ca.ended_at IS NULL;
+LEFT JOIN case_assignments ca ON c.id = ca.case_id AND ca.ended_at IS NULL
+LEFT JOIN LATERAL (
+  SELECT granted_hours
+  FROM case_grants
+  WHERE case_id = c.id AND status = 'ACTIVE'
+  LIMIT 1
+) cg ON true
+LEFT JOIN LATERAL (
+  SELECT COALESCE(SUM(hours), 0) AS approved_hours_used
+  FROM registered_hours
+  WHERE case_id = c.id AND status = 'APPROVED'
+) rh ON true;
 ```
+
+> **Performance note:** LATERAL JOINs replace the prior correlated subqueries. The planner can cache and pipeline these; correlated subqueries re-executed per row could cause O(n) round-trips on large result sets.
 
 **RLS Policy:** Inherit from cases
 
@@ -1215,7 +1239,7 @@ SELECT
   COALESCE(SUM(c.weekly_hours), 0) as current_hours_assigned
 FROM professionals p
 LEFT JOIN case_assignments ca ON p.id = ca.professional_id AND ca.ended_at IS NULL
-LEFT JOIN cases c ON ca.case_id = c.id
+LEFT JOIN cases c ON ca.case_id = c.id AND c.status = 'ACTIVE'
 WHERE p.status = 'ACTIVE'
   AND p.availability_status != 'UNAVAILABLE'
 GROUP BY p.id
@@ -1223,6 +1247,8 @@ HAVING
   COUNT(ca.id) < p.max_concurrent_cases
   AND COALESCE(SUM(c.weekly_hours), 0) < p.capacity_hours_week;
 ```
+
+> **Fix note:** `AND c.status = 'ACTIVE'` added to the cases JOIN. Without this filter, COMPLETED/ARCHIVED case hours would count toward a professional's capacity, incorrectly blocking them from new matches.
 
 **RLS Policy:** Inherit from professionals
 
@@ -1840,10 +1866,18 @@ CREATE POLICY "match_candidates_delete_blocked" ON match_candidates
 ### Policy: municipalities (SELECT)
 
 ```sql
+-- Professionals may only see non-sensitive reference columns (id, name, status).
+-- Sagsbehandler contact fields are admin-only to prevent PII exposure.
+-- The API layer enforces column filtering: professionals receive {id, name, status} only.
+-- RLS gates row access; the API layer gates column access.
 CREATE POLICY "municipalities_select_policy" ON municipalities
   FOR SELECT
-  USING (true);  -- All authenticated users can see (reference data)
+  USING (auth.jwt()->>'role' = 'admin' OR status = 'ACTIVE');
+  -- Professionals can see ACTIVE municipalities (for case context display)
+  -- but the API response must omit sagsbehandler_* and secondary_contact_* columns for professionals
 ```
+
+> **Design decision:** PostgreSQL column-level RLS is not supported in Supabase's public schema in a maintainable way. Column filtering is enforced at the API layer — the `GET /api/municipalities` endpoint returns full rows to admins and strips `sagsbehandler_*` / `secondary_contact_*` fields for professionals.
 
 ### Policy: municipalities (INSERT)
 
@@ -2142,10 +2176,11 @@ DROP TABLE IF EXISTS table_name CASCADE;
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT UNIQUE NOT NULL,
+  full_name TEXT,
   role TEXT NOT NULL DEFAULT 'professional',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  
+
   CONSTRAINT valid_role CHECK (role IN ('admin', 'professional'))
 );
 
@@ -2677,6 +2712,8 @@ Audit events themselves are never encrypted (must be searchable for compliance).
 3. Deletion scheduled: `deletion_schedules` entry created with `scheduled_for_deletion_at = data_retention_expires_at + INTERVAL '24 hours'`
 4. At scheduled time: **physical deletion** (hard delete) in FK cascade order — this is the ONLY hard delete permitted in the system
 5. Audit event logged (`DATA_DELETED`) before physical deletion as immutable proof
+
+> **Implementation requirement (Critical):** Physical deletion (step 4) bypasses RLS because all tables have `USING (FALSE)` on DELETE. The WF-013 scheduler **must** use the Supabase `service_role` key (never the `anon` or `authenticated` key). The `service_role` key must be stored as a server-side secret (environment variable only; never exposed to the client). A missing `service_role` key will cause all WF-013 deletion attempts to silently fail (RLS blocks the DELETE and returns 0 rows affected rather than an error).
 
 **Right-to-Forget (GDPR Article 17):** Admin-initiated via manual trigger; 30-day delay before physical deletion  
 **Inbound Inquiries:** SPAM and REJECTED entries physically deleted 90 days after creation (shorter retention — no ongoing professional relationship)

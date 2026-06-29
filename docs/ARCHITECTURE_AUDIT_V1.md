@@ -4,7 +4,19 @@
 **Auditor:** Chief Software Architect  
 **Purpose:** Comprehensive review of all architecture documentation before Technical Specification design  
 **Scope:** All documents in /docs  
-**Status:** AUDIT COMPLETE
+**Status:** SUPERSEDED
+
+> **⚠ SUPERSEDED — June 29, 2026**  
+> This audit was conducted before Technical Specification (TS-001, TS-002) and workflows (WF-001 through WF-013) were completed. All Critical and High findings have since been resolved:
+> - All 13 workflows are now fully documented and APPROVED for MVP
+> - RLS policies are fully defined in TS-001 §1.5
+> - Permission model is defined in TS-001 and PERMISSION_MODEL.md
+> - Professional suspension gap closed: `INACTIVE` covers temporary deactivation in MVP
+> - Case assignment change gap closed: WF-008 (Professional Handover) is fully documented
+> - Technical Specification (TS-001 v1.0, TS-002 v2.0) supersedes all schema gaps identified here
+>
+> This document is retained as a **historical record** of the pre-implementation architecture review.
+> For current architecture status, refer to: TS-001, TS-002, ADR-001 through ADR-010, and WF-001 through WF-013.
 
 ---
 

@@ -146,8 +146,7 @@ MVP must implement the following capabilities. Organized by domain.
 | 1.9 | Suspend Professional | DEFERRED (Phase 2) | Listed in capability map as Phase 2 |
 | 1.10 | Archive Professional | REQUIRED | Offboarding requirement |
 
-**GAP IDENTIFIED:** Capability 1.9 (Suspend Professional) is listed in BUSINESS_CAPABILITY_MAP but marked Phase 2 in DOMAIN_BOUNDARIES_AND_CONTEXT_MAP. Clarification needed: Is suspension in MVP or Phase 2?
-**Decision Required Before Technical Specification.**
+**GAP CLOSED (June 29, 2026):** Capability 1.9 (Suspend Professional) — **RESOLVED: Temporary suspension is handled via `status = INACTIVE` (MVP). A distinct `SUSPENDED` status is Phase 2.** The approved `professionals` table enum (`REGISTERED | ACTIVE | INACTIVE | ARCHIVED`) has no `SUSPENDED` value. `INACTIVE` covers temporary deactivation (illness, leave). WF-008 (Professional Handover) documents the ACTIVE → INACTIVE transition. No schema change required. A separate `SUSPENDED` lifecycle with formal disciplinary workflow is Phase 2.
 
 ### Municipality Domain (5 capabilities required)
 | # | Capability | MVP Status | Rationale |
@@ -171,7 +170,7 @@ MVP must implement the following capabilities. Organized by domain.
 | 3.8 | Close Case | REQUIRED | Case lifecycle completion |
 | 3.9 | Archive Case | REQUIRED | Data management |
 
-**GAP IDENTIFIED:** Capability 3.6 (Change Case Assignment) — Not clear if this is MVP or Phase 2. WF-008 (Handover) not documented. Recommend implementing as part of handover workflow.
+**GAP CLOSED (June 29, 2026):** Capability 3.6 (Change Case Assignment) — **RESOLVED: Covered by WF-008 (Professional Handover), which is fully documented and APPROVED for MVP.** WF-008 handles the complete case assignment change: handover record creation, session log transfer, old assignment end, new assignment creation, professional status transitions. TS-001 and TS-002 are complete for this capability.
 
 ### Delivery Domain (7 capabilities required)
 | # | Capability | MVP Status | Rationale |

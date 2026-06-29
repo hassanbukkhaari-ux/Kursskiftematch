@@ -206,6 +206,18 @@ PENDING_UPLOAD → UNVERIFIED → VERIFIED
 
 ---
 
+## API ENDPOINTS
+
+| Trin | Metode | Endpoint | Auth | Tabel |
+|---|---|---|---|---|
+| Upload dokument | `POST` | `/api/professionals/:id/documents` | Own/Admin | `professional_documents` |
+| Hent dokumentliste | `GET` | `/api/professionals/:id/documents` | Own/Admin | `professional_documents` |
+| Verificer/afvis dokument | `PATCH` | `/api/professionals/:id/documents/:docId` | Admin | `professional_documents` |
+
+**TS-002 reference:** §4.5–4.7 (Professional Document Endpoints)
+
+---
+
 ## RELATED WORKFLOWS
 
 - **WF-001 (Professional Onboarding)** — Document verification is a required gate before professional activation

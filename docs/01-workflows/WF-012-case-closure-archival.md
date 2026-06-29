@@ -201,6 +201,19 @@ All transitions are one-way. No reversal from COMPLETED or ARCHIVED.
 
 ---
 
+## API ENDPOINTS
+
+| Trin | Metode | Endpoint | Auth | Tabel |
+|---|---|---|---|---|
+| Luk sag (ACTIVE→COMPLETED) | `POST` | `/api/cases/:id/status` | Admin | `cases` |
+| Arkivér sag (COMPLETED→ARCHIVED) | `POST` | `/api/cases/:id/status` | Admin | `cases` |
+| Afslut tildeling | `POST` | `/api/cases/:id/assignments/:assignmentId/end` | Admin | `case_assignments` |
+| Opret sletningsplan | `POST` | `/api/deletion-schedules` | Admin/System | `deletion_schedules` |
+
+**TS-002 reference:** §6.5 (Case status transitions), §6.6 (Assignment end), §9.3 (Deletion Schedules)
+
+---
+
 ## RELATED WORKFLOWS
 
 - **WF-003 (Match Run and Assignment)** — Creates the assignment; this workflow ends it

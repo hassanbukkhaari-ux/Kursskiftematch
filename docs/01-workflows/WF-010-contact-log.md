@@ -138,6 +138,17 @@ If `follow_up_required = TRUE`:
 
 ---
 
+## API ENDPOINTS
+
+| Trin | Metode | Endpoint | Auth | Tabel |
+|---|---|---|---|---|
+| Log kontakt | `POST` | `/api/cases/:id/contact-logs` | Own/Admin | `contact_logs` |
+| Hent kontaktlog | `GET` | `/api/cases/:id/contact-logs` | Own/Admin | `contact_logs` |
+
+**TS-002 reference:** §7.11–7.12 (Contact Log Endpoints)
+
+---
+
 ## RELATED WORKFLOWS
 
 - **WF-009 (Contact Disclosure)** — Admin must disclose sagsbehandler contact info before professional can make contact

@@ -167,4 +167,19 @@ Else:
 
 ---
 
+## API ENDPOINTS
+
+| Trin | Metode | Endpoint | Auth | Tabel |
+|---|---|---|---|---|
+| Registrer timer | `POST` | `/api/registered-hours` | Professional/Admin | `registered_hours` |
+| Rediger timer (PENDING) | `PATCH` | `/api/registered-hours/:id` | Own (PENDING) | `registered_hours` |
+| Indsend timer til godkendelse | `POST` | `/api/registered-hours/:id/submit` | Own | `registered_hours` |
+| Godkend/afvis timer (admin) | `POST` | `/api/registered-hours/:id/review` | Admin | `registered_hours` |
+| Hent timerliste | `GET` | `/api/registered-hours` | Own/Admin | `registered_hours` |
+| Hent enkelt post | `GET` | `/api/registered-hours/:id` | Own/Admin | `registered_hours` |
+
+**TS-002 reference:** §7.10–7.15 (Registered Hours Endpoints)
+
+---
+
 **This workflow is implementation-ready. Entities defined in DOMAIN_MODEL_DATABASE_SPEC.md**

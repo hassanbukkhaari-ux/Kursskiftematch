@@ -885,10 +885,10 @@ CREATE INDEX idx_contact_disclosures_disclosed_to_professional_id ON contact_dis
 - reason encrypted (application level)
 
 **RLS Policy:**
-- SELECT: Admin only (professionals not allowed to see disclosure record itself)
+- SELECT: Admin only (professionals do NOT read from this table — contact info is delivered externally via email, phone, or meeting at time of disclosure per WF-009. This is a deliberate design decision: professionals cannot browse the audit trail, and no lookup endpoint exists for them.)
 - INSERT: Admin only
-- UPDATE: Never
-- DELETE: Never
+- UPDATE: Never (immutable)
+- DELETE: Never (immutable)
 
 ---
 
@@ -1284,8 +1284,14 @@ CREATE POLICY "professionals_insert_policy" ON professionals
 ```sql
 CREATE POLICY "professionals_update_policy" ON professionals
   FOR UPDATE
-  USING (auth.jwt()->>'role' = 'admin')  -- Admin can update
-  WITH CHECK (auth.jwt()->>'role' = 'admin');  -- New state must be valid
+  USING (
+    auth.jwt()->>'role' = 'admin'  -- Admin can update any professional
+    OR auth.uid() = id             -- Professional can update own row (availability/capacity)
+  )
+  WITH CHECK (
+    auth.jwt()->>'role' = 'admin'  -- Admin can set any field
+    OR auth.uid() = id             -- Professional updates own row (application layer restricts to: availability_days, availability_status, capacity_hours_week, max_concurrent_cases)
+  );
 ```
 
 ### Policy: professionals (DELETE)

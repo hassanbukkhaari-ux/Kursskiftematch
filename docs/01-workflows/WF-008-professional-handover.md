@@ -202,4 +202,19 @@ Current: Professional Alice assigned for 3 months
 
 ---
 
+## API ENDPOINTS
+
+| Trin | Metode | Endpoint | Auth | Tabel |
+|---|---|---|---|---|
+| Opret overdragelse | `POST` | `/api/cases/:id/handovers` | Admin | `case_handovers` |
+| Opdater overdragelse | `PATCH` | `/api/cases/:id/handovers/:handoverId` | Admin | `case_handovers` |
+| Overfør sessionlogs | `POST` | `/api/session-logs/:id/transfers` | Admin | `session_log_transfers` |
+| Afslut gammel tildeling | `POST` | `/api/cases/:id/assignments/:assignmentId/end` | Admin | `case_assignments` |
+| Opdater fagpersonstatus | `PATCH` | `/api/professionals/:id` | Admin | `professionals` |
+| Opret ny tildeling | `POST` | `/api/cases/:id/assignments` | Admin | `case_assignments` |
+
+**TS-002 reference:** §6.10–6.12 (Handovers), §7.8 (Session Log Transfers), §6.6 (Assignments), §4.4 (Professional status)
+
+---
+
 **This workflow is implementation-ready. Related to CaseAssignment temporal model and SessionLogTransfer audit.**

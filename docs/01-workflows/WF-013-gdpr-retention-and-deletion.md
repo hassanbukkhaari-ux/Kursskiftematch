@@ -307,3 +307,17 @@ If during Step 4 a professional has active case assignments:
 - ✅ **Data Minimization:** Short retention for unconverted inbound_inquiries; no retention of data beyond legal basis
 - ✅ **Audit Trail:** DATA_DELETED event is immutable and proves deletion occurred, even after source record is gone
 - ✅ **Legal Holds:** Retention can be extended (A1) for legitimate legal reasons
+
+
+---
+
+## API ENDPOINTS
+
+| Trin | Metode | Endpoint | Auth | Tabel |
+|---|---|---|---|---|
+| Hent sletningsplan | `GET` | `/api/deletion-schedules` | Admin | `deletion_schedules` |
+| Opret sletningsplan | `POST` | `/api/deletion-schedules` | Admin/System | `deletion_schedules` |
+| Hent notifikationslog | `GET` | `/api/notification-log` | Admin | `notification_log` |
+| Genforsøg notifikation | `POST` | `/api/notification-log/:id/retry` | Admin | `notification_log` |
+
+**TS-002 reference:** §9.1–9.5 (Governance Domain Endpoints)

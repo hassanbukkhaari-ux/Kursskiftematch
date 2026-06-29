@@ -183,4 +183,18 @@ Case Coordinator clicks "Find Professional" or "Re-Match" for a case that is sta
 
 ---
 
+## API ENDPOINTS
+
+| Trin | Metode | Endpoint | Auth | Tabel |
+|---|---|---|---|---|
+| Hent tilgængelige fagpersoner | `GET` | `/api/professionals/available` | Admin | `v_professionals_available` |
+| Start match-kørsel | `POST` | `/api/match-runs` | Admin | `match_runs`, `match_candidates` |
+| Hent match-kørsel | `GET` | `/api/match-runs/:id` | Admin | `match_runs` |
+| Hent kandidater | `GET` | `/api/match-runs/:id/candidates` | Admin | `match_candidates` |
+| Tildel fagperson | `POST` | `/api/match-runs/:id/assign` | Admin | `match_runs`, `case_assignments` |
+
+**TS-002 reference:** §8.1–8.6 (Matching Domain Endpoints)
+
+---
+
 **This workflow is implementation-ready. Algorithm defined in MATCHING_AND_COMPLEXITY_RULES.md**

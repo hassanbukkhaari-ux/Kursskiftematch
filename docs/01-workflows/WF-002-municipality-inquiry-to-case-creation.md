@@ -1224,6 +1224,22 @@ These targets should be established based on Kurshshifte's business goals:
 
 ---
 
-**Document Status:** DRAFT (awaiting Hassan approval)  
+## API ENDPOINTS
+
+| Trin | Metode | Endpoint | Auth | Tabel |
+|---|---|---|---|---|
+| Modtag forespørgsel | `POST` | `/api/inquiries` | Public | `inbound_inquiries` |
+| List forespørgsler | `GET` | `/api/inquiries` | Admin | `inbound_inquiries` |
+| Hent forespørgsel | `GET` | `/api/inquiries/:id` | Admin | `inbound_inquiries` |
+| Opdater status | `PATCH` | `/api/inquiries/:id` | Admin | `inbound_inquiries` |
+| Konverter til sag | `POST` | `/api/inquiries/:id/convert` | Admin | `inbound_inquiries` |
+| Opret sag | `POST` | `/api/cases` | Admin | `cases` |
+| Sæt kompleksitet | `PUT` | `/api/cases/:id/complexity` | Admin | `case_complexity_factors` |
+
+**TS-002 reference:** §5.1–5.4 (Municipality Domain), §6.1–6.3 (Case Domain), §10.1–10.5 (Public Intake)
+
+---
+
+**Document Status:** APPROVED FOR MVP**  
 **Refinement Date:** June 27, 2026  
 **Additions:** Decision Gates (5 gates documented), Workflow KPIs (business metrics only)

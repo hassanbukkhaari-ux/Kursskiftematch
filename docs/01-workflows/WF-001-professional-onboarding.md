@@ -130,4 +130,18 @@ Recruiter submits professional application (manual form or admin intake).
 
 ---
 
+## API ENDPOINTS
+
+| Trin | Metode | Endpoint | Auth | Tabel |
+|---|---|---|---|---|
+| Strin 1 — Opret profil | `POST` | `/api/professionals` | Admin | `professionals` |
+| Strin 2 — Upload dokument | `POST` | `/api/professionals/:id/documents` | Own/Admin | `professional_documents` |
+| Strin 3 — Verificer dokument | `PATCH` | `/api/professionals/:id/documents/:docId` | Admin | `professional_documents` |
+| Strin 4 — Hent dokumenter | `GET` | `/api/professionals/:id/documents` | Own/Admin | `professional_documents` |
+| Strin 5 — Aktiver fagperson | `PATCH` | `/api/professionals/:id` | Admin | `professionals` |
+
+**TS-002 reference:** §4.1–4.7 (Professional Domain Endpoints)
+
+---
+
 **This workflow is implementation-ready. Data structures defined in DOMAIN_MODEL_DATABASE_SPEC.md**

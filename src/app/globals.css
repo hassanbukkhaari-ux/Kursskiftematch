@@ -1,57 +1,131 @@
 @import "tailwindcss";
 
-:root {
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
-  --primary: 221.2 83.2% 53.3%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222.2 47.4% 11.2%;
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222.2 47.4% 11.2%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 221.2 83.2% 53.3%;
-  --radius: 0.5rem;
+/* ================================================================
+   Kursskifte Brand Design Tokens
+   Identity: deep forest green · warm gold · cream
+================================================================ */
+
+@theme {
+  --color-brand: #1C3829;
+  --color-brand-mid: #2D5840;
+  --color-brand-light: #EEF4F0;
+  --color-brand-subtle: #D6E8DC;
+  --color-gold: #C8993A;
+  --color-gold-light: #FBF3E1;
+  --color-gold-muted: #E8C97A;
+  --color-cream: #F6F3EE;
+  --color-cream-dark: #EDE9E1;
+  --color-charcoal: #1A1F1C;
+  --color-muted: #6B7569;
+  --color-border: #E0DAD0;
+  --color-border-strong: #C8C0B0;
+  --color-score-green: #15803D;
+  --color-score-amber: #B45309;
+  --color-score-red: #B91C1C;
+  --color-score-green-bg: #DCFCE7;
+  --color-score-amber-bg: #FEF3C7;
+  --color-score-red-bg: #FEE2E2;
+  --font-serif: Georgia, 'Times New Roman', serif;
 }
 
-.dark {
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-  --card: 222.2 84% 4.9%;
-  --card-foreground: 210 40% 98%;
-  --popover: 222.2 84% 4.9%;
-  --popover-foreground: 210 40% 98%;
-  --primary: 217.2 91.2% 59.8%;
-  --primary-foreground: 222.2 47.4% 11.2%;
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 224.3 76.3% 48%;
+:root {
+  --radius: 0.75rem;
 }
 
 * {
-  border-color: hsl(var(--border));
+  border-color: var(--color-border);
+  box-sizing: border-box;
+}
+
+html {
+  background-color: var(--color-cream);
 }
 
 body {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
-  font-family: system-ui, -apple-system, sans-serif;
+  background-color: var(--color-cream);
+  color: var(--color-charcoal);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+}
+
+/* Serif heading utility */
+.font-serif {
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+/* Score ring animation */
+@keyframes score-fill {
+  from { stroke-dasharray: 0 var(--circumference); }
+  to   { stroke-dasharray: var(--progress) var(--gap); }
+}
+
+/* Drawer slide-in */
+@keyframes slide-in-right {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slide-out-right {
+  from { transform: translateX(0); opacity: 1; }
+  to   { transform: translateX(100%); opacity: 0; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.animate-slide-in {
+  animation: slide-in-right 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease forwards;
+}
+
+/* Smooth focus rings */
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-cream); }
+::-webkit-scrollbar-thumb { background: var(--color-border-strong); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-muted); }
+
+/* Capacity bar transition */
+.capacity-bar-fill {
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Hide scrollbar while keeping scroll functionality */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* iOS safe-area support for drawers and bottom bars */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 1rem);
+  }
+}
+
+/* Touch: prevent text selection during tap interactions */
+.no-select {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Smooth scroll on iOS */
+.scroll-ios {
+  -webkit-overflow-scrolling: touch;
 }

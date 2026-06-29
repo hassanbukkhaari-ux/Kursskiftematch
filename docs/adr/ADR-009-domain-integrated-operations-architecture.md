@@ -1,7 +1,7 @@
 # ADR-009: Shift from Matching-Focused to Domain-Integrated Operations Platform Architecture
 
 **Date:** June 27, 2026  
-**Status:** PROPOSED  
+**Status:** APPROVED  
 **Deciders:** Hassan (Founder & Operator)  
 **Context Provided By:** Claude (Architecture Documentation)
 

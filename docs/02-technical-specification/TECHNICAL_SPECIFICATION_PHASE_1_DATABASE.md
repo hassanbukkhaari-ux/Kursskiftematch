@@ -42,7 +42,7 @@
 **Database Name:** kursskifte_match  
 **Encoding:** UTF-8  
 **Timezone:** UTC  
-**Total Tables:** 19 (13 core + 6 supporting)
+**Total Tables:** 21 (15 core + 6 supporting)
 
 **Tables by Domain:**
 
@@ -67,11 +67,13 @@
 - match_runs
 - match_candidates
 
-### Municipality Domain (1 table)
+### Municipality Domain (2 tables)
 - municipalities
+- inbound_inquiries
 
-### Governance Domain (1 table)
+### Governance Domain (2 tables)
 - audit_events
+- notification_log
 
 ### System Tables (4 tables)
 - profiles (auth sync)
@@ -144,6 +146,67 @@ CREATE INDEX idx_municipalities_name ON municipalities(name);
 **RLS Policy:**
 - SELECT: All authenticated users
 - INSERT/UPDATE/DELETE: Admin only
+
+---
+
+### TABLE: inbound_inquiries
+
+**Purpose:** Public intake form submissions (municipality inquiries, professional applications, partner leads)  
+**Owner:** Municipality Domain  
+**Cardinality:** 1:1 with cases or professionals (after conversion)  
+**Source:** WF-002 (Municipality Inquiry to Case Creation), TS-002 §10  
+**Access:** INSERT via unauthenticated public endpoint (service_role only); all other operations admin only
+
+```sql
+CREATE TABLE inbound_inquiries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  submission_type TEXT NOT NULL,
+    CONSTRAINT valid_submission_type CHECK (submission_type IN (
+      'MUNICIPALITY_INQUIRY', 'PROFESSIONAL_APPLICATION', 'PARTNER_LEAD'
+    )),
+  status TEXT NOT NULL DEFAULT 'PENDING',
+    CONSTRAINT valid_status CHECK (status IN (
+      'PENDING', 'REVIEWED', 'CONVERTED', 'REJECTED', 'SPAM'
+    )),
+  submitted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  submitter_name TEXT NOT NULL,
+  submitter_email TEXT NOT NULL,
+  submitter_phone TEXT,
+  organization_name TEXT,
+  message TEXT,
+  form_data JSONB NOT NULL DEFAULT '{}'::JSONB,
+  source_url TEXT,
+  ip_hash TEXT,
+  captcha_verified BOOLEAN NOT NULL DEFAULT FALSE,
+  reviewed_by UUID REFERENCES profiles(id),
+  reviewed_at TIMESTAMPTZ,
+  rejection_reason TEXT,
+  converted_to_type TEXT,
+  converted_to_id UUID,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_inbound_inquiries_status ON inbound_inquiries(status);
+CREATE INDEX idx_inbound_inquiries_submission_type ON inbound_inquiries(submission_type);
+CREATE INDEX idx_inbound_inquiries_submitted_at ON inbound_inquiries(submitted_at DESC);
+```
+
+**Constraints:**
+- status flow: PENDING → REVIEWED → CONVERTED or REJECTED; PENDING → SPAM (honeypot)
+- `converted_to_type` ∈ {'professional', 'case'} when status = CONVERTED (application-layer constraint)
+- `reviewed_by` and `reviewed_at` set together when status changes from PENDING
+- `captcha_verified` must be TRUE before status can leave PENDING (enforced at API layer)
+- submitter_name and submitter_email required; all other fields optional
+
+**RLS Policy:**
+- SELECT: Admin only (personal data; not visible to professionals)
+- INSERT: System only (via service_role key — public endpoint never uses anon key)
+- UPDATE: Admin only
+- DELETE: Never (soft delete via status = REJECTED or SPAM)
+
+**GDPR Retention:**
+- SPAM and REJECTED after 90 days → physical deletion via WF-013
+- CONVERTED: retained with the converted entity (case or professional) — follows their 7-year cycle
 
 ---
 
@@ -480,6 +543,7 @@ CREATE TABLE session_logs (
   case_id UUID NOT NULL REFERENCES cases(id),
   professional_id UUID NOT NULL REFERENCES professionals(id),
   session_date DATE NOT NULL,
+    CONSTRAINT valid_session_date CHECK (session_date <= CURRENT_DATE),
   duration_minutes INTEGER NOT NULL,
     CONSTRAINT valid_duration CHECK (duration_minutes >= 1),
   status TEXT NOT NULL DEFAULT 'DRAFT',
@@ -510,7 +574,7 @@ CREATE INDEX idx_session_logs_data_retention ON session_logs(data_retention_expi
 ```
 
 **Constraints:**
-- session_date cannot be in future
+- session_date cannot be in future (`CHECK (session_date <= CURRENT_DATE)` — enforced at database level)
 - observations, citizen_mood_tone, safeguarding_detail: encrypted fields (application level)
 - participant_names: array of encrypted names (application level)
 - location: encrypted field (application level)
@@ -983,6 +1047,83 @@ DATA_DELETED: { "record_type": "case", "retention_years": 7 }
 - INSERT: Application only (via trigger or explicit logging)
 - UPDATE: Never (enforced by RLS)
 - DELETE: Never (enforced by RLS)
+
+---
+
+### TABLE: notification_log
+
+**Purpose:** Record of all outbound notifications dispatched as side effects of workflow state transitions  
+**Owner:** Governance Domain  
+**Cardinality:** 1:N (one notification per state transition event)  
+**Source:** ADR-010 (Notification Architecture), TS-002 §9.4–9.5  
+**Pattern:** Append-only per notification; status transitions (PENDING → SENT / FAILED) tracked via UPDATE
+
+```sql
+CREATE TABLE notification_log (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  notification_type TEXT NOT NULL,
+    CONSTRAINT valid_notification_type CHECK (notification_type IN (
+      'INQUIRY_RECEIVED',
+      'PROFESSIONAL_APPLICATION_RECEIVED',
+      'CASE_CREATED',
+      'SAFEGUARDING_FLAGGED',
+      'HOURS_SUBMITTED',
+      'DOCUMENT_ACTION_REQUIRED',
+      'CASE_CLOSED'
+    )),
+  related_entity_type TEXT NOT NULL,
+  related_entity_id UUID NOT NULL,
+  recipient_profile_id UUID REFERENCES profiles(id),
+  recipient_email TEXT,
+  delivery_channel TEXT NOT NULL DEFAULT 'EMAIL',
+    CONSTRAINT valid_delivery_channel CHECK (delivery_channel IN (
+      'EMAIL', 'IN_APP', 'SMS', 'PUSH', 'TEAMS', 'SLACK'
+    )),
+  status TEXT NOT NULL DEFAULT 'PENDING',
+    CONSTRAINT valid_status CHECK (status IN ('PENDING', 'SENT', 'FAILED')),
+  attempt_count INTEGER NOT NULL DEFAULT 0,
+    CONSTRAINT valid_attempt_count CHECK (attempt_count >= 0 AND attempt_count <= 3),
+  failure_reason TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  sent_at TIMESTAMPTZ,
+  failed_at TIMESTAMPTZ,
+  CONSTRAINT recipient_required CHECK (
+    recipient_profile_id IS NOT NULL OR recipient_email IS NOT NULL
+  )
+);
+
+CREATE INDEX idx_notification_log_status ON notification_log(status);
+CREATE INDEX idx_notification_log_notification_type ON notification_log(notification_type);
+CREATE INDEX idx_notification_log_related_entity ON notification_log(related_entity_type, related_entity_id);
+CREATE INDEX idx_notification_log_created_at ON notification_log(created_at DESC);
+CREATE INDEX idx_notification_log_recipient_profile_id ON notification_log(recipient_profile_id)
+  WHERE recipient_profile_id IS NOT NULL;
+```
+
+**Constraints:**
+- `recipient_profile_id` OR `recipient_email` must be non-null (CHECK constraint enforces at least one)
+- `attempt_count` capped at 3; retry blocked at API layer when attempt_count >= 3 (ADR-010)
+- `sent_at` set when status → SENT; `failed_at` set when status → FAILED (both NULL initially)
+- `related_entity_type` matches the table name of the triggering entity (e.g., 'cases', 'registered_hours')
+- For MVP: `delivery_channel = 'EMAIL'` only; other channels reserved for Phase 2
+
+**Supported MVP notification types and triggers:**
+
+| notification_type | Trigger event | Recipient |
+|---|---|---|
+| `INQUIRY_RECEIVED` | Inbound inquiry submitted | SYSTEM_ADMIN_EMAIL |
+| `PROFESSIONAL_APPLICATION_RECEIVED` | Professional application submitted | SYSTEM_ADMIN_EMAIL |
+| `CASE_CREATED` | Case created from inquiry | SYSTEM_ADMIN_EMAIL |
+| `SAFEGUARDING_FLAGGED` | Session log with safeguarding_concern_flag = TRUE | SYSTEM_ADMIN_EMAIL |
+| `HOURS_SUBMITTED` | registered_hours status → SUBMITTED | SYSTEM_ADMIN_EMAIL |
+| `DOCUMENT_ACTION_REQUIRED` | professional_documents re_upload_required set TRUE | professional (via recipient_profile_id) |
+| `CASE_CLOSED` | Case status → COMPLETED | professional (via recipient_profile_id) |
+
+**RLS Policy:**
+- SELECT: Admin only
+- INSERT: System only (application dispatches notifications as side effects of state transitions)
+- UPDATE: System only (to update status, sent_at, failed_at, attempt_count on retry)
+- DELETE: Never
 
 ---
 
@@ -1784,11 +1925,80 @@ CREATE POLICY "audit_events_immutable" ON audit_events
   USING (FALSE);  -- Never update or delete
 ```
 
+### Policy: notification_log (SELECT)
+
+```sql
+CREATE POLICY "notification_log_select_policy" ON notification_log
+  FOR SELECT
+  USING (auth.jwt()->>'role' = 'admin');  -- Admin only
+```
+
+### Policy: notification_log (INSERT)
+
+```sql
+CREATE POLICY "notification_log_insert_policy" ON notification_log
+  FOR INSERT
+  WITH CHECK (auth.jwt()->>'role' = 'admin' OR auth.jwt()->>'role' = 'system');
+  -- System-only insert (application dispatches as side effect of workflow transitions)
+```
+
+### Policy: notification_log (UPDATE)
+
+```sql
+CREATE POLICY "notification_log_update_policy" ON notification_log
+  FOR UPDATE
+  USING (auth.jwt()->>'role' = 'admin' OR auth.jwt()->>'role' = 'system')
+  WITH CHECK (auth.jwt()->>'role' = 'admin' OR auth.jwt()->>'role' = 'system');
+  -- System updates status/attempt_count on dispatch/retry; admin reads via retry endpoint
+```
+
+### Policy: notification_log (DELETE)
+
+```sql
+CREATE POLICY "notification_log_delete_blocked" ON notification_log
+  FOR DELETE
+  USING (FALSE);  -- Never delete notification records
+```
+
+### Policy: inbound_inquiries (SELECT)
+
+```sql
+CREATE POLICY "inbound_inquiries_select_policy" ON inbound_inquiries
+  FOR SELECT
+  USING (auth.jwt()->>'role' = 'admin');  -- Admin only (contains personal data)
+```
+
+### Policy: inbound_inquiries (INSERT)
+
+```sql
+CREATE POLICY "inbound_inquiries_insert_policy" ON inbound_inquiries
+  FOR INSERT
+  WITH CHECK (auth.jwt()->>'role' = 'admin' OR auth.jwt()->>'role' = 'system');
+  -- System-only insert via service_role key (public endpoint — anon key never used)
+```
+
+### Policy: inbound_inquiries (UPDATE)
+
+```sql
+CREATE POLICY "inbound_inquiries_update_policy" ON inbound_inquiries
+  FOR UPDATE
+  USING (auth.jwt()->>'role' = 'admin')
+  WITH CHECK (auth.jwt()->>'role' = 'admin');  -- Admin reviews, converts, rejects
+```
+
+### Policy: inbound_inquiries (DELETE)
+
+```sql
+CREATE POLICY "inbound_inquiries_delete_blocked" ON inbound_inquiries
+  FOR DELETE
+  USING (FALSE);  -- Never delete (soft delete via status = REJECTED or SPAM; physical deletion after retention via WF-013)
+```
+
 ---
 
 ## RLS Policy Summary
 
-All 19 tables have complete RLS policies following PostgreSQL best practices:
+All 21 tables have complete RLS policies following PostgreSQL best practices:
 
 **SELECT Policies:** Use USING to filter readable rows
 **INSERT Policies:** Use WITH CHECK to validate new rows
@@ -1841,40 +2051,44 @@ PHASE 1: Authentication & System Tables
 PHASE 2: Reference Data (no dependencies)
   02_create_municipalities.sql
 
-PHASE 3: Professionals (depends on: auth.users via auth.uuid)
-  03_create_professionals.sql         (FK: profiles.id)
-  04_create_professional_documents.sql (FK: professionals.id)
+PHASE 3: Public Intake (depends on: profiles for reviewed_by FK)
+  03_create_inbound_inquiries.sql     (FK: profiles.id for reviewed_by)
 
-PHASE 4: Cases (depends on: municipalities)
-  05_create_cases.sql                 (FK: municipalities.id)
-  06_create_case_complexity_factors.sql (FK: cases.id, UNIQUE)
+PHASE 4: Professionals (depends on: auth.users via auth.uuid)
+  04_create_professionals.sql         (FK: profiles.id)
+  05_create_professional_documents.sql (FK: professionals.id)
 
-PHASE 5: Case Relationships (depends on: cases, professionals)
-  07_create_case_assignments.sql      (FK: cases.id, professionals.id)
-  08_create_case_grants.sql           (FK: cases.id, municipalities.id)
-  09_create_case_handovers.sql        (FK: cases.id, professionals.id)
+PHASE 5: Cases (depends on: municipalities)
+  06_create_cases.sql                 (FK: municipalities.id)
+  07_create_case_complexity_factors.sql (FK: cases.id, UNIQUE)
 
-PHASE 6: Delivery (depends on: professionals, cases)
-  10_create_session_logs.sql          (FK: cases.id, professionals.id)
-  11_create_session_log_corrections.sql (FK: session_logs.id)
-  12_create_session_log_transfers.sql (FK: session_logs.id, professionals.id)
-  13_create_registered_hours.sql      (FK: cases.id, professionals.id, case_grants.id)
-  14_create_contact_logs.sql          (FK: cases.id, professionals.id)
-  15_create_contact_disclosures.sql   (FK: cases.id, professionals.id)
+PHASE 6: Case Relationships (depends on: cases, professionals)
+  08_create_case_assignments.sql      (FK: cases.id, professionals.id)
+  09_create_case_grants.sql           (FK: cases.id, municipalities.id)
+  10_create_case_handovers.sql        (FK: cases.id, professionals.id)
 
-PHASE 7: Matching (depends on: cases, professionals)
-  16_create_match_runs.sql            (FK: cases.id)
-  17_create_match_candidates.sql      (FK: match_runs.id, professionals.id)
+PHASE 7: Delivery (depends on: professionals, cases)
+  11_create_session_logs.sql          (FK: cases.id, professionals.id)
+  12_create_session_log_corrections.sql (FK: session_logs.id)
+  13_create_session_log_transfers.sql (FK: session_logs.id, professionals.id)
+  14_create_registered_hours.sql      (FK: cases.id, professionals.id, case_grants.id)
+  15_create_contact_logs.sql          (FK: cases.id, professionals.id)
+  16_create_contact_disclosures.sql   (FK: cases.id, professionals.id)
 
-PHASE 8: Governance (depends on: all tables)
-  18_create_audit_events.sql          (FK: profiles.id, polymorphic)
-  19_create_deletion_schedules.sql
+PHASE 8: Matching (depends on: cases, professionals)
+  17_create_match_runs.sql            (FK: cases.id)
+  18_create_match_candidates.sql      (FK: match_runs.id, professionals.id)
 
-PHASE 9: Materialized Views (depends on: all tables)
-  20_create_views.sql
+PHASE 9: Governance (depends on: all tables)
+  19_create_audit_events.sql          (FK: profiles.id, polymorphic)
+  20_create_notification_log.sql      (FK: profiles.id for recipient_profile_id)
+  21_create_deletion_schedules.sql
 
-PHASE 10: Security (depends on: all tables)
-  21_enable_rls_policies.sql
+PHASE 10: Materialized Views (depends on: all tables)
+  22_create_views.sql
+
+PHASE 11: Security (depends on: all tables)
+  23_enable_rls_policies.sql
 ```
 
 ### Migration Execution Standards
@@ -2112,12 +2326,12 @@ logger.info('Applied migrations', appliedMigrations);
 
 | Constraint Type | Count | Examples |
 |---|---|---|
-| PRIMARY KEY | 19 | Each table |
-| FOREIGN KEY | 35+ | case_assignments.case_id, session_logs.professional_id |
+| PRIMARY KEY | 21 | Each table |
+| FOREIGN KEY | 40+ | case_assignments.case_id, session_logs.professional_id, notification_log.recipient_profile_id |
 | UNIQUE | 5+ | municipalities.name, case_complexity_factors.case_id |
 | UNIQUE INDEX (Partial) | 1 | case_assignments(case_id) WHERE ended_at IS NULL |
-| CHECK | 40+ | status enums, hours ranges |
-| NOT NULL | 80+ | Core fields |
+| CHECK | 45+ | status enums, hours ranges, notification_log.recipient_required |
+| NOT NULL | 85+ | Core fields |
 
 **Enforcement:** All at database level (Supabase PostgreSQL)
 
@@ -2451,15 +2665,17 @@ Audit events themselves are never encrypted (must be searchable for compliance).
 ## 1.10 DATA RETENTION & GDPR
 
 **Default Retention:** 7 years after archival  
-**Process:**
-1. Record archived (status = ARCHIVED, archived_at set)
-2. data_retention_expires_at = archived_at + 7 years
-3. Deletion scheduled (deletion_schedules entry)
-4. At scheduled time, status = DELETED (soft delete)
-5. Record no longer queryable in API
-6. Audit event logged (immutable proof of deletion)
+**Process (WF-013):**
+1. Record archived: `status = 'ARCHIVED'`, `archived_at = NOW()` (ADR-007 — no `status = DELETED`, no `deleted_at`)
+2. `data_retention_expires_at = archived_at + INTERVAL '7 years'`
+3. Deletion scheduled: `deletion_schedules` entry created with `scheduled_for_deletion_at = data_retention_expires_at + INTERVAL '24 hours'`
+4. At scheduled time: **physical deletion** (hard delete) in FK cascade order — this is the ONLY hard delete permitted in the system
+5. Audit event logged (`DATA_DELETED`) before physical deletion as immutable proof
 
-**Right-to-Forget:** 30-day delay after request
+**Right-to-Forget (GDPR Article 17):** Admin-initiated via manual trigger; 30-day delay before physical deletion  
+**Inbound Inquiries:** SPAM and REJECTED entries physically deleted 90 days after creation (shorter retention — no ongoing professional relationship)
+
+**Note:** There is no `status = 'DELETED'` column value anywhere in the system. ADR-007 prohibits it. Soft delete uses `status = 'ARCHIVED'`. Physical deletion is reserved exclusively for post-retention-period cleanup via WF-013.
 
 ---
 

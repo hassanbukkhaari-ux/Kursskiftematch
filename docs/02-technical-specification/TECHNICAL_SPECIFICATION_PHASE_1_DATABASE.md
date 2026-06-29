@@ -230,7 +230,7 @@ CREATE TABLE professionals (
   target_age_groups TEXT[] DEFAULT ARRAY[]::TEXT[],
   max_complexity_level TEXT NOT NULL DEFAULT 'MEDIUM',
     CONSTRAINT valid_complexity CHECK (max_complexity_level IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')),
-  qualifications TEXT,
+  qualifications TEXT[] DEFAULT ARRAY[]::TEXT[],
   capacity_hours_week DECIMAL(5, 2) NOT NULL DEFAULT 0,
     CONSTRAINT valid_capacity CHECK (capacity_hours_week >= 0),
   max_concurrent_cases INTEGER NOT NULL DEFAULT 3,
@@ -241,10 +241,12 @@ CREATE TABLE professionals (
   status TEXT NOT NULL DEFAULT 'REGISTERED',
     CONSTRAINT valid_status CHECK (status IN ('REGISTERED', 'ACTIVE', 'INACTIVE', 'ARCHIVED')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  archived_at TIMESTAMPTZ
 );
 
 CREATE INDEX idx_professionals_status ON professionals(status);
+CREATE INDEX idx_professionals_archived_at ON professionals(archived_at);
 CREATE INDEX idx_professionals_availability_status ON professionals(availability_status);
 CREATE INDEX idx_professionals_profession ON professionals(profession);
 CREATE INDEX idx_professionals_max_complexity ON professionals(max_complexity_level);
@@ -295,11 +297,13 @@ CREATE TABLE professional_documents (
   verified_by UUID REFERENCES profiles(id),
   verification_notes TEXT,
   re_upload_required BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  archived_at TIMESTAMPTZ
 );
 
 CREATE INDEX idx_professional_documents_professional_id ON professional_documents(professional_id);
 CREATE INDEX idx_professional_documents_status ON professional_documents(status);
+CREATE INDEX idx_professional_documents_archived_at ON professional_documents(archived_at);
 CREATE INDEX idx_professional_documents_expiry_date ON professional_documents(expiry_date);
 ```
 
@@ -682,10 +686,12 @@ CREATE TABLE registered_hours (
   created_by UUID NOT NULL REFERENCES professionals(id),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_by UUID REFERENCES profiles(id),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  archived_at TIMESTAMPTZ
 );
 
 CREATE INDEX idx_registered_hours_case_id ON registered_hours(case_id);
+CREATE INDEX idx_registered_hours_archived_at ON registered_hours(archived_at);
 CREATE INDEX idx_registered_hours_professional_id ON registered_hours(professional_id);
 CREATE INDEX idx_registered_hours_work_date ON registered_hours(work_date);
 CREATE INDEX idx_registered_hours_status ON registered_hours(status);

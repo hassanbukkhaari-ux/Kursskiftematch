@@ -138,46 +138,72 @@ overall_score = (
 )
 ```
 
+### Algorithm Input Definitions
+
+The following inputs are used in the scoring formulas. Each is derived from existing TS-001 fields.
+
+**Complexity Ordinal Mapping** (required for arithmetic comparisons in Capacity Score):
+```
+COMPLEXITY_ORDINAL = {'LOW': 1, 'MEDIUM': 2, 'HIGH': 3, 'CRITICAL': 4}
+```
+`max_complexity_level` and `complexity_level` are TEXT enums; ordinal mapping converts them to integers for margin calculation.
+
+**`has_certifications`** (Qualifications Score input):
+`True` if `EXISTS (SELECT 1 FROM professional_documents WHERE professional_id = :id AND status = 'VERIFIED' AND document_type IN ('QUALIFICATION', 'CHILD_PROTECTION', 'CRIMINAL_RECORD'))`.
+Reflects that the professional holds at least one core verified credential beyond a CV.
+
+**`experience_years`** (Complexity Fit Score input for complexity experience):
+Use `professional.experience_years` directly. The professionals table does not track per-complexity experience; total experience is the available proxy. Phase 2+ may introduce per-specialisation tracking.
+
+**`profession_match`** (Qualifications Score input):
+MVP v1.0 rule: all profession types are eligible for all case types (`profession_match = True` for all). Phase 2 may introduce profession-to-complexity-factor mapping.
+
+---
+
 **Individual Scoring (Each 0-100):**
 
 **Qualifications Score:**
 ```
-base = 50
-+ (experience_years × 2) [0-50 max]
-+ (profession_match × 25) [yes=25, no=0]
-+ (certifications × 25) [yes=25, no=0]
-= 0-100
+experience_score    = min(experience_years × 4, 50)    # 0–50 (12.5+ years → 50)
+profession_score    = profession_match ? 25 : 0         # 0 or 25
+certification_score = has_certifications ? 25 : 0       # 0 or 25
+qualifications_score = experience_score + profession_score + certification_score
+# Range: 0–100  (max = 50 + 25 + 25 = 100)
 ```
 
 **Availability Score:**
 ```
 capacity_available = remaining_hours_this_week / required_hours
-capacity_score = (capacity_available × 100) [capped at 100]
+capacity_score = min(capacity_available × 100, 100)    # capped at 100
 concurrent_load = current_concurrent_cases / max_concurrent_cases
-load_penalty = (concurrent_load × 20) [penalty 0-20]
-score = capacity_score - load_penalty
-= 0-100
+load_penalty = concurrent_load × 20                    # penalty 0–20
+availability_score = max(capacity_score - load_penalty, 0)
+# Range: 0–100
 ```
 
 **Capacity Score:**
 ```
-complexity_margin = (professional.max_complexity_level - case.complexity_level)
-if complexity_margin < 0:
-  score = 0  # Professional cannot handle complexity
-elif complexity_margin == 0:
-  score = 50  # Borderline fit
+# Uses COMPLEXITY_ORDINAL mapping (see above)
+ordinal_margin = COMPLEXITY_ORDINAL[professional.max_complexity_level]
+               - COMPLEXITY_ORDINAL[case.complexity_level]
+if ordinal_margin < 0:
+    capacity_score = 0    # Professional cannot handle this complexity level
+elif ordinal_margin == 0:
+    capacity_score = 50   # Borderline fit
 else:
-  score = 50 + (complexity_margin × 25)  # Comfort margin
-= 0-100
+    capacity_score = min(50 + ordinal_margin × 25, 100)  # Comfort margin, capped at 100
+# Range: 0–100
 ```
 
 **Complexity Fit Score:**
 ```
-age_match = (citizen_age_range in target_age_groups) ? 50 : 0
-complexity_experience = years_at_case_complexity * 5 [0-50 max]
-special_skills = check factors (violence, substance, etc) ? 25 : 0
-score = age_match + complexity_experience + special_skills
-= 0-100
+# experience_years used as proxy for complexity experience (see Algorithm Input Definitions)
+age_match      = citizen_age_range in professional.target_age_groups ? 50 : 0   # 0 or 50
+exp_fit        = min(experience_years × 5, 50)                                   # 0–50
+special_skills = (case.violence OR case.substance_use OR case.criminality)
+                 AND COMPLEXITY_ORDINAL[professional.max_complexity_level] >= 3 ? 25 : 0
+complexity_fit_score = min(age_match + exp_fit + special_skills, 100)
+# Range: 0–100
 ```
 
 ### Score Interpretation
@@ -196,8 +222,9 @@ For each match run:
 1. **Score** all eligible professionals (deterministic, same inputs = same score)
 2. **Rank** by score (80+, then 60+, then 40+)
 3. **Generate explanation** for each candidate:
-   - "Excellent qualifications (15 years pedagogue) + strong availability (3/4 hours) but some complexity margin. Familiar with school-based support."
-   - No score details shown to coordinator (opaque algorithm, not manipulable)
+   - Human-readable summary: "Stærke faglige kvalifikationer (12 års erfaring) + god kapacitet (4,5/6 timer tilgængeligt) + god kompleksitetsmatch. Erfaring med skolebaserede indsatser."
+   - Numeric dimension scores AND text explanations are shown to admin (see TS-002 §8.4 and §16.2)
+   - Rationale: Admin is the decision-maker and requires score transparency for accountability; professionals never see their own scores
 4. **Recommend** top 3 candidates
 5. **Record decision** when coordinator selects professional
 6. **Create CaseAssignment** (not automatic)
@@ -310,20 +337,20 @@ Every assignment is explicit human decision with potential override reason logge
 
 **Professional Candidates:**
 - Alice: Pedagogue, 5 years exp, target_age=13-18, max_complexity=HIGH, capacity=4h/week available
-  - Qualifications: 70 (5 years × 2 + 25 profession + 25 cert)
-  - Availability: 100 (3/4 hours needed)
-  - Capacity: 75 (can handle HIGH, case is MEDIUM)
-  - Complexity fit: 75 (age match + experience)
-  - **Overall: 80** → Excellent fit
+  - Qualifications: 70 (min(5×4,50)=20 + 25 profession + 25 cert)
+  - Availability: 100 (3/4 hours → 75%; no concurrent load penalty)
+  - Capacity: 75 (ORDINAL(HIGH)=3 − ORDINAL(MEDIUM)=2 = 1 → 50+25=75)
+  - Complexity fit: 75 (age=50 ✓; exp=min(5×5,50)=25; no violence/substance → 0)
+  - **Overall: (70+100+75+75)/4 = 80** → Excellent fit
 
 - Bob: Nurse, 8 years exp, target_age=0-12 (no match), max_complexity=CRITICAL, capacity=5h/week
-  - Qualifications: 80 (8 years × 2 + 25 profession + 25 cert)
-  - Availability: 100 (5/3 hours needed)
-  - Capacity: 100 (can handle CRITICAL easily)
-  - Complexity fit: 25 (age mismatch, no experience with 13-18)
-  - **Overall: 51** → Acceptable fit
+  - Qualifications: 82 (min(8×4,50)=32 + 25 profession + 25 cert)
+  - Availability: 100 (5/3 hours → capped at 100; no concurrent load penalty)
+  - Capacity: 100 (ORDINAL(CRITICAL)=4 − ORDINAL(MEDIUM)=2 = 2 → min(50+50,100)=100)
+  - Complexity fit: 40 (age=0 ✗ target is 0-12; exp=min(8×5,50)=40; no violence/substance → 0)
+  - **Overall: (82+100+100+40)/4 = 80.5** → Excellent fit
 
-**Recommendation:** Alice (80). Admin accepts.
+**Recommendation:** Both Alice and Bob qualify as Excellent fits (scores 80 and 80.5). Admin reviews both candidates and selects Alice due to direct age-group match (13-18 ↔ citizen age 14), overriding marginal score difference. Override reason logged per WF-003 A2.
 
 ### Scenario 2: Complex CRITICAL Case, No Suitable Candidates
 

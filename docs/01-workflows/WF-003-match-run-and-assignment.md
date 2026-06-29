@@ -65,16 +65,18 @@ Case Coordinator clicks "Find Professional" or "Re-Match" for a case that is sta
    - MatchRun status=SCORED
 
 5. **System generates explanations**
-   - For each ranked candidate: human-readable explanation
-   - Example: "Excellent qualifications (12 years experience) + available capacity (4.5/6 hours) + good complexity fit. Experienced with school-based cases."
-   - Explanations do NOT reveal scores to coordinator (opaque algorithm)
+   - For each ranked candidate: numeric dimension scores + human-readable text summary
+   - Example: "Stærke faglige kvalifikationer (12 års erfaring) + god kapacitet + kompleksitetsmatch. Erfaring med skolebaserede indsatser."
+   - Both scores and text explanations visible to admin (see TS-002 §8.4, §16.2)
+   - Rationale: admin is the accountable decision-maker; transparency enables better decisions; professionals never see their own match scores
    - Event: `MATCH_EXPLANATION_GENERATED` logged
 
 6. **System recommends to coordinator**
    - Show top 3 candidates (if available)
-   - Show explanations (not scores)
+   - Show dimension scores (qualifications, availability, capacity, complexity_fit) and overall score per candidate
+   - Show match_strengths and attention_points as decision-support text
    - Show "no suitable candidates" message if count < 1
-   - MatchRun status=ASSIGNED (awaiting human decision)
+   - MatchRun status=SCORED (awaiting human decision)
 
 7. **Case Coordinator reviews and selects**
    - Coordinator can:

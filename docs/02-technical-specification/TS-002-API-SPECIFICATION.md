@@ -152,7 +152,7 @@ GET /api/professionals
       "experience_years": 5,
       "target_age_groups": ["6-12", "13-18"],
       "max_complexity_level": "HIGH",
-      "qualifications": "string | null",
+      "qualifications": ["string"],
       "capacity_hours_week": 30.00,
       "max_concurrent_cases": 3,
       "availability_days": ["MONDAY", "TUESDAY", "WEDNESDAY"],

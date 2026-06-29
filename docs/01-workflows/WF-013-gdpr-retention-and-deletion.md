@@ -114,7 +114,7 @@ WHERE status IN ('SPAM', 'REJECTED')
 SELECT id, 'inbound_inquiries' AS record_type, created_at + INTERVAL '90 days' AS retention_expired_at
 FROM inbound_inquiries
 WHERE status IN ('PENDING', 'REVIEWED')
-  AND converted_at IS NULL
+  AND converted_to_id IS NULL
   AND created_at + INTERVAL '90 days' < NOW()
   AND id NOT IN (SELECT record_id FROM deletion_schedules WHERE executed_at IS NULL)
 ```
@@ -174,10 +174,10 @@ For each schedule entry, delete the record and its dependents in FK-safe order:
 7. Delete `case_assignments` where `case_id = :id`
 8. Delete `case_grants` where `case_id = :id`
 9. Delete `case_complexity_factors` where `case_id = :id`
-10. Delete `match_candidates` where `case_id = :id`
+10. Delete `match_candidates` where `match_run_id IN (SELECT id FROM match_runs WHERE case_id = :id)`
 11. Delete `match_runs` where `case_id = :id`
 12. Delete `case_handovers` where `case_id = :id`
-13. Delete `inbound_inquiries` where `converted_case_id = :id` (CONVERTED inquiries follow case)
+13. Delete `inbound_inquiries` where `converted_to_id = :id` (CONVERTED inquiries follow case)
 14. DELETE FROM `cases` WHERE `id = :id`
 
 **Deleting a professional:**

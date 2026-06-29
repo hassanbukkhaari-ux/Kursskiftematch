@@ -270,12 +270,12 @@ Brief review of ADR-001 through ADR-008 to confirm they're consistent with profe
 
 ### 5. **Consider Professional Lifecycle Workflows**
 When building remaining workflows, consider whether any should address:
-- WF-004: Professional Recruitment & Registration
-- WF-005: Professional Credential Verification
-- WF-006: Professional Onboarding
-- WF-014: Professional Offboarding
+- Professional Recruitment & Registration (see WF-001)
+- Professional Credential Verification (see WF-011)
+- Professional Onboarding (see WF-001)
+- Professional Offboarding (see WF-008)
 
-These may not all be MVP, but should be considered in the overall workflow architecture.
+These are covered by the canonical WF-001 through WF-013 workflow set.
 
 ### 6. **Update Success Metrics in Domain Vision**
 Consider adding metrics related to professional lifecycle:

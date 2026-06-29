@@ -172,6 +172,8 @@ CREATE TABLE professionals (
   max_concurrent_cases INTEGER NOT NULL DEFAULT 3,
     CONSTRAINT valid_concurrent CHECK (max_concurrent_cases > 0),
   availability_days TEXT[] DEFAULT ARRAY[]::TEXT[],
+  availability_status TEXT NOT NULL DEFAULT 'AVAILABLE',
+    CONSTRAINT valid_availability_status CHECK (availability_status IN ('AVAILABLE', 'PARTIALLY_AVAILABLE', 'UNAVAILABLE')),
   status TEXT NOT NULL DEFAULT 'REGISTERED',
     CONSTRAINT valid_status CHECK (status IN ('REGISTERED', 'ACTIVE', 'INACTIVE', 'ARCHIVED')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -179,6 +181,7 @@ CREATE TABLE professionals (
 );
 
 CREATE INDEX idx_professionals_status ON professionals(status);
+CREATE INDEX idx_professionals_availability_status ON professionals(availability_status);
 CREATE INDEX idx_professionals_profession ON professionals(profession);
 CREATE INDEX idx_professionals_max_complexity ON professionals(max_complexity_level);
 ```
@@ -189,6 +192,7 @@ CREATE INDEX idx_professionals_max_complexity ON professionals(max_complexity_le
 - capacity_hours_week >= 0
 - max_concurrent_cases > 0
 - status: REGISTERED (onboarding) → ACTIVE (ready) → INACTIVE (leave) → ARCHIVED (departed)
+- availability_status: AVAILABLE (default, accepting cases) | PARTIALLY_AVAILABLE (limited, still matchable) | UNAVAILABLE (hard exclusion — vacation, sick leave; excluded from v_professionals_available)
 
 **RLS Policy:**
 - SELECT: Users see own profile, admins see all
@@ -602,7 +606,8 @@ CREATE TABLE registered_hours (
     CONSTRAINT valid_hours CHECK (hours >= 0.25 AND hours <= 8),
   session_log_id UUID REFERENCES session_logs(id),
   status TEXT NOT NULL DEFAULT 'PENDING',
-    CONSTRAINT valid_status CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED', 'OUTSIDE_GRANT')),
+    CONSTRAINT valid_status CHECK (status IN ('PENDING', 'SUBMITTED', 'APPROVED', 'REJECTED', 'OUTSIDE_GRANT')),
+  submitted_at TIMESTAMPTZ,
   grant_period_id UUID REFERENCES case_grants(id),
   description TEXT,
   outside_grant_reason TEXT,
@@ -630,7 +635,8 @@ CREATE INDEX idx_registered_hours_grant_period ON registered_hours(grant_period_
   - TRANSPORT, COORDINATION, TRAINING, OTHER: Can be NULL (not session-specific)
   - DOCUMENTATION: Can link to session being documented
 - session_log_id optional FK
-- Status flow: PENDING → APPROVED or REJECTED
+- Status flow: PENDING → SUBMITTED → APPROVED or REJECTED
+- Professional submits hours (PENDING→SUBMITTED); admin approves or rejects (SUBMITTED→APPROVED/REJECTED)
 - If hours + approved > grant.granted_hours: Status auto-set to OUTSIDE_GRANT (WF-007)
 - reviewed_by and reviewed_at only set when OUTSIDE_GRANT is reviewed
 
@@ -645,7 +651,7 @@ CREATE INDEX idx_registered_hours_grant_period ON registered_hours(grant_period_
 **RLS Policy:**
 - SELECT: Professional sees own hours, admins see all
 - INSERT: Professional creates entries, admins can create for anyone
-- UPDATE: Professional can edit PENDING status, admins can approve/reject
+- UPDATE: Professional can edit PENDING entries and submit (PENDING→SUBMITTED); admins approve/reject
 - DELETE: Never (archive via status)
 
 **Derived Values:**
@@ -1051,7 +1057,7 @@ LEFT JOIN case_assignments ca ON c.id = ca.case_id AND ca.ended_at IS NULL;
 
 ### VIEW: v_professionals_available
 
-**Purpose:** Professionals eligible for matching (ACTIVE status, not overloaded)  
+**Purpose:** Professionals eligible for matching (ACTIVE status, not UNAVAILABLE, not overloaded)  
 **Source:** Professionals + CaseAssignments
 
 ```sql
@@ -1063,12 +1069,14 @@ SELECT
   p.max_complexity_level,
   p.capacity_hours_week,
   p.max_concurrent_cases,
+  p.availability_status,
   COUNT(ca.id) as current_assignments,
   COALESCE(SUM(c.weekly_hours), 0) as current_hours_assigned
 FROM professionals p
 LEFT JOIN case_assignments ca ON p.id = ca.professional_id AND ca.ended_at IS NULL
 LEFT JOIN cases c ON ca.case_id = c.id
 WHERE p.status = 'ACTIVE'
+  AND p.availability_status != 'UNAVAILABLE'
 GROUP BY p.id
 HAVING
   COUNT(ca.id) < p.max_concurrent_cases
@@ -1467,8 +1475,8 @@ CREATE POLICY "registered_hours_update_policy" ON registered_hours
     professional_id = auth.uid() OR auth.jwt()->>'role' = 'admin'
   )
   WITH CHECK (
-    (professional_id = auth.uid() AND status = 'PENDING')  -- Professional edits PENDING
-    OR auth.jwt()->>'role' = 'admin'  -- Admin approves/rejects
+    (professional_id = auth.uid() AND status IN ('PENDING', 'SUBMITTED'))  -- Professional edits PENDING or submits PENDING→SUBMITTED
+    OR auth.jwt()->>'role' = 'admin'  -- Admin approves/rejects/flags outside grant
   );
 ```
 

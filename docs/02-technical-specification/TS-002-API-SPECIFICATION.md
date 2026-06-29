@@ -41,10 +41,10 @@
 | Soft Delete | `status = 'ARCHIVED'` + `archived_at`; no hard deletes, no `deleted_at` | ADR-007, TS-001 |
 | Derived Values | Not stored; computed at query time | ADR-008 |
 | Audit Logging | Every state transition writes to `audit_events` | ADR-004 |
-| Notification | 6 MVP types written to `notification_log`; WF-014 dispatches | ADR-010 |
+| Notification | 6 MVP types written to `notification_log`; dispatched as side effects of workflow state transitions | ADR-010 |
 | Privacy | No `citizen_name`, `citizen_cpr`; GDPR minimization per WF-002 | TS-001 |
 | Encryption | Sensitive fields encrypted at application layer before storage | TS-001 |
-| Public Intake | `inbound_inquiries` only; service_role key never exposed to browser | WF-015 |
+| Public Intake | `inbound_inquiries` only; service_role key never exposed to browser | WF-002 |
 
 ---
 
@@ -128,7 +128,7 @@ Encrypted fields per TS-001: `citizen_notes`, `observations`, `citizen_mood_tone
 ## 4. Professional Domain Endpoints
 
 **Tables:** `profiles`, `professionals`, `professional_documents`  
-**Workflows:** WF-001, WF-008, WF-009
+**Workflows:** WF-001, WF-008, WF-011
 
 ---
 
@@ -156,6 +156,7 @@ GET /api/professionals
       "capacity_hours_week": 30.00,
       "max_concurrent_cases": 3,
       "availability_days": ["MONDAY", "TUESDAY", "WEDNESDAY"],
+      "availability_status": "AVAILABLE",
       "status": "ACTIVE",
       "created_at": "2026-06-01T10:00:00Z",
       "updated_at": "2026-06-01T10:00:00Z"
@@ -167,7 +168,7 @@ GET /api/professionals
 }
 ```
 
-**TS-001 columns used:** `professionals.id`, `professionals.profession`, `professionals.experience_years`, `professionals.target_age_groups`, `professionals.max_complexity_level`, `professionals.qualifications`, `professionals.capacity_hours_week`, `professionals.max_concurrent_cases`, `professionals.availability_days`, `professionals.status`, `professionals.created_at`, `professionals.updated_at`, `profiles.email` (JOIN on `professionals.id = profiles.id`)
+**TS-001 columns used:** `professionals.id`, `professionals.profession`, `professionals.experience_years`, `professionals.target_age_groups`, `professionals.max_complexity_level`, `professionals.qualifications`, `professionals.capacity_hours_week`, `professionals.max_concurrent_cases`, `professionals.availability_days`, `professionals.availability_status`, `professionals.status`, `professionals.created_at`, `professionals.updated_at`, `profiles.email` (JOIN on `professionals.id = profiles.id`)
 
 ---
 
@@ -235,7 +236,7 @@ POST /api/professionals
 PATCH /api/professionals/:id
 ```
 
-**Auth:** Admin (all fields); Professional (own: `availability_days`, `capacity_hours_week`, `max_concurrent_cases` only)
+**Auth:** Admin (all fields); Professional (own: `availability_days`, `availability_status`, `capacity_hours_week`, `max_concurrent_cases` only)
 
 **Request body (all optional):**
 ```json
@@ -248,6 +249,7 @@ PATCH /api/professionals/:id
   "capacity_hours_week": 35.00,
   "max_concurrent_cases": 4,
   "availability_days": ["MONDAY", "TUESDAY", "THURSDAY"],
+  "availability_status": "AVAILABLE",
   "status": "ACTIVE"
 }
 ```
@@ -311,7 +313,7 @@ POST /api/professionals/:id/documents
 ```
 
 **Auth:** Professional (own) or admin  
-**Workflow:** WF-001 step 2 / WF-009  
+**Workflow:** WF-001 step 2 / WF-011  
 **Audit:** `DOCUMENT_UPLOADED` — `resource_type='professional_documents'`, `resource_id=new_id`
 
 **Request body:**
@@ -433,7 +435,7 @@ GET /api/professionals/available
 ## 5. Municipality Domain Endpoints
 
 **Tables:** `municipalities`  
-**Workflows:** WF-002 (case creation uses municipality FK), WF-011
+**Workflows:** WF-002 (case creation uses municipality FK), WF-009
 
 ---
 
@@ -556,7 +558,7 @@ PATCH /api/municipalities/:id
 ## 6. Case Domain Endpoints
 
 **Tables:** `cases`, `case_complexity_factors`, `case_assignments`, `case_grants`, `case_handovers`  
-**Workflows:** WF-002, WF-003, WF-004, WF-007, WF-010, WF-012
+**Workflows:** WF-002, WF-003, WF-004, WF-007, WF-008, WF-012
 
 ---
 
@@ -1042,7 +1044,7 @@ POST /api/cases/:id/handovers
 ```
 
 **Auth:** Admin only  
-**Workflow:** WF-010 step 1  
+**Workflow:** WF-008 step 1  
 **Audit:** `HANDOVER_INITIATED` — `resource_type='case_handovers'`
 
 **Request body:**
@@ -1111,7 +1113,7 @@ PATCH /api/cases/:id/handovers/:handoverId
 ## 7. Delivery Domain Endpoints
 
 **Tables:** `session_logs`, `session_log_corrections`, `session_log_transfers`, `registered_hours`, `contact_logs`, `contact_disclosures`  
-**Workflows:** WF-005, WF-006, WF-007, WF-010, WF-011
+**Workflows:** WF-005, WF-006, WF-007, WF-008, WF-009, WF-010
 
 ---
 
@@ -1354,7 +1356,7 @@ POST /api/session-logs/:id/transfers
 ```
 
 **Auth:** Admin only  
-**Workflow:** WF-010  
+**Workflow:** WF-008  
 **Audit:** `SESSION_LOG_TRANSFERRED` — `resource_type='session_log_transfers'`
 
 **Request body:**
@@ -1659,7 +1661,7 @@ POST /api/cases/:id/contact-logs
 ```
 
 **Auth:** Professional (assigned) or admin  
-**Workflow:** WF-011  
+**Workflow:** WF-010  
 **Audit:** `CONTACT_LOGGED` — `resource_type='contact_logs'`
 
 **Request body:**
@@ -1737,7 +1739,7 @@ POST /api/cases/:id/contact-disclosures
 ```
 
 **Auth:** Admin only  
-**Workflow:** WF-004, WF-010  
+**Workflow:** WF-004, WF-008, WF-009  
 **Audit:** `CONTACT_DISCLOSED` — `resource_type='contact_disclosures'`
 
 **Request body:**
@@ -1980,7 +1982,7 @@ PATCH /api/match-runs/:id
 ## 9. Governance Domain Endpoints
 
 **Tables:** `audit_events`, `deletion_schedules`, `notification_log`  
-**Workflows:** WF-013, WF-014
+**Workflows:** WF-013
 
 ---
 
@@ -2135,7 +2137,7 @@ POST /api/notification-log/:id/retry
 ```
 
 **Auth:** Admin only  
-**Constraint:** `attempt_count < 3` (max 3 attempts per WF-014 / TS-001)
+**Constraint:** `attempt_count < 3` (max 3 attempts per TS-001)
 
 **Request body:** None
 
@@ -2155,7 +2157,7 @@ POST /api/notification-log/:id/retry
 ## 10. Public Intake Endpoint
 
 **Table:** `inbound_inquiries`  
-**Workflow:** WF-015
+**Workflow:** WF-002
 
 ---
 
@@ -2190,7 +2192,7 @@ POST /api/inquiries
 
 **Submission type enum (TS-001):** `MUNICIPALITY_INQUIRY | PROFESSIONAL_APPLICATION | PARTNER_LEAD`
 
-**Processing order (WF-015):**
+**Processing order (WF-002):**
 1. Check `honeypot == ""` — if non-empty, insert with `status = SPAM` silently
 2. Rate limit check
 3. CAPTCHA verification via Cloudflare Turnstile API
@@ -2303,7 +2305,7 @@ POST /api/inquiries/:id/convert
 ```
 
 **Auth:** Admin only  
-**Workflow:** WF-015 step 3  
+**Workflow:** WF-002  
 **Audit:** `INQUIRY_CONVERTED`
 
 **Request body:**
@@ -2385,21 +2387,19 @@ PATCH /api/profile
 
 | Workflow | Endpoints | Coverage |
 |---|---|---|
-| **WF-001** Professional Onboarding | `POST /api/professionals`, `POST /api/professionals/:id/documents`, `PATCH /api/professionals/:id/documents/:docId`, `PATCH /api/professionals/:id` (status ACTIVE/ARCHIVED) | Complete |
-| **WF-002** Case Creation | `POST /api/cases`, `PUT /api/cases/:id/complexity` | Complete |
-| **WF-003** Matching | `POST /api/match-runs`, `GET /api/match-runs/:id/candidates`, `POST /api/match-runs/:id/assign`, `GET /api/professionals/available` | Complete |
+| **WF-001** Professional Onboarding | `POST /api/professionals`, `POST /api/professionals/:id/documents` (initial), `PATCH /api/professionals/:id/documents/:docId` (initial verification), `PATCH /api/professionals/:id` (REGISTERED→ACTIVE) | Complete |
+| **WF-002** Municipality Inquiry to Case Creation | `POST /api/inquiries`, `GET /api/inquiries`, `PATCH /api/inquiries/:id`, `POST /api/inquiries/:id/convert`, `POST /api/cases`, `PUT /api/cases/:id/complexity` | Complete |
+| **WF-003** Match Run and Assignment | `POST /api/match-runs`, `GET /api/match-runs/:id/candidates`, `POST /api/match-runs/:id/assign`, `GET /api/professionals/available` | Complete |
 | **WF-004** Case Activation | `POST /api/cases/:id/status` (MATCHED→ACTIVE), `POST /api/cases/:id/grants`, `PATCH /api/cases/:id/grants/:grantId`, `POST /api/cases/:id/assignments`, `POST /api/cases/:id/contact-disclosures` | Complete |
-| **WF-005** Session Logs | `POST /api/session-logs`, `PATCH /api/session-logs/:id`, `POST /api/session-logs/:id/finalize`, `POST /api/session-logs/:id/corrections`, `POST /api/session-logs/:id/safeguarding/acknowledge` | Complete |
+| **WF-005** Session Documentation | `POST /api/session-logs`, `PATCH /api/session-logs/:id`, `POST /api/session-logs/:id/finalize`, `POST /api/session-logs/:id/corrections`, `POST /api/session-logs/:id/safeguarding/acknowledge` | Complete |
 | **WF-006** Registered Hours | `POST /api/registered-hours`, `PATCH /api/registered-hours/:id`, `POST /api/registered-hours/:id/submit`, `POST /api/registered-hours/:id/review` | Complete |
-| **WF-007** Outside Grant | `POST /api/registered-hours/:id/review` (OUTSIDE_GRANT), `GET /api/registered-hours?status=OUTSIDE_GRANT` | Complete |
-| **WF-008** Professional Profile | `GET /api/professionals/:id`, `PATCH /api/professionals/:id` | Complete |
-| **WF-009** Document Verification | `GET /api/professionals/:id/documents`, `POST /api/professionals/:id/documents`, `PATCH /api/professionals/:id/documents/:docId` | Complete |
-| **WF-010** Case Handover | `POST /api/cases/:id/handovers`, `PATCH /api/cases/:id/handovers/:handoverId`, `POST /api/session-logs/:id/transfers`, `POST /api/cases/:id/contact-disclosures`, `POST /api/cases/:id/assignments/:assignmentId/end` | Complete |
-| **WF-011** Contact Logs | `GET /api/cases/:id/contact-logs`, `POST /api/cases/:id/contact-logs` | Complete |
-| **WF-012** Case Archival | `POST /api/cases/:id/status` (COMPLETED, ARCHIVED), `POST /api/deletion-schedules` | Complete |
-| **WF-013** GDPR Retention | `GET /api/deletion-schedules`, `POST /api/deletion-schedules` | Complete |
-| **WF-014** Notification Dispatch | `GET /api/notification-log`, `POST /api/notification-log/:id/retry` | Complete |
-| **WF-015** Public Intake | `POST /api/inquiries`, `GET /api/inquiries`, `PATCH /api/inquiries/:id`, `POST /api/inquiries/:id/convert` | Complete |
+| **WF-007** Outside Grant Review | `POST /api/registered-hours/:id/review` (OUTSIDE_GRANT), `GET /api/registered-hours?status=OUTSIDE_GRANT` | Complete |
+| **WF-008** Professional Handover | `POST /api/cases/:id/handovers`, `PATCH /api/cases/:id/handovers/:handoverId`, `POST /api/session-logs/:id/transfers`, `POST /api/cases/:id/assignments/:assignmentId/end`, `PATCH /api/professionals/:id` (ACTIVE↔INACTIVE, ACTIVE→ARCHIVED) | Complete |
+| **WF-009** Contact Disclosure | `POST /api/cases/:id/contact-disclosures`, `GET /api/cases/:id/contact-disclosures` | Complete |
+| **WF-010** Contact Log | `GET /api/cases/:id/contact-logs`, `POST /api/cases/:id/contact-logs` | Complete |
+| **WF-011** Document Upload and Verification | `GET /api/professionals/:id/documents`, `POST /api/professionals/:id/documents`, `PATCH /api/professionals/:id/documents/:docId` | Complete |
+| **WF-012** Case Closure and Archival | `POST /api/cases/:id/status` (ACTIVE→COMPLETED, COMPLETED→ARCHIVED), `POST /api/deletion-schedules` | Complete |
+| **WF-013** GDPR Retention and Deletion | `GET /api/deletion-schedules`, `POST /api/deletion-schedules`, `GET /api/notification-log`, `POST /api/notification-log/:id/retry` | Complete |
 
 ---
 

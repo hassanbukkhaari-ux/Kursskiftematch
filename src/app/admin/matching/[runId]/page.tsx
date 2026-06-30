@@ -14,6 +14,13 @@ interface PageProps {
   params: Promise<{ runId: string }>
 }
 
+type MatchRun = {
+  id: string
+  case_id: string
+  status: string
+  algorithm_version: string
+}
+
 export default async function MatchRunPage({ params }: PageProps) {
   const { runId } = await params
 
@@ -26,13 +33,15 @@ export default async function MatchRunPage({ params }: PageProps) {
   const profile = profileData as Profile | null
   if (profile?.role !== 'admin') redirect('/dashboard')
 
-  const { data: run, error: runError } = await db
+  const { data: runRaw, error: runError } = await db
     .from('match_runs')
     .select('*')
     .eq('id', runId)
     .single()
 
-  if (runError || !run) notFound()
+  if (runError || !runRaw) notFound()
+
+  const run = runRaw as unknown as MatchRun
 
   const { data: candidates } = await db
     .from('match_candidates')

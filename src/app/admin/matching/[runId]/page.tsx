@@ -21,6 +21,15 @@ type MatchRun = {
   algorithm_version: string
 }
 
+type CaseData = {
+  id: string
+  citizen_initials: string
+  citizen_age_range: string
+  complexity_level: string
+  weekly_hours: number
+  status: string
+}
+
 export default async function MatchRunPage({ params }: PageProps) {
   const { runId } = await params
 
@@ -59,11 +68,13 @@ export default async function MatchRunPage({ params }: PageProps) {
     .eq('match_run_id', runId)
     .order('rank', { ascending: true })
 
-  const { data: caseData } = await db
+  const { data: caseRaw } = await db
     .from('cases')
     .select('id, citizen_initials, citizen_age_range, complexity_level, weekly_hours, status')
     .eq('id', run.case_id)
     .single()
+
+  const caseData = caseRaw as unknown as CaseData | null
 
   const candidateList = (candidates ?? []) as unknown as Parameters<typeof MatchingUI>[0]['candidates']
 

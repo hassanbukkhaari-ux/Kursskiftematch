@@ -49,7 +49,38 @@ const AVAILABILITY_BADGE: Record<string, 'green' | 'amber' | 'red'> = {
   UNAVAILABLE: 'red',
 }
 
+const GENDER_LABEL: Record<string, string> = {
+  MALE: 'Mand',
+  FEMALE: 'Kvinde',
+  OTHER: 'Andet',
+}
+
+const EXPERIENCE_GENDER_LABEL: Record<string, string> = {
+  BOYS: 'Drenge',
+  GIRLS: 'Piger',
+}
+
 type FilterKey = 'all' | 'REGISTERED' | 'ACTIVE' | 'INACTIVE'
+
+type ProfileForm = {
+  gender: string
+  education: string
+  daily_occupation: string
+  certificates: string
+  geography: string
+  experience_with_genders: string[]
+}
+
+function toForm(pro: ProfessionalRow): ProfileForm {
+  return {
+    gender: pro.gender ?? '',
+    education: pro.education ?? '',
+    daily_occupation: pro.daily_occupation ?? '',
+    certificates: pro.certificates.join(', '),
+    geography: pro.geography.join(', '),
+    experience_with_genders: pro.experience_with_genders,
+  }
+}
 
 export function ProfessionalsClient({ initialData }: { initialData: ProfessionalRow[] }) {
   const router = useRouter()
@@ -58,6 +89,8 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [updating, startUpdate] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [editingProfile, setEditingProfile] = useState(false)
+  const [profileForm, setProfileForm] = useState<ProfileForm | null>(null)
 
   const counts = useMemo(() => ({
     all: initialData.length,
@@ -74,6 +107,8 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
   function openDrawer(pro: ProfessionalRow) {
     setSelected(pro)
     setError(null)
+    setEditingProfile(false)
+    setProfileForm(toForm(pro))
     setDrawerOpen(true)
   }
 
@@ -81,6 +116,34 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
     setDrawerOpen(false)
     setSelected(null)
     setError(null)
+    setEditingProfile(false)
+    setProfileForm(null)
+  }
+
+  function saveProfile() {
+    if (!selected || !profileForm) return
+    startUpdate(async () => {
+      setError(null)
+      const res = await fetch(`/api/professionals/${selected.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gender: profileForm.gender || undefined,
+          education: profileForm.education || undefined,
+          daily_occupation: profileForm.daily_occupation || undefined,
+          certificates: profileForm.certificates.split(',').map(s => s.trim()).filter(Boolean),
+          geography: profileForm.geography.split(',').map(s => s.trim()).filter(Boolean),
+          experience_with_genders: profileForm.experience_with_genders,
+        }),
+      })
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}))
+        setError((d as { error?: string }).error ?? 'Noget gik galt')
+        return
+      }
+      setEditingProfile(false)
+      router.refresh()
+    })
   }
 
   function setStatus(newStatus: string) {
@@ -229,29 +292,19 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {selected.status === 'REGISTERED' && (
-                    <Button variant="primary" size="sm" loading={updating} onClick={() => setStatus('ACTIVE')}>
-                      Aktiver
-                    </Button>
+                    <Button variant="primary" size="sm" loading={updating} onClick={() => setStatus('ACTIVE')}>Aktiver</Button>
                   )}
                   {selected.status === 'ACTIVE' && (
-                    <Button variant="secondary" size="sm" loading={updating} onClick={() => setStatus('INACTIVE')}>
-                      Deaktiver
-                    </Button>
+                    <Button variant="secondary" size="sm" loading={updating} onClick={() => setStatus('INACTIVE')}>Deaktiver</Button>
                   )}
                   {selected.status === 'INACTIVE' && (
                     <>
-                      <Button variant="primary" size="sm" loading={updating} onClick={() => setStatus('ACTIVE')}>
-                        Genaktiver
-                      </Button>
-                      <Button variant="ghost" size="sm" loading={updating} onClick={() => setStatus('ARCHIVED')}>
-                        Arkiver
-                      </Button>
+                      <Button variant="primary" size="sm" loading={updating} onClick={() => setStatus('ACTIVE')}>Genaktiver</Button>
+                      <Button variant="ghost" size="sm" loading={updating} onClick={() => setStatus('ARCHIVED')}>Arkiver</Button>
                     </>
                   )}
                   {selected.status === 'ARCHIVED' && (
-                    <Button variant="secondary" size="sm" loading={updating} onClick={() => setStatus('INACTIVE')}>
-                      Genopret
-                    </Button>
+                    <Button variant="secondary" size="sm" loading={updating} onClick={() => setStatus('INACTIVE')}>Genopret</Button>
                   )}
                 </div>
               </div>
@@ -299,6 +352,104 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
                 </div>
               )}
 
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569]">Kontaktpersonprofil</div>
+                  {!editingProfile && (
+                    <button type="button" onClick={() => setEditingProfile(true)} className="text-xs font-medium text-[#1C3829] hover:underline">
+                      Rediger
+                    </button>
+                  )}
+                </div>
+
+                {editingProfile && profileForm ? (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs text-[#6B7569] mb-1 block">Køn</label>
+                      <div className="flex gap-1.5">
+                        {(['MALE', 'FEMALE', 'OTHER'] as const).map(g => (
+                          <button
+                            key={g}
+                            type="button"
+                            onClick={() => setProfileForm({ ...profileForm, gender: profileForm.gender === g ? '' : g })}
+                            className={[
+                              'px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors',
+                              profileForm.gender === g
+                                ? 'bg-[#1C3829] text-white border-[#1C3829]'
+                                : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]',
+                            ].join(' ')}
+                          >
+                            {GENDER_LABEL[g]}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs text-[#6B7569] mb-1 block">Erfaring med</label>
+                      <div className="flex gap-1.5">
+                        {(['BOYS', 'GIRLS'] as const).map(eg => {
+                          const active = profileForm.experience_with_genders.includes(eg)
+                          return (
+                            <button
+                              key={eg}
+                              type="button"
+                              onClick={() => setProfileForm({
+                                ...profileForm,
+                                experience_with_genders: active
+                                  ? profileForm.experience_with_genders.filter(x => x !== eg)
+                                  : [...profileForm.experience_with_genders, eg],
+                              })}
+                              className={[
+                                'px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors',
+                                active
+                                  ? 'bg-[#1C3829] text-white border-[#1C3829]'
+                                  : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]',
+                              ].join(' ')}
+                            >
+                              {EXPERIENCE_GENDER_LABEL[eg]}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs text-[#6B7569] mb-1 block">Uddannelse</label>
+                      <input type="text" value={profileForm.education} onChange={e => setProfileForm({ ...profileForm, education: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-[#E0DAD0] text-sm focus:outline-none focus:border-[#1C3829]" />
+                    </div>
+                    <div>
+                      <label className="text-xs text-[#6B7569] mb-1 block">Daglig beskæftigelse</label>
+                      <input type="text" value={profileForm.daily_occupation} onChange={e => setProfileForm({ ...profileForm, daily_occupation: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-[#E0DAD0] text-sm focus:outline-none focus:border-[#1C3829]" />
+                    </div>
+                    <div>
+                      <label className="text-xs text-[#6B7569] mb-1 block">Certifikater (kommasepareret)</label>
+                      <input type="text" value={profileForm.certificates} onChange={e => setProfileForm({ ...profileForm, certificates: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-[#E0DAD0] text-sm focus:outline-none focus:border-[#1C3829]" />
+                    </div>
+                    <div>
+                      <label className="text-xs text-[#6B7569] mb-1 block">Geografi (kommasepareret)</label>
+                      <input type="text" value={profileForm.geography} onChange={e => setProfileForm({ ...profileForm, geography: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-[#E0DAD0] text-sm focus:outline-none focus:border-[#1C3829]" />
+                    </div>
+                    <div className="flex gap-2 pt-1">
+                      <Button variant="primary" size="sm" loading={updating} onClick={saveProfile}>Gem</Button>
+                      <Button variant="ghost" size="sm" onClick={() => { setEditingProfile(false); setProfileForm(toForm(selected)) }}>Annuller</Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3">
+                    <InfoBlock label="Køn" value={selected.gender ? (GENDER_LABEL[selected.gender] ?? selected.gender) : '—'} />
+                    <InfoBlock
+                      label="Erfaring med"
+                      value={selected.experience_with_genders.length > 0
+                        ? selected.experience_with_genders.map(g => EXPERIENCE_GENDER_LABEL[g] ?? g).join(', ')
+                        : '—'}
+                    />
+                    <InfoBlock label="Uddannelse" value={selected.education || '—'} />
+                    <InfoBlock label="Daglig beskæftigelse" value={selected.daily_occupation || '—'} />
+                    <InfoBlock label="Certifikater" value={selected.certificates.length > 0 ? selected.certificates.join(', ') : '—'} />
+                    <InfoBlock label="Geografi" value={selected.geography.length > 0 ? selected.geography.join(', ') : '—'} />
+                  </div>
+                )}
+              </div>
+
               {error && (
                 <div className="flex items-center gap-2 p-3 bg-[#FEE2E2] border border-[#FECACA] rounded-xl text-sm text-[#B91C1C]">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="shrink-0">
@@ -312,9 +463,7 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
             </div>
 
             <div className="px-6 py-4 border-t border-[#E0DAD0] shrink-0">
-              <Button variant="secondary" className="w-full" onClick={closeDrawer}>
-                Luk
-              </Button>
+              <Button variant="secondary" className="w-full" onClick={closeDrawer}>Luk</Button>
             </div>
           </>
         )}

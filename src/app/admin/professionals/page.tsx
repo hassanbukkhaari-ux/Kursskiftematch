@@ -11,7 +11,8 @@ export default async function ProfessionalsPage() {
       id, profession, experience_years, max_complexity_level,
       target_age_groups, qualifications, capacity_hours_week,
       max_concurrent_cases, availability_status, availability_days,
-      status, created_at, updated_at,
+      status, gender, education, certificates, daily_occupation,
+      experience_with_genders, geography, created_at, updated_at,
       profiles!inner(full_name, email)
     `)
     .order('created_at', { ascending: false })
@@ -25,7 +26,7 @@ export default async function ProfessionalsPage() {
         breadcrumb={[{ label: 'Administration', href: '/admin' }, { label: 'Fagpersoner' }]}
       />
       <ContentContainer>
-        <ProfessionalsClient initialData={(professionals ?? []) as ProfessionalRow[]} />
+        <ProfessionalsClient initialData={(professionals ?? []) as unknown as ProfessionalRow[]} />
       </ContentContainer>
     </div>
   )
@@ -43,6 +44,12 @@ export type ProfessionalRow = {
   availability_status: string
   availability_days: string[]
   status: string
+  gender: string | null
+  education: string | null
+  certificates: string[]
+  daily_occupation: string | null
+  experience_with_genders: string[]
+  geography: string[]
   created_at: string
   updated_at: string | null
   profiles: { full_name: string; email: string }

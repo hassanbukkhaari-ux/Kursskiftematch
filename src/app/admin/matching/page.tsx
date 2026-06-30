@@ -1,4 +1,3 @@
-// TODO: Re-enable authentication before production
 import { createClient } from '@/lib/supabase/server'
 import { PageHeader, ContentContainer, StatCard } from '@/components/layout/page-header'
 import { SectionHeader } from '@/components/layout/page-header'
@@ -56,6 +55,7 @@ export default async function AdminMatchingPage() {
         breadcrumb={[{ label: 'Administration', href: '/admin' }, { label: 'Matching' }]}
       />
       <ContentContainer>
+        {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatCard label="Åbne sager" value={cases.filter(c => c.status === 'OPEN').length} color="amber" />
           <StatCard label="Afventende match" value={activeRuns.length} color="brand" />
@@ -63,6 +63,7 @@ export default async function AdminMatchingPage() {
           <StatCard label="Sager klar til tildeling" value={activeRuns.filter(r => r.status === 'SCORED').length} color="green" />
         </div>
 
+        {/* Active match runs */}
         {activeRuns.length > 0 && (
           <div className="mb-8">
             <SectionHeader
@@ -108,6 +109,7 @@ export default async function AdminMatchingPage() {
           </div>
         )}
 
+        {/* Cases needing matching */}
         <SectionHeader
           title="Sager klar til matching"
           description="Åbne sager uden tildelt fagperson"

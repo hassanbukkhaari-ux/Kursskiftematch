@@ -35,7 +35,8 @@ export interface Profile {
   updated_at: string
 }
 
-type DbRow = Record<string, unknown>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DbRow = Record<string, any>
 
 export type Database = {
   public: {
@@ -43,7 +44,7 @@ export type Database = {
       [tableName: string]: {
         Row: DbRow
         Insert: DbRow
-        Update: Partial<DbRow>
+        Update: DbRow
         Relationships: unknown[]
       }
     }
@@ -56,7 +57,8 @@ export type Database = {
     Functions: {
       [fnName: string]: {
         Args: DbRow
-        Returns: unknown
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        Returns: any
       }
     }
     Enums: {

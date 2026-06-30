@@ -5,11 +5,18 @@ import { InquiriesClient } from './InquiriesClient'
 export default async function InquiriesPage() {
   const db = await createClient()
 
-  const { data: inquiries } = await db
-    .from('inbound_inquiries')
-    .select('id, submission_type, submitter_name, submitter_email, submitter_phone, organization_name, message, status, submitted_at, reviewed_at')
-    .order('submitted_at', { ascending: false })
-    .limit(100)
+  const [inquiriesRes, munisRes] = await Promise.all([
+    db
+      .from('inbound_inquiries')
+      .select('id, submission_type, submitter_name, submitter_email, submitter_phone, organization_name, message, status, submitted_at, reviewed_at')
+      .order('submitted_at', { ascending: false })
+      .limit(100),
+    db
+      .from('municipalities')
+      .select('id, name')
+      .eq('status', 'ACTIVE')
+      .order('name', { ascending: true }),
+  ])
 
   return (
     <div>
@@ -20,7 +27,10 @@ export default async function InquiriesPage() {
         breadcrumb={[{ label: 'Administration', href: '/admin' }, { label: 'Henvendelser' }]}
       />
       <ContentContainer>
-        <InquiriesClient initialData={(inquiries ?? []) as InquiryRow[]} />
+        <InquiriesClient
+          initialData={(inquiriesRes.data ?? []) as InquiryRow[]}
+          municipalities={munisRes.data ?? []}
+        />
       </ContentContainer>
     </div>
   )
@@ -37,4 +47,9 @@ export type InquiryRow = {
   status: 'PENDING' | 'REVIEWED' | 'CONVERTED' | 'REJECTED' | 'SPAM'
   submitted_at: string
   reviewed_at: string | null
+}
+
+export type MunicipalityOption = {
+  id: string
+  name: string
 }

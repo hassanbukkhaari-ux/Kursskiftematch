@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { SectionHeader } from '@/components/layout/page-header'
-import type { InquiryRow } from './page'
+import type { InquiryRow, MunicipalityOption } from './page'
 
 const TYPE_LABEL: Record<string, string> = {
   MUNICIPALITY_INQUIRY: 'Kommunehenvendelse',
@@ -43,13 +43,39 @@ function formatDate(iso: string) {
   return new Intl.DateTimeFormat('da-DK', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(iso))
 }
 
-export function InquiriesClient({ initialData }: { initialData: InquiryRow[] }) {
+type ConvertForm = {
+  municipality_id: string
+  citizen_initials: string
+  citizen_age_range: string
+}
+
+const EMPTY_CONVERT: ConvertForm = {
+  municipality_id: '',
+  citizen_initials: '',
+  citizen_age_range: '',
+}
+
+const AGE_RANGES = ['0-5', '6-12', '13-18', '18+'] as const
+
+export function InquiriesClient({
+  initialData,
+  municipalities,
+}: {
+  initialData: InquiryRow[]
+  municipalities: MunicipalityOption[]
+}) {
   const router = useRouter()
   const [filter, setFilter] = useState<FilterKey>('PENDING')
   const [selected, setSelected] = useState<InquiryRow | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [updating, startUpdate] = useTransition()
   const [error, setError] = useState<string | null>(null)
+
+  // Case conversion step
+  const [convertStep, setConvertStep] = useState(false)
+  const [convertForm, setConvertForm] = useState<ConvertForm>(EMPTY_CONVERT)
+  const [converting, setConverting] = useState(false)
+  const [convertError, setConvertError] = useState<string | null>(null)
 
   const counts = useMemo(() => ({
     all: initialData.length,
@@ -74,6 +100,51 @@ export function InquiriesClient({ initialData }: { initialData: InquiryRow[] }) 
     setDrawerOpen(false)
     setSelected(null)
     setError(null)
+    setConvertStep(false)
+    setConvertForm(EMPTY_CONVERT)
+    setConvertError(null)
+  }
+
+  function startConvert() {
+    setConvertForm(EMPTY_CONVERT)
+    setConvertError(null)
+    setConvertStep(true)
+  }
+
+  async function handleConvert() {
+    if (!selected) return
+    setConvertError(null)
+    if (!convertForm.municipality_id) { setConvertError('Vælg en kommune'); return }
+    if (!convertForm.citizen_initials || convertForm.citizen_initials.length !== 2) {
+      setConvertError('Initialer skal være præcis 2 tegn')
+      return
+    }
+    if (!convertForm.citizen_age_range) { setConvertError('Vælg aldersgruppe'); return }
+
+    setConverting(true)
+    try {
+      const res = await fetch('/api/cases', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          municipality_id: convertForm.municipality_id,
+          citizen_initials: convertForm.citizen_initials.toUpperCase(),
+          citizen_age_range: convertForm.citizen_age_range,
+          inquiry_id: selected.id,
+        }),
+      })
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}))
+        setConvertError((json as { error?: string }).error ?? 'Noget gik galt')
+        return
+      }
+      closeDrawer()
+      router.refresh()
+    } catch {
+      setConvertError('Netværksfejl — prøv igen')
+    } finally {
+      setConverting(false)
+    }
   }
 
   function updateStatus(newStatus: string) {
@@ -110,6 +181,7 @@ export function InquiriesClient({ initialData }: { initialData: InquiryRow[] }) 
         description={counts.PENDING === 0 ? 'Ingen henvendelser afventer' : undefined}
       />
 
+      {/* Filter tabs */}
       <div className="flex gap-1 mb-5 bg-[#F6F3EE] rounded-xl p-1 w-fit flex-wrap">
         {tabs.map(tab => (
           <button
@@ -176,6 +248,7 @@ export function InquiriesClient({ initialData }: { initialData: InquiryRow[] }) 
         </div>
       )}
 
+      {/* Backdrop */}
       <div
         className={[
           'fixed inset-0 bg-[#1A1F1C]/50 z-40 transition-opacity duration-300',
@@ -185,6 +258,7 @@ export function InquiriesClient({ initialData }: { initialData: InquiryRow[] }) 
         aria-hidden="true"
       />
 
+      {/* Drawer */}
       <aside
         role="dialog"
         aria-modal="true"
@@ -197,6 +271,7 @@ export function InquiriesClient({ initialData }: { initialData: InquiryRow[] }) 
       >
         {selected && (
           <>
+            {/* Header */}
             <div className="flex items-center justify-between px-6 py-5 border-b border-[#E0DAD0] shrink-0">
               <div className="min-w-0">
                 <h2 className="font-serif text-base font-semibold text-[#1A1F1C] truncate">{selected.submitter_name}</h2>
@@ -220,7 +295,10 @@ export function InquiriesClient({ initialData }: { initialData: InquiryRow[] }) 
               </button>
             </div>
 
+            {/* Body */}
             <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+
+              {/* Contact info */}
               <div className="space-y-3">
                 <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Kontakt</div>
                 <ContactRow icon={<EmailIcon />} value={selected.submitter_email} href={`mailto:${selected.submitter_email}`} />
@@ -232,6 +310,7 @@ export function InquiriesClient({ initialData }: { initialData: InquiryRow[] }) 
                 )}
               </div>
 
+              {/* Message */}
               {selected.message && (
                 <div>
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Besked</div>
@@ -241,6 +320,7 @@ export function InquiriesClient({ initialData }: { initialData: InquiryRow[] }) 
                 </div>
               )}
 
+              {/* Current status */}
               <div>
                 <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Status</div>
                 <div className="flex items-center gap-2 mb-4">
@@ -252,6 +332,7 @@ export function InquiriesClient({ initialData }: { initialData: InquiryRow[] }) 
                   )}
                 </div>
 
+                {/* Actions */}
                 {selected.status === 'PENDING' && (
                   <div className="flex flex-wrap gap-2">
                     <Button variant="primary" size="sm" loading={updating} onClick={() => updateStatus('REVIEWED')}>
@@ -266,14 +347,81 @@ export function InquiriesClient({ initialData }: { initialData: InquiryRow[] }) 
                   </div>
                 )}
 
-                {selected.status === 'REVIEWED' && selected.submission_type === 'MUNICIPALITY_INQUIRY' && (
+                {selected.status === 'REVIEWED' && selected.submission_type === 'MUNICIPALITY_INQUIRY' && !convertStep && (
                   <div className="flex flex-wrap gap-2">
-                    <Button variant="primary" size="sm" icon={<PlusIcon />}>
-                      Opret sag (kommer snart)
+                    <Button variant="primary" size="sm" icon={<PlusIcon />} onClick={startConvert}>
+                      Opret sag
                     </Button>
                     <Button variant="secondary" size="sm" loading={updating} onClick={() => updateStatus('REJECTED')}>
                       Afvis
                     </Button>
+                  </div>
+                )}
+
+                {convertStep && (
+                  <div className="mt-4 space-y-4 border border-[#E0DAD0] rounded-xl p-4">
+                    <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569]">Opret sag fra henvendelse</div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-[#6B7569] mb-1.5">Kommune *</label>
+                      <select
+                        value={convertForm.municipality_id}
+                        onChange={e => setConvertForm(f => ({ ...f, municipality_id: e.target.value }))}
+                        className="w-full h-10 px-3 bg-[#F6F3EE] rounded-xl text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829]"
+                      >
+                        <option value="">Vælg kommune…</option>
+                        {municipalities.map(m => (
+                          <option key={m.id} value={m.id}>{m.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-[#6B7569] mb-1.5">Borgerinitialer (2 bogst.) *</label>
+                        <input
+                          type="text"
+                          maxLength={2}
+                          placeholder="AB"
+                          value={convertForm.citizen_initials}
+                          onChange={e => setConvertForm(f => ({ ...f, citizen_initials: e.target.value }))}
+                          className="w-full h-10 px-3 bg-[#F6F3EE] rounded-xl text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829] uppercase"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-[#6B7569] mb-1.5">Aldersgruppe *</label>
+                        <select
+                          value={convertForm.citizen_age_range}
+                          onChange={e => setConvertForm(f => ({ ...f, citizen_age_range: e.target.value }))}
+                          className="w-full h-10 px-3 bg-[#F6F3EE] rounded-xl text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829]"
+                        >
+                          <option value="">Vælg…</option>
+                          {AGE_RANGES.map(r => (
+                            <option key={r} value={r}>{r} år</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {convertError && (
+                      <p className="text-sm text-red-600 bg-red-50 rounded-xl px-3 py-2">{convertError}</p>
+                    )}
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => { setConvertStep(false); setConvertError(null) }}
+                        className="flex-1 h-9 rounded-lg border border-[#E0DAD0] text-sm font-semibold text-[#1A1F1C] hover:bg-[#F6F3EE] transition-colors"
+                      >
+                        Annuller
+                      </button>
+                      <button
+                        onClick={handleConvert}
+                        disabled={converting}
+                        className="flex-1 h-9 rounded-lg bg-[#1C3829] text-white text-sm font-semibold hover:bg-[#2D5840] transition-colors disabled:opacity-50"
+                      >
+                        {converting ? 'Opretter…' : 'Opret sag'}
+                      </button>
+                    </div>
                   </div>
                 )}
 
@@ -298,6 +446,7 @@ export function InquiriesClient({ initialData }: { initialData: InquiryRow[] }) 
               )}
             </div>
 
+            {/* Footer */}
             <div className="px-6 py-4 border-t border-[#E0DAD0] shrink-0">
               <Button variant="secondary" className="w-full" onClick={closeDrawer}>
                 Luk

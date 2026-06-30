@@ -55,13 +55,13 @@ async function executeCaseDeletion(
   caseId: string
 ) {
   // Delete in FK-safe order per WF-013
-  // 1. contact_disclosures (by case_id directly — no contact_log_id column exists)
-  await db.from('contact_disclosures').delete().eq('case_id', caseId)
-
+  // 1. contact_disclosures (by case_id), then contact_logs
   const { data: contactLogs } = await db
     .from('contact_logs')
     .select('id')
     .eq('case_id', caseId)
+
+  await db.from('contact_disclosures').delete().eq('case_id', caseId)
 
   if (contactLogs?.length) {
     const logIds = contactLogs.map(l => l.id)
@@ -94,6 +94,7 @@ async function executeCaseDeletion(
 
   // 4. Remaining case-linked tables (cascades handle children)
   await db.from('registered_hours').delete().eq('case_id', caseId)
+  await db.from('contact_logs').delete().eq('case_id', caseId)
   await db.from('case_assignments').delete().eq('case_id', caseId)
   await db.from('case_grants').delete().eq('case_id', caseId)
   await db.from('case_handovers').delete().eq('case_id', caseId)

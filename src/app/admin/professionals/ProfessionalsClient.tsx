@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition, useMemo } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -179,6 +180,7 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
         description={counts.REGISTERED > 0 ? `${counts.REGISTERED} afventer aktivering` : undefined}
       />
 
+      {/* Filter tabs */}
       <div className="flex gap-1 mb-5 bg-[#F6F3EE] rounded-xl p-1 w-fit">
         {tabs.map(tab => (
           <button
@@ -238,6 +240,7 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
         </div>
       )}
 
+      {/* Backdrop */}
       <div
         className={[
           'fixed inset-0 bg-[#1A1F1C]/50 z-40 transition-opacity duration-300',
@@ -247,6 +250,7 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
         aria-hidden="true"
       />
 
+      {/* Drawer */}
       <aside
         role="dialog"
         aria-modal="true"
@@ -259,6 +263,7 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
       >
         {selected && (
           <>
+            {/* Drawer header */}
             <div className="flex items-center justify-between px-6 py-5 border-b border-[#E0DAD0] shrink-0">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-10 h-10 rounded-full bg-[#EEF4F0] flex items-center justify-center text-base font-semibold text-[#1C3829] shrink-0">
@@ -282,7 +287,10 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
               </button>
             </div>
 
+            {/* Drawer body */}
             <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+
+              {/* Current status */}
               <div>
                 <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Status</div>
                 <div className="flex items-center gap-2 mb-4">
@@ -290,25 +298,38 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
                     {STATUS_LABEL[selected.status] ?? selected.status}
                   </Badge>
                 </div>
+
+                {/* Status actions */}
                 <div className="flex flex-wrap gap-2">
                   {selected.status === 'REGISTERED' && (
-                    <Button variant="primary" size="sm" loading={updating} onClick={() => setStatus('ACTIVE')}>Aktiver</Button>
+                    <Button variant="primary" size="sm" loading={updating} onClick={() => setStatus('ACTIVE')}>
+                      Aktiver
+                    </Button>
                   )}
                   {selected.status === 'ACTIVE' && (
-                    <Button variant="secondary" size="sm" loading={updating} onClick={() => setStatus('INACTIVE')}>Deaktiver</Button>
+                    <Button variant="secondary" size="sm" loading={updating} onClick={() => setStatus('INACTIVE')}>
+                      Deaktiver
+                    </Button>
                   )}
                   {selected.status === 'INACTIVE' && (
                     <>
-                      <Button variant="primary" size="sm" loading={updating} onClick={() => setStatus('ACTIVE')}>Genaktiver</Button>
-                      <Button variant="ghost" size="sm" loading={updating} onClick={() => setStatus('ARCHIVED')}>Arkiver</Button>
+                      <Button variant="primary" size="sm" loading={updating} onClick={() => setStatus('ACTIVE')}>
+                        Genaktiver
+                      </Button>
+                      <Button variant="ghost" size="sm" loading={updating} onClick={() => setStatus('ARCHIVED')}>
+                        Arkiver
+                      </Button>
                     </>
                   )}
                   {selected.status === 'ARCHIVED' && (
-                    <Button variant="secondary" size="sm" loading={updating} onClick={() => setStatus('INACTIVE')}>Genopret</Button>
+                    <Button variant="secondary" size="sm" loading={updating} onClick={() => setStatus('INACTIVE')}>
+                      Genopret
+                    </Button>
                   )}
                 </div>
               </div>
 
+              {/* Profile details */}
               <div className="grid grid-cols-2 gap-3">
                 <InfoBlock label="Fag" value={PROFESSION_LABEL[selected.profession] ?? selected.profession} />
                 <InfoBlock label="Erfaring" value={`${selected.experience_years} år`} />
@@ -316,6 +337,7 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
                 <InfoBlock label="Kapacitet" value={`${selected.capacity_hours_week} t/uge · maks. ${selected.max_concurrent_cases} sager`} />
               </div>
 
+              {/* Availability */}
               <div>
                 <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Tilgængelighed</div>
                 <Badge variant={AVAILABILITY_BADGE[selected.availability_status] ?? 'default'} dot>
@@ -330,6 +352,7 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
                 )}
               </div>
 
+              {/* Age groups */}
               {selected.target_age_groups.length > 0 && (
                 <div>
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Målgrupper</div>
@@ -341,6 +364,7 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
                 </div>
               )}
 
+              {/* Qualifications */}
               {selected.qualifications.length > 0 && (
                 <div>
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Kompetencer</div>
@@ -352,11 +376,16 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
                 </div>
               )}
 
+              {/* Kontaktperson profile */}
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569]">Kontaktpersonprofil</div>
                   {!editingProfile && (
-                    <button type="button" onClick={() => setEditingProfile(true)} className="text-xs font-medium text-[#1C3829] hover:underline">
+                    <button
+                      type="button"
+                      onClick={() => setEditingProfile(true)}
+                      className="text-xs font-medium text-[#1C3829] hover:underline"
+                    >
                       Rediger
                     </button>
                   )}
@@ -414,23 +443,51 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
                     </div>
                     <div>
                       <label className="text-xs text-[#6B7569] mb-1 block">Uddannelse</label>
-                      <input type="text" value={profileForm.education} onChange={e => setProfileForm({ ...profileForm, education: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-[#E0DAD0] text-sm focus:outline-none focus:border-[#1C3829]" />
+                      <input
+                        type="text"
+                        value={profileForm.education}
+                        onChange={e => setProfileForm({ ...profileForm, education: e.target.value })}
+                        className="w-full px-3 py-2 rounded-lg border border-[#E0DAD0] text-sm focus:outline-none focus:border-[#1C3829]"
+                      />
                     </div>
                     <div>
                       <label className="text-xs text-[#6B7569] mb-1 block">Daglig beskæftigelse</label>
-                      <input type="text" value={profileForm.daily_occupation} onChange={e => setProfileForm({ ...profileForm, daily_occupation: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-[#E0DAD0] text-sm focus:outline-none focus:border-[#1C3829]" />
+                      <input
+                        type="text"
+                        value={profileForm.daily_occupation}
+                        onChange={e => setProfileForm({ ...profileForm, daily_occupation: e.target.value })}
+                        className="w-full px-3 py-2 rounded-lg border border-[#E0DAD0] text-sm focus:outline-none focus:border-[#1C3829]"
+                      />
                     </div>
                     <div>
                       <label className="text-xs text-[#6B7569] mb-1 block">Certifikater (kommasepareret)</label>
-                      <input type="text" value={profileForm.certificates} onChange={e => setProfileForm({ ...profileForm, certificates: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-[#E0DAD0] text-sm focus:outline-none focus:border-[#1C3829]" />
+                      <input
+                        type="text"
+                        value={profileForm.certificates}
+                        onChange={e => setProfileForm({ ...profileForm, certificates: e.target.value })}
+                        className="w-full px-3 py-2 rounded-lg border border-[#E0DAD0] text-sm focus:outline-none focus:border-[#1C3829]"
+                      />
                     </div>
                     <div>
                       <label className="text-xs text-[#6B7569] mb-1 block">Geografi (kommasepareret)</label>
-                      <input type="text" value={profileForm.geography} onChange={e => setProfileForm({ ...profileForm, geography: e.target.value })} className="w-full px-3 py-2 rounded-lg border border-[#E0DAD0] text-sm focus:outline-none focus:border-[#1C3829]" />
+                      <input
+                        type="text"
+                        value={profileForm.geography}
+                        onChange={e => setProfileForm({ ...profileForm, geography: e.target.value })}
+                        className="w-full px-3 py-2 rounded-lg border border-[#E0DAD0] text-sm focus:outline-none focus:border-[#1C3829]"
+                      />
                     </div>
                     <div className="flex gap-2 pt-1">
-                      <Button variant="primary" size="sm" loading={updating} onClick={saveProfile}>Gem</Button>
-                      <Button variant="ghost" size="sm" onClick={() => { setEditingProfile(false); setProfileForm(toForm(selected)) }}>Annuller</Button>
+                      <Button variant="primary" size="sm" loading={updating} onClick={saveProfile}>
+                        Gem
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => { setEditingProfile(false); setProfileForm(toForm(selected)) }}
+                      >
+                        Annuller
+                      </Button>
                     </div>
                   </div>
                 ) : (
@@ -462,8 +519,17 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
               )}
             </div>
 
-            <div className="px-6 py-4 border-t border-[#E0DAD0] shrink-0">
-              <Button variant="secondary" className="w-full" onClick={closeDrawer}>Luk</Button>
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-[#E0DAD0] shrink-0 flex gap-2">
+              <Link
+                href={`/admin/professionals/${selected.id}`}
+                className="flex-1 h-9 flex items-center justify-center bg-[#1C3829] text-white text-sm font-semibold rounded-xl hover:bg-[#2D5840] transition-colors"
+              >
+                Se fuld profil
+              </Link>
+              <Button variant="secondary" onClick={closeDrawer}>
+                Luk
+              </Button>
             </div>
           </>
         )}

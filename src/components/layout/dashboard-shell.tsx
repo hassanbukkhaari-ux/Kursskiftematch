@@ -54,6 +54,16 @@ const professionalNav: NavItem[] = [
       </svg>
     ),
   },
+  {
+    href: '/dashboard/profile',
+    label: 'Min profil',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </svg>
+    ),
+  },
 ]
 
 const adminNav: NavItem[] = [
@@ -141,7 +151,7 @@ const adminNav: NavItem[] = [
   },
 ]
 
-// ── Sub-components (no hooks — safe to define at module scope) ──────────
+// ── Sub-components (no hooks — safe to define at module scope) ──────
 
 function LogoMark({ size = 'md' }: { size?: 'sm' | 'md' }) {
   const dim = size === 'sm' ? 'w-6 h-6 rounded-md' : 'w-7 h-7 rounded-lg'
@@ -204,7 +214,7 @@ function SidebarUser({
   )
 }
 
-// ── Props ───────────────────────────────────────────────────────────────
+// ── Props ───────────────────────────────────────────────────────────────────
 
 interface DashboardShellProps {
   children: React.ReactNode
@@ -212,7 +222,7 @@ interface DashboardShellProps {
   role?: 'admin' | 'professional'
 }
 
-// ── Main component ──────────────────────────────────────────────────────
+// ── Main component ────────────────────────────────────────────────────────
 
 export function DashboardShell({ children, userName, role = 'admin' }: DashboardShellProps) {
   const pathname = usePathname()

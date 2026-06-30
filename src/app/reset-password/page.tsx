@@ -10,7 +10,6 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
-  const supabase = createClient()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -26,6 +25,7 @@ export default function ResetPasswordPage() {
     }
 
     setLoading(true)
+    const supabase = createClient()
     const { error } = await supabase.auth.updateUser({ password })
     setLoading(false)
 
@@ -34,7 +34,6 @@ export default function ResetPasswordPage() {
       return
     }
 
-    // Sign out so the user logs in fresh with the new password
     await supabase.auth.signOut()
     router.push('/login?message=password_updated')
   }

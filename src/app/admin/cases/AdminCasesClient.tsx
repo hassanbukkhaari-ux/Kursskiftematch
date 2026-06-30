@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { SectionHeader } from '@/components/layout/page-header'
-import type { AdminCase, MunicipalityOption } from './page'
+import type { AdminCase, MunicipalityOption, LookupOption } from './page'
 
 const STATUS_LABEL: Record<string, string> = {
   OPEN: 'Åben', MATCHED: 'Matchet', ACTIVE: 'Aktiv', COMPLETED: 'Afsluttet', ARCHIVED: 'Arkiveret',
@@ -28,6 +28,8 @@ const COMPLEXITY_BADGE: Record<string, 'green' | 'amber' | 'red' | 'default'> = 
 
 const AGE_OPTIONS = ['0-5', '6-12', '13-18', '18+'] as const
 const COMPLEXITY_OPTIONS = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as const
+const GENDER_OPTIONS = ['MALE', 'FEMALE', 'OTHER'] as const
+const GENDER_LABEL: Record<string, string> = { MALE: 'Dreng/mand', FEMALE: 'Pige/kvinde', OTHER: 'Andet' }
 
 type FilterKey = 'all' | 'OPEN' | 'MATCHED' | 'ACTIVE' | 'COMPLETED'
 
@@ -35,18 +37,30 @@ type NewCaseForm = {
   municipality_id: string
   citizen_initials: string
   citizen_age_range: string
+  citizen_gender: string
   weekly_hours: string
   complexity_level: string
   citizen_notes: string
+  problem_area_codes: string[]
+  goal_codes: string[]
+  special_wish_codes: string[]
 }
 
 const EMPTY_FORM: NewCaseForm = {
   municipality_id: '',
   citizen_initials: '',
   citizen_age_range: '13-18',
+  citizen_gender: '',
   weekly_hours: '5',
   complexity_level: 'MEDIUM',
   citizen_notes: '',
+  problem_area_codes: [],
+  goal_codes: [],
+  special_wish_codes: [],
+}
+
+function toggleInArray(arr: string[], value: string): string[] {
+  return arr.includes(value) ? arr.filter(v => v !== value) : [...arr, value]
 }
 
 const inputClass =
@@ -55,9 +69,11 @@ const inputClass =
 export function AdminCasesClient({
   initialCases,
   municipalities,
+  lookups,
 }: {
   initialCases: AdminCase[]
   municipalities: MunicipalityOption[]
+  lookups: { problemAreas: LookupOption[]; goals: LookupOption[]; specialWishes: LookupOption[] }
 }) {
   const router = useRouter()
   const [filter, setFilter] = useState<FilterKey>('all')
@@ -109,9 +125,13 @@ export function AdminCasesClient({
           municipality_id: form.municipality_id,
           citizen_initials: initials,
           citizen_age_range: form.citizen_age_range,
+          citizen_gender: form.citizen_gender || undefined,
           weekly_hours: Number(form.weekly_hours),
           complexity_level: form.complexity_level,
           citizen_notes: form.citizen_notes || undefined,
+          problem_area_codes: form.problem_area_codes,
+          goal_codes: form.goal_codes,
+          special_wish_codes: form.special_wish_codes,
         }),
       })
       if (!res.ok) {
@@ -234,12 +254,7 @@ export function AdminCasesClient({
       >
         <div className="flex items-center justify-between px-6 py-5 border-b border-[#E0DAD0] shrink-0">
           <h2 className="font-serif text-lg font-semibold text-[#1A1F1C]">Ny sag</h2>
-          <button
-            type="button"
-            onClick={closeDrawer}
-            className="w-8 h-8 rounded-full bg-[#F6F3EE] hover:bg-[#EEF4F0] flex items-center justify-center text-[#6B7569] hover:text-[#1A1F1C] transition-colors"
-            aria-label="Luk"
-          >
+          <button type="button" onClick={closeDrawer} className="w-8 h-8 rounded-full bg-[#F6F3EE] hover:bg-[#EEF4F0] flex items-center justify-center text-[#6B7569] hover:text-[#1A1F1C] transition-colors" aria-label="Luk">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
@@ -248,7 +263,6 @@ export function AdminCasesClient({
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-6 space-y-5">
-
           <div>
             <label className="block text-xs font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Kommune</label>
             <select value={form.municipality_id} onChange={field('municipality_id')} className={inputClass}>
@@ -261,33 +275,28 @@ export function AdminCasesClient({
 
           <div>
             <label className="block text-xs font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Borgers initialer (2 bogstaver)</label>
-            <input
-              type="text"
-              value={form.citizen_initials}
-              onChange={field('citizen_initials')}
-              maxLength={2}
-              placeholder="f.eks. AB"
-              className={`${inputClass} uppercase`}
-              autoFocus
-            />
+            <input type="text" value={form.citizen_initials} onChange={field('citizen_initials')} maxLength={2} placeholder="f.eks. AB" className={`${inputClass} uppercase`} autoFocus />
           </div>
 
           <div>
             <label className="block text-xs font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Aldersgruppe</label>
             <div className="grid grid-cols-4 gap-2">
               {AGE_OPTIONS.map(age => (
-                <button
-                  key={age}
-                  type="button"
-                  onClick={() => setForm(f => ({ ...f, citizen_age_range: age }))}
-                  className={[
-                    'h-10 rounded-xl text-sm font-medium border transition-all',
-                    form.citizen_age_range === age
-                      ? 'bg-[#1C3829] text-white border-[#1C3829]'
-                      : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]',
-                  ].join(' ')}
-                >
+                <button key={age} type="button" onClick={() => setForm(f => ({ ...f, citizen_age_range: age }))}
+                  className={['h-10 rounded-xl text-sm font-medium border transition-all', form.citizen_age_range === age ? 'bg-[#1C3829] text-white border-[#1C3829]' : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]'].join(' ')}>
                   {age}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Køn (valgfri)</label>
+            <div className="grid grid-cols-3 gap-2">
+              {GENDER_OPTIONS.map(g => (
+                <button key={g} type="button" onClick={() => setForm(f => ({ ...f, citizen_gender: f.citizen_gender === g ? '' : g }))}
+                  className={['h-10 rounded-xl text-xs font-medium border transition-all', form.citizen_gender === g ? 'bg-[#1C3829] text-white border-[#1C3829]' : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]'].join(' ')}>
+                  {GENDER_LABEL[g]}
                 </button>
               ))}
             </div>
@@ -297,17 +306,8 @@ export function AdminCasesClient({
             <label className="block text-xs font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Kompleksitet</label>
             <div className="grid grid-cols-2 gap-2">
               {COMPLEXITY_OPTIONS.map(c => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setForm(f => ({ ...f, complexity_level: c }))}
-                  className={[
-                    'h-10 rounded-xl text-sm font-medium border transition-all',
-                    form.complexity_level === c
-                      ? 'bg-[#1C3829] text-white border-[#1C3829]'
-                      : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]',
-                  ].join(' ')}
-                >
+                <button key={c} type="button" onClick={() => setForm(f => ({ ...f, complexity_level: c }))}
+                  className={['h-10 rounded-xl text-sm font-medium border transition-all', form.complexity_level === c ? 'bg-[#1C3829] text-white border-[#1C3829]' : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]'].join(' ')}>
                   {COMPLEXITY_LABEL[c]}
                 </button>
               ))}
@@ -320,14 +320,53 @@ export function AdminCasesClient({
           </div>
 
           <div>
+            <label className="block text-xs font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Problemområder (valgfri)</label>
+            <div className="flex flex-wrap gap-1.5">
+              {lookups.problemAreas.map(opt => {
+                const active = form.problem_area_codes.includes(opt.code)
+                return (
+                  <button key={opt.code} type="button" onClick={() => setForm(f => ({ ...f, problem_area_codes: toggleInArray(f.problem_area_codes, opt.code) }))}
+                    className={['px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors', active ? 'bg-[#1C3829] text-white border-[#1C3829]' : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]'].join(' ')}>
+                    {opt.label_da}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Mål (valgfri)</label>
+            <div className="flex flex-wrap gap-1.5">
+              {lookups.goals.map(opt => {
+                const active = form.goal_codes.includes(opt.code)
+                return (
+                  <button key={opt.code} type="button" onClick={() => setForm(f => ({ ...f, goal_codes: toggleInArray(f.goal_codes, opt.code) }))}
+                    className={['px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors', active ? 'bg-[#1C3829] text-white border-[#1C3829]' : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]'].join(' ')}>
+                    {opt.label_da}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Ønsker til kontaktperson (valgfri)</label>
+            <div className="flex flex-wrap gap-1.5">
+              {lookups.specialWishes.map(opt => {
+                const active = form.special_wish_codes.includes(opt.code)
+                return (
+                  <button key={opt.code} type="button" onClick={() => setForm(f => ({ ...f, special_wish_codes: toggleInArray(f.special_wish_codes, opt.code) }))}
+                    className={['px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors', active ? 'bg-[#1C3829] text-white border-[#1C3829]' : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]'].join(' ')}>
+                    {opt.label_da}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          <div>
             <label className="block text-xs font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Noter (valgfri)</label>
-            <textarea
-              value={form.citizen_notes}
-              onChange={field('citizen_notes')}
-              rows={3}
-              placeholder="Tilføj relevante noter om borgerens situation..."
-              className={`${inputClass} resize-none`}
-            />
+            <textarea value={form.citizen_notes} onChange={field('citizen_notes')} rows={3} placeholder="Tilføj relevante noter om borgerens situation..." className={`${inputClass} resize-none`} />
           </div>
 
           {error && (
@@ -343,12 +382,8 @@ export function AdminCasesClient({
         </div>
 
         <div className="px-6 py-4 border-t border-[#E0DAD0] shrink-0 flex gap-3">
-          <Button variant="secondary" className="flex-1" onClick={closeDrawer} disabled={saving}>
-            Annuller
-          </Button>
-          <Button variant="primary" className="flex-1" loading={saving} onClick={handleCreate}>
-            Opret sag
-          </Button>
+          <Button variant="secondary" className="flex-1" onClick={closeDrawer} disabled={saving}>Annuller</Button>
+          <Button variant="primary" className="flex-1" loading={saving} onClick={handleCreate}>Opret sag</Button>
         </div>
       </aside>
     </>

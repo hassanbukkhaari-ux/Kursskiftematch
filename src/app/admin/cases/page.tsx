@@ -5,7 +5,7 @@ import { AdminCasesClient } from './AdminCasesClient'
 export default async function AdminCasesPage() {
   const db = await createClient()
 
-  const [casesRes, munisRes] = await Promise.all([
+  const [casesRes, munisRes, problemAreasRes, goalsRes, specialWishesRes] = await Promise.all([
     db.from('cases')
       .select('id, citizen_initials, citizen_age_range, status, complexity_level, weekly_hours, municipality_id, created_at')
       .order('created_at', { ascending: false })
@@ -14,6 +14,9 @@ export default async function AdminCasesPage() {
       .select('id, name')
       .eq('status', 'ACTIVE')
       .order('name', { ascending: true }),
+    db.from('problem_areas').select('code, label_da').eq('active', true).order('sort_order', { ascending: true }),
+    db.from('goals_lookup').select('code, label_da').eq('active', true).order('sort_order', { ascending: true }),
+    db.from('special_wishes_lookup').select('code, label_da').eq('active', true).order('sort_order', { ascending: true }),
   ])
 
   const muniMap = Object.fromEntries(
@@ -37,6 +40,11 @@ export default async function AdminCasesPage() {
         <AdminCasesClient
           initialCases={cases}
           municipalities={munisRes.data ?? []}
+          lookups={{
+            problemAreas: problemAreasRes.data ?? [],
+            goals: goalsRes.data ?? [],
+            specialWishes: specialWishesRes.data ?? [],
+          }}
         />
       </ContentContainer>
     </div>
@@ -58,4 +66,9 @@ export type AdminCase = {
 export type MunicipalityOption = {
   id: string
   name: string
+}
+
+export type LookupOption = {
+  code: string
+  label_da: string
 }

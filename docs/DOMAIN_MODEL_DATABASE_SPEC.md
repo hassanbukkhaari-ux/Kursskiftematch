@@ -171,7 +171,7 @@ READY FOR TECHNICAL SPECIFICATION PHASE (not yet approved)
 ├─ work_type: DIRECT_SESSION | TRANSPORT | DOCUMENTATION | COORDINATION | CRISIS_RESPONSE | TRAINING | OTHER
 ├─ hours: Decimal (0.25 to 8.0)
 ├─ session_log_id: UUID | NULL (FK, NEW in V4, optional link to SessionLog)
-├─ status: PENDING | APPROVED | REJECTED | OUTSIDE_GRANT
+├─ status: PENDING | SUBMITTED | APPROVED | REJECTED | OUTSIDE_GRANT
 ├─ grant_period_id: UUID (FK to case_grants)
 ├─ description: String | NULL
 ├─ outside_grant_reason: String | NULL (if OUTSIDE_GRANT)

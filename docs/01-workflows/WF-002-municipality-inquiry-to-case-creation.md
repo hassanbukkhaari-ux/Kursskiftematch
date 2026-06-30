@@ -445,7 +445,7 @@ ARCHIVED (historical record)
 ### Data Created
 
 | Entity | Purpose |
-|--------|---------|
+|--------|--------|
 | Inquiry | Track original contact and request |
 | Municipality | Reference data for case organization |
 | Case | Primary case record with citizen and support details |
@@ -455,14 +455,14 @@ ARCHIVED (historical record)
 ### Data Accessed
 
 | Entity | Purpose |
-|--------|---------|
+|--------|--------|
 | Municipality (existing) | Verify municipality exists and link to inquiry |
 | Inquiry (input) | Provide details for processing |
 
 ### Data Updated
 
 | Entity | Purpose |
-|--------|---------|
+|--------|--------|
 | Inquiry | Link to created case record |
 | Municipality | Contact information confirmed (if needed) |
 
@@ -1187,7 +1187,7 @@ The following business metrics track the health and efficiency of the case creat
 These targets should be established based on Kurshshifte's business goals:
 
 | Metric | Target | Rationale |
-|--------|--------|-----------|
+|--------|--------|----------|
 | Inquiries converted | 85%+ | Most inquiries should become cases |
 | Clarification required | <15% | Most inquiries should be clear initially |
 | Case creation cycle | <5 days | Quick turnaround improves satisfaction |

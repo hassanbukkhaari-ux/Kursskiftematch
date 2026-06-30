@@ -160,7 +160,7 @@ Else:
 ## OPEN QUESTIONS
 
 1. Can professional edit hours after submission but before approval?
-2. What is SLA for admin hour approval (1 day? 1 week)?
+2. What is SLA for admin hour approval (1 day? 1 week?)?
 3. Should system enforce minimum hours (0.25)?
 4. Should system warn professional if hours seem high (> 8/day)?
 5. Can approved hours be reversed if mistake found later?

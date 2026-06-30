@@ -1,4 +1,3 @@
-// TODO: Re-enable authentication before production
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { PageHeader, ContentContainer } from '@/components/layout/page-header'

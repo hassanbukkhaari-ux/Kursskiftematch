@@ -43,15 +43,14 @@ export default async function DashboardPage() {
   const proStatusColorValue = proStatusColor[proStatusRaw] ?? 'green'
 
   return (
-    <DashboardShell userName={profile?.full_name} role="professional">
+    <DashboardShell userName={profile.full_name} role="professional">
       <div>
         <PageHeader
           label="Mit overblik"
-          title={`Hej, ${profile?.full_name?.split(' ')[0] ?? 'konsulent'}`}
+          title={`Hej, ${profile.full_name.split(' ')[0]}`}
           subtitle="Kursskifte Match — din platform"
         />
         <ContentContainer>
-          {/* Stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
             <StatCard label="Aktive sager" value={totalCases} color="brand" />
             <StatCard label="Sessionslogs" value={totalLogs} color="green" />
@@ -59,7 +58,6 @@ export default async function DashboardPage() {
             <StatCard label="Konsulentstatus" value={proStatusDisplay} color={proStatusColorValue} />
           </div>
 
-          {/* Recent cases */}
           <SectionHeader title="Mine sager" />
           {activeCases.length === 0 ? (
             <Card className="text-center py-12 text-[#6B7569] text-sm">
@@ -93,7 +91,6 @@ export default async function DashboardPage() {
             </div>
           )}
 
-          {/* Quick links */}
           <SectionHeader title="Genveje" className="mt-10" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Link href="/dashboard/cases">

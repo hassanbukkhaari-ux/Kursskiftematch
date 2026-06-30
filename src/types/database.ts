@@ -35,37 +35,9 @@ export interface Profile {
   updated_at: string
 }
 
+// Generated Supabase types are not present in this repository.
+// Using `any` prevents PostgREST-JS's SelectQuery utility from collapsing
+// named-column selections (e.g. select('id, status')) to `never` when the
+// Database generic carries an index-signature Row type.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type DbRow = Record<string, any>
-
-export type Database = {
-  public: {
-    Tables: {
-      [tableName: string]: {
-        Row: DbRow
-        Insert: DbRow
-        Update: DbRow
-        Relationships: unknown[]
-      }
-    }
-    Views: {
-      [viewName: string]: {
-        Row: DbRow
-        Relationships: unknown[]
-      }
-    }
-    Functions: {
-      [fnName: string]: {
-        Args: DbRow
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        Returns: any
-      }
-    }
-    Enums: {
-      [enumName: string]: string
-    }
-    CompositeTypes: {
-      [typeName: string]: DbRow
-    }
-  }
-}
+export type Database = any

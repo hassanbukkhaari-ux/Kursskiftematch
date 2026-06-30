@@ -1,38 +1,30 @@
-import { redirect } from 'next/navigation'
+// TODO: Re-enable authentication before production
 import { createClient } from '@/lib/supabase/server'
-import type { Profile } from '@/types/database'
 import { DashboardShell } from '@/components/layout/dashboard-shell'
 import { PageHeader, ContentContainer, StatCard, SectionHeader } from '@/components/layout/page-header'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 
+const DEV_USER_ID = 'dev-admin'
+const DEV_PROFILE = { full_name: 'Hassan Bukkhaari', role: 'professional' }
+
 export default async function DashboardPage() {
   const db = await createClient()
-  const { data: { user } } = await db.auth.getUser()
-  if (!user) redirect('/login')
-
-  const { data: profileData } = await db
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
-
-  const profile = profileData as Profile | null
-  if (profile?.role === 'admin') redirect('/admin')
+  const profile = DEV_PROFILE
 
   const [casesRes, logsRes, proRes] = await Promise.all([
     db.from('v_cases_with_professional')
       .select('id, citizen_initials, status, weekly_hours', { count: 'exact' })
-      .eq('professional_id', user.id)
+      .eq('professional_id', DEV_USER_ID)
       .neq('status', 'ARCHIVED')
       .limit(3),
     db.from('session_logs')
       .select('id', { count: 'exact', head: true })
-      .eq('professional_id', user.id),
+      .eq('professional_id', DEV_USER_ID),
     db.from('professionals')
       .select('status')
-      .eq('id', user.id)
+      .eq('id', DEV_USER_ID)
       .single(),
   ])
 

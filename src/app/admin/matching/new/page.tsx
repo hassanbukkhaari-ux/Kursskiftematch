@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import type { Profile } from '@/types/database'
 import { PageHeader, ContentContainer } from '@/components/layout/page-header'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
@@ -22,14 +21,8 @@ export default async function NewMatchRunPage({
   const { case_id } = await searchParams
   if (!case_id) redirect('/admin/matching')
 
+  // TODO: Re-enable authentication before production
   const db = await createClient()
-  const { data: { user } } = await db.auth.getUser()
-  if (!user) redirect('/login')
-
-  const { data: profileData } = await db
-    .from('profiles').select('*').eq('id', user.id).single()
-  const profile = profileData as Profile | null
-  if (profile?.role !== 'admin') redirect('/dashboard')
 
   const { data: caseData } = await db
     .from('cases')

@@ -18,6 +18,7 @@ export default async function DashboardPage() {
     .eq('id', user.id)
     .single()
 
+  if (profile?.role === 'admin') redirect('/admin')
   if (profile?.role !== 'professional') redirect('/login')
 
   const [casesRes, logsRes, proRes] = await Promise.all([

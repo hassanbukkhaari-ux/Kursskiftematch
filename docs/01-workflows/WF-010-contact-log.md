@@ -1,7 +1,7 @@
 # WF-010: Contact Log
 
 **Workflow ID:** WF-010  
-**Title:** Professional Communication Log with Sagsbehandler  
+**Title:** Contact Log — Record Sagsbehandler Communication  
 **Status:** APPROVED for MVP  
 **Version:** 1.0  
 **Owner:** Delivery Domain
@@ -10,146 +10,200 @@
 
 ## PURPOSE
 
-Allow the assigned professional to record every communication with the case's sagsbehandler. Contact logs provide a factual, append-only record that supports professional accountability, follow-up tracking, and case progress documentation.
+Enable professionals and admins to record communications with the sagsbehandler (municipality case worker) on a case, creating an immutable, chronological contact history that supports continuity of care and accountability.
 
 ---
 
 ## ACTORS
 
-- **Professional** — Logs contact after communication occurs
-- **Admin** — Can view all contact logs; can log on behalf of professional
+- **Professional** — Records contacts they have made with the sagsbehandler
+- **Case Coordinator (Admin)** — May also record contacts; sets professional_id to the assigned professional
+- **Governance Domain** — Logs contact events
 
 ---
 
 ## TRIGGER
 
-Professional completes any communication with the sagsbehandler (phone call, email, in-person meeting) and must log it in the system before end of day.
+Professional or admin navigates to "Log Contact" for an ACTIVE case after communicating with the sagsbehandler.
 
 ---
 
 ## PRECONDITIONS
 
-- Case exists with `status = 'ACTIVE'`
-- Professional is currently assigned to the case (`case_assignments.ended_at IS NULL`)
-- Professional has contact info (via prior `ContactDisclosure` — see WF-009)
+- Case exists with status=ACTIVE
+- CaseAssignment exists with ended_at IS NULL (professional assigned to case)
+- Professional status=ACTIVE (if professional is logging)
 
 ---
 
 ## MAIN FLOW
 
-### Step 1 — Professional Logs Contact
+1. **Actor opens contact log entry form**
+   - Selects the relevant case
+   - Selects contact_type: PHONE_CALL / EMAIL / IN_PERSON / OTHER
+   - Enters logged_at (when the contact occurred — may differ from created_at)
+   - Enters note (encrypted): summary of the communication
+   - Enters outcome (encrypted, optional): result or next step agreed
+   - Sets follow_up_required = TRUE or FALSE (default: FALSE)
 
-Professional calls `POST /api/cases/:id/contact-logs` with:
+2. **System sets ownership fields**
+   - professional_id = professional currently assigned to the case (resolved from CaseAssignment WHERE ended_at IS NULL)
+   - logged_by = auth.uid() of the actor submitting the form (may be admin or professional)
 
-| Field | Required | Notes |
-|---|---|---|
-| `professional_id` | Yes | Must equal `auth.uid()` for professionals |
-| `contact_type` | Yes | `PHONE_CALL`, `EMAIL`, `IN_PERSON`, `OTHER` |
-| `logged_at` | Yes | When the communication occurred (may differ from submission time) |
-| `note` | No | Summary of communication — **encrypted at application layer** |
-| `outcome` | No | Result of contact — **encrypted at application layer** |
-| `follow_up_required` | No | Boolean flag for follow-up tracking (default `FALSE`) |
+3. **Contact log record created**
+   - Record is immutable after creation (append-only)
+   - Event: `CONTACT_LOGGED` logged
 
-`logged_by` is set automatically from `auth.uid()`.
-
-### Step 2 — System Validates and Stores
-
-- Validates `contact_type` ∈ `{PHONE_CALL, EMAIL, IN_PERSON, OTHER}`
-- Verifies professional is assigned to the case (RLS enforces)
-- Encrypts `note` and `outcome` before write
-- INSERT into `contact_logs` — **append-only, no updates ever**
-- Returns 201 with `id`, `case_id`, `professional_id`, `contact_type`, `logged_at`, `logged_by`, `created_at`
-
-### Step 3 — Audit Event
-
-- Event: `CONTACT_LOGGED`
-- Metadata: `{ "resource_type": "contact_logs", "resource_id": "<new_id>" }`
-- No sensitive content in audit metadata (ADR-004)
+4. **Workflow complete**
+   - Contact log visible to admin and the assigned professional
+   - No case status change occurs
+   - No automatic follow-up is created (follow_up_required is a manual indicator)
 
 ---
 
 ## ALTERNATIVE FLOWS
 
-### A1: Admin Logs on Behalf of Professional
+### A1: Admin Logs Contact on Behalf of Professional
+- Admin navigates to the case and opens the contact log form
+- Admin selects contact details and submits
+- System sets:
+  - professional_id = assigned professional (from CaseAssignment WHERE ended_at IS NULL)
+  - logged_by = admin's auth.uid()
+- This ensures professional_id reflects who made the contact (the professional), while logged_by records who entered it (the admin)
+- Record is otherwise identical to a professional-entered log
 
-Admin can call `POST /api/cases/:id/contact-logs` with any `professional_id`. Useful when:
-- Professional logged contact offline and admin is entering it
-- Admin is recording their own direct contact with sagsbehandler
+### A2: Follow-Up Required
+- Actor sets follow_up_required = TRUE when the contact identified a required action
+- follow_up_required is a manual advisory flag only
+- No automatic task is created in MVP
+- Admin may see all logs with follow_up_required = TRUE on the dashboard for operational follow-up
 
-`logged_by = auth.uid()` (admin's ID), `professional_id = :professionalId` (target professional).
-
-### A2: Follow-up Required
-
-If `follow_up_required = TRUE`:
-- No automated workflow triggered
-- Admin or professional uses this flag as a reminder in the contact log list
-- Next contact log should document the follow-up outcome
+### A3: Contact Logged for Wrong Case
+- Contact logs are immutable — there is no edit or delete path
+- If a log is created with incorrect information, professional or admin must create a new corrected entry and add a note explaining the error in the corrected entry's note field
+- The erroneous entry remains in the record (append-only audit trail)
 
 ---
 
 ## BUSINESS RULES
 
-1. **Append-only** — No UPDATE or DELETE on `contact_logs`. Errors require admin correction (new entry).
-2. **No in-app messaging** — `contact_type` reflects external channels only: PHONE_CALL, EMAIL, IN_PERSON, OTHER. IN_APP is forbidden (see DO_NOT_BUILD.md).
-3. **Encryption required** — `note` and `outcome` contain sensitive coordination details and must be encrypted at application layer before storage.
-4. **Assigned professional only** — RLS prevents logging for cases where the professional is not currently assigned.
-5. **logged_at vs created_at** — `logged_at` records when the communication happened; `created_at` records when it was entered in the system. These may differ (e.g., professional enters next-day log).
-6. **Contact info prerequisite** — Professional must have sagsbehandler contact info (via WF-009 ContactDisclosure) before communication can occur. This workflow records the outcome; WF-009 gates the access.
-
----
-
-## TS-001 TABLE
-
-`contact_logs` — Delivery Domain
-
-| Column | Type | Notes |
-|---|---|---|
-| `id` | UUID PK | |
-| `case_id` | UUID NOT NULL FK → cases | |
-| `professional_id` | UUID NOT NULL FK → professionals | |
-| `contact_type` | TEXT NOT NULL | CHECK: PHONE_CALL, EMAIL, IN_PERSON, OTHER |
-| `logged_at` | TIMESTAMPTZ NOT NULL | When communication occurred |
-| `logged_by` | UUID NOT NULL FK → profiles | Set from auth.uid() |
-| `note` | TEXT | Encrypted |
-| `outcome` | TEXT | Encrypted |
-| `follow_up_required` | BOOLEAN DEFAULT FALSE | |
-| `created_at` | TIMESTAMPTZ NOT NULL | Auto |
-
-**RLS:**
-- SELECT: Professional sees own (`professional_id = auth.uid()`); admin sees all
-- INSERT: Professional (own) or admin
-- UPDATE: Never
-- DELETE: Never
+1. **Append-only** — Contact logs cannot be edited or deleted after creation
+2. **professional_id is always the assigned professional** — Never the admin's profile ID; reflects who held the professional relationship
+3. **logged_by is always the submitting actor** — Distinguishes who recorded the log from who made the contact
+4. **Only ACTIVE cases receive new contact log entries** — System validates case.status = ACTIVE at creation
+5. **Contact logs survive case closure** — Existing logs are not deleted when case moves to COMPLETED or ARCHIVED
+6. **no IN_APP contact type** — MVP does not have in-app messaging; valid types are PHONE_CALL, EMAIL, IN_PERSON, OTHER
+7. **note and outcome encrypted** — Application-level encryption via TweetNaCl.js applied before persistence
 
 ---
 
 ## AUDIT EVENTS
 
-| Event | Trigger |
-|---|---|
-| `CONTACT_LOGGED` | Contact log entry created |
+- `CONTACT_LOGGED` — Actor creates a contact log entry for a case
+
+**Metadata:**
+```json
+{
+  "contact_log_id": "uuid",
+  "case_id": "uuid",
+  "professional_id": "uuid",
+  "logged_by": "uuid",
+  "contact_type": "PHONE_CALL"
+}
+```
+
+---
+
+## NOTIFICATION EVENTS
+
+WF-010 does not emit outbound notification events in MVP.
+
+Contact logs with `follow_up_required = TRUE` surface as a dashboard indicator for admin operational review. No push notification is generated for individual contact log entries — the volume would be too high and the urgency too low to justify outbound delivery in MVP.
+
+**Future notification (via WF-014, pending ADR-010 ratification):**
+
+| Notification Type | Recipient | Trigger |
+|---|---|---|
+| `CONTACT_FOLLOW_UP_UNRESOLVED` | Admin | Contact log with follow_up_required = TRUE not resolved within N days (scheduled check) |
+
+The workflow does not specify delivery channel. Channel assignment is owned by WF-014.
 
 ---
 
 ## OUTPUTS
 
-- New `contact_logs` row (encrypted `note` and `outcome`)
-- `CONTACT_LOGGED` audit event
+- contact_log record (immutable)
+- Audit trail of all logged contacts
+- Admin dashboard indicator for entries with follow_up_required = TRUE
 
 ---
 
-## API ENDPOINTS
+## DATA STRUCTURES
 
-| Trin | Metode | Endpoint | Auth | Tabel |
-|---|---|---|---|---|
-| Log kontakt | `POST` | `/api/cases/:id/contact-logs` | Own/Admin | `contact_logs` |
-| Hent kontaktlog | `GET` | `/api/cases/:id/contact-logs` | Own/Admin | `contact_logs` |
-
-**TS-002 reference:** §7.11–7.12 (Contact Log Endpoints)
+**contact_logs:**
+- case_id UUID NOT NULL REFERENCES cases(id)
+- professional_id UUID NOT NULL REFERENCES professionals(id) — assigned professional at time of logging
+- contact_type TEXT NOT NULL IN ('PHONE_CALL', 'EMAIL', 'IN_PERSON', 'OTHER')
+- logged_at TIMESTAMPTZ NOT NULL — when contact occurred
+- logged_by UUID NOT NULL REFERENCES profiles(id) — who entered the record
+- note TEXT (encrypted, nullable) — summary of communication
+- outcome TEXT (encrypted, nullable) — result or next step
+- follow_up_required BOOLEAN DEFAULT FALSE
+- created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 
 ---
 
-## RELATED WORKFLOWS
+## TS-001 AMENDMENTS REQUIRED
 
-- **WF-009 (Contact Disclosure)** — Admin must disclose sagsbehandler contact info before professional can make contact
-- **WF-005 (Session Documentation)** — Session logs document citizen contact; contact logs document sagsbehandler contact
+### Defect: contact_logs INSERT RLS too permissive
+
+**Current policy (defect):**
+```sql
+CREATE POLICY "contact_logs_insert_policy" ON contact_logs
+  FOR INSERT
+  WITH CHECK (
+    auth.jwt()->>'role' IN ('admin', 'professional')
+  );
+```
+
+**Problem:** Any authenticated professional can insert a contact log for any case, regardless of assignment. This violates the business rule that only the assigned professional (or an admin) may log contacts.
+
+**Required fix:**
+```sql
+CREATE POLICY "contact_logs_insert_policy" ON contact_logs
+  FOR INSERT
+  WITH CHECK (
+    auth.jwt()->>'role' = 'admin'
+    OR EXISTS (
+      SELECT 1 FROM case_assignments ca
+      WHERE ca.case_id = contact_logs.case_id
+        AND ca.professional_id = auth.uid()
+        AND ca.ended_at IS NULL
+    )
+  );
+```
+
+This amendment is a security correction and must be applied to TS-001 before implementation.
+
+---
+
+## WORKFLOW CONNECTIONS
+
+| Reference | Direction | Description |
+|-----------|-----------|-------------|
+| WF-004 | Upstream | Case must be ACTIVE before contact logs can be created |
+| WF-009 | Lateral | WF-009 tracks sagsbehandler contact disclosure (separate from contact log entries) |
+| WF-012 | Downstream | Contact logs are preserved on case closure and archival |
+| WF-013 | Downstream | GDPR data retention and deletion applies to contact logs via case archival |
+
+---
+
+## OPEN QUESTIONS
+
+1. Should professionals be able to see a dashboard view of their own contact logs with follow_up_required = TRUE?
+2. Should there be a maximum age for contact logs (e.g., logged_at cannot be more than 30 days in the past)?
+3. Should admin receive a notification when a contact log with follow_up_required = TRUE has not been resolved after N days?
+
+---
+
+**This workflow is implementation-ready pending the TS-001 INSERT RLS correction described above. Owned by Delivery Domain. Contact logs are preserved through case closure (WF-012) and subject to GDPR retention (WF-013).**

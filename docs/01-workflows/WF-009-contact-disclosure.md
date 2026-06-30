@@ -191,17 +191,4 @@ Admin initiates when professional needs to contact sagsbehandler:
 
 ---
 
-## API ENDPOINTS
-
-| Trin | Metode | Endpoint | Auth | Tabel |
-|---|---|---|---|---|
-| Afgiv kontaktoplysninger | `POST` | `/api/cases/:id/contact-disclosures` | Admin | `contact_disclosures` |
-| List afsløringer (auditspor) | `GET` | `/api/cases/:id/contact-disclosures` | Admin | `contact_disclosures` |
-
-**Note:** Fagpersoner tilgår IKKE denne tabel via API. Kontaktoplysningerne leveres eksternt (e-mail, telefon eller møde) ved afsløringen. Tabellen er udelukkende et administrativt auditspor.
-
-**TS-002 reference:** §7.9–7.10 (Contact Disclosures)
-
----
-
 **This workflow is implementation-ready. ContactDisclosure entity defined in DOMAIN_MODEL_DATABASE_SPEC.md**

@@ -162,15 +162,4 @@ Municipality sees: "24 granted, 28 used, 4 over (approved)"
 
 ---
 
-## API ENDPOINTS
-
-| Trin | Metode | Endpoint | Auth | Tabel |
-|---|---|---|---|---|
-| List timer uden for tilskud | `GET` | `/api/registered-hours?status=OUTSIDE_GRANT` | Admin | `registered_hours` |
-| Gennemgå/godkend/afvis | `POST` | `/api/registered-hours/:id/review` | Admin | `registered_hours` |
-
-**TS-002 reference:** §7.14–7.15 (Registered Hours — OUTSIDE_GRANT review)
-
----
-
 **This workflow is implementation-ready. Related to WF-006 (Registered Hours).**

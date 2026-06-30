@@ -445,7 +445,7 @@ ARCHIVED (historical record)
 ### Data Created
 
 | Entity | Purpose |
-|--------|---------|
+|--------|--------|
 | Inquiry | Track original contact and request |
 | Municipality | Reference data for case organization |
 | Case | Primary case record with citizen and support details |
@@ -455,14 +455,14 @@ ARCHIVED (historical record)
 ### Data Accessed
 
 | Entity | Purpose |
-|--------|---------|
+|--------|--------|
 | Municipality (existing) | Verify municipality exists and link to inquiry |
 | Inquiry (input) | Provide details for processing |
 
 ### Data Updated
 
 | Entity | Purpose |
-|--------|---------|
+|--------|--------|
 | Inquiry | Link to created case record |
 | Municipality | Contact information confirmed (if needed) |
 
@@ -1187,7 +1187,7 @@ The following business metrics track the health and efficiency of the case creat
 These targets should be established based on Kurshshifte's business goals:
 
 | Metric | Target | Rationale |
-|--------|--------|-----------|
+|--------|--------|----------|
 | Inquiries converted | 85%+ | Most inquiries should become cases |
 | Clarification required | <15% | Most inquiries should be clear initially |
 | Case creation cycle | <5 days | Quick turnaround improves satisfaction |
@@ -1224,22 +1224,6 @@ These targets should be established based on Kurshshifte's business goals:
 
 ---
 
-## API ENDPOINTS
-
-| Trin | Metode | Endpoint | Auth | Tabel |
-|---|---|---|---|---|
-| Modtag forespørgsel | `POST` | `/api/inquiries` | Public | `inbound_inquiries` |
-| List forespørgsler | `GET` | `/api/inquiries` | Admin | `inbound_inquiries` |
-| Hent forespørgsel | `GET` | `/api/inquiries/:id` | Admin | `inbound_inquiries` |
-| Opdater status | `PATCH` | `/api/inquiries/:id` | Admin | `inbound_inquiries` |
-| Konverter til sag | `POST` | `/api/inquiries/:id/convert` | Admin | `inbound_inquiries` |
-| Opret sag | `POST` | `/api/cases` | Admin | `cases` |
-| Sæt kompleksitet | `PUT` | `/api/cases/:id/complexity` | Admin | `case_complexity_factors` |
-
-**TS-002 reference:** §5.1–5.4 (Municipality Domain), §6.1–6.3 (Case Domain), §10.1–10.5 (Public Intake)
-
----
-
-**Document Status:** APPROVED FOR MVP**  
+**Document Status:** DRAFT (awaiting Hassan approval)  
 **Refinement Date:** June 27, 2026  
 **Additions:** Decision Gates (5 gates documented), Workflow KPIs (business metrics only)

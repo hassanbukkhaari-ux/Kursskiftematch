@@ -1,3 +1,4 @@
+// TODO: Re-enable authentication before production
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { PageHeader, ContentContainer } from '@/components/layout/page-header'
@@ -13,19 +14,36 @@ interface PageProps {
   params: Promise<{ runId: string }>
 }
 
+type MatchRun = {
+  id: string
+  case_id: string
+  status: string
+  algorithm_version: string
+}
+
+type CaseData = {
+  id: string
+  citizen_initials: string
+  citizen_age_range: string
+  complexity_level: string
+  weekly_hours: number
+  status: string
+}
+
 export default async function MatchRunPage({ params }: PageProps) {
   const { runId } = await params
 
-  // TODO: Re-enable authentication before production
   const db = await createClient()
 
-  const { data: run, error: runError } = await db
+  const { data: runRaw, error: runError } = await db
     .from('match_runs')
     .select('*')
     .eq('id', runId)
     .single()
 
-  if (runError || !run) notFound()
+  if (runError || !runRaw) notFound()
+
+  const run = runRaw as unknown as MatchRun
 
   const { data: candidates } = await db
     .from('match_candidates')
@@ -43,14 +61,14 @@ export default async function MatchRunPage({ params }: PageProps) {
     .eq('match_run_id', runId)
     .order('rank', { ascending: true })
 
-  const { data: caseData } = await db
+  const { data: caseRaw } = await db
     .from('cases')
     .select('id, citizen_initials, citizen_age_range, complexity_level, weekly_hours, status')
     .eq('id', run.case_id)
     .single()
 
+  const caseData = caseRaw as unknown as CaseData | null
   const candidateList = (candidates ?? []) as unknown as Parameters<typeof MatchingUI>[0]['candidates']
-
   const topScore = candidateList[0]?.overall_score ?? 0
 
   return (
@@ -76,7 +94,6 @@ export default async function MatchRunPage({ params }: PageProps) {
         }
       />
 
-      {/* Case summary */}
       {caseData && (
         <div className="bg-[#1C3829]/5 border-b border-[#1C3829]/10 px-4 md:px-8 py-3 md:py-4">
           <div className="flex items-center gap-4 md:gap-6 text-sm flex-wrap">

@@ -54,7 +54,7 @@ export type SessionLogRow = {
   follow_up_needed: boolean
   follow_up_reason: string | null
   location: string | null
-  status: 'DRAFT' | 'FINAL' | 'CORRECTED'
+  status: 'DRAFT' | 'FINAL' | 'CORRECTED' | 'ARCHIVED'
   created_at: string
 }
 

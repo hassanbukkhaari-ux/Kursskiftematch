@@ -17,6 +17,9 @@ const COMPLEXITY_LABEL: Record<string, string> = {
 const COMPLEXITY_BADGE: Record<string, 'green' | 'amber' | 'red'> = {
   LOW: 'green', MEDIUM: 'amber', HIGH: 'red', CRITICAL: 'red',
 }
+const GENDER_LABEL: Record<string, string> = {
+  MALE: 'Dreng/mand', FEMALE: 'Pige/kvinde', OTHER: 'Andet',
+}
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -34,10 +37,21 @@ export default async function AdminCasePage({ params }: PageProps) {
 
   if (!caseData) notFound()
 
-  const [muniRes, logsRes] = await Promise.all([
+  const [muniRes, logsRes, caseDetailRes, tagsRes, problemAreasRes, goalsRes, specialWishesRes] = await Promise.all([
     db.from('municipalities').select('name, sagsbehandler_name, sagsbehandler_email').eq('id', caseData.municipality_id).single(),
     db.from('session_logs').select('id, session_date, duration_minutes, professional_id', { count: 'exact' }).eq('case_id', id).order('session_date', { ascending: false }).limit(5),
+    db.from('cases').select('citizen_gender, citizen_notes').eq('id', id).single(),
+    db.from('v_case_tags').select('problem_area_codes, goal_codes, special_wish_codes').eq('case_id', id).single(),
+    db.from('problem_areas').select('code, label_da'),
+    db.from('goals_lookup').select('code, label_da'),
+    db.from('special_wishes_lookup').select('code, label_da'),
   ])
+
+  const labelMap = (rows: { code: string; label_da: string }[] | null) =>
+    Object.fromEntries((rows ?? []).map(r => [r.code, r.label_da]))
+  const problemAreaLabels = labelMap(problemAreasRes.data)
+  const goalLabels = labelMap(goalsRes.data)
+  const specialWishLabels = labelMap(specialWishesRes.data)
 
   const professional = caseData.professional_id
     ? await db.from('professionals').select('profession, experience_years, profiles!inner(full_name, email)').eq('id', caseData.professional_id).single()
@@ -66,10 +80,7 @@ export default async function AdminCasePage({ params }: PageProps) {
           { label: `Borger ${caseData.citizen_initials}` },
         ]}
         actions={
-          <Badge
-            variant={STATUS_BADGE[caseData.status] ?? 'default'}
-            dot
-          >
+          <Badge variant={STATUS_BADGE[caseData.status] ?? 'default'} dot>
             {STATUS_LABEL[caseData.status] ?? caseData.status}
           </Badge>
         }
@@ -77,9 +88,7 @@ export default async function AdminCasePage({ params }: PageProps) {
 
       <ContentContainer>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
           <div className="lg:col-span-2 space-y-6">
-
             <Card>
               <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-4">Sagsoplysninger</div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -94,6 +103,13 @@ export default async function AdminCasePage({ params }: PageProps) {
                 <InfoBlock label="Aldersgruppe">
                   <span className="font-semibold text-[#1A1F1C]">{caseData.citizen_age_range}</span>
                 </InfoBlock>
+                {caseDetailRes.data?.citizen_gender && (
+                  <InfoBlock label="Køn">
+                    <span className="font-semibold text-[#1A1F1C]">
+                      {GENDER_LABEL[caseDetailRes.data.citizen_gender] ?? caseDetailRes.data.citizen_gender}
+                    </span>
+                  </InfoBlock>
+                )}
                 {caseData.active_grant_hours !== null && (
                   <InfoBlock label="Bevilgede timer">
                     <span className="font-semibold text-[#1A1F1C]">{caseData.active_grant_hours} t</span>
@@ -105,17 +121,63 @@ export default async function AdminCasePage({ params }: PageProps) {
                   </InfoBlock>
                 )}
               </div>
+              {caseDetailRes.data?.citizen_notes && (
+                <div className="mt-4 pt-4 border-t border-[#E0DAD0]">
+                  <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-1.5">Noter</div>
+                  <p className="text-sm text-[#1A1F1C] whitespace-pre-wrap">{caseDetailRes.data.citizen_notes}</p>
+                </div>
+              )}
             </Card>
 
+            {((tagsRes.data?.problem_area_codes?.length ?? 0) > 0 ||
+              (tagsRes.data?.goal_codes?.length ?? 0) > 0 ||
+              (tagsRes.data?.special_wish_codes?.length ?? 0) > 0) && (
+              <Card>
+                <div className="space-y-4">
+                  {(tagsRes.data?.problem_area_codes?.length ?? 0) > 0 && (
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Problemområder</div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {tagsRes.data!.problem_area_codes!.map(code => (
+                          <span key={code} className="text-xs bg-[#FEF2E2] border border-[#F5DDB0] rounded-lg px-2 py-1 text-[#92660A]">
+                            {problemAreaLabels[code] ?? code}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {(tagsRes.data?.goal_codes?.length ?? 0) > 0 && (
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Mål</div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {tagsRes.data!.goal_codes!.map(code => (
+                          <span key={code} className="text-xs bg-[#EEF4F0] border border-[#D1E7D8] rounded-lg px-2 py-1 text-[#1C3829]">
+                            {goalLabels[code] ?? code}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {(tagsRes.data?.special_wish_codes?.length ?? 0) > 0 && (
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Ønsker til kontaktperson</div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {tagsRes.data!.special_wish_codes!.map(code => (
+                          <span key={code} className="text-xs bg-[#F6F3EE] border border-[#E0DAD0] rounded-lg px-2 py-1 text-[#6B7569]">
+                            {specialWishLabels[code] ?? code}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            )}
+
             <div>
-              <SectionHeader
-                title="Seneste sessionslog"
-                description={`${logsRes.count ?? 0} sessioner i alt`}
-              />
+              <SectionHeader title="Seneste sessionslog" description={`${logsRes.count ?? 0} sessioner i alt`} />
               {(logsRes.data?.length ?? 0) === 0 ? (
-                <Card className="text-center py-10 text-[#6B7569] text-sm">
-                  Ingen sessionslogs registreret endnu
-                </Card>
+                <Card className="text-center py-10 text-[#6B7569] text-sm">Ingen sessionslogs registreret endnu</Card>
               ) : (
                 <div className="space-y-2">
                   {logsRes.data?.map(log => (
@@ -142,7 +204,6 @@ export default async function AdminCasePage({ params }: PageProps) {
           </div>
 
           <div className="space-y-4">
-
             <Card>
               <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-3">Tildelt fagperson</div>
               {proData ? (

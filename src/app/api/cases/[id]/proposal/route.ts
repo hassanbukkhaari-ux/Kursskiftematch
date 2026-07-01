@@ -83,10 +83,10 @@ export async function POST(
 
     if (proposalError || !proposal) return serverError(proposalError?.message)
 
-    // Set case to PROPOSED
-    await dba.from('cases').update({ status: 'PROPOSED', updated_at: new Date().toISOString() }).eq('id', id)
-
     if (parsed.data.send_now) {
+      // Promote case to PROPOSED and send email — draft creation leaves case status unchanged
+      await dba.from('cases').update({ status: 'PROPOSED', updated_at: new Date().toISOString() }).eq('id', id)
+
       // Send anonymized email to municipality contact
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kursskiftematch.dk'
       const responseUrl = `${appUrl}/proposal/${proposal.response_token}`

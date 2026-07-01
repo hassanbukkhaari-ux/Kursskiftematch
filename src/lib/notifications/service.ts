@@ -117,6 +117,18 @@ export function adminEmailBody(type: NotificationType, entityId: string): { subj
       subject: 'Du er blevet tildelt en ny sag — Kursskiftematch',
       body: `En sag er ved at blive overdraget til dig.\n\nSags-ID: ${entityId}\n\nLog ind for at se sagen og forberede overdragelsen.`,
     },
+    PROPOSAL_SENT: {
+      subject: 'Forslag sendt til kommunen — Kursskiftematch',
+      body: `Et forslag er sendt til kommunen for sag ${entityId}.\n\nAfvent kommunens svar.`,
+    },
+    PROPOSAL_ACCEPTED: {
+      subject: 'Kommunen har accepteret forslaget — Kursskiftematch',
+      body: `Kommunen har accepteret forslaget for sag ${entityId}.\n\nLog ind for at aktivere sagen og dele kontaktoplysninger med fagpersonen.`,
+    },
+    PROPOSAL_DECLINED: {
+      subject: 'Kommunen har afvist forslaget — Kursskiftematch',
+      body: `Kommunen har afvist forslaget for sag ${entityId}.\n\nLog ind for at gennemgå og sende et nyt forslag.`,
+    },
   }
   return map[type]
 }

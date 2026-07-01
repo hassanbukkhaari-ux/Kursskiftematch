@@ -93,7 +93,7 @@ export async function POST(
 
     await sendNotification({
       db,
-      notification_type: 'PROPOSAL_ACCEPTED', // closest available type for admin notification
+      notification_type: 'PROPOSAL_DECLINED',
       related_entity_type: 'case_proposals',
       related_entity_id: proposal.id,
       subject: 'Kommunen har afvist forslaget — Kursskiftematch',

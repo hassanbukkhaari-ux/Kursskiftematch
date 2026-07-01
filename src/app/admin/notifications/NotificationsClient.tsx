@@ -33,6 +33,9 @@ const TYPE_LABEL: Record<NotificationType, string> = {
   DOCUMENT_ACTION_REQUIRED: 'Dokument kræver handling',
   CASE_CLOSED: 'Sag lukket',
   HANDOVER_INITIATED: 'Overdragelse initieret',
+  PROPOSAL_SENT: 'Forslag sendt',
+  PROPOSAL_ACCEPTED: 'Forslag accepteret',
+  PROPOSAL_DECLINED: 'Forslag afvist',
 }
 
 const STATUS_BADGE: Record<string, 'green' | 'amber' | 'red'> = {

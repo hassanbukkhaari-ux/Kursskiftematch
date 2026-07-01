@@ -106,5 +106,5 @@ export async function POST(request: NextRequest) {
     },
   })
 
-  return ok({ intake_token: intakeToken, case_id: caseId, candidates_found: candidateCount }, 201)
+  return ok({ intake_token: intakeToken, candidates_found: candidateCount }, 201)
 }

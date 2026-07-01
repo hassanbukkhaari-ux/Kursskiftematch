@@ -55,7 +55,7 @@ export type AdminCase = {
   id: string
   citizen_initials: string
   citizen_age_range: string
-  status: 'OPEN' | 'MATCHED' | 'ACTIVE' | 'COMPLETED' | 'ARCHIVED'
+  status: 'OPEN' | 'MATCHED' | 'PROPOSED' | 'ACTIVE' | 'COMPLETED' | 'ARCHIVED'
   complexity_level: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
   weekly_hours: number
   municipality_id: string

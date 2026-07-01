@@ -4,6 +4,7 @@ import { PageHeader, ContentContainer, SectionHeader } from '@/components/layout
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
+import AdminCaseActionsClient, { type Grant, type AvailableProfessional } from './AdminCaseActionsClient'
 
 const STATUS_LABEL: Record<string, string> = {
   OPEN: 'Åben', MATCHED: 'Matchet', ACTIVE: 'Aktiv', COMPLETED: 'Afsluttet', ARCHIVED: 'Arkiveret',
@@ -28,6 +29,7 @@ interface PageProps {
 export default async function AdminCasePage({ params }: PageProps) {
   const { id } = await params
   const db = await createClient()
+  const dba = db as any
 
   const { data: caseData } = await db
     .from('v_cases_with_professional')
@@ -37,7 +39,17 @@ export default async function AdminCasePage({ params }: PageProps) {
 
   if (!caseData) notFound()
 
-  const [muniRes, logsRes, caseDetailRes, tagsRes, problemAreasRes, goalsRes, specialWishesRes] = await Promise.all([
+  const [
+    muniRes,
+    logsRes,
+    caseDetailRes,
+    tagsRes,
+    problemAreasRes,
+    goalsRes,
+    specialWishesRes,
+    grantsRes,
+    prosRes,
+  ] = await Promise.all([
     db.from('municipalities').select('name, sagsbehandler_name, sagsbehandler_email').eq('id', caseData.municipality_id).single(),
     db.from('session_logs').select('id, session_date, duration_minutes, professional_id', { count: 'exact' }).eq('case_id', id).order('session_date', { ascending: false }).limit(5),
     db.from('cases').select('citizen_gender, citizen_notes').eq('id', id).single(),
@@ -45,6 +57,8 @@ export default async function AdminCasePage({ params }: PageProps) {
     db.from('problem_areas').select('code, label_da'),
     db.from('goals_lookup').select('code, label_da'),
     db.from('special_wishes_lookup').select('code, label_da'),
+    dba.from('case_grants').select('id, granted_hours, period_start, period_end, status, approved_at').eq('case_id', id).order('period_start', { ascending: false }),
+    dba.from('professionals').select('id, profiles!inner(full_name)').eq('status', 'ACTIVE'),
   ])
 
   const labelMap = (rows: { code: string; label_da: string }[] | null) =>
@@ -68,6 +82,20 @@ export default async function AdminCasePage({ params }: PageProps) {
     PSYCHOLOGIST: 'Psykolog', SOCIAL_WORKER: 'Socialrådgiver', COUNSELOR: 'Vejleder', OTHER: 'Andet',
   }
 
+  const grants: Grant[] = (grantsRes.data ?? []).map((g: any) => ({
+    id: g.id,
+    granted_hours: g.granted_hours,
+    period_start: g.period_start,
+    period_end: g.period_end,
+    status: g.status,
+    approved_at: g.approved_at,
+  }))
+
+  const availableProfessionals: AvailableProfessional[] = (prosRes.data ?? []).map((p: any) => ({
+    id: p.id,
+    full_name: p.profiles?.full_name ?? '',
+  })).filter((p: AvailableProfessional) => p.full_name)
+
   return (
     <div>
       <PageHeader
@@ -80,7 +108,10 @@ export default async function AdminCasePage({ params }: PageProps) {
           { label: `Borger ${caseData.citizen_initials}` },
         ]}
         actions={
-          <Badge variant={STATUS_BADGE[caseData.status] ?? 'default'} dot>
+          <Badge
+            variant={STATUS_BADGE[caseData.status] ?? 'default'}
+            dot
+          >
             {STATUS_LABEL[caseData.status] ?? caseData.status}
           </Badge>
         }
@@ -88,7 +119,11 @@ export default async function AdminCasePage({ params }: PageProps) {
 
       <ContentContainer>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+          {/* Left column */}
           <div className="lg:col-span-2 space-y-6">
+
+            {/* Case info */}
             <Card>
               <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-4">Sagsoplysninger</div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -129,6 +164,7 @@ export default async function AdminCasePage({ params }: PageProps) {
               )}
             </Card>
 
+            {/* Intake tags: problem areas, goals, special wishes */}
             {((tagsRes.data?.problem_area_codes?.length ?? 0) > 0 ||
               (tagsRes.data?.goal_codes?.length ?? 0) > 0 ||
               (tagsRes.data?.special_wish_codes?.length ?? 0) > 0) && (
@@ -174,10 +210,16 @@ export default async function AdminCasePage({ params }: PageProps) {
               </Card>
             )}
 
+            {/* Session logs */}
             <div>
-              <SectionHeader title="Seneste sessionslog" description={`${logsRes.count ?? 0} sessioner i alt`} />
+              <SectionHeader
+                title="Seneste sessionslog"
+                description={`${logsRes.count ?? 0} sessioner i alt`}
+              />
               {(logsRes.data?.length ?? 0) === 0 ? (
-                <Card className="text-center py-10 text-[#6B7569] text-sm">Ingen sessionslogs registreret endnu</Card>
+                <Card className="text-center py-10 text-[#6B7569] text-sm">
+                  Ingen sessionslogs registreret endnu
+                </Card>
               ) : (
                 <div className="space-y-2">
                   {logsRes.data?.map(log => (
@@ -203,7 +245,10 @@ export default async function AdminCasePage({ params }: PageProps) {
             </div>
           </div>
 
+          {/* Right column */}
           <div className="space-y-4">
+
+            {/* Assigned professional */}
             <Card>
               <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-3">Tildelt fagperson</div>
               {proData ? (
@@ -224,6 +269,7 @@ export default async function AdminCasePage({ params }: PageProps) {
               )}
             </Card>
 
+            {/* Municipality contact */}
             {muniRes.data && (
               <Card>
                 <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-3">Kommunekontakt</div>
@@ -241,9 +287,10 @@ export default async function AdminCasePage({ params }: PageProps) {
               </Card>
             )}
 
+            {/* Matching action for open/matched cases */}
             {(caseData.status === 'OPEN' || caseData.status === 'MATCHED') && (
               <Card>
-                <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-3">Handlinger</div>
+                <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-3">Matching</div>
                 <Link
                   href={`/admin/matching/new?case_id=${caseData.id}`}
                   className="flex items-center justify-between w-full h-10 px-4 bg-[#1C3829] text-[#F6F3EE] rounded-xl text-sm font-semibold hover:bg-[#2D5840] transition-colors"
@@ -255,6 +302,14 @@ export default async function AdminCasePage({ params }: PageProps) {
                 </Link>
               </Card>
             )}
+
+            {/* Dynamic admin actions: close, archive, grants, handover */}
+            <AdminCaseActionsClient
+              caseId={id}
+              currentStatus={caseData.status}
+              grants={grants}
+              professionals={availableProfessionals}
+            />
           </div>
         </div>
       </ContentContainer>

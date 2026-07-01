@@ -77,6 +77,7 @@ export default function AdminCaseActionsClient({ caseId, currentStatus, grants: 
   const [handoverReason, setHandoverReason] = useState('')
   const [handoverPro, setHandoverPro] = useState('')
   const [handoverNote, setHandoverNote] = useState('')
+  const [handoverUrgent, setHandoverUrgent] = useState(false)
 
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -158,9 +159,17 @@ export default function AdminCaseActionsClient({ caseId, currentStatus, grants: 
           reason: handoverReason,
           incoming_professional_id: handoverPro || null,
           handover_note: handoverNote || undefined,
+          is_urgent: handoverUrgent,
         })
-        setSuccess('Overdragelse initieret.')
+        const msg = handoverPro
+          ? 'Overdragelse initieret. Den nye kontaktperson er notificeret.'
+          : 'Overdragelse initieret.'
+        setSuccess(msg)
         setShowHandover(false)
+        setHandoverReason('')
+        setHandoverPro('')
+        setHandoverNote('')
+        setHandoverUrgent(false)
         router.refresh()
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Ukendt fejl')
@@ -348,6 +357,22 @@ export default function AdminCaseActionsClient({ caseId, currentStatus, grants: 
             </Button>
           ) : (
             <div className="space-y-3">
+              {/* Urgent flag */}
+              <label className="flex items-center gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={handoverUrgent}
+                  onChange={e => setHandoverUrgent(e.target.checked)}
+                  className="w-4 h-4 rounded border-[#E0DAD0] text-red-600 focus:ring-red-400"
+                />
+                <span className="text-sm font-semibold text-red-700">Markér som Akut</span>
+              </label>
+              {handoverUrgent && (
+                <div className="bg-red-50 border border-red-200 rounded-xl px-3 py-2 text-xs text-red-700">
+                  Akut overdragelse — den nye kontaktperson vil modtage en markeret notifikation.
+                </div>
+              )}
+
               <div>
                 <label className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] block mb-1">Årsag *</label>
                 <select
@@ -364,7 +389,9 @@ export default function AdminCaseActionsClient({ caseId, currentStatus, grants: 
 
               {professionals.length > 0 && (
                 <div>
-                  <label className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] block mb-1">Ny fagperson (valgfri)</label>
+                  <label className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] block mb-1">
+                    Ny kontaktperson <span className="normal-case font-normal">(valgfri — send notifikation)</span>
+                  </label>
                   <select
                     value={handoverPro}
                     onChange={e => setHandoverPro(e.target.value)}
@@ -379,13 +406,15 @@ export default function AdminCaseActionsClient({ caseId, currentStatus, grants: 
               )}
 
               <div>
-                <label className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] block mb-1">Note (valgfri)</label>
+                <label className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] block mb-1">
+                  Intern note <span className="normal-case font-normal">(indgår i notifikation)</span>
+                </label>
                 <textarea
                   value={handoverNote}
                   onChange={e => setHandoverNote(e.target.value)}
                   rows={2}
                   className="w-full border border-[#E0DAD0] rounded-xl px-3 py-2 text-sm text-[#1A1F1C] focus:outline-none focus:ring-2 focus:ring-[#1C3829]/20 resize-none"
-                  placeholder="Yderligere information..."
+                  placeholder="Yderligere information til den nye kontaktperson..."
                 />
               </div>
 
@@ -393,7 +422,7 @@ export default function AdminCaseActionsClient({ caseId, currentStatus, grants: 
                 <Button variant="primary" size="sm" loading={pending} onClick={handleHandover} className="flex-1 justify-center">
                   Initier overdragelse
                 </Button>
-                <Button variant="secondary" size="sm" onClick={() => setShowHandover(false)}>
+                <Button variant="secondary" size="sm" onClick={() => { setShowHandover(false); setHandoverUrgent(false) }}>
                   Annuller
                 </Button>
               </div>

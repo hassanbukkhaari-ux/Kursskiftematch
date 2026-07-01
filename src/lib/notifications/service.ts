@@ -40,6 +40,8 @@ export async function sendNotification(params: SendNotificationParams): Promise<
       delivery_channel: 'EMAIL',
       status: 'PENDING',
       attempt_count: 0,
+      subject,
+      body_text: body,
     })
     .select('id')
     .single()
@@ -80,6 +82,7 @@ export async function sendNotification(params: SendNotificationParams): Promise<
   }
 }
 
+// Email templates — one function per audience (admin vs professional)
 export function adminEmailBody(type: NotificationType, entityId: string): { subject: string; body: string } {
   const map: Record<NotificationType, { subject: string; body: string }> = {
     INQUIRY_RECEIVED: {
@@ -110,6 +113,29 @@ export function adminEmailBody(type: NotificationType, entityId: string): { subj
       subject: 'Sag afsluttet — Kursskiftematch',
       body: `En sag du var tilknyttet er nu afsluttet.\n\nSags-ID: ${entityId}\n\nLog ind for at se de afsluttende detaljer.`,
     },
+    HANDOVER_INITIATED: {
+      subject: 'Du er blevet tildelt en ny sag — Kursskiftematch',
+      body: `En sag er ved at blive overdraget til dig.\n\nSags-ID: ${entityId}\n\nLog ind for at se sagen og forberede overdragelsen.`,
+    },
   }
   return map[type]
+}
+
+export function handoverEmailBody(
+  caseId: string,
+  outgoingName: string,
+  isUrgent: boolean,
+  note?: string,
+): { subject: string; body: string } {
+  const urgentPrefix = isUrgent ? '[AKUT] ' : ''
+  const subject = `${urgentPrefix}Du overtager en sag — Kursskiftematch`
+  const lines = [
+    `Du er blevet tildelt som ny kontaktperson på en sag, der overdrages fra ${outgoingName}.`,
+    '',
+    `Sags-ID: ${caseId}`,
+  ]
+  if (isUrgent) lines.push('', '⚠️ Denne overdragelse er markeret som AKUT.')
+  if (note) lines.push('', `Note fra administrator:\n${note}`)
+  lines.push('', 'Log ind på Kursskiftematch for at se sagen og tilhørende dokumentation.')
+  return { subject, body: lines.join('\n') }
 }

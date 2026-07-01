@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import AdminCaseActionsClient, { type Grant, type AvailableProfessional } from './AdminCaseActionsClient'
+import type { HandoverReason, HandoverStatus } from '@/types/database'
 
 const STATUS_LABEL: Record<string, string> = {
   OPEN: 'Åben', MATCHED: 'Matchet', ACTIVE: 'Aktiv', COMPLETED: 'Afsluttet', ARCHIVED: 'Arkiveret',
@@ -20,6 +21,41 @@ const COMPLEXITY_BADGE: Record<string, 'green' | 'amber' | 'red'> = {
 }
 const GENDER_LABEL: Record<string, string> = {
   MALE: 'Dreng/mand', FEMALE: 'Pige/kvinde', OTHER: 'Andet',
+}
+const HANDOVER_REASON_LABEL: Record<HandoverReason, string> = {
+  PROFESSIONAL_UNAVAILABLE: 'Fagperson utilgængelig',
+  WORKLOAD_EXCEEDED: 'For høj arbejdsbyrde',
+  REQUEST_PROFESSIONAL: 'Ønske fra fagperson',
+  REQUEST_CASE: 'Ønske fra borger/sag',
+  BETTER_MATCH: 'Bedre match tilgængeligt',
+  SAFEGUARDING_CONCERN: 'Bekymring for borger',
+  OTHER: 'Andet',
+}
+const HANDOVER_STATUS_LABEL: Record<HandoverStatus, string> = {
+  INITIATED: 'Initieret',
+  IN_PROGRESS: 'Igangværende',
+  COMPLETED: 'Afsluttet',
+  CANCELLED: 'Annulleret',
+}
+const HANDOVER_STATUS_BADGE: Record<HandoverStatus, 'amber' | 'brand' | 'green' | 'default'> = {
+  INITIATED: 'amber',
+  IN_PROGRESS: 'brand',
+  COMPLETED: 'green',
+  CANCELLED: 'default',
+}
+
+interface HandoverRow {
+  id: string
+  reason: HandoverReason
+  status: HandoverStatus
+  handover_note: string | null
+  is_urgent: boolean
+  session_logs_transferred: boolean
+  created_at: string
+  completed_at: string | null
+  outgoing_name: string
+  incoming_name: string | null
+  created_by_name: string
 }
 
 interface PageProps {
@@ -49,6 +85,7 @@ export default async function AdminCasePage({ params }: PageProps) {
     specialWishesRes,
     grantsRes,
     prosRes,
+    handoversRes,
   ] = await Promise.all([
     db.from('municipalities').select('name, sagsbehandler_name, sagsbehandler_email').eq('id', caseData.municipality_id).single(),
     db.from('session_logs').select('id, session_date, duration_minutes, professional_id', { count: 'exact' }).eq('case_id', id).order('session_date', { ascending: false }).limit(5),
@@ -59,6 +96,7 @@ export default async function AdminCasePage({ params }: PageProps) {
     db.from('special_wishes_lookup').select('code, label_da'),
     dba.from('case_grants').select('id, granted_hours, period_start, period_end, status, approved_at').eq('case_id', id).order('period_start', { ascending: false }),
     dba.from('professionals').select('id, profiles!inner(full_name)').eq('status', 'ACTIVE'),
+    dba.from('case_handovers').select('id, reason, status, handover_note, is_urgent, session_logs_transferred, created_at, completed_at, outgoing_professional_id, incoming_professional_id, created_by').eq('case_id', id).order('created_at', { ascending: false }),
   ])
 
   const labelMap = (rows: { code: string; label_da: string }[] | null) =>
@@ -91,10 +129,40 @@ export default async function AdminCasePage({ params }: PageProps) {
     approved_at: g.approved_at,
   }))
 
-  const availableProfessionals: AvailableProfessional[] = (prosRes.data ?? []).map((p: any) => ({
-    id: p.id,
-    full_name: p.profiles?.full_name ?? '',
-  })).filter((p: AvailableProfessional) => p.full_name)
+  const availableProfessionals: AvailableProfessional[] = (prosRes.data ?? [])
+    .map((p: any) => ({ id: p.id, full_name: p.profiles?.full_name ?? '' }))
+    .filter((p: AvailableProfessional) => p.full_name)
+
+  // Resolve names for handover history
+  const handoverRawList: any[] = handoversRes.data ?? []
+  const handovers: HandoverRow[] = await Promise.all(
+    handoverRawList.map(async (h: any) => {
+      const [outRes, inRes, byRes] = await Promise.all([
+        dba.from('professionals').select('profiles!inner(full_name)').eq('id', h.outgoing_professional_id).single(),
+        h.incoming_professional_id
+          ? dba.from('professionals').select('profiles!inner(full_name)').eq('id', h.incoming_professional_id).single()
+          : Promise.resolve({ data: null }),
+        dba.from('profiles').select('full_name').eq('id', h.created_by).single(),
+      ])
+      return {
+        id: h.id,
+        reason: h.reason as HandoverReason,
+        status: h.status as HandoverStatus,
+        handover_note: h.handover_note,
+        is_urgent: h.is_urgent ?? false,
+        session_logs_transferred: h.session_logs_transferred,
+        created_at: h.created_at,
+        completed_at: h.completed_at,
+        outgoing_name: outRes.data?.profiles?.full_name ?? 'Ukendt',
+        incoming_name: inRes.data?.profiles?.full_name ?? null,
+        created_by_name: byRes.data?.full_name ?? 'Admin',
+      }
+    })
+  )
+
+  function fmt(iso: string) {
+    return new Intl.DateTimeFormat('da-DK', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(iso))
+  }
 
   return (
     <div>
@@ -108,10 +176,7 @@ export default async function AdminCasePage({ params }: PageProps) {
           { label: `Borger ${caseData.citizen_initials}` },
         ]}
         actions={
-          <Badge
-            variant={STATUS_BADGE[caseData.status] ?? 'default'}
-            dot
-          >
+          <Badge variant={STATUS_BADGE[caseData.status] ?? 'default'} dot>
             {STATUS_LABEL[caseData.status] ?? caseData.status}
           </Badge>
         }
@@ -164,7 +229,7 @@ export default async function AdminCasePage({ params }: PageProps) {
               )}
             </Card>
 
-            {/* Intake tags: problem areas, goals, special wishes */}
+            {/* Intake tags */}
             {((tagsRes.data?.problem_area_codes?.length ?? 0) > 0 ||
               (tagsRes.data?.goal_codes?.length ?? 0) > 0 ||
               (tagsRes.data?.special_wish_codes?.length ?? 0) > 0) && (
@@ -208,6 +273,58 @@ export default async function AdminCasePage({ params }: PageProps) {
                   )}
                 </div>
               </Card>
+            )}
+
+            {/* Handover history */}
+            {handovers.length > 0 && (
+              <div>
+                <SectionHeader
+                  title="Overdragelseshistorik"
+                  description={`${handovers.length} ${handovers.length === 1 ? 'overdragelse' : 'overdragelser'}`}
+                />
+                <div className="space-y-2">
+                  {handovers.map(h => (
+                    <Card key={h.id}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
+                            {h.is_urgent && (
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-red-700 bg-red-50 border border-red-200 rounded px-1.5 py-0.5">
+                                Akut
+                              </span>
+                            )}
+                            <span className="text-sm font-semibold text-[#1A1F1C]">
+                              {HANDOVER_REASON_LABEL[h.reason] ?? h.reason}
+                            </span>
+                          </div>
+                          <div className="text-xs text-[#6B7569] space-y-0.5">
+                            <div>
+                              <span className="font-medium text-[#1A1F1C]">{h.outgoing_name}</span>
+                              {' → '}
+                              <span className="font-medium text-[#1A1F1C]">{h.incoming_name ?? 'Ikke specificeret'}</span>
+                            </div>
+                            <div>Af {h.created_by_name} · {fmt(h.created_at)}</div>
+                            {h.completed_at && (
+                              <div>Afsluttet {fmt(h.completed_at)}</div>
+                            )}
+                            {h.session_logs_transferred && (
+                              <div className="text-[#1C3829]">Sessionslogs overført</div>
+                            )}
+                          </div>
+                          {h.handover_note && (
+                            <p className="mt-2 text-xs text-[#6B7569] italic border-l-2 border-[#E0DAD0] pl-2">
+                              {h.handover_note}
+                            </p>
+                          )}
+                        </div>
+                        <Badge variant={HANDOVER_STATUS_BADGE[h.status]}>
+                          {HANDOVER_STATUS_LABEL[h.status]}
+                        </Badge>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
             )}
 
             {/* Session logs */}
@@ -303,7 +420,7 @@ export default async function AdminCasePage({ params }: PageProps) {
               </Card>
             )}
 
-            {/* Dynamic admin actions: close, archive, grants, handover */}
+            {/* Dynamic admin actions */}
             <AdminCaseActionsClient
               caseId={id}
               currentStatus={caseData.status}

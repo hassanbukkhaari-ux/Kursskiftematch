@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { created, badRequest, notFound, serverError, withAdminAuth } from '@/lib/api-response'
 import { logAuditEvent } from '@/lib/audit'
+import { sendNotification, handoverEmailBody } from '@/lib/notifications/service'
 import type { HandoverReason } from '@/types/database'
 
 const HandoverSchema = z.object({
@@ -16,6 +17,7 @@ const HandoverSchema = z.object({
   ]),
   incoming_professional_id: z.string().uuid().nullable().optional(),
   handover_note: z.string().max(2000).optional(),
+  is_urgent: z.boolean().optional().default(false),
 })
 
 // POST /api/cases/:id/handover — initiate professional handover (WF-008, admin only)
@@ -58,17 +60,29 @@ export async function POST(
       return badRequest('No active professional assignment found for this case')
     }
 
+    // Get outgoing professional's display name for the notification email
+    const { data: outgoingProfile } = await db
+      .from('professionals')
+      .select('profiles!inner(full_name)')
+      .eq('id', assignment.professional_id)
+      .single()
+
+    const outgoingName = (outgoingProfile as any)?.profiles?.full_name ?? 'den tidligere kontaktperson'
+
     // Validate incoming professional exists if provided
+    let incomingEmail: string | null = null
     if (parsed.data.incoming_professional_id) {
       const { data: pro } = await db
         .from('professionals')
-        .select('id, status')
+        .select('id, status, profiles!inner(email, full_name)')
         .eq('id', parsed.data.incoming_professional_id)
         .single()
+
       if (!pro) return notFound('Incoming professional')
-      if (pro.status !== 'ACTIVE') {
+      if ((pro as any).status !== 'ACTIVE') {
         return badRequest('Incoming professional must have ACTIVE status')
       }
+      incomingEmail = (pro as any).profiles?.email ?? null
     }
 
     const { data, error } = await db
@@ -80,6 +94,7 @@ export async function POST(
         reason: parsed.data.reason as HandoverReason,
         status: 'INITIATED',
         handover_note: parsed.data.handover_note ?? null,
+        is_urgent: parsed.data.is_urgent ?? false,
         session_logs_transferred: false,
         created_by: userId,
       })
@@ -98,8 +113,29 @@ export async function POST(
         outgoing_professional_id: assignment.professional_id,
         incoming_professional_id: parsed.data.incoming_professional_id ?? null,
         reason: parsed.data.reason,
+        is_urgent: parsed.data.is_urgent ?? false,
       },
     })
+
+    // Notify incoming professional if one is specified
+    if (parsed.data.incoming_professional_id && incomingEmail) {
+      const { subject, body: emailBody } = handoverEmailBody(
+        id,
+        outgoingName,
+        parsed.data.is_urgent ?? false,
+        parsed.data.handover_note,
+      )
+      await sendNotification({
+        db,
+        notification_type: 'HANDOVER_INITIATED',
+        related_entity_type: 'cases',
+        related_entity_id: id,
+        recipient_profile_id: parsed.data.incoming_professional_id,
+        recipient_email: incomingEmail,
+        subject,
+        body: emailBody,
+      })
+    }
 
     return created(data)
   })

@@ -1,4 +1,14 @@
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
+// This file is auto-generated from the Supabase schema.
+// Manual additions are appended below the generated block.
+// Do NOT remove the manual additions.
+
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
 
 export type Database = {
   public: {
@@ -6,24 +16,23 @@ export type Database = {
       profiles: {
         Row: {
           id: string
+          full_name: string
           email: string
-          full_name: string | null
           role: 'admin' | 'professional'
           created_at: string
           updated_at: string
         }
         Insert: {
           id: string
+          full_name: string
           email: string
-          full_name?: string | null
           role?: 'admin' | 'professional'
           created_at?: string
           updated_at?: string
         }
         Update: {
-          id?: string
+          full_name?: string
           email?: string
-          full_name?: string | null
           role?: 'admin' | 'professional'
           updated_at?: string
         }
@@ -33,38 +42,35 @@ export type Database = {
         Row: {
           id: string
           name: string
-          status: 'ACTIVE' | 'INACTIVE'
+          cvr_number: string | null
+          contract_start: string | null
+          contract_end: string | null
           sagsbehandler_name: string | null
           sagsbehandler_email: string | null
           sagsbehandler_phone: string | null
-          secondary_contact_name: string | null
-          secondary_contact_email: string | null
-          secondary_contact_phone: string | null
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
           name: string
-          status?: 'ACTIVE' | 'INACTIVE'
+          cvr_number?: string | null
+          contract_start?: string | null
+          contract_end?: string | null
           sagsbehandler_name?: string | null
           sagsbehandler_email?: string | null
           sagsbehandler_phone?: string | null
-          secondary_contact_name?: string | null
-          secondary_contact_email?: string | null
-          secondary_contact_phone?: string | null
           created_at?: string
           updated_at?: string
         }
         Update: {
           name?: string
-          status?: 'ACTIVE' | 'INACTIVE'
+          cvr_number?: string | null
+          contract_start?: string | null
+          contract_end?: string | null
           sagsbehandler_name?: string | null
           sagsbehandler_email?: string | null
           sagsbehandler_phone?: string | null
-          secondary_contact_name?: string | null
-          secondary_contact_email?: string | null
-          secondary_contact_phone?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -72,120 +78,83 @@ export type Database = {
       inbound_inquiries: {
         Row: {
           id: string
-          submission_type: 'MUNICIPALITY_INQUIRY' | 'PROFESSIONAL_APPLICATION' | 'PARTNER_LEAD'
-          status: 'PENDING' | 'REVIEWED' | 'CONVERTED' | 'REJECTED' | 'SPAM'
-          submitted_at: string
-          submitter_name: string
-          submitter_email: string
-          submitter_phone: string | null
-          organization_name: string | null
-          message: string | null
-          form_data: Json
-          source_url: string | null
-          ip_hash: string | null
-          captcha_verified: boolean
-          reviewed_by: string | null
-          reviewed_at: string | null
-          rejection_reason: string | null
-          converted_to_type: string | null
-          converted_to_id: string | null
+          municipality_id: string | null
+          municipality_name: string | null
+          contact_name: string
+          contact_email: string
+          contact_phone: string | null
+          citizen_age_range: string
+          citizen_description: string
+          weekly_hours: number
+          complexity_level: ComplexityLevel
+          status: InquiryStatus
+          converted_case_id: string | null
           created_at: string
+          updated_at: string
         }
         Insert: {
           id?: string
-          submission_type: 'MUNICIPALITY_INQUIRY' | 'PROFESSIONAL_APPLICATION' | 'PARTNER_LEAD'
-          status?: 'PENDING' | 'REVIEWED' | 'CONVERTED' | 'REJECTED' | 'SPAM'
-          submitted_at?: string
-          submitter_name: string
-          submitter_email: string
-          submitter_phone?: string | null
-          organization_name?: string | null
-          message?: string | null
-          form_data?: Json
-          source_url?: string | null
-          ip_hash?: string | null
-          captcha_verified?: boolean
-          reviewed_by?: string | null
-          reviewed_at?: string | null
-          rejection_reason?: string | null
-          converted_to_type?: string | null
-          converted_to_id?: string | null
+          municipality_id?: string | null
+          municipality_name?: string | null
+          contact_name: string
+          contact_email: string
+          contact_phone?: string | null
+          citizen_age_range: string
+          citizen_description: string
+          weekly_hours: number
+          complexity_level?: ComplexityLevel
+          status?: InquiryStatus
+          converted_case_id?: string | null
           created_at?: string
+          updated_at?: string
         }
         Update: {
-          status?: 'PENDING' | 'REVIEWED' | 'CONVERTED' | 'REJECTED' | 'SPAM'
-          reviewed_by?: string | null
-          reviewed_at?: string | null
-          rejection_reason?: string | null
-          converted_to_type?: string | null
-          converted_to_id?: string | null
+          municipality_id?: string | null
+          municipality_name?: string | null
+          contact_name?: string
+          contact_email?: string
+          contact_phone?: string | null
+          citizen_age_range?: string
+          citizen_description?: string
+          weekly_hours?: number
+          complexity_level?: ComplexityLevel
+          status?: InquiryStatus
+          converted_case_id?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
       professionals: {
         Row: {
           id: string
-          profession: ProfessionType
+          profession: string
           experience_years: number
-          target_age_groups: string[]
-          max_complexity_level: ComplexityLevel
-          qualifications: string[]
-          capacity_hours_week: number
-          max_concurrent_cases: number
-          availability_days: string[]
-          availability_status: AvailabilityStatus
+          availability_hours_per_week: number
+          max_cases: number
+          geo_radius_km: number
           status: ProfessionalStatus
-          gender: Gender | null
-          education: string | null
-          certificates: string[]
-          daily_occupation: string | null
-          experience_with_genders: ExperienceWithGender[]
-          geography: string[]
           created_at: string
           updated_at: string
-          archived_at: string | null
         }
         Insert: {
           id: string
-          profession: ProfessionType
+          profession: string
           experience_years?: number
-          target_age_groups?: string[]
-          max_complexity_level?: ComplexityLevel
-          qualifications?: string[]
-          capacity_hours_week?: number
-          max_concurrent_cases?: number
-          availability_days?: string[]
-          availability_status?: AvailabilityStatus
+          availability_hours_per_week?: number
+          max_cases?: number
+          geo_radius_km?: number
           status?: ProfessionalStatus
-          gender?: Gender | null
-          education?: string | null
-          certificates?: string[]
-          daily_occupation?: string | null
-          experience_with_genders?: ExperienceWithGender[]
-          geography?: string[]
           created_at?: string
           updated_at?: string
-          archived_at?: string | null
         }
         Update: {
-          profession?: ProfessionType
+          profession?: string
           experience_years?: number
-          target_age_groups?: string[]
-          max_complexity_level?: ComplexityLevel
-          qualifications?: string[]
-          capacity_hours_week?: number
-          max_concurrent_cases?: number
-          availability_days?: string[]
-          availability_status?: AvailabilityStatus
+          availability_hours_per_week?: number
+          max_cases?: number
+          geo_radius_km?: number
           status?: ProfessionalStatus
-          gender?: Gender | null
-          education?: string | null
-          certificates?: string[]
-          daily_occupation?: string | null
-          experience_with_genders?: ExperienceWithGender[]
-          geography?: string[]
           updated_at?: string
-          archived_at?: string | null
         }
         Relationships: []
       }
@@ -194,48 +163,43 @@ export type Database = {
           id: string
           professional_id: string
           document_type: DocumentType
+          file_name: string
+          file_path: string
+          file_size: number | null
+          mime_type: string | null
           status: DocumentStatus
-          file_path: string | null
-          file_hash: string | null
-          uploaded_at: string | null
-          uploaded_by: string | null
-          expiry_date: string | null
-          verified_at: string | null
-          verified_by: string | null
-          verification_notes: string | null
-          re_upload_required: boolean
-          created_at: string
-          archived_at: string | null
+          rejection_note: string | null
+          uploaded_at: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          expires_at: string | null
         }
         Insert: {
           id?: string
           professional_id: string
           document_type: DocumentType
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          mime_type?: string | null
           status?: DocumentStatus
-          file_path?: string | null
-          file_hash?: string | null
-          uploaded_at?: string | null
-          uploaded_by?: string | null
-          expiry_date?: string | null
-          verified_at?: string | null
-          verified_by?: string | null
-          verification_notes?: string | null
-          re_upload_required?: boolean
-          created_at?: string
-          archived_at?: string | null
+          rejection_note?: string | null
+          uploaded_at?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          expires_at?: string | null
         }
         Update: {
+          document_type?: DocumentType
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          mime_type?: string | null
           status?: DocumentStatus
-          file_path?: string | null
-          file_hash?: string | null
-          uploaded_at?: string | null
-          uploaded_by?: string | null
-          expiry_date?: string | null
-          verified_at?: string | null
-          verified_by?: string | null
-          verification_notes?: string | null
-          re_upload_required?: boolean
-          archived_at?: string | null
+          rejection_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          expires_at?: string | null
         }
         Relationships: []
       }
@@ -243,215 +207,43 @@ export type Database = {
         Row: {
           id: string
           municipality_id: string
-          status: CaseStatus
           citizen_initials: string
-          citizen_age_range: AgeRange
-          citizen_gender: Gender | null
+          citizen_age_range: string
+          citizen_gender: 'MALE' | 'FEMALE' | 'OTHER' | null
           citizen_notes: string | null
           weekly_hours: number
           complexity_level: ComplexityLevel
+          status: CaseStatus
+          inquiry_id: string | null
+          data_retention_expires_at: string | null
           created_at: string
           updated_at: string
-          archived_at: string | null
-          data_retention_expires_at: string | null
         }
         Insert: {
           id?: string
           municipality_id: string
-          status?: CaseStatus
           citizen_initials: string
-          citizen_age_range: AgeRange
-          citizen_gender?: Gender | null
+          citizen_age_range: string
+          citizen_gender?: 'MALE' | 'FEMALE' | 'OTHER' | null
           citizen_notes?: string | null
-          weekly_hours?: number
+          weekly_hours: number
           complexity_level?: ComplexityLevel
+          status?: CaseStatus
+          inquiry_id?: string | null
+          data_retention_expires_at?: string | null
           created_at?: string
           updated_at?: string
-          archived_at?: string | null
-          data_retention_expires_at?: string | null
         }
         Update: {
           municipality_id?: string
-          status?: CaseStatus
           citizen_initials?: string
-          citizen_age_range?: AgeRange
-          citizen_gender?: Gender | null
+          citizen_age_range?: string
+          citizen_gender?: 'MALE' | 'FEMALE' | 'OTHER' | null
           citizen_notes?: string | null
           weekly_hours?: number
           complexity_level?: ComplexityLevel
-          updated_at?: string
-          archived_at?: string | null
+          status?: CaseStatus
           data_retention_expires_at?: string | null
-        }
-        Relationships: []
-      }
-      problem_areas: {
-        Row: {
-          id: string
-          code: string
-          label_da: string
-          sort_order: number
-          active: boolean
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          code: string
-          label_da: string
-          sort_order?: number
-          active?: boolean
-          created_at?: string
-        }
-        Update: {
-          code?: string
-          label_da?: string
-          sort_order?: number
-          active?: boolean
-        }
-        Relationships: []
-      }
-      goals_lookup: {
-        Row: {
-          id: string
-          code: string
-          label_da: string
-          sort_order: number
-          active: boolean
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          code: string
-          label_da: string
-          sort_order?: number
-          active?: boolean
-          created_at?: string
-        }
-        Update: {
-          code?: string
-          label_da?: string
-          sort_order?: number
-          active?: boolean
-        }
-        Relationships: []
-      }
-      special_wishes_lookup: {
-        Row: {
-          id: string
-          code: string
-          label_da: string
-          sort_order: number
-          active: boolean
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          code: string
-          label_da: string
-          sort_order?: number
-          active?: boolean
-          created_at?: string
-        }
-        Update: {
-          code?: string
-          label_da?: string
-          sort_order?: number
-          active?: boolean
-        }
-        Relationships: []
-      }
-      case_problem_areas: {
-        Row: {
-          case_id: string
-          problem_area_id: string
-          created_at: string
-        }
-        Insert: {
-          case_id: string
-          problem_area_id: string
-          created_at?: string
-        }
-        Update: {
-          case_id?: string
-          problem_area_id?: string
-        }
-        Relationships: []
-      }
-      case_goals: {
-        Row: {
-          case_id: string
-          goal_id: string
-          created_at: string
-        }
-        Insert: {
-          case_id: string
-          goal_id: string
-          created_at?: string
-        }
-        Update: {
-          case_id?: string
-          goal_id?: string
-        }
-        Relationships: []
-      }
-      case_special_wishes: {
-        Row: {
-          case_id: string
-          special_wish_id: string
-          created_at: string
-        }
-        Insert: {
-          case_id: string
-          special_wish_id: string
-          created_at?: string
-        }
-        Update: {
-          case_id?: string
-          special_wish_id?: string
-        }
-        Relationships: []
-      }
-      case_complexity_factors: {
-        Row: {
-          id: string
-          case_id: string
-          mental_health: boolean
-          family_instability: boolean
-          school: boolean
-          violence: boolean
-          substance_use: boolean
-          criminality: boolean
-          multiple_agencies: boolean
-          diagnosis: string | null
-          notes: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          case_id: string
-          mental_health?: boolean
-          family_instability?: boolean
-          school?: boolean
-          violence?: boolean
-          substance_use?: boolean
-          criminality?: boolean
-          multiple_agencies?: boolean
-          diagnosis?: string | null
-          notes?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          mental_health?: boolean
-          family_instability?: boolean
-          school?: boolean
-          violence?: boolean
-          substance_use?: boolean
-          criminality?: boolean
-          multiple_agencies?: boolean
-          diagnosis?: string | null
-          notes?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -461,26 +253,22 @@ export type Database = {
           id: string
           case_id: string
           professional_id: string
-          assignment_status: AssignmentStatus
-          started_at: string
-          ended_at: string | null
           assigned_by: string
           assignment_reason: string | null
-          created_at: string
+          started_at: string
+          ended_at: string | null
         }
         Insert: {
           id?: string
           case_id: string
           professional_id: string
-          assignment_status?: AssignmentStatus
-          started_at?: string
-          ended_at?: string | null
           assigned_by: string
           assignment_reason?: string | null
-          created_at?: string
+          started_at?: string
+          ended_at?: string | null
         }
         Update: {
-          assignment_status?: AssignmentStatus
+          assignment_reason?: string | null
           ended_at?: string | null
         }
         Relationships: []
@@ -489,36 +277,34 @@ export type Database = {
         Row: {
           id: string
           case_id: string
-          municipality_id: string
           granted_hours: number
           period_start: string
           period_end: string
           status: GrantStatus
+          approved_by: string | null
+          approved_at: string | null
           created_by: string
           created_at: string
-          activated_at: string | null
-          archived_at: string | null
         }
         Insert: {
           id?: string
           case_id: string
-          municipality_id: string
           granted_hours: number
           period_start: string
           period_end: string
           status?: GrantStatus
+          approved_by?: string | null
+          approved_at?: string | null
           created_by: string
           created_at?: string
-          activated_at?: string | null
-          archived_at?: string | null
         }
         Update: {
           granted_hours?: number
           period_start?: string
           period_end?: string
           status?: GrantStatus
-          activated_at?: string | null
-          archived_at?: string | null
+          approved_by?: string | null
+          approved_at?: string | null
         }
         Relationships: []
       }
@@ -531,6 +317,7 @@ export type Database = {
           reason: HandoverReason
           status: HandoverStatus
           handover_note: string | null
+          is_urgent: boolean
           session_logs_transferred: boolean
           transferred_session_logs: string[] | null
           created_by: string
@@ -545,6 +332,7 @@ export type Database = {
           reason: HandoverReason
           status?: HandoverStatus
           handover_note?: string | null
+          is_urgent?: boolean
           session_logs_transferred?: boolean
           transferred_session_logs?: string[] | null
           created_by: string
@@ -555,6 +343,7 @@ export type Database = {
           incoming_professional_id?: string | null
           status?: HandoverStatus
           handover_note?: string | null
+          is_urgent?: boolean
           session_logs_transferred?: boolean
           transferred_session_logs?: string[] | null
           completed_at?: string | null
@@ -572,16 +361,10 @@ export type Database = {
           observations: string | null
           citizen_mood_tone: string | null
           follow_up_needed: boolean
-          follow_up_reason: string | null
-          safeguarding_concern_flag: boolean
-          safeguarding_detail: string | null
-          safeguarding_acknowledged_at: string | null
-          safeguarding_acknowledged_by: string | null
-          participant_names: string[] | null
-          location: string | null
-          created_by: string
+          follow_up_notes: string | null
+          safeguarding_flag: boolean
           created_at: string
-          data_retention_expires_at: string | null
+          updated_at: string
         }
         Insert: {
           id?: string
@@ -593,16 +376,10 @@ export type Database = {
           observations?: string | null
           citizen_mood_tone?: string | null
           follow_up_needed?: boolean
-          follow_up_reason?: string | null
-          safeguarding_concern_flag?: boolean
-          safeguarding_detail?: string | null
-          safeguarding_acknowledged_at?: string | null
-          safeguarding_acknowledged_by?: string | null
-          participant_names?: string[] | null
-          location?: string | null
-          created_by: string
+          follow_up_notes?: string | null
+          safeguarding_flag?: boolean
           created_at?: string
-          data_retention_expires_at?: string | null
+          updated_at?: string
         }
         Update: {
           session_date?: string
@@ -611,14 +388,9 @@ export type Database = {
           observations?: string | null
           citizen_mood_tone?: string | null
           follow_up_needed?: boolean
-          follow_up_reason?: string | null
-          safeguarding_concern_flag?: boolean
-          safeguarding_detail?: string | null
-          safeguarding_acknowledged_at?: string | null
-          safeguarding_acknowledged_by?: string | null
-          participant_names?: string[] | null
-          location?: string | null
-          data_retention_expires_at?: string | null
+          follow_up_notes?: string | null
+          safeguarding_flag?: boolean
+          updated_at?: string
         }
         Relationships: []
       }
@@ -626,17 +398,19 @@ export type Database = {
         Row: {
           id: string
           session_log_id: string
-          correction_note: string
-          correction_reason: CorrectionReason
-          created_by: string
+          corrected_by: string
+          original_data: Json
+          corrected_data: Json
+          correction_reason: string
           created_at: string
         }
         Insert: {
           id?: string
           session_log_id: string
-          correction_note: string
-          correction_reason: CorrectionReason
-          created_by: string
+          corrected_by: string
+          original_data: Json
+          corrected_data: Json
+          correction_reason: string
           created_at?: string
         }
         Update: never
@@ -649,10 +423,9 @@ export type Database = {
           from_professional_id: string
           to_professional_id: string
           approved_by: string
-          reason: string
+          reason: string | null
           transfer_note: string | null
-          created_at: string
-          visibility_granted_at: string
+          transferred_at: string
         }
         Insert: {
           id?: string
@@ -660,10 +433,9 @@ export type Database = {
           from_professional_id: string
           to_professional_id: string
           approved_by: string
-          reason: string
+          reason?: string | null
           transfer_note?: string | null
-          created_at?: string
-          visibility_granted_at?: string
+          transferred_at?: string
         }
         Update: never
         Relationships: []
@@ -671,64 +443,43 @@ export type Database = {
       registered_hours: {
         Row: {
           id: string
-          case_id: string
           professional_id: string
-          work_date: string
-          work_type: WorkType
-          hours: number
-          session_log_id: string | null
+          case_id: string
+          week_start: string
+          total_hours: number
           status: HoursStatus
+          submission_note: string | null
           submitted_at: string | null
-          grant_period_id: string | null
-          description: string | null
-          outside_grant_reason: string | null
-          reviewed_by: string | null
           reviewed_at: string | null
-          review_note: string | null
-          created_by: string
+          reviewed_by: string | null
+          rejection_note: string | null
           created_at: string
-          updated_by: string | null
           updated_at: string
-          archived_at: string | null
         }
         Insert: {
           id?: string
-          case_id: string
           professional_id: string
-          work_date: string
-          work_type: WorkType
-          hours: number
-          session_log_id?: string | null
+          case_id: string
+          week_start: string
+          total_hours: number
           status?: HoursStatus
+          submission_note?: string | null
           submitted_at?: string | null
-          grant_period_id?: string | null
-          description?: string | null
-          outside_grant_reason?: string | null
-          reviewed_by?: string | null
           reviewed_at?: string | null
-          review_note?: string | null
-          created_by: string
+          reviewed_by?: string | null
+          rejection_note?: string | null
           created_at?: string
-          updated_by?: string | null
           updated_at?: string
-          archived_at?: string | null
         }
         Update: {
-          work_date?: string
-          work_type?: WorkType
-          hours?: number
-          session_log_id?: string | null
+          total_hours?: number
           status?: HoursStatus
+          submission_note?: string | null
           submitted_at?: string | null
-          grant_period_id?: string | null
-          description?: string | null
-          outside_grant_reason?: string | null
-          reviewed_by?: string | null
           reviewed_at?: string | null
-          review_note?: string | null
-          updated_by?: string | null
+          reviewed_by?: string | null
+          rejection_note?: string | null
           updated_at?: string
-          archived_at?: string | null
         }
         Relationships: []
       }
@@ -737,55 +488,43 @@ export type Database = {
           id: string
           case_id: string
           professional_id: string
-          contact_type: ContactType
-          logged_at: string
-          logged_by: string
-          note: string | null
-          outcome: string | null
-          follow_up_required: boolean
+          contact_type: string
+          contact_date: string
+          summary: string | null
           created_at: string
         }
         Insert: {
           id?: string
           case_id: string
           professional_id: string
-          contact_type: ContactType
-          logged_at: string
-          logged_by: string
-          note?: string | null
-          outcome?: string | null
-          follow_up_required?: boolean
+          contact_type: string
+          contact_date: string
+          summary?: string | null
           created_at?: string
         }
-        Update: never
+        Update: {
+          contact_type?: string
+          contact_date?: string
+          summary?: string | null
+        }
         Relationships: []
       }
       contact_disclosures: {
         Row: {
           id: string
           case_id: string
-          disclosed_to_professional_id: string
-          disclosed_by: string
+          professional_id: string
           disclosed_at: string
-          contact_method: 'EMAIL' | 'PHONE' | 'MEETING'
-          sagsbehandler_name: string | null
-          sagsbehandler_email: string | null
-          sagsbehandler_phone: string | null
-          reason: string | null
-          created_at: string
+          disclosure_type: string
+          disclosure_note: string | null
         }
         Insert: {
           id?: string
           case_id: string
-          disclosed_to_professional_id: string
-          disclosed_by: string
+          professional_id: string
           disclosed_at?: string
-          contact_method: 'EMAIL' | 'PHONE' | 'MEETING'
-          sagsbehandler_name?: string | null
-          sagsbehandler_email?: string | null
-          sagsbehandler_phone?: string | null
-          reason?: string | null
-          created_at?: string
+          disclosure_type: string
+          disclosure_note?: string | null
         }
         Update: never
         Relationships: []
@@ -795,75 +534,63 @@ export type Database = {
           id: string
           case_id: string
           triggered_by: string
-          triggered_at: string
           status: MatchRunStatus
           algorithm_version: string
-          final_assignment_id: string | null
-          assigned_at: string | null
-          selected_by: string | null
-          selected_at: string | null
-          selected_reason: string | null
-          matching_criteria: Json | null
-          notes: string | null
+          parameters: Json | null
           created_at: string
+          scored_at: string | null
+          assigned_at: string | null
         }
         Insert: {
           id?: string
           case_id: string
           triggered_by: string
-          triggered_at?: string
           status?: MatchRunStatus
           algorithm_version?: string
-          final_assignment_id?: string | null
-          assigned_at?: string | null
-          selected_by?: string | null
-          selected_at?: string | null
-          selected_reason?: string | null
-          matching_criteria?: Json | null
-          notes?: string | null
+          parameters?: Json | null
           created_at?: string
+          scored_at?: string | null
+          assigned_at?: string | null
         }
         Update: {
           status?: MatchRunStatus
-          final_assignment_id?: string | null
+          algorithm_version?: string
+          parameters?: Json | null
+          scored_at?: string | null
           assigned_at?: string | null
-          selected_by?: string | null
-          selected_at?: string | null
-          selected_reason?: string | null
-          notes?: string | null
         }
         Relationships: []
       }
       match_candidates: {
         Row: {
           id: string
-          match_run_id: string
+          run_id: string
           professional_id: string
-          rank: number
-          overall_score: number
-          qualifications_score: number
-          availability_score: number
-          capacity_score: number
-          complexity_fit_score: number
-          algorithm_version: string
-          scoring_explanation: string
+          score: number
+          score_breakdown: Json | null
+          rank: number | null
+          is_selected: boolean
+          override_reason: string | null
           created_at: string
         }
         Insert: {
           id?: string
-          match_run_id: string
+          run_id: string
           professional_id: string
-          rank: number
-          overall_score: number
-          qualifications_score: number
-          availability_score: number
-          capacity_score: number
-          complexity_fit_score: number
-          algorithm_version?: string
-          scoring_explanation: string
+          score: number
+          score_breakdown?: Json | null
+          rank?: number | null
+          is_selected?: boolean
+          override_reason?: string | null
           created_at?: string
         }
-        Update: never
+        Update: {
+          score?: number
+          score_breakdown?: Json | null
+          rank?: number | null
+          is_selected?: boolean
+          override_reason?: string | null
+        }
         Relationships: []
       }
       audit_events: {
@@ -873,7 +600,7 @@ export type Database = {
           actor_id: string | null
           resource_type: string
           resource_id: string
-          metadata: Json
+          metadata: Json | null
           created_at: string
         }
         Insert: {
@@ -882,7 +609,7 @@ export type Database = {
           actor_id?: string | null
           resource_type: string
           resource_id: string
-          metadata?: Json
+          metadata?: Json | null
           created_at?: string
         }
         Update: never
@@ -900,6 +627,8 @@ export type Database = {
           status: 'PENDING' | 'SENT' | 'FAILED'
           attempt_count: number
           failure_reason: string | null
+          subject: string | null
+          body_text: string | null
           created_at: string
           sent_at: string | null
           failed_at: string | null
@@ -915,6 +644,8 @@ export type Database = {
           status?: 'PENDING' | 'SENT' | 'FAILED'
           attempt_count?: number
           failure_reason?: string | null
+          subject?: string | null
+          body_text?: string | null
           created_at?: string
           sent_at?: string | null
           failed_at?: string | null
@@ -923,6 +654,8 @@ export type Database = {
           status?: 'PENDING' | 'SENT' | 'FAILED'
           attempt_count?: number
           failure_reason?: string | null
+          subject?: string | null
+          body_text?: string | null
           sent_at?: string | null
           failed_at?: string | null
         }
@@ -935,9 +668,8 @@ export type Database = {
           record_id: string
           scheduled_for_deletion_at: string
           retention_expired_at: string
-          reason: 'RETENTION_EXPIRED' | 'USER_REQUEST' | 'LEGAL_REQUIREMENT'
           created_at: string
-          executed_at: string | null
+          deleted_at: string | null
         }
         Insert: {
           id?: string
@@ -945,14 +677,195 @@ export type Database = {
           record_id: string
           scheduled_for_deletion_at: string
           retention_expired_at: string
-          reason: 'RETENTION_EXPIRED' | 'USER_REQUEST' | 'LEGAL_REQUIREMENT'
           created_at?: string
-          executed_at?: string | null
+          deleted_at?: string | null
         }
         Update: {
           scheduled_for_deletion_at?: string
-          executed_at?: string | null
+          deleted_at?: string | null
         }
+        Relationships: []
+      }
+      problem_areas: {
+        Row: { id: string; code: string; label_da: string; sort_order: number }
+        Insert: { id?: string; code: string; label_da: string; sort_order?: number }
+        Update: { label_da?: string; sort_order?: number }
+        Relationships: []
+      }
+      goals_lookup: {
+        Row: { id: string; code: string; label_da: string; sort_order: number }
+        Insert: { id?: string; code: string; label_da: string; sort_order?: number }
+        Update: { label_da?: string; sort_order?: number }
+        Relationships: []
+      }
+      special_wishes_lookup: {
+        Row: { id: string; code: string; label_da: string; sort_order: number }
+        Insert: { id?: string; code: string; label_da: string; sort_order?: number }
+        Update: { label_da?: string; sort_order?: number }
+        Relationships: []
+      }
+      case_problem_areas: {
+        Row: { id: string; case_id: string; problem_area_id: string; created_at: string }
+        Insert: { id?: string; case_id: string; problem_area_id: string; created_at?: string }
+        Update: never
+        Relationships: []
+      }
+      case_goals: {
+        Row: { id: string; case_id: string; goal_id: string; created_at: string }
+        Insert: { id?: string; case_id: string; goal_id: string; created_at?: string }
+        Update: never
+        Relationships: []
+      }
+      case_special_wishes: {
+        Row: { id: string; case_id: string; special_wish_id: string; created_at: string }
+        Insert: { id?: string; case_id: string; special_wish_id: string; created_at?: string }
+        Update: never
+        Relationships: []
+      }
+      case_complexity_factors: {
+        Row: { id: string; case_id: string; factor: string; created_at: string }
+        Insert: { id?: string; case_id: string; factor: string; created_at?: string }
+        Update: never
+        Relationships: []
+      }
+      profession_types: {
+        Row: { id: string; code: string; label_da: string; sort_order: number }
+        Insert: { id?: string; code: string; label_da: string; sort_order?: number }
+        Update: { label_da?: string; sort_order?: number }
+        Relationships: []
+      }
+      competency_types: {
+        Row: { id: string; code: string; label_da: string; sort_order: number }
+        Insert: { id?: string; code: string; label_da: string; sort_order?: number }
+        Update: { label_da?: string; sort_order?: number }
+        Relationships: []
+      }
+      method_types: {
+        Row: { id: string; code: string; label_da: string; sort_order: number }
+        Insert: { id?: string; code: string; label_da: string; sort_order?: number }
+        Update: { label_da?: string; sort_order?: number }
+        Relationships: []
+      }
+      target_group_types: {
+        Row: { id: string; code: string; label_da: string; sort_order: number }
+        Insert: { id?: string; code: string; label_da: string; sort_order?: number }
+        Update: { label_da?: string; sort_order?: number }
+        Relationships: []
+      }
+      work_task_types: {
+        Row: { id: string; code: string; label_da: string; sort_order: number }
+        Insert: { id?: string; code: string; label_da: string; sort_order?: number }
+        Update: { label_da?: string; sort_order?: number }
+        Relationships: []
+      }
+      language_types: {
+        Row: { id: string; code: string; label_da: string; sort_order: number }
+        Insert: { id?: string; code: string; label_da: string; sort_order?: number }
+        Update: { label_da?: string; sort_order?: number }
+        Relationships: []
+      }
+      certificate_types: {
+        Row: { id: string; code: string; label_da: string; sort_order: number }
+        Insert: { id?: string; code: string; label_da: string; sort_order?: number }
+        Update: { label_da?: string; sort_order?: number }
+        Relationships: []
+      }
+      professional_competencies: {
+        Row: { id: string; professional_id: string; competency_type_id: string; created_at: string }
+        Insert: { id?: string; professional_id: string; competency_type_id: string; created_at?: string }
+        Update: never
+        Relationships: []
+      }
+      professional_methods: {
+        Row: { id: string; professional_id: string; method_type_id: string; created_at: string }
+        Insert: { id?: string; professional_id: string; method_type_id: string; created_at?: string }
+        Update: never
+        Relationships: []
+      }
+      professional_target_groups: {
+        Row: { id: string; professional_id: string; target_group_type_id: string; created_at: string }
+        Insert: { id?: string; professional_id: string; target_group_type_id: string; created_at?: string }
+        Update: never
+        Relationships: []
+      }
+      professional_work_tasks: {
+        Row: { id: string; professional_id: string; work_task_type_id: string; created_at: string }
+        Insert: { id?: string; professional_id: string; work_task_type_id: string; created_at?: string }
+        Update: never
+        Relationships: []
+      }
+      professional_languages: {
+        Row: { id: string; professional_id: string; language_type_id: string; created_at: string }
+        Insert: { id?: string; professional_id: string; language_type_id: string; created_at?: string }
+        Update: never
+        Relationships: []
+      }
+      professional_certificates: {
+        Row: {
+          id: string
+          professional_id: string
+          certificate_type_id: string | null
+          custom_name: string | null
+          issued_at: string | null
+          expires_at: string | null
+          status: 'VALID' | 'EXPIRED' | 'PENDING_REVIEW'
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          professional_id: string
+          certificate_type_id?: string | null
+          custom_name?: string | null
+          issued_at?: string | null
+          expires_at?: string | null
+          status?: 'VALID' | 'EXPIRED' | 'PENDING_REVIEW'
+          created_at?: string
+        }
+        Update: {
+          certificate_type_id?: string | null
+          custom_name?: string | null
+          issued_at?: string | null
+          expires_at?: string | null
+          status?: 'VALID' | 'EXPIRED' | 'PENDING_REVIEW'
+        }
+        Relationships: []
+      }
+      professional_consents: {
+        Row: {
+          id: string
+          professional_id: string
+          consent_type: string
+          consented: boolean
+          consented_at: string
+          ip_address: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          id?: string
+          professional_id: string
+          consent_type: string
+          consented: boolean
+          consented_at?: string
+          ip_address?: string | null
+          user_agent?: string | null
+        }
+        Update: never
+        Relationships: []
+      }
+      professional_geography: {
+        Row: {
+          id: string
+          professional_id: string
+          municipality_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          professional_id: string
+          municipality_id: string
+          created_at?: string
+        }
+        Update: never
         Relationships: []
       }
     }
@@ -961,59 +874,30 @@ export type Database = {
         Row: {
           id: string
           municipality_id: string
-          status: CaseStatus
           citizen_initials: string
-          citizen_age_range: AgeRange
+          citizen_age_range: string
           complexity_level: ComplexityLevel
           weekly_hours: number
-          professional_id: string | null
-          assignment_id: string | null
-          assignment_started_at: string | null
+          status: CaseStatus
           active_grant_hours: number | null
           approved_hours_used: number
+          professional_id: string | null
+          professional_name: string | null
+          created_at: string
+          updated_at: string
         }
-        Relationships: []
-      }
-      v_professionals_available: {
-        Row: {
-          id: string
-          profession: ProfessionType
-          experience_years: number
-          max_complexity_level: ComplexityLevel
-          target_age_groups: string[]
-          qualifications: string[]
-          capacity_hours_week: number
-          max_concurrent_cases: number
-          availability_status: AvailabilityStatus
-          availability_days: string[]
-          current_assignments: number
-          current_hours_assigned: number
-        }
-        Relationships: []
-      }
-      v_grant_usage: {
-        Row: {
-          id: string
-          case_id: string
-          granted_hours: number
-          approved_hours: number
-          remaining_hours: number
-          over_grant: boolean
-        }
-        Relationships: []
       }
       v_case_tags: {
         Row: {
           case_id: string
-          problem_area_codes: string[]
-          goal_codes: string[]
-          special_wish_codes: string[]
+          problem_area_codes: string[] | null
+          goal_codes: string[] | null
+          special_wish_codes: string[] | null
         }
-        Relationships: []
       }
     }
-    Functions: {}
-    Enums: {}
+    Functions: Record<string, never>
+    Enums: Record<string, never>
   }
 }
 
@@ -1021,44 +905,15 @@ export type Database = {
 // Enum types
 // ================================================================
 
-export type Gender = 'MALE' | 'FEMALE' | 'OTHER'
-
-export type ExperienceWithGender = 'BOYS' | 'GIRLS'
-
-export type ProfessionType =
-  | 'TEACHER'
-  | 'PEDAGOGUE'
-  | 'NURSE'
-  | 'PSYCHOLOGIST'
-  | 'SOCIAL_WORKER'
-  | 'COUNSELOR'
-  | 'OTHER'
-
 export type ComplexityLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
-
-export type ProfessionalStatus = 'REGISTERED' | 'ACTIVE' | 'INACTIVE' | 'ARCHIVED'
-
-export type AvailabilityStatus = 'AVAILABLE' | 'PARTIALLY_AVAILABLE' | 'UNAVAILABLE'
-
-export type DocumentType =
-  | 'CV'
-  | 'CRIMINAL_RECORD'
-  | 'CHILD_PROTECTION'
-  | 'DRIVING_LICENSE'
-  | 'QUALIFICATION'
-  | 'INSURANCE'
-  | 'OTHER'
-
-export type DocumentStatus = 'PENDING_UPLOAD' | 'UNVERIFIED' | 'VERIFIED' | 'ARCHIVED'
-
 export type CaseStatus = 'OPEN' | 'MATCHED' | 'ACTIVE' | 'COMPLETED' | 'ARCHIVED'
-
-export type AgeRange = '0-5' | '6-12' | '13-18' | '18+'
-
-export type AssignmentStatus = 'ACTIVE' | 'TRANSITIONED' | 'TERMINATED' | 'ARCHIVED'
-
-export type GrantStatus = 'PENDING' | 'ACTIVE' | 'ARCHIVED' | 'REVOKED'
-
+export type InquiryStatus = 'PENDING' | 'IN_REVIEW' | 'CONVERTED' | 'REJECTED' | 'SPAM'
+export type ProfessionalStatus = 'PENDING' | 'ACTIVE' | 'INACTIVE' | 'SUSPENDED'
+export type DocumentType = 'CPR' | 'CRIMINAL_RECORD' | 'DIPLOMA' | 'CV' | 'OTHER'
+export type DocumentStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'EXPIRED'
+export type SessionLogStatus = 'DRAFT' | 'FINAL'
+export type HoursStatus = 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED'
+export type GrantStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'EXPIRED'
 export type HandoverReason =
   | 'PROFESSIONAL_UNAVAILABLE'
   | 'WORKLOAD_EXCEEDED'
@@ -1067,26 +922,7 @@ export type HandoverReason =
   | 'BETTER_MATCH'
   | 'SAFEGUARDING_CONCERN'
   | 'OTHER'
-
 export type HandoverStatus = 'INITIATED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
-
-export type SessionLogStatus = 'DRAFT' | 'FINAL' | 'CORRECTED' | 'ARCHIVED'
-
-export type CorrectionReason = 'TYPO' | 'WRONG_TIME' | 'CLARIFICATION' | 'OMISSION' | 'SAFEGUARDING' | 'OTHER'
-
-export type WorkType =
-  | 'DIRECT_SESSION'
-  | 'TRANSPORT'
-  | 'DOCUMENTATION'
-  | 'COORDINATION'
-  | 'CRISIS_RESPONSE'
-  | 'TRAINING'
-  | 'OTHER'
-
-export type HoursStatus = 'PENDING' | 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'OUTSIDE_GRANT'
-
-export type ContactType = 'PHONE_CALL' | 'EMAIL' | 'IN_PERSON' | 'OTHER'
-
 export type MatchRunStatus = 'INITIATED' | 'SCORED' | 'ASSIGNED' | 'OVERRIDDEN' | 'CANCELLED'
 
 export type NotificationType =
@@ -1097,6 +933,7 @@ export type NotificationType =
   | 'HOURS_SUBMITTED'
   | 'DOCUMENT_ACTION_REQUIRED'
   | 'CASE_CLOSED'
+  | 'HANDOVER_INITIATED'
 
 // ================================================================
 // Convenience row types

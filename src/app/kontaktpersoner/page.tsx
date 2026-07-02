@@ -1,6 +1,20 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import PublicNav from '@/components/public/PublicNav'
 import PublicFooter from '@/components/public/PublicFooter'
+
+export const metadata: Metadata = {
+  title: 'Bliv kontaktperson | Socialpædagogisk indsats i Nordjylland',
+  description:
+    'Er du socialrådgiver, pædagog eller har du erfaring med udsatte unge og voksne? Bliv støttekontaktperson eller kontaktperson via Kursskiftes faglige netværk i Nordjylland. Opret profil og bliv matchet med relevante forløb.',
+  alternates: { canonical: '/kontaktpersoner' },
+  openGraph: {
+    title: 'Bliv kontaktperson | Kursskifte',
+    description:
+      'Kursskifte søger fagpersoner til kontaktpersonforløb, støttekontaktpersonordninger og socialpædagogisk indsats i Nordjylland — Aalborg, Hjørring, Brønderslev og Frederikshavn.',
+    url: '/kontaktpersoner',
+  },
+}
 
 function ArrowRight() {
   return (
@@ -37,10 +51,10 @@ export default function KontaktpersonerPage() {
             <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">For kontaktpersoner</span>
           </div>
           <h1 className="font-serif text-4xl sm:text-5xl text-[#1A1F1C] font-normal max-w-2xl mb-5 leading-tight tracking-tight">
-            Bliv en del af Kursskiftes faglige netværk
+            Bliv kontaktperson — socialpædagogisk støtte til borgere i mistrivsel
           </h1>
           <p className="text-[17px] text-[#6B7569] leading-relaxed max-w-xl mb-8">
-            Vi søger fagpersoner med erfaring inden for socialt arbejde, pædagogik og rådgivning. Din profil kvalitetssikres og du matches kun med sager der passer til dine kompetencer.
+            Vi søger uddannede fagpersoner til kontaktpersonforløb, støttekontaktpersonordninger og socialpædagogiske indsatser. Din profil verificeres og du tilknyttes relevante forløb i Nordjylland — herunder Aalborg, Hjørring, Brønderslev og Frederikshavn.
           </p>
           <Link
             href="/login"
@@ -61,7 +75,7 @@ export default function KontaktpersonerPage() {
                 </div>
                 <h2 className="font-serif text-3xl text-[#1A1F1C] font-normal mb-4">Fagpersoner med relevant erfaring</h2>
                 <p className="text-sm text-[#6B7569] leading-relaxed mb-6">
-                  Vi søger uddannede fagpersoner med erfaring i arbejdet med børn, unge og voksne i udsatte positioner. Det afgørende er din faglige baggrund, dine dokumenterede kompetencer og din kapacitet.
+                  Vi søger uddannede fagpersoner med erfaring i arbejdet med udsatte unge, børn og voksne i sårbare livssituationer. Det afgørende er din faglige baggrund, dine dokumenterede kompetencer og din kapacitet.
                 </p>
                 <div className="space-y-3">
                   {[

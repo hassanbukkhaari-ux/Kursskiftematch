@@ -1,6 +1,48 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import PublicNav from '@/components/public/PublicNav'
 import PublicFooter from '@/components/public/PublicFooter'
+
+export const metadata: Metadata = {
+  title: 'Kontakt | Kursskifte',
+  description:
+    'Kontakt Kursskifte om kontaktpersonforløb, sagsindsendelse eller spørgsmål. Vi betjener kommuner i Nordjylland — Aalborg, Hjørring, Brønderslev og Frederikshavn. Svar inden for 1 arbejdsdag.',
+  alternates: { canonical: '/kontakt' },
+  openGraph: {
+    title: 'Kontakt Kursskifte',
+    description:
+      'Henvendelser fra kommuner og fagpersoner i Nordjylland besvares hurtigt og fagligt. Kontakt os om §52- og §85-forløb, kontaktpersonforløb og socialpædagogisk støtte.',
+    url: '/kontakt',
+  },
+}
+
+const orgContactSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Kursskifte ApS',
+  url: 'https://kursskifte.dk',
+  email: 'info@kursskifte.dk',
+  areaServed: [
+    { '@type': 'City', name: 'Aalborg' },
+    { '@type': 'City', name: 'Hjørring' },
+    { '@type': 'City', name: 'Brønderslev' },
+    { '@type': 'City', name: 'Frederikshavn' },
+  ],
+  contactPoint: [
+    {
+      '@type': 'ContactPoint',
+      email: 'kommuner@kursskifte.dk',
+      contactType: 'customer service',
+      availableLanguage: 'Danish',
+    },
+    {
+      '@type': 'ContactPoint',
+      email: 'fagpersoner@kursskifte.dk',
+      contactType: 'technical support',
+      availableLanguage: 'Danish',
+    },
+  ],
+}
 
 function ArrowRight() {
   return (
@@ -13,6 +55,10 @@ function ArrowRight() {
 export default function KontaktPage() {
   return (
     <div className="min-h-screen bg-[#F6F3EE]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgContactSchema) }}
+      />
       <PublicNav />
       <main>
         <section className="max-w-6xl mx-auto px-5 sm:px-8 pt-16 pb-12 sm:pt-20">
@@ -24,7 +70,7 @@ export default function KontaktPage() {
             Tag kontakt til Kursskifte
           </h1>
           <p className="text-[17px] text-[#6B7569] leading-relaxed max-w-lg">
-            Vi besvarer henvendelser fra kommuner og fagpersoner hurtigt og fagligt.
+            Vi besvarer henvendelser fra kommuner og fagpersoner hurtigt og fagligt. Vi betjener kommuner i Nordjylland — herunder Aalborg, Hjørring, Brønderslev og Frederikshavn.
           </p>
         </section>
 
@@ -86,7 +132,7 @@ export default function KontaktPage() {
 
             {/* General */}
             <div className="lg:col-span-2 bg-[#F6F3EE] border border-[#E0DAD0] rounded-2xl p-7">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
                 <div>
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-2">Virksomhed</div>
                   <p className="text-sm text-[#1A1F1C] font-semibold">Kursskifte ApS</p>
@@ -99,6 +145,11 @@ export default function KontaktPage() {
                 <div>
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-2">Platform</div>
                   <a href="https://kursskifte.dk" className="text-sm text-[#1A1F1C] hover:text-[#1C3829] transition-colors">kursskifte.dk</a>
+                </div>
+                <div>
+                  <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-2">Område</div>
+                  <p className="text-sm text-[#1A1F1C]">Nordjylland, Danmark</p>
+                  <p className="text-xs text-[#6B7569] mt-1">Aalborg · Hjørring · Brønderslev · Frederikshavn</p>
                 </div>
               </div>
             </div>

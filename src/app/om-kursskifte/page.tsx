@@ -1,6 +1,20 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import PublicNav from '@/components/public/PublicNav'
 import PublicFooter from '@/components/public/PublicFooter'
+
+export const metadata: Metadata = {
+  title: 'Om Kursskifte | Kontaktpersonforløb i Nordjylland',
+  description:
+    'Kursskifte er en nordjysk platform der forbinder kommuner med kvalitetssikrede fagpersoner til kontaktpersonforløb og socialfaglige indsatser. Vi varetager matching, dokumentation og opfølgning — så kommunen kan fokusere på borgeren.',
+  alternates: { canonical: '/om-kursskifte' },
+  openGraph: {
+    title: 'Om Kursskifte | Kontaktpersonforløb i Nordjylland',
+    description:
+      'Kursskifte forbinder kommuner i Nordjylland med kvalitetssikrede kontaktpersoner til relationsbaseret støtte, socialpædagogisk indsats og bostøtte til borgere i mistrivsel.',
+    url: '/om-kursskifte',
+  },
+}
 
 function ArrowRight() {
   return (
@@ -22,7 +36,7 @@ export default function OmKursskiftePage() {
             <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Om os</span>
           </div>
           <h1 className="font-serif text-4xl sm:text-5xl text-[#1A1F1C] font-normal max-w-2xl mb-5 leading-tight tracking-tight">
-            En managed platform for kontaktpersonforløb
+            Kursskifte — kontaktpersonforløb og socialfaglig indsats i Nordjylland
           </h1>
           <p className="text-[17px] text-[#6B7569] leading-relaxed max-w-xl">
             Kursskifte er ikke blot en hjemmeside — det er en fuldt administreret, kvalitetssikret platform til at finde, koordinere og dokumentere kontaktpersonforløb for borgere i mistrivsel.
@@ -42,7 +56,7 @@ export default function OmKursskiftePage() {
                   Kursskifte forbinder kommuner med de rette fagpersoner
                 </h2>
                 <p className="text-sm text-[#6B7569] leading-relaxed mb-4">
-                  Vi hjælper kommuner med at finde og koordinere kontaktpersonforløb for borgere i udsatte positioner. Vores platform håndterer hele processen: fra sagsindsendelse til forslaget lander hos kommunen.
+                  Vi hjælper kommuner i Nordjylland med at finde og koordinere kontaktpersonforløb for borgere i udsatte positioner. Vi betjener bl.a. Aalborg, Hjørring, Brønderslev og Frederikshavn Kommune.
                 </p>
                 <p className="text-sm text-[#6B7569] leading-relaxed">
                   Alle fagpersoner i vores netværk er kvalitetssikrede. Vi verificerer dokumenter, certifikater og baggrund inden aktivering — og matcher kun på kompetencer og kapacitet.

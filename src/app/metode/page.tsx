@@ -1,6 +1,20 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import PublicNav from '@/components/public/PublicNav'
 import PublicFooter from '@/components/public/PublicFooter'
+
+export const metadata: Metadata = {
+  title: 'Vores metode | Socialfaglig matching og kvalitetssikring',
+  description:
+    'Kursskiftes matchingsproces er baseret på faglige kvalifikationer, dokumenteret erfaring og kapacitet. Kontaktpersoner verificeres på straffeattest, børneattest og uddannelse inden aktivering. Kvalitetssikret og GDPR-compliant.',
+  alternates: { canonical: '/metode' },
+  openGraph: {
+    title: 'Vores metode | Socialfaglig matching — Kursskifte',
+    description:
+      'Fagligt begrundet matching af kontaktpersoner til sociale indsatser. Kursskifte verificerer alle fagpersoner manuelt inden de tilknyttes kontaktpersonforløb.',
+    url: '/metode',
+  },
+}
 
 function ArrowRight() {
   return (
@@ -29,10 +43,10 @@ export default function MetodePage() {
             <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Metode</span>
           </div>
           <h1 className="font-serif text-4xl sm:text-5xl text-[#1A1F1C] font-normal max-w-2xl mb-5 leading-tight tracking-tight">
-            Fagligt begrundet matching
+            Socialfaglig matching — kvalitetssikret og dokumenteret
           </h1>
           <p className="text-[17px] text-[#6B7569] leading-relaxed max-w-xl">
-            Kursskiftes matchningsproces er ikke tilfældig. Hver fagperson scores på fire dimensioner — og kun dem med ledig kapacitet og relevante kompetencer vises som kandidater.
+            Kursskiftes matchningsproces er baseret på faglige kvalifikationer, dokumenteret erfaring og tilgængelighed. Kun verificerede fagpersoner tilknyttes kontaktpersonforløb og socialfaglige indsatser.
           </p>
         </section>
 

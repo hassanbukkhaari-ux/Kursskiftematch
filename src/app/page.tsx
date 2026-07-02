@@ -1,8 +1,22 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import PublicNav from '@/components/public/PublicNav'
 import PublicFooter from '@/components/public/PublicFooter'
+
+export const metadata: Metadata = {
+  title: 'Kursskifte | Kvalitetssikrede kontaktpersoner til kommuner',
+  description:
+    'Kursskifte matcher kommuner med kvalitetssikrede kontaktpersoner til §52- og §85-forløb. Vi varetager sagsvurdering, match og faglig anbefaling — struktureret og dokumenteret. Vi betjener kommuner i Nordjylland.',
+  alternates: { canonical: '/' },
+  openGraph: {
+    title: 'Kursskifte | Kvalitetssikrede kontaktpersoner til kommuner',
+    description:
+      'Kursskifte matcher kommuner med kvalitetssikrede kontaktpersoner til §52- og §85-forløb. Vi betjener kommuner i Nordjylland — Aalborg, Hjørring, Brønderslev og Frederikshavn.',
+    url: '/',
+  },
+}
 
 function ArrowRight() {
   return (
@@ -72,7 +86,7 @@ function AudiencePaths() {
               Send én sag.<br />Få et fagligt begrundet forslag.
             </h2>
             <p className="text-sm text-white/60 leading-relaxed max-w-sm">
-              Kursskifte varetager match, verifikation og faglig anbefaling til §52-forløb — sikkert og uden åben database.
+              Kursskifte varetager match, verifikation og faglig anbefaling til §52- og §85-forløb — sikkert og dokumenteret. Vi betjener kommuner i Nordjylland.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-4">
@@ -246,8 +260,34 @@ export default async function Home() {
     redirect('/dashboard')
   }
 
+  const orgSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'Kursskifte ApS',
+    url: 'https://kursskifte.dk',
+    description:
+      'Kursskifte forbinder kommuner med kvalitetssikrede kontaktpersoner til §52- og §85-forløb — socialpædagogisk støtte, bostøtte og relationsbaseret indsats til borgere i mistrivsel i Nordjylland.',
+    email: 'info@kursskifte.dk',
+    areaServed: [
+      { '@type': 'City', name: 'Aalborg' },
+      { '@type': 'City', name: 'Hjørring' },
+      { '@type': 'City', name: 'Brønderslev' },
+      { '@type': 'City', name: 'Frederikshavn' },
+    ],
+    contactPoint: {
+      '@type': 'ContactPoint',
+      email: 'kommuner@kursskifte.dk',
+      contactType: 'customer service',
+      availableLanguage: 'Danish',
+    },
+  }
+
   return (
     <div className="min-h-screen bg-[#F6F3EE]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
+      />
       <PublicNav />
       <main>
         <Hero />

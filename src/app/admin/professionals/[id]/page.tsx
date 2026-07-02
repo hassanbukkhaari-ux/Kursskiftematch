@@ -21,11 +21,13 @@ export default async function ProfessionalDetailPage({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const dba = db as any
 
-  const [proRes, profileRes, docsRes, certsRes, geoRes, compRes, methRes, tgRes, wtRes, langRes] = await Promise.all([
+  const [proRes, profileRes, docsRes, certsRes, geoRes, compRes, methRes, tgRes, wtRes, langRes, periodsRes] = await Promise.all([
     dba.from('professionals')
       .select(`
         id, profession, experience_years, max_complexity_level,
-        availability_status, status, gender, education, daily_occupation,
+        availability_status, available_from_date, availability_note,
+        capacity_hours_week, max_concurrent_cases, availability_days,
+        status, gender, education, daily_occupation,
         job_title, phone, address, postal_code, city, region,
         profession_type_id, specialization, authorization, bio,
         max_hours_per_week, available_now, can_take_acute,
@@ -72,6 +74,11 @@ export default async function ProfessionalDetailPage({
     dba.from('professional_languages')
       .select('language_types(name)')
       .eq('professional_id', id),
+
+    dba.from('professional_availability_periods')
+      .select('id, period_type, start_date, end_date, note, created_at')
+      .eq('professional_id', id)
+      .order('start_date', { ascending: true }),
   ])
 
   if (proRes.error || !proRes.data) notFound()
@@ -123,6 +130,7 @@ export default async function ProfessionalDetailPage({
           targetGroupNames={tgNames}
           workTaskNames={wtNames}
           languageNames={langNames}
+          availabilityPeriods={(periodsRes.data ?? []) as AvailabilityPeriod[]}
         />
       </ContentContainer>
     </div>
@@ -135,6 +143,11 @@ export type ProfessionalDetail = {
   experience_years: number | null
   max_complexity_level: string | null
   availability_status: string | null
+  available_from_date: string | null
+  availability_note: string | null
+  capacity_hours_week: number | null
+  max_concurrent_cases: number | null
+  availability_days: string[]
   status: string
   gender: string | null
   education: string | null
@@ -162,4 +175,13 @@ export type ProfessionalDetail = {
   updated_at: string | null
   created_at: string
   profession_types: { name: string } | null
+}
+
+export type AvailabilityPeriod = {
+  id: string
+  period_type: 'VACATION' | 'PAUSE'
+  start_date: string
+  end_date: string | null
+  note: string | null
+  created_at: string
 }

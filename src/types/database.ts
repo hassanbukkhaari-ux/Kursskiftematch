@@ -134,6 +134,8 @@ export type Database = {
           max_concurrent_cases: number
           availability_days: string[]
           availability_status: AvailabilityStatus
+          available_from_date: string | null
+          availability_note: string | null
           status: ProfessionalStatus
           gender: Gender | null
           education: string | null
@@ -156,6 +158,8 @@ export type Database = {
           max_concurrent_cases?: number
           availability_days?: string[]
           availability_status?: AvailabilityStatus
+          available_from_date?: string | null
+          availability_note?: string | null
           status?: ProfessionalStatus
           gender?: Gender | null
           education?: string | null
@@ -177,6 +181,8 @@ export type Database = {
           max_concurrent_cases?: number
           availability_days?: string[]
           availability_status?: AvailabilityStatus
+          available_from_date?: string | null
+          availability_note?: string | null
           status?: ProfessionalStatus
           gender?: Gender | null
           education?: string | null
@@ -186,6 +192,35 @@ export type Database = {
           geography?: string[]
           updated_at?: string
           archived_at?: string | null
+        }
+        Relationships: []
+      }
+      professional_availability_periods: {
+        Row: {
+          id: string
+          professional_id: string
+          period_type: 'VACATION' | 'PAUSE'
+          start_date: string
+          end_date: string | null
+          note: string | null
+          created_by: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          professional_id: string
+          period_type: 'VACATION' | 'PAUSE'
+          start_date: string
+          end_date?: string | null
+          note?: string | null
+          created_by?: string | null
+          created_at?: string
+        }
+        Update: {
+          period_type?: 'VACATION' | 'PAUSE'
+          start_date?: string
+          end_date?: string | null
+          note?: string | null
         }
         Relationships: []
       }

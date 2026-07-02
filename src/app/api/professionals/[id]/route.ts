@@ -21,17 +21,27 @@ const UpdateProfessionalSchema = z.object({
   daily_occupation: z.string().optional(),
   experience_with_genders: z.array(z.enum(['BOYS', 'GIRLS'])).optional(),
   geography: z.array(z.string()).optional(),
+  available_from_date: z.string().nullable().optional(),
+  availability_note: z.string().nullable().optional(),
 })
 
+// Professional-only fields (cannot be changed by professional themselves)
 const ADMIN_ONLY_FIELDS = ['status', 'profession', 'experience_years', 'max_complexity_level', 'qualifications']
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   return withAuth(request, async (userId, role) => {
     if (role !== 'admin' && userId !== id) return forbidden()
+
     const { createClient } = await import('@/lib/supabase/server')
     const db = await createClient()
-    const { data, error } = await db.from('professionals').select(`*, profiles!inner(email, full_name)`).eq('id', id).single()
+
+    const { data, error } = await db
+      .from('professionals')
+      .select(`*, profiles!inner(email, full_name)`)
+      .eq('id', id)
+      .single()
+
     if (error || !data) return notFound('Professional')
     return ok(data)
   })
@@ -48,9 +58,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const parsed = UpdateProfessionalSchema.safeParse(body)
     if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
+    // Professionals cannot update admin-only fields
     if (role !== 'admin') {
       const attempted = Object.keys(parsed.data).filter(k => ADMIN_ONLY_FIELDS.includes(k))
-      if (attempted.length > 0) return forbidden()
+      if (attempted.length > 0) {
+        return forbidden()
+      }
     }
 
     const { createClient } = await import('@/lib/supabase/server')
@@ -65,7 +78,13 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         : {}),
     }
 
-    const { data, error } = await db.from('professionals').update(update).eq('id', id).select().single()
+    const { data, error } = await db
+      .from('professionals')
+      .update(update)
+      .eq('id', id)
+      .select()
+      .single()
+
     if (error || !data) return notFound('Professional')
 
     await logAuditEvent(db, {

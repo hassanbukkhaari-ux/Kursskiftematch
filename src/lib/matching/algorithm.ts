@@ -86,7 +86,7 @@ export function scoreCandidate(
 
 function computeQualificationsScore(professional: ProfessionalInput): number {
   const experience_score = Math.min(professional.experience_years * 4, 50)
-  const profession_score = 25
+  const profession_score = 25 // MVP v1.0: all profession types eligible for all cases
   const certification_score = professional.has_certifications ? 25 : 0
   return Math.min(experience_score + profession_score + certification_score, 100)
 }
@@ -259,4 +259,4 @@ export function getScoreColor(score: number): 'green' | 'yellow' | 'red' {
   return 'red'
 }
 
-export const ALGORITHM_VERSION = '1.0'
+export const ALGORITHM_VERSION = '1.1'

@@ -22,7 +22,7 @@ function CheckBadge() {
   )
 }
 
-// ── Section 1: Orient ──────────────────────────────────────────
+// ── Section 1: Orient ────────────────────────────────────────────
 // Single headline, one-sentence subtitle. Both audiences get proper
 // buttons — municipality is primary through button hierarchy (filled
 // vs. outlined), not by hiding the professional path.
@@ -37,7 +37,7 @@ function Hero() {
         Kvalitetssikrede kontaktpersoner til kommunernes borgere
       </h1>
       <p className="text-[17px] text-[#6B7569] leading-relaxed max-w-lg mb-8">
-        Indsend en sag. Kursskifte vurderer, matcher og sender et fagligt begrundet forslag retur.
+        Indsend en sag. Kursskifte varetager sagsvurdering, match og faglig anbefaling — struktureret og dokumenteret.
       </p>
       <div className="flex flex-wrap gap-3">
         <Link
@@ -57,7 +57,7 @@ function Hero() {
   )
 }
 
-// ── Section 2: Direct ──────────────────────────────────────────
+// ── Section 2: Direct ────────────────────────────────────────────
 // Two equal-weight panels — each audience gets its own path with a
 // primary action and a secondary link to the sub-page for those who
 // want depth before committing. No bullet lists; this is navigation.
@@ -72,7 +72,7 @@ function AudiencePaths() {
               Send én sag.<br />Få et fagligt begrundet forslag.
             </h2>
             <p className="text-sm text-white/60 leading-relaxed max-w-sm">
-              Ingen databaser at gennemse. Kursskifte finder, verificerer og foreslår den rette kontaktperson.
+              Kursskifte varetager match, verifikation og faglig anbefaling til §52-forløb — sikkert og uden åben database.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-4">
@@ -92,10 +92,10 @@ function AudiencePaths() {
           <div>
             <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-5">Til kontaktpersoner</div>
             <h2 className="font-serif text-2xl sm:text-3xl text-[#1A1F1C] font-normal leading-snug mb-4 max-w-xs">
-              Bliv matchet med forløb der passer til dig.
+              Bliv tilknyttet forløb der svarer til dine kompetencer.
             </h2>
             <p className="text-sm text-[#6B7569] leading-relaxed max-w-sm">
-              Opret profil, angiv kapacitet — Kursskifte matcher dig med sager baseret på dine kompetencer.
+              Opret profil, angiv kapacitet — vi kobler dig med sager der svarer til din faglige baggrund og erfaring.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-4">
@@ -115,16 +115,16 @@ function AudiencePaths() {
   )
 }
 
-// ── Section 3: Reduce friction ─────────────────────────────────────
-// Municipalities need to know what happens after 'Indsend sag' before
+// ── Section 3: Reduce friction ───────────────────────────────────
+// Municipalities need to know what happens after "Indsend sag" before
 // they commit. 5-step summary answers that question without the full
 // detail that lives on /kommuner. No CTA here — purely informational.
 const STEPS = [
   { n: '01', title: 'I indsender sagen', body: 'Sikkert via platformen — ingen åben database at gennemse.' },
   { n: '02', title: 'Kursskifte vurderer', body: 'Vi gennemgår kompleksitet, aldersgruppe og kompetencebehov.' },
-  { n: '03', title: 'Platformen matcher', body: 'Kandidater scores på kompetencer, kapacitet og tilgængelighed.' },
-  { n: '04', title: 'I modtager forslag', body: 'Et fagligt begrundet forslag med anbefalet kontaktperson.' },
-  { n: '05', title: 'Opstart og opfølgning', body: 'Kursskifte koordinerer opstarten og følger løbende op.' },
+  { n: '03', title: 'Kursskifte udvælger', body: 'Egnede fagpersoner identificeres og vurderes på kompetencer, kapacitet og tilgængelighed.' },
+  { n: '04', title: 'I modtager forslag', body: 'Et dokumenteret forslag med anbefalet kontaktperson og faglig begrundelse.' },
+  { n: '05', title: 'Opstart og opfølgning', body: 'Kursskifte koordinerer opstart og er ansvarlig samarbejdspartner under hele forløbet.' },
 ]
 
 function ProcessSection() {
@@ -162,14 +162,14 @@ function ProcessSection() {
   )
 }
 
-// ── Section 4: Build credibility ──────────────────────────────────
+// ── Section 4: Build credibility ─────────────────────────────────
 // 4 factual trust signals placed after the process, before the final
 // ask. Relevant to both audiences: municipalities need supplier trust,
 // professionals need platform trust. No CTA — this section earns it.
 const TRUST_ITEMS = [
   {
     label: 'Verificerede fagpersoner',
-    desc: 'Dokumenter, certifikater og attester kontrolleres manuelt inden aktivering.',
+    desc: 'Straffeattest, børneattest, CV og uddannelsesdokumentation kontrolleres individuelt inden aktivering.',
   },
   {
     label: 'Dokumenteret forløb',
@@ -180,18 +180,19 @@ const TRUST_ITEMS = [
     desc: 'Persondata behandles sikkert i overensstemmelse med dansk og europæisk lovgivning.',
   },
   {
-    label: 'Aktiv opfølgning',
-    desc: 'Kursskifte er tilgængelig og følger aktivt op under hele forløbets varighed.',
+    label: 'Ansvarlig samarbejdspartner',
+    desc: 'Kursskifte er fast koordinator under hele forløbet — ikke blot en formidler.',
   },
 ]
 
 function TrustSection() {
   return (
     <section className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-16">
-      <div className="flex items-center gap-2.5 mb-10">
+      <div className="flex items-center gap-2.5 mb-3">
         <div className="w-5 h-px bg-[#C8993A]" />
         <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Kvalitet og sikkerhed</span>
       </div>
+      <h2 className="font-serif text-2xl sm:text-3xl text-[#1A1F1C] font-normal mb-10">Vores forpligtelse</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {TRUST_ITEMS.map(item => (
           <div key={item.label} className="bg-white border border-[#E0DAD0] rounded-xl p-5">
@@ -217,7 +218,7 @@ function CtaStrip() {
             <h2 className="font-serif text-2xl sm:text-3xl text-white font-normal mb-2">
               Klar til at indsende en sag?
             </h2>
-            <p className="text-sm text-white/55">Det tager få minutter. Vi vender tilbage hurtigt.</p>
+            <p className="text-sm text-white/55">Vi bekræfter modtagelse og vender typisk tilbage inden for én arbejdsdag.</p>
           </div>
           <div className="flex flex-col items-start gap-3 shrink-0">
             <Link

@@ -3,7 +3,6 @@ import { z } from 'zod'
 import { ok, created, badRequest, notFound, serverError, withAdminAuth } from '@/lib/api-response'
 import { logAuditEvent } from '@/lib/audit'
 import { sendNotification } from '@/lib/notifications/service'
-import { Resend } from 'resend'
 
 const CreateProposalSchema = z.object({
   professional_id: z.string().uuid(),
@@ -87,7 +86,7 @@ export async function POST(
       // Promote case to PROPOSED and send email — draft creation leaves case status unchanged
       await dba.from('cases').update({ status: 'PROPOSED', updated_at: new Date().toISOString() }).eq('id', id)
 
-      // Send anonymized email to municipality contact
+      // Send anonymized email to municipality contact (logged to notification_log)
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kursskiftematch.dk'
       const responseUrl = `${appUrl}/proposal/${proposal.response_token}`
 
@@ -98,17 +97,15 @@ export async function POST(
         responseUrl,
       })
 
-      try {
-        const resend = new Resend(process.env.RESEND_API_KEY)
-        await resend.emails.send({
-          from: 'Kursskiftematch <noreply@kursskiftematch.dk>',
-          to: caseRow.intake_contact_email,
-          subject: 'Forslag til kontaktperson — Kursskiftematch',
-          text: emailBody,
-        })
-      } catch (err) {
-        console.error('[proposal] Failed to send municipality email:', err)
-      }
+      await sendNotification({
+        db,
+        notification_type: 'PROPOSAL_SENT',
+        related_entity_type: 'case_proposals',
+        related_entity_id: proposal.id,
+        recipient_email: caseRow.intake_contact_email,
+        subject: 'Forslag til kontaktperson — Kursskiftematch',
+        body: emailBody,
+      })
 
       // Notify admin
       await sendNotification({

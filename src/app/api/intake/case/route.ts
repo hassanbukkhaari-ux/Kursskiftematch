@@ -4,6 +4,7 @@ import { ok, badRequest, serverError } from '@/lib/api-response'
 import { logAuditEvent } from '@/lib/audit'
 import { runMatchForCase } from '@/lib/matching/run-match'
 import { sendNotification, adminEmailBody } from '@/lib/notifications/service'
+import { rateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit'
 
 const IntakeCaseSchema = z.object({
   municipality_id: z.string().uuid(),
@@ -22,6 +23,10 @@ const IntakeCaseSchema = z.object({
 
 // POST /api/intake/case — public, no auth (service role)
 export async function POST(request: NextRequest) {
+  const ip = getClientIp(request)
+  const { limited } = rateLimit(`intake:${ip}`, { windowMs: 60 * 60 * 1000, max: 10 })
+  if (limited) return rateLimitResponse()
+
   let body: unknown
   try { body = await request.json() } catch { return badRequest('Invalid JSON') }
 

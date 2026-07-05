@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { ok, badRequest, notFound, serverError } from '@/lib/api-response'
 import { logAuditEvent } from '@/lib/audit'
 import { sendNotification } from '@/lib/notifications/service'
+import { rateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit'
 
 const RespondSchema = z.object({
   decision: z.enum(['ACCEPTED', 'DECLINED']),
@@ -15,6 +16,10 @@ export async function POST(
   { params }: { params: Promise<{ token: string }> }
 ) {
   const { token } = await params
+
+  const ip = getClientIp(request)
+  const { limited } = rateLimit(`proposal-respond:${ip}`, { windowMs: 15 * 60 * 1000, max: 20 })
+  if (limited) return rateLimitResponse()
 
   let body: unknown
   try { body = await request.json() } catch { return badRequest('Invalid JSON') }

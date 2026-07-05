@@ -511,8 +511,23 @@ function S9Documents({ docs }: { docs: DocumentRow[] }) {
   const docMap = Object.fromEntries(docs.map(d => [d.document_type, d]))
 
   return (
-    <div className="space-y-2 mt-4">
-      <p className="text-xs text-[#6B7569] mb-3">Administrator gennemgår og godkender dine dokumenter. Kontakt din koordinator for at uploade.</p>
+    <div className="space-y-3 mt-4">
+      {/* Coordinator upload notice */}
+      <div className="flex gap-3 p-3 rounded-xl bg-[#FBF3E1] border border-[#E8C97A]">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 shrink-0">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        <div>
+          <p className="text-xs font-semibold text-[#92400E] mb-0.5">Dokumenter uploades via koordinator</p>
+          <p className="text-xs text-[#B45309] leading-relaxed">
+            Send dine dokumenter direkte til din Kursskifte-koordinator. Koordinatoren uploader og godkender dem herinde. Du kan følge status nedenfor.
+          </p>
+        </div>
+      </div>
+
+      {/* Status list */}
       {DOC_TYPES.map(dt => {
         const doc = docMap[dt.type]
         const status = doc?.status ?? 'MISSING'
@@ -691,7 +706,7 @@ function S14Consents({ initialConsents }: { initialConsents: string[] }) {
   const [error, setError] = useState<string | null>(null)
 
   async function toggle(type: string, version: string) {
-    if (accepted.has(type)) return
+    if (accepted.has(type)) return // consents can't be unaccepted via UI
     setSaving(type); setError(null)
     try {
       const res = await fetch('/api/profile/consents', {

@@ -23,7 +23,11 @@ function LoginForm() {
 
     const { error, data } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
-      setError('Forkert e-mail eller adgangskode')
+      if (error.message?.toLowerCase().includes('email not confirmed')) {
+        setError('Din e-mail er ikke bekræftet endnu — tjek din indbakke for en bekræftelsesmail')
+      } else {
+        setError('Forkert e-mail eller adgangskode')
+      }
       setLoading(false)
       return
     }

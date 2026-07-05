@@ -360,6 +360,110 @@ a { text-decoration: none; color: inherit; }
 
 /* Separator arrow */
 .arr { color: rgba(255,255,255,0.5); font-size: 12px; }
+
+/* ── Mobile menu button ──────────────────────────────── */
+.wt-menu-btn {
+  display: none; background: none; border: none; cursor: pointer;
+  color: rgba(255,255,255,0.8); padding: 7px; border-radius: 7px;
+  flex-shrink: 0;
+}
+.wt-menu-btn:hover { background: rgba(255,255,255,0.12); }
+.wt-sb-overlay {
+  display: none; position: fixed; inset: 0; top: 52px;
+  background: rgba(0,0,0,0.4); z-index: 89;
+}
+
+/* ── Tablet (≤ 1024px) ───────────────────────────────── */
+@media (max-width: 1024px) {
+  .wt-hd { padding: 0 20px; }
+  .wt-sb { width: 190px; }
+  .wt-main { padding: 32px 24px 600px; max-width: 100%; }
+  .sc-title { font-size: 22px; }
+  .app-section { padding: 40px 24px; }
+  .app-section-sm { padding: 0 24px 40px; }
+  .app-stats { grid-template-columns: repeat(2, 1fr); }
+  .app-h1 { font-size: 36px; }
+  .app-grid-3 { grid-template-columns: 1fr 1fr; }
+}
+
+/* ── Mobile (≤ 640px) ────────────────────────────────── */
+@media (max-width: 640px) {
+  /* Header */
+  .wt-menu-btn { display: flex; align-items: center; justify-content: center; }
+  .wt-hd { padding: 0 14px; }
+  .wt-hd-sep, .wt-hd-title { display: none; }
+  .wt-hd-count { font-size: 11px; color: rgba(255,255,255,0.35); }
+
+  /* Sidebar: off-canvas */
+  .wt-sb {
+    position: fixed; top: 52px; left: 0; z-index: 90;
+    height: calc(100vh - 52px); width: 240px;
+    transform: translateX(-100%);
+    transition: transform .22s cubic-bezier(.4,0,.2,1);
+    box-shadow: 4px 0 28px rgba(0,0,0,0.22);
+  }
+  .wt-sb.open { transform: translateX(0); }
+  .wt-sb.open ~ .wt-sb-overlay { display: block; }
+
+  /* Main */
+  .wt-main { padding: 20px 14px 600px; }
+  .wt-grp { margin-bottom: 48px; }
+  .wt-grp-name { font-size: 17px; }
+  .wt-grp-sub { font-size: 11px; }
+  .sc-meta { flex-wrap: wrap; gap: 6px; }
+  .sc-title { font-size: 19px; }
+  .sc-desc { font-size: 12px; }
+  .wt-sc { margin-bottom: 40px; }
+
+  /* Browser frame */
+  .bv { max-height: 420px; }
+  .bc-addr { font-size: 10px; }
+
+  /* App mockup internals */
+  .app-nav { padding: 0 16px; }
+  .app-nav-links { display: none; }
+  .app-section { padding: 28px 16px; }
+  .app-section-sm { padding: 0 16px 32px; }
+  .app-h1 { font-size: 26px; }
+  .app-h2 { font-size: 22px; }
+  .app-stats { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .app-grid-2, .app-grid-3 { grid-template-columns: 1fr; gap: 8px; }
+  .app-cta-strip { padding: 32px 16px; }
+  .app-cta-strip > div { flex-direction: column; gap: 16px; }
+  .app-footer-bar { padding: 24px 16px; }
+
+  /* App shell: collapsible sidebar → top nav bar */
+  .app-shell { flex-direction: column; min-height: unset; }
+  .app-shell-sb { width: 100%; flex-direction: row; }
+  .app-shell-sb-logo { display: none; }
+  .app-shell-sb-nav {
+    display: flex; flex-direction: row; padding: 4px 8px;
+    overflow-x: auto; gap: 0; flex: 1;
+  }
+  .app-shell-sb-nav::-webkit-scrollbar { display: none; }
+  .sb-section-label { display: none; }
+  .sb-nav-item {
+    padding: 8px 10px; font-size: 11px;
+    white-space: nowrap; flex-shrink: 0; gap: 5px;
+  }
+  .sb-nav-item svg { width: 13px; height: 13px; }
+  .app-shell-sb > div:last-child { display: none; }
+  .app-ph { padding: 14px 16px 12px; }
+  .app-cc { padding: 16px; }
+  .app-stats { margin-bottom: 16px; }
+  .app-ph-title { font-size: 18px; }
+
+  /* Audience path cards: stack */
+  .app-section > div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+  /* Process: 2 cols instead of 5 */
+  div[style*="repeat(5,1fr)"] { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 16px !important; }
+  /* Trust: 2 cols */
+  div[style*="repeat(4,1fr)"] { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+  /* Admin qlinks */
+  div[style*="grid-template-columns:1fr 1fr 1fr"] { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+  /* Cases table: hide less important columns */
+  .app-shell-main { overflow-x: hidden; }
+}
 </style>
 
 <div class="wt">
@@ -367,6 +471,11 @@ a { text-decoration: none; color: inherit; }
 <!-- ── Header ────────────────────────────────────────── -->
 <header class="wt-hd">
   <div class="wt-hd-left">
+    <button class="wt-menu-btn" id="menuBtn" aria-label="Åbn navigation">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
     <div class="wt-logo-sq">
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
         <path d="M3 13L8 3L13 13" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
@@ -386,7 +495,8 @@ a { text-decoration: none; color: inherit; }
 <div class="wt-body">
 
 <!-- ── Sidebar ────────────────────────────────────────── -->
-<nav class="wt-sb">
+<div class="wt-sb-overlay" id="sbOverlay"></div>
+<nav class="wt-sb" id="sidebar">
   <div class="sb-grp">
     <span class="sb-grp-label">Offentlig</span>
     <a class="sb-link active" href="#forside"><span class="sb-link-n">01</span><span class="sb-dot pub"></span>Forside</a>
@@ -1436,6 +1546,7 @@ a { text-decoration: none; color: inherit; }
 </div><!-- /wt -->
 
 <script>
+// ── Sidebar active-link tracking ──────────────────────
 const links = document.querySelectorAll('.sb-link');
 const sections = document.querySelectorAll('.wt-sc');
 const obs = new IntersectionObserver(entries => {
@@ -1448,4 +1559,22 @@ const obs = new IntersectionObserver(entries => {
   });
 }, { threshold: 0.25, rootMargin: '-52px 0px 0px 0px' });
 sections.forEach(s => obs.observe(s));
+
+// ── Mobile sidebar toggle ─────────────────────────────
+const sidebar = document.getElementById('sidebar');
+const menuBtn = document.getElementById('menuBtn');
+const overlay = document.getElementById('sbOverlay');
+
+function closeSidebar() { sidebar.classList.remove('open'); }
+function openSidebar()  { sidebar.classList.add('open'); }
+
+menuBtn.addEventListener('click', () => {
+  sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+});
+overlay.addEventListener('click', closeSidebar);
+
+// Close sidebar when a link is tapped on mobile
+links.forEach(l => l.addEventListener('click', () => {
+  if (window.innerWidth <= 640) closeSidebar();
+}));
 </script>

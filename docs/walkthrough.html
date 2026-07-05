@@ -1,0 +1,1450 @@
+<title>Kursskiftematch — Systemgennemgang</title>
+<style>
+/* ── Tokens ──────────────────────────────────────────── */
+:root {
+  --bg: #EDEBE6; --surface: #fff; --border: #E2DDD5;
+  --text: #1A1F1C; --muted: #6B7569;
+  --sb-bg: #fff; --sb-border: #E2DDD5;
+  --hd-bg: #1C3829; --hd-text: #fff;
+  --accent: #C8993A;
+  --pub: #166534; --pub-bg: #DCFCE7;
+  --pro: #1e40af; --pro-bg: #dbeafe;
+  --adm: #92400e; --adm-bg: #fef3c7;
+  --route-bg: #F0EDE7; --route-c: #6B6258;
+  --grp-border: #E2DDD5;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #151513; --surface: #1E1E1A; --border: #2C2A26;
+    --text: #E5E2DC; --muted: #8B8780;
+    --sb-bg: #1A1A17; --sb-border: #252521;
+    --route-bg: #252521; --route-c: #9A9590;
+    --grp-border: #252521;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #151513; --surface: #1E1E1A; --border: #2C2A26;
+  --text: #E5E2DC; --muted: #8B8780;
+  --sb-bg: #1A1A17; --sb-border: #252521;
+  --route-bg: #252521; --route-c: #9A9590;
+  --grp-border: #252521;
+}
+:root[data-theme="light"] {
+  --bg: #EDEBE6; --surface: #fff; --border: #E2DDD5;
+  --text: #1A1F1C; --muted: #6B7569;
+  --sb-bg: #fff; --sb-border: #E2DDD5;
+  --route-bg: #F0EDE7; --route-c: #6B6258;
+  --grp-border: #E2DDD5;
+}
+
+/* ── Reset ───────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+       background: var(--bg); color: var(--text); line-height: 1.5; }
+a { text-decoration: none; color: inherit; }
+
+/* ── Layout ──────────────────────────────────────────── */
+.wt { display: flex; flex-direction: column; min-height: 100vh; }
+
+.wt-hd {
+  background: var(--hd-bg); color: var(--hd-text);
+  padding: 0 32px; height: 52px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.wt-hd-left { display: flex; align-items: center; gap: 12px; }
+.wt-logo-sq {
+  width: 28px; height: 28px; background: #C8993A; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.wt-logo-sq svg { display: block; }
+.wt-logo-name { font-family: Georgia, 'Times New Roman', serif; font-size: 14px; font-weight: 600; line-height: 1; }
+.wt-logo-sub { font-size: 9px; letter-spacing: .15em; text-transform: uppercase;
+               color: rgba(255,255,255,0.45); margin-top: 2px; }
+.wt-hd-sep { width: 1px; height: 20px; background: rgba(255,255,255,0.15); margin: 0 4px; }
+.wt-hd-title { font-size: 13px; color: rgba(255,255,255,0.7); letter-spacing: .02em; }
+.wt-hd-count { font-size: 12px; color: rgba(255,255,255,0.4); }
+
+.wt-body { display: flex; flex: 1; }
+
+/* ── Sidebar ─────────────────────────────────────────── */
+.wt-sb {
+  width: 232px; flex-shrink: 0;
+  background: var(--sb-bg); border-right: 1px solid var(--sb-border);
+  position: sticky; top: 52px; height: calc(100vh - 52px); overflow-y: auto;
+  padding: 20px 0;
+}
+.wt-sb::-webkit-scrollbar { width: 4px; }
+.wt-sb::-webkit-scrollbar-track { background: transparent; }
+.wt-sb::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.sb-grp { margin-bottom: 8px; }
+.sb-grp-label {
+  display: block; padding: 10px 20px 4px;
+  font-size: 9px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--muted);
+}
+.sb-link {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 20px; font-size: 12.5px; color: var(--muted);
+  cursor: pointer; transition: background .1s, color .1s;
+  border-left: 2px solid transparent;
+}
+.sb-link:hover { background: var(--route-bg); color: var(--text); }
+.sb-link.active { color: var(--text); font-weight: 600; border-left-color: #C8993A; background: var(--route-bg); }
+.sb-link-n {
+  font-size: 10px; color: var(--muted); min-width: 18px;
+  font-variant-numeric: tabular-nums;
+}
+.sb-link.active .sb-link-n { color: #C8993A; }
+.sb-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.sb-dot.pub { background: #16A34A; }
+.sb-dot.pro { background: #2563EB; }
+.sb-dot.adm { background: #D97706; }
+
+/* ── Main content ────────────────────────────────────── */
+.wt-main { flex: 1; padding: 48px 40px 80px; min-width: 0; max-width: 1040px; }
+
+.wt-grp { margin-bottom: 72px; }
+.wt-grp-hd {
+  display: flex; align-items: baseline; gap: 12px;
+  padding-bottom: 16px; margin-bottom: 40px;
+  border-bottom: 2px solid var(--grp-border);
+}
+.wt-grp-name {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 22px; font-weight: normal; color: var(--text);
+  text-wrap: balance;
+}
+.wt-grp-sub { font-size: 12px; color: var(--muted); }
+
+/* ── Screen section ──────────────────────────────────── */
+.wt-sc { margin-bottom: 60px; }
+.sc-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.sc-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 4px;
+}
+.sc-badge.pub { color: var(--pub); background: var(--pub-bg); }
+.sc-badge.pro { color: var(--pro); background: var(--pro-bg); }
+.sc-badge.adm { color: var(--adm); background: var(--adm-bg); }
+.sc-n { font-size: 11px; font-weight: 600; color: var(--muted); }
+.sc-route {
+  font-family: 'Courier New', Courier, monospace; font-size: 11px;
+  background: var(--route-bg); color: var(--route-c);
+  padding: 2px 7px; border-radius: 4px; letter-spacing: .01em;
+}
+.sc-title {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 26px; font-weight: normal; color: var(--text); margin-bottom: 6px;
+  text-wrap: balance; line-height: 1.2;
+}
+.sc-desc { font-size: 13px; color: var(--muted); margin-bottom: 20px; max-width: 600px; line-height: 1.6; }
+
+/* ── Browser frame ───────────────────────────────────── */
+.browser {
+  border-radius: 12px; overflow: hidden;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.22), 0 2px 8px rgba(0,0,0,0.12);
+  background: #181816;
+}
+.bc-chrome {
+  background: #2C2C2A; padding: 10px 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.bc-dots { display: flex; gap: 6px; }
+.d { width: 11px; height: 11px; border-radius: 50%; }
+.d.r { background: #FF5F57; } .d.y { background: #FFBD2E; } .d.g { background: #28CA41; }
+.bc-addr {
+  flex: 1; background: #3A3A38; border-radius: 5px;
+  padding: 4px 10px; font-family: 'Courier New', monospace;
+  font-size: 11px; color: #9A9890; letter-spacing: .01em;
+}
+.bv { max-height: 640px; overflow-y: auto; background: #F6F3EE; }
+.bv::-webkit-scrollbar { width: 6px; }
+.bv::-webkit-scrollbar-track { background: rgba(0,0,0,0.04); }
+.bv::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 3px; }
+
+/* ── App component styles (inside .bv) ───────────────── */
+.app-nav {
+  background: #F6F3EE; border-bottom: 1px solid #E0DAD0;
+  padding: 0 40px; height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 10;
+}
+.app-logo { display: flex; align-items: center; gap: 10px; }
+.app-logo-sq {
+  width: 32px; height: 32px; background: #C8993A; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+}
+.app-logo-name { font-family: Georgia, serif; font-weight: 600; font-size: 15px; color: #1C3829; line-height: 1; }
+.app-logo-sub { font-size: 9px; letter-spacing: .15em; text-transform: uppercase; color: #6B7569; margin-top: 2px; }
+.app-nav-links { display: flex; align-items: center; gap: 22px; }
+.app-nav-link { font-size: 13px; color: #6B7569; }
+.app-nav-btn {
+  font-size: 13px; font-weight: 600; color: #1C3829;
+  border: 1px solid #C8DDD1; background: transparent;
+  padding: 6px 14px; border-radius: 8px;
+}
+.app-section { padding: 56px 40px; max-width: 1200px; margin: 0 auto; }
+.app-section-sm { max-width: 1200px; margin: 0 auto; padding: 0 40px 48px; }
+.app-eyebrow {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+}
+.app-eyebrow-line { width: 20px; height: 1px; background: #C8993A; }
+.app-eyebrow-label { font-size: 10px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: #C8993A; }
+.app-h1 {
+  font-family: Georgia, serif; font-size: 48px; font-weight: normal;
+  color: #1A1F1C; line-height: 1.08; max-width: 600px; margin-bottom: 16px; letter-spacing: -.01em;
+}
+.app-h2 {
+  font-family: Georgia, serif; font-size: 28px; font-weight: normal;
+  color: #1A1F1C; line-height: 1.2; margin-bottom: 10px; text-wrap: balance;
+}
+.app-h2-white { color: #fff; }
+.app-subtitle { font-size: 16px; color: #6B7569; line-height: 1.65; max-width: 440px; margin-bottom: 28px; }
+.app-btn-grp { display: flex; gap: 12px; flex-wrap: wrap; }
+.app-btn-prim {
+  height: 46px; padding: 0 22px; background: #1C3829; color: #fff;
+  font-size: 13.5px; font-weight: 600; border-radius: 11px;
+  display: inline-flex; align-items: center; gap: 7px;
+}
+.app-btn-sec {
+  height: 46px; padding: 0 22px; background: transparent; color: #1C3829;
+  font-size: 13.5px; font-weight: 600; border-radius: 11px;
+  border: 1px solid #C8DDD1; display: inline-flex; align-items: center; gap: 7px;
+}
+.app-btn-amber {
+  height: 40px; padding: 0 18px; background: #C8993A; color: #fff;
+  font-size: 13px; font-weight: 600; border-radius: 10px;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.app-card {
+  background: #fff; border: 1px solid #E0DAD0; border-radius: 16px; padding: 20px;
+}
+.app-card-hover { transition: box-shadow .15s; }
+.app-card-hover:hover { box-shadow: 0 4px 16px rgba(28,56,41,0.08); }
+.app-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px;
+}
+.app-badge-green { background: #DCFCE7; color: #166534; }
+.app-badge-amber { background: #FEF3C7; color: #92400E; }
+.app-badge-red { background: #FEE2E2; color: #991B1B; }
+.app-badge-blue { background: #DBEAFE; color: #1e40af; }
+.app-badge-default { background: #F3F4F6; color: #6B7280; }
+.app-badge-brand { background: #EEF4F0; color: #1C3829; }
+.dot-before::before { content: ''; width: 6px; height: 6px; border-radius: 50%; display: inline-block; background: currentColor; margin-right: 3px; }
+
+/* Admin shell layout */
+.app-shell { display: flex; min-height: 640px; background: #F6F3EE; }
+.app-shell-sb {
+  width: 210px; flex-shrink: 0; background: #1C3829;
+  display: flex; flex-direction: column;
+}
+.app-shell-sb-logo {
+  padding: 18px 18px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.app-shell-sb-logo-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.app-shell-sb-logo-sq {
+  width: 26px; height: 26px; background: #C8993A; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+}
+.app-shell-sb-name { font-family: Georgia, serif; font-size: 13px; font-weight: 600; color: #fff; }
+.app-shell-sb-sub { font-size: 8.5px; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,0.35); }
+.app-shell-sb-nav { padding: 12px 0; flex: 1; }
+.sb-section-label {
+  font-size: 8.5px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase;
+  color: rgba(255,255,255,0.35); padding: 10px 18px 4px;
+}
+.sb-nav-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 18px; font-size: 12.5px; color: rgba(255,255,255,0.65);
+}
+.sb-nav-item.active { background: rgba(255,255,255,0.1); color: #fff; }
+.sb-nav-item svg { opacity: .7; flex-shrink: 0; }
+.sb-nav-item.active svg { opacity: 1; }
+.app-shell-main { flex: 1; min-width: 0; overflow-x: hidden; }
+.app-ph {
+  background: #fff; border-bottom: 1px solid #E0DAD0;
+  padding: 20px 28px 18px;
+}
+.app-ph-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #6B7569; margin-bottom: 4px; }
+.app-ph-title { font-family: Georgia, serif; font-size: 24px; font-weight: normal; color: #1A1F1C; line-height: 1.2; }
+.app-ph-sub { font-size: 12.5px; color: #6B7569; margin-top: 2px; }
+.app-ph-breadcrumb { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #9B9590; margin-bottom: 6px; }
+.app-cc { padding: 24px 28px; }
+.app-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 28px; }
+.app-stat {
+  background: #fff; border: 1px solid #E0DAD0; border-radius: 12px;
+  padding: 14px 16px;
+}
+.app-stat-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; color: #6B7569; margin-bottom: 6px; }
+.app-stat-val { font-family: Georgia, serif; font-size: 28px; color: #1A1F1C; line-height: 1; font-variant-numeric: tabular-nums; }
+.app-stat-sub { font-size: 10px; color: #9B9590; margin-top: 3px; }
+.app-section-title { font-family: Georgia, serif; font-size: 15px; font-weight: normal; color: #1A1F1C; margin-bottom: 14px; margin-top: 22px; }
+.app-list-item {
+  background: #fff; border: 1px solid #E0DAD0; border-radius: 12px;
+  padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.app-list-avatar {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; flex-shrink: 0;
+}
+.app-list-avatar.amber { background: #FBF3E1; color: #92660A; }
+.app-list-avatar.green { background: #EEF4F0; color: #1C3829; }
+.app-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.app-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.app-qlink {
+  background: #fff; border: 1px solid #E0DAD0; border-radius: 12px;
+  padding: 14px 16px; display: flex; align-items: flex-start; gap: 12px;
+}
+.app-qlink-icon {
+  width: 38px; height: 38px; border-radius: 10px; background: #EEF4F0;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  color: #1C3829;
+}
+.app-qlink-name { font-family: Georgia, serif; font-size: 13.5px; font-weight: normal; color: #1A1F1C; }
+.app-qlink-sub { font-size: 11.5px; color: #6B7569; margin-top: 1px; }
+.app-tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.app-tag {
+  font-size: 11px; background: #EEF4F0; color: #1C3829; padding: 3px 8px; border-radius: 5px;
+}
+.app-form-group { margin-bottom: 18px; }
+.app-label {
+  font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: #6B7569; display: block; margin-bottom: 6px;
+}
+.app-input {
+  width: 100%; border: 1px solid #E0DAD0; border-radius: 10px;
+  padding: 9px 13px; font-size: 13px; color: #1A1F1C; background: #F6F3EE;
+  font-family: inherit;
+}
+.app-select {
+  width: 100%; border: 1px solid #E0DAD0; border-radius: 10px;
+  padding: 9px 13px; font-size: 13px; color: #1A1F1C; background: #F6F3EE;
+  font-family: inherit; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7569' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center;
+  padding-right: 32px;
+}
+.app-textarea {
+  width: 100%; border: 1px solid #E0DAD0; border-radius: 10px;
+  padding: 9px 13px; font-size: 13px; color: #1A1F1C; background: #F6F3EE;
+  font-family: inherit; resize: vertical; min-height: 80px;
+}
+.app-checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.app-checkbox-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12.5px; color: #1A1F1C; padding: 7px 10px;
+  border: 1px solid #E0DAD0; border-radius: 8px; background: #F6F3EE;
+}
+.app-checkbox { width: 14px; height: 14px; border-radius: 4px; border: 1.5px solid #C8C0B0; flex-shrink: 0; background: #fff; }
+.app-checkbox.checked { background: #1C3829; border-color: #1C3829; }
+.app-footer-bar {
+  background: #F6F3EE; border-top: 1px solid #E0DAD0;
+  padding: 40px; text-align: center; font-size: 12px; color: #9B9590;
+}
+.app-cta-strip { background: #1C3829; padding: 48px 40px; }
+.app-notice {
+  display: flex; gap: 10px; padding: 12px 14px;
+  background: #FBF3E1; border: 1px solid #E8C97A; border-radius: 12px;
+  margin-bottom: 16px;
+}
+.app-notice p { font-size: 12px; color: #B45309; }
+.app-notice strong { font-size: 11.5px; color: #92400E; display: block; margin-bottom: 2px; }
+
+/* Separator arrow */
+.arr { color: rgba(255,255,255,0.5); font-size: 12px; }
+</style>
+
+<div class="wt">
+
+<!-- ── Header ────────────────────────────────────────── -->
+<header class="wt-hd">
+  <div class="wt-hd-left">
+    <div class="wt-logo-sq">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <path d="M3 13L8 3L13 13" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M5 9.5h6" stroke="white" stroke-width="1.75" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div>
+      <div class="wt-logo-name">Kursskifte Match</div>
+      <div class="wt-logo-sub">Systemgennemgang</div>
+    </div>
+    <div class="wt-hd-sep"></div>
+    <span class="wt-hd-title">15 centrale sider</span>
+  </div>
+  <span class="wt-hd-count">Interaktiv systemdokumentation</span>
+</header>
+
+<div class="wt-body">
+
+<!-- ── Sidebar ────────────────────────────────────────── -->
+<nav class="wt-sb">
+  <div class="sb-grp">
+    <span class="sb-grp-label">Offentlig</span>
+    <a class="sb-link active" href="#forside"><span class="sb-link-n">01</span><span class="sb-dot pub"></span>Forside</a>
+    <a class="sb-link" href="#login"><span class="sb-link-n">02</span><span class="sb-dot pub"></span>Log ind</a>
+    <a class="sb-link" href="#intake"><span class="sb-link-n">03</span><span class="sb-dot pub"></span>Intake-formular</a>
+    <a class="sb-link" href="#forslag"><span class="sb-link-n">04</span><span class="sb-dot pub"></span>Forslag til kommune</a>
+  </div>
+  <div class="sb-grp">
+    <span class="sb-grp-label">Fagperson</span>
+    <a class="sb-link" href="#dashboard"><span class="sb-link-n">05</span><span class="sb-dot pro"></span>Overblik</a>
+    <a class="sb-link" href="#mine-sager"><span class="sb-link-n">06</span><span class="sb-dot pro"></span>Mine sager</a>
+    <a class="sb-link" href="#profil"><span class="sb-link-n">07</span><span class="sb-dot pro"></span>Min profil</a>
+    <a class="sb-link" href="#sessionslogs"><span class="sb-link-n">08</span><span class="sb-dot pro"></span>Sessionslogs</a>
+  </div>
+  <div class="sb-grp">
+    <span class="sb-grp-label">Administration</span>
+    <a class="sb-link" href="#admin"><span class="sb-link-n">09</span><span class="sb-dot adm"></span>Dashboard</a>
+    <a class="sb-link" href="#admin-sager"><span class="sb-link-n">10</span><span class="sb-dot adm"></span>Sagsoversigt</a>
+    <a class="sb-link" href="#matching"><span class="sb-link-n">11</span><span class="sb-dot adm"></span>Matching</a>
+    <a class="sb-link" href="#professionals"><span class="sb-link-n">12</span><span class="sb-dot adm"></span>Fagpersoner</a>
+    <a class="sb-link" href="#pro-detalje"><span class="sb-link-n">13</span><span class="sb-dot adm"></span>Fagperson-detalje</a>
+    <a class="sb-link" href="#henvendelser"><span class="sb-link-n">14</span><span class="sb-dot adm"></span>Henvendelser</a>
+    <a class="sb-link" href="#notifikationer"><span class="sb-link-n">15</span><span class="sb-dot adm"></span>Notifikationer</a>
+  </div>
+</nav>
+
+<!-- ── Main ───────────────────────────────────────────── -->
+<main class="wt-main">
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- GROUP: OFFENTLIG                                     -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="wt-grp">
+  <div class="wt-grp-hd">
+    <span class="wt-grp-name">Offentlige sider</span>
+    <span class="wt-grp-sub">Tilgængelige uden login — kommuner, fagpersoner og borgere</span>
+  </div>
+
+  <!-- 01: FORSIDE -->
+  <div class="wt-sc" id="forside">
+    <div class="sc-meta">
+      <span class="sc-badge pub">Offentlig</span>
+      <span class="sc-n">01</span>
+      <code class="sc-route">/</code>
+    </div>
+    <h2 class="sc-title">Forside</h2>
+    <p class="sc-desc">Primær landingsside. Opdelt i to klare publikumsspor — kommuner og kontaktpersoner — med tydelig konverteringshierarki mod intake-formularen. Indeholder procesvisning og tillidsmarkører.</p>
+    <div class="browser">
+      <div class="bc-chrome">
+        <div class="bc-dots"><span class="d r"></span><span class="d y"></span><span class="d g"></span></div>
+        <div class="bc-addr">kursskiftematch.dk</div>
+      </div>
+      <div class="bv">
+        <!-- PublicNav -->
+        <nav class="app-nav">
+          <div class="app-logo">
+            <div class="app-logo-sq">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M3 13L8 3L13 13" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M5 9.5h6" stroke="white" stroke-width="1.75" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div>
+              <div class="app-logo-name">Kursskifte</div>
+              <div class="app-logo-sub">Match</div>
+            </div>
+          </div>
+          <div class="app-nav-links">
+            <span class="app-nav-link">Kommuner</span>
+            <span class="app-nav-link">Kontaktpersoner</span>
+            <span class="app-nav-link">Metode</span>
+            <span class="app-nav-link">Om Kursskifte</span>
+            <span class="app-nav-link">Kontakt</span>
+            <span class="app-nav-btn">Log ind</span>
+          </div>
+        </nav>
+
+        <!-- Hero -->
+        <div class="app-section">
+          <div class="app-eyebrow">
+            <div class="app-eyebrow-line"></div>
+            <span class="app-eyebrow-label">Kursskifte Match</span>
+          </div>
+          <h1 class="app-h1">Kvalitetssikrede kontaktpersoner til kommunernes borgere</h1>
+          <p class="app-subtitle">Indsend en sag. Kursskifte varetager sagsvurdering, match og faglig anbefaling — struktureret og dokumenteret.</p>
+          <div class="app-btn-grp">
+            <span class="app-btn-prim">Indsend sag <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+            <span class="app-btn-sec">Bliv kontaktperson</span>
+          </div>
+        </div>
+
+        <!-- Audience paths -->
+        <div style="max-width:1200px;margin:0 auto;padding:0 40px 48px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div style="background:#1C3829;border-radius:20px;padding:40px;display:flex;flex-direction:column;justify-content:space-between;gap:28px;">
+            <div>
+              <div style="font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#C8993A;margin-bottom:16px;">Til kommuner</div>
+              <div style="font-family:Georgia,serif;font-size:26px;color:#fff;font-weight:normal;line-height:1.2;margin-bottom:12px;max-width:240px;">Send én sag.<br>Få et fagligt begrundet forslag.</div>
+              <p style="font-size:13px;color:rgba(255,255,255,0.58);line-height:1.65;max-width:300px;">Kursskifte varetager match, verifikation og faglig anbefaling til §52- og §85-forløb — sikkert og dokumenteret.</p>
+            </div>
+            <div style="display:flex;align-items:center;gap:16px;">
+              <span class="app-btn-amber">Indsend sag <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+              <span style="font-size:12.5px;color:rgba(255,255,255,0.45);">Se hele processen →</span>
+            </div>
+          </div>
+          <div style="background:#fff;border:1px solid #E0DAD0;border-radius:20px;padding:40px;display:flex;flex-direction:column;justify-content:space-between;gap:28px;">
+            <div>
+              <div style="font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#C8993A;margin-bottom:16px;">Til kontaktpersoner</div>
+              <div style="font-family:Georgia,serif;font-size:26px;color:#1A1F1C;font-weight:normal;line-height:1.2;margin-bottom:12px;max-width:260px;">Bliv tilknyttet forløb der svarer til dine kompetencer.</div>
+              <p style="font-size:13px;color:#6B7569;line-height:1.65;max-width:300px;">Opret profil, angiv kapacitet — vi kobler dig med sager der svarer til din faglige baggrund og erfaring.</p>
+            </div>
+            <div style="display:flex;align-items:center;gap:16px;">
+              <span class="app-btn-prim" style="height:38px;padding:0 16px;font-size:13px;border-radius:9px;">Opret profil <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+              <span style="font-size:12.5px;color:#6B7569;">Læs om processen →</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Process -->
+        <div style="background:#fff;border-top:1px solid #E0DAD0;border-bottom:1px solid #E0DAD0;">
+          <div style="max-width:1200px;margin:0 auto;padding:48px 40px;">
+            <div class="app-eyebrow" style="margin-bottom:10px;">
+              <div class="app-eyebrow-line"></div>
+              <span class="app-eyebrow-label">Processen</span>
+            </div>
+            <div style="font-family:Georgia,serif;font-size:24px;color:#1A1F1C;margin-bottom:28px;">Fra sag til kontaktperson</div>
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:24px;">
+              <div><div style="font-family:Georgia,serif;font-size:20px;color:#C8993A;margin-bottom:8px;">01</div><div style="font-weight:600;font-size:13px;color:#1A1F1C;margin-bottom:6px;">I indsender sagen</div><p style="font-size:11.5px;color:#6B7569;line-height:1.6;">Sikkert via platformen — ingen åben database at gennemse.</p></div>
+              <div><div style="font-family:Georgia,serif;font-size:20px;color:#C8993A;margin-bottom:8px;">02</div><div style="font-weight:600;font-size:13px;color:#1A1F1C;margin-bottom:6px;">Kursskifte vurderer</div><p style="font-size:11.5px;color:#6B7569;line-height:1.6;">Vi gennemgår kompleksitet, aldersgruppe og kompetencebehov.</p></div>
+              <div><div style="font-family:Georgia,serif;font-size:20px;color:#C8993A;margin-bottom:8px;">03</div><div style="font-weight:600;font-size:13px;color:#1A1F1C;margin-bottom:6px;">Kursskifte udvælger</div><p style="font-size:11.5px;color:#6B7569;line-height:1.6;">Egnede fagpersoner identificeres og vurderes på kompetencer, kapacitet og tilgængelighed.</p></div>
+              <div><div style="font-family:Georgia,serif;font-size:20px;color:#C8993A;margin-bottom:8px;">04</div><div style="font-weight:600;font-size:13px;color:#1A1F1C;margin-bottom:6px;">I modtager forslag</div><p style="font-size:11.5px;color:#6B7569;line-height:1.6;">Et dokumenteret forslag med anbefalet kontaktperson og faglig begrundelse.</p></div>
+              <div><div style="font-family:Georgia,serif;font-size:20px;color:#C8993A;margin-bottom:8px;">05</div><div style="font-weight:600;font-size:13px;color:#1A1F1C;margin-bottom:6px;">Opstart og opfølgning</div><p style="font-size:11.5px;color:#6B7569;line-height:1.6;">Kursskifte koordinerer opstart og er ansvarlig samarbejdspartner under hele forløbet.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trust -->
+        <div style="max-width:1200px;margin:0 auto;padding:48px 40px;">
+          <div class="app-eyebrow"><div class="app-eyebrow-line"></div><span class="app-eyebrow-label">Kvalitet og sikkerhed</span></div>
+          <div style="font-family:Georgia,serif;font-size:24px;color:#1A1F1C;margin-bottom:24px;">Vores forpligtelse</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+            <div class="app-card"><div style="width:22px;height:22px;background:#EEF4F0;border-radius:6px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1C3829" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div style="font-weight:600;font-size:13px;color:#1A1F1C;margin-bottom:5px;">Verificerede fagpersoner</div><p style="font-size:11.5px;color:#6B7569;line-height:1.55;">Straffeattest, børneattest, CV og uddannelsesdokumentation kontrolleres inden aktivering.</p></div>
+            <div class="app-card"><div style="width:22px;height:22px;background:#EEF4F0;border-radius:6px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1C3829" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div style="font-weight:600;font-size:13px;color:#1A1F1C;margin-bottom:5px;">Dokumenteret forløb</div><p style="font-size:11.5px;color:#6B7569;line-height:1.55;">Sessionslogs, timeregistrering og forløbsoversigt samlet i platformen.</p></div>
+            <div class="app-card"><div style="width:22px;height:22px;background:#EEF4F0;border-radius:6px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1C3829" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div style="font-weight:600;font-size:13px;color:#1A1F1C;margin-bottom:5px;">GDPR-compliant</div><p style="font-size:11.5px;color:#6B7569;line-height:1.55;">Persondata behandles sikkert i overensstemmelse med dansk og europæisk lovgivning.</p></div>
+            <div class="app-card"><div style="width:22px;height:22px;background:#EEF4F0;border-radius:6px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1C3829" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div style="font-weight:600;font-size:13px;color:#1A1F1C;margin-bottom:5px;">Ansvarlig samarbejdspartner</div><p style="font-size:11.5px;color:#6B7569;line-height:1.55;">Kursskifte er fast koordinator under hele forløbet — ikke blot en formidler.</p></div>
+          </div>
+        </div>
+
+        <!-- CTA strip -->
+        <div class="app-cta-strip">
+          <div style="max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:24px;">
+            <div>
+              <div style="font-family:Georgia,serif;font-size:26px;color:#fff;font-weight:normal;margin-bottom:6px;">Klar til at indsende en sag?</div>
+              <p style="font-size:13px;color:rgba(255,255,255,0.5);">Vi bekræfter modtagelse og vender typisk tilbage inden for én arbejdsdag.</p>
+            </div>
+            <div>
+              <span class="app-btn-amber" style="height:42px;padding:0 20px;">Indsend sag <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+              <div style="font-size:11.5px;color:rgba(255,255,255,0.38);margin-top:8px;text-align:center;">Er du fagperson? Bliv kontaktperson →</div>
+            </div>
+          </div>
+        </div>
+        <div class="app-footer-bar">Kursskiftematch · kursskifte.dk</div>
+      </div>
+    </div>
+  </div><!-- /forside -->
+
+
+  <!-- 02: LOGIN -->
+  <div class="wt-sc" id="login">
+    <div class="sc-meta">
+      <span class="sc-badge pub">Offentlig</span>
+      <span class="sc-n">02</span>
+      <code class="sc-route">/login</code>
+    </div>
+    <h2 class="sc-title">Log ind</h2>
+    <p class="sc-desc">Autentificering via Supabase Auth. Fejlhåndtering skelner mellem forkert adgangskode og ikke-bekræftet e-mail — med specifik dansk besked i begge tilfælde.</p>
+    <div class="browser">
+      <div class="bc-chrome">
+        <div class="bc-dots"><span class="d r"></span><span class="d y"></span><span class="d g"></span></div>
+        <div class="bc-addr">kursskiftematch.dk/login</div>
+      </div>
+      <div class="bv" style="background:#F6F3EE;">
+        <div style="min-height:620px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px;background:#F6F3EE;">
+          <div style="width:100%;max-width:400px;background:#fff;border:1px solid #E0DAD0;border-radius:20px;box-shadow:0 4px 24px rgba(28,56,41,0.08);padding:36px 36px 32px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:28px;">
+              <div class="app-logo-sq"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 13L8 3L13 13" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 9.5h6" stroke="white" stroke-width="1.75" stroke-linecap="round"/></svg></div>
+              <div><div class="app-logo-name">Kursskifte</div><div class="app-logo-sub">Match</div></div>
+            </div>
+            <h1 style="font-family:Georgia,serif;font-size:26px;font-weight:normal;color:#1A1F1C;margin-bottom:4px;">Log ind</h1>
+            <p style="font-size:13px;color:#6B7569;margin-bottom:24px;">Kursskifte Match</p>
+            <div class="app-form-group">
+              <label class="app-label">E-mail</label>
+              <input class="app-input" type="text" placeholder="navn@organisation.dk" value="">
+            </div>
+            <div class="app-form-group">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <label class="app-label" style="margin-bottom:0;">Adgangskode</label>
+                <span style="font-size:11.5px;color:#6B7569;">Glemt adgangskode?</span>
+              </div>
+              <input class="app-input" type="password" placeholder="••••••••">
+            </div>
+            <button style="width:100%;height:44px;background:#1C3829;color:#F6F3EE;border:none;border-radius:11px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;">Log ind</button>
+          </div>
+          <p style="margin-top:20px;font-size:12px;color:#9B9590;">Kursskiftematch · kursskifte.dk</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 03: INTAKE -->
+  <div class="wt-sc" id="intake">
+    <div class="sc-meta">
+      <span class="sc-badge pub">Offentlig</span>
+      <span class="sc-n">03</span>
+      <code class="sc-route">/intake</code>
+    </div>
+    <h2 class="sc-title">Intake-formular</h2>
+    <p class="sc-desc">Kommunens indgang til platformen. Sagsbehandleren beskriver borgerens situation, målgruppe og behov — ingen personidentificerbare data om borgeren. Rate-begrænset til 10 indmeldinger/IP/time.</p>
+    <div class="browser">
+      <div class="bc-chrome">
+        <div class="bc-dots"><span class="d r"></span><span class="d y"></span><span class="d g"></span></div>
+        <div class="bc-addr">kursskiftematch.dk/intake</div>
+      </div>
+      <div class="bv" style="background:#F6F3EE;">
+        <div style="max-width:680px;margin:0 auto;padding:40px 20px 60px;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#6B7569;margin-bottom:8px;">Kursskiftematch</div>
+          <h1 style="font-family:Georgia,serif;font-size:26px;font-weight:normal;color:#1A1F1C;margin-bottom:6px;">Indsend en ny sag</h1>
+          <p style="font-size:13px;color:#6B7569;margin-bottom:32px;line-height:1.6;">Udfyld formularen herunder for at indsende en sag. Vi vil matche borgeren med en egnet kontaktperson og vende tilbage med et forslag.</p>
+
+          <div style="background:#fff;border:1px solid #E0DAD0;border-radius:16px;padding:24px;margin-bottom:16px;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6B7569;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #F0EDE7;">Kommune og sagstype</div>
+            <div class="app-form-group">
+              <label class="app-label">Kommune</label>
+              <select class="app-select"><option>Aalborg Kommune</option></select>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div class="app-form-group" style="margin-bottom:0;">
+                <label class="app-label">Borger — initialer</label>
+                <input class="app-input" type="text" placeholder="f.eks. JM" value="KL">
+              </div>
+              <div class="app-form-group" style="margin-bottom:0;">
+                <label class="app-label">Aldersgruppe</label>
+                <select class="app-select"><option>18–25 år</option></select>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #E0DAD0;border-radius:16px;padding:24px;margin-bottom:16px;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6B7569;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #F0EDE7;">Problemstillinger <span style="font-weight:400;color:#9B9590;">(vælg alle relevante)</span></div>
+            <div class="app-checkbox-grid">
+              <div class="app-checkbox-item"><div class="app-checkbox checked"></div>Psykisk sårbarhed</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Misbrug</div>
+              <div class="app-checkbox-item"><div class="app-checkbox checked"></div>Isolation</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Hjemløshed</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Kriminalitet</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Mistrivsel</div>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #E0DAD0;border-radius:16px;padding:24px;margin-bottom:16px;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6B7569;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #F0EDE7;">Mål for forløbet</div>
+            <div class="app-checkbox-grid">
+              <div class="app-checkbox-item"><div class="app-checkbox checked"></div>Stabilitet i hverdagen</div>
+              <div class="app-checkbox-item"><div class="app-checkbox checked"></div>Selvstændighed</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Netværk og relationer</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Beskæftigelse</div>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #E0DAD0;border-radius:16px;padding:24px;margin-bottom:16px;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6B7569;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #F0EDE7;">Kapacitet og beskrivelse</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+              <div>
+                <label class="app-label">Ugentlige timer (estimat)</label>
+                <input class="app-input" type="number" placeholder="f.eks. 4" value="5">
+              </div>
+              <div>
+                <label class="app-label">Kompleksitetsniveau</label>
+                <select class="app-select"><option>Mellem</option></select>
+              </div>
+            </div>
+            <div class="app-form-group" style="margin-bottom:0;">
+              <label class="app-label">Sagsbeskrivelse</label>
+              <textarea class="app-textarea" placeholder="Beskriv borgerens situation og behov...">Ung mand med angstproblematik og social isolation. Har tidligere haft kontaktperson, men forløbet blev afbrudt. Ønsker stabil kontakt med fagperson med erfaring inden for unge voksne.</textarea>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #E0DAD0;border-radius:16px;padding:24px;margin-bottom:24px;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6B7569;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #F0EDE7;">Kontaktoplysninger — sagsbehandler</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+              <div>
+                <label class="app-label">Navn</label>
+                <input class="app-input" type="text" value="Mette Andersen">
+              </div>
+              <div>
+                <label class="app-label">Telefon</label>
+                <input class="app-input" type="text" value="98 12 34 56">
+              </div>
+            </div>
+            <div class="app-form-group" style="margin-bottom:0;">
+              <label class="app-label">E-mail</label>
+              <input class="app-input" type="email" value="m.andersen@aalborg.dk">
+            </div>
+          </div>
+
+          <button style="width:100%;height:48px;background:#1C3829;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;">
+            Indsend sag
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 04: FORSLAG TIL KOMMUNE -->
+  <div class="wt-sc" id="forslag">
+    <div class="sc-meta">
+      <span class="sc-badge pub">Offentlig</span>
+      <span class="sc-n">04</span>
+      <code class="sc-route">/proposal/[token]</code>
+    </div>
+    <h2 class="sc-title">Forslag til kommune</h2>
+    <p class="sc-desc">Offentlig, tokenbaseret side sendt direkte til kommunens sagsbehandler via e-mail. Kontaktpersonens identitet er skjult indtil kommunen accepterer. Éngangstoken, rate-begrænset svar.</p>
+    <div class="browser">
+      <div class="bc-chrome">
+        <div class="bc-dots"><span class="d r"></span><span class="d y"></span><span class="d g"></span></div>
+        <div class="bc-addr">kursskiftematch.dk/proposal/a8f3c…</div>
+      </div>
+      <div class="bv" style="background:#F6F3EE;">
+        <div style="max-width:560px;margin:0 auto;padding:40px 20px 60px;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#6B7569;margin-bottom:8px;">Kursskiftematch</div>
+          <h1 style="font-family:Georgia,serif;font-size:26px;font-weight:normal;color:#1A1F1C;margin-bottom:4px;">Forslag til kontaktperson</h1>
+          <p style="font-size:13px;color:#6B7569;margin-bottom:28px;">Sendt 24. juni 2025</p>
+
+          <div style="background:#fff;border:1px solid #E0DAD0;border-radius:16px;padding:24px;margin-bottom:16px;">
+            <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#6B7569;margin-bottom:16px;">Detaljer</div>
+            <div style="margin-bottom:14px;">
+              <div style="font-size:11.5px;color:#6B7569;margin-bottom:4px;">Kandidater identificeret</div>
+              <div style="font-size:13.5px;font-weight:600;color:#1A1F1C;line-height:1.5;">Vi har gennemgået relevante kandidater og har identificeret en velegnet kontaktperson.</div>
+            </div>
+            <div style="margin-bottom:14px;">
+              <div style="font-size:11.5px;color:#6B7569;margin-bottom:4px;">Estimeret timeforbrug</div>
+              <div style="font-size:13.5px;font-weight:600;color:#1A1F1C;">5 timer/uge</div>
+            </div>
+            <div style="margin-bottom:14px;">
+              <div style="font-size:11.5px;color:#6B7569;margin-bottom:4px;">Bemærkning fra Kursskifte</div>
+              <div style="font-size:13px;color:#1A1F1C;line-height:1.6;">Kandidaten har solid erfaring med unge voksne og psykisk sårbarhed. Særlig kompetence inden for angstproblematik og socialt arbejde i Aalborg-området.</div>
+            </div>
+            <div style="padding-top:14px;border-top:1px solid #E0DAD0;">
+              <p style="font-size:12px;color:#6B7569;line-height:1.6;">Kontaktpersonens navn og kontaktoplysninger deles først, når I accepterer forslaget.</p>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #E0DAD0;border-radius:16px;padding:24px;margin-bottom:16px;">
+            <div style="font-size:11.5px;color:#6B7569;margin-bottom:14px;">Tilføj evt. en bemærkning til svaret:</div>
+            <textarea class="app-textarea" placeholder="Eventuel bemærkning (valgfrit)..." style="min-height:60px;"></textarea>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <button style="height:46px;background:#1C3829;color:#fff;border:none;border-radius:11px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;">
+              ✓ Accepter forslag
+            </button>
+            <button style="height:46px;background:#fff;color:#991B1B;border:1px solid #FECACA;border-radius:11px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;">
+              Afvis forslag
+            </button>
+          </div>
+          <p style="font-size:11.5px;color:#9B9590;margin-top:14px;text-align:center;line-height:1.5;">Linket er personligt og kan kun bruges én gang.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /wt-grp offentlig -->
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- GROUP: FAGPERSON                                      -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="wt-grp">
+  <div class="wt-grp-hd">
+    <span class="wt-grp-name">Fagperson — kontaktperson</span>
+    <span class="wt-grp-sub">Kræver login med rollen <em>professional</em></span>
+  </div>
+
+  <!-- 05: DASHBOARD -->
+  <div class="wt-sc" id="dashboard">
+    <div class="sc-meta"><span class="sc-badge pro">Fagperson</span><span class="sc-n">05</span><code class="sc-route">/dashboard</code></div>
+    <h2 class="sc-title">Overblik</h2>
+    <p class="sc-desc">Fagpersonens startside. Viser aktive sager, sessionslogs og konsulentstatus. Genveje til alle primære funktioner. Middleware verificerer session og redirecter til login ved udløb.</p>
+    <div class="browser"><div class="bc-chrome"><div class="bc-dots"><span class="d r"></span><span class="d y"></span><span class="d g"></span></div><div class="bc-addr">kursskiftematch.dk/dashboard</div></div>
+    <div class="bv">
+      <div class="app-shell">
+        <div class="app-shell-sb">
+          <div class="app-shell-sb-logo">
+            <div class="app-shell-sb-logo-row"><div class="app-shell-sb-logo-sq"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 13L8 3L13 13" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 9.5h6" stroke="white" stroke-width="1.75" stroke-linecap="round"/></svg></div><div class="app-shell-sb-name">Kursskifte</div></div>
+            <div class="app-shell-sb-sub">Kontaktperson</div>
+          </div>
+          <div class="app-shell-sb-nav">
+            <div class="sb-nav-item active"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Overblik</div>
+            <div class="sb-nav-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Mine sager</div>
+            <div class="sb-nav-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Sessionsdokumentation</div>
+            <div class="sb-nav-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Timeregistrering</div>
+            <div class="sb-nav-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Min profil</div>
+          </div>
+          <div style="padding:14px 18px;border-top:1px solid rgba(255,255,255,0.08);">
+            <div style="font-size:12px;color:rgba(255,255,255,0.6);">Sarah M. Jensen</div>
+            <div style="font-size:10.5px;color:rgba(255,255,255,0.32);margin-top:1px;">Log ud →</div>
+          </div>
+        </div>
+        <div class="app-shell-main">
+          <div class="app-ph">
+            <div class="app-ph-eyebrow">Mit overblik</div>
+            <div class="app-ph-title">Hej, Sarah</div>
+            <div class="app-ph-sub">Kursskifte Match — din platform</div>
+          </div>
+          <div class="app-cc">
+            <div class="app-stats">
+              <div class="app-stat"><div class="app-stat-label">Aktive sager</div><div class="app-stat-val">2</div></div>
+              <div class="app-stat"><div class="app-stat-label">Sessionslogs</div><div class="app-stat-val">14</div></div>
+              <div class="app-stat"><div class="app-stat-label">Timer denne uge</div><div class="app-stat-val" style="font-size:22px;color:#9B9590;">—</div><div class="app-stat-sub">ikke impl. endnu</div></div>
+              <div class="app-stat"><div class="app-stat-label">Konsulentstatus</div><div class="app-stat-val" style="font-size:18px;color:#16A34A;">Aktiv</div></div>
+            </div>
+            <div class="app-section-title">Mine sager</div>
+            <div class="app-list-item"><div style="display:flex;align-items:center;gap:10px;"><div class="app-list-avatar amber">KL</div><div><div style="font-weight:500;font-size:13px;color:#1A1F1C;">Borger KL</div><div style="font-size:11.5px;color:#6B7569;">5 t/uge · §85</div></div></div><span class="app-badge app-badge-green dot-before">Aktiv</span></div>
+            <div class="app-list-item"><div style="display:flex;align-items:center;gap:10px;"><div class="app-list-avatar amber">RM</div><div><div style="font-weight:500;font-size:13px;color:#1A1F1C;">Borger RM</div><div style="font-size:11.5px;color:#6B7569;">3 t/uge · §52</div></div></div><span class="app-badge app-badge-green dot-before">Aktiv</span></div>
+            <div class="app-section-title" style="margin-top:22px;">Genveje</div>
+            <div class="app-grid-3">
+              <div class="app-qlink"><div class="app-qlink-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div><div class="app-qlink-name">Mine sager</div><div class="app-qlink-sub">Se og opdater dine sager</div></div></div>
+              <div class="app-qlink"><div class="app-qlink-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div><div class="app-qlink-name">Sessionsdokumentation</div><div class="app-qlink-sub">Log sessioner og noter</div></div></div>
+              <div class="app-qlink"><div class="app-qlink-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="app-qlink-name">Timeregistrering</div><div class="app-qlink-sub">Registrer dine arbejdstimer</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- 06: MINE SAGER -->
+  <div class="wt-sc" id="mine-sager">
+    <div class="sc-meta"><span class="sc-badge pro">Fagperson</span><span class="sc-n">06</span><code class="sc-route">/dashboard/cases</code></div>
+    <h2 class="sc-title">Mine sager</h2>
+    <p class="sc-desc">Sagsliste for fagpersonen — kun egne tilknyttede sager. Statuses er ACTIVE, MATCHED og COMPLETED. Klik på en sag åbner sagsdokumentationen med sessionslogs og timeregistrering.</p>
+    <div class="browser"><div class="bc-chrome"><div class="bc-dots"><span class="d r"></span><span class="d y"></span><span class="d g"></span></div><div class="bc-addr">kursskiftematch.dk/dashboard/cases</div></div>
+    <div class="bv">
+      <div class="app-shell">
+        <div class="app-shell-sb">
+          <div class="app-shell-sb-logo"><div class="app-shell-sb-logo-row"><div class="app-shell-sb-logo-sq"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 13L8 3L13 13" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 9.5h6" stroke="white" stroke-width="1.75" stroke-linecap="round"/></svg></div><div class="app-shell-sb-name">Kursskifte</div></div><div class="app-shell-sb-sub">Kontaktperson</div></div>
+          <div class="app-shell-sb-nav">
+            <div class="sb-nav-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Overblik</div>
+            <div class="sb-nav-item active"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Mine sager</div>
+            <div class="sb-nav-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Sessionsdokumentation</div>
+            <div class="sb-nav-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Timeregistrering</div>
+            <div class="sb-nav-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Min profil</div>
+          </div>
+          <div style="padding:14px 18px;border-top:1px solid rgba(255,255,255,0.08);"><div style="font-size:12px;color:rgba(255,255,255,0.6);">Sarah M. Jensen</div></div>
+        </div>
+        <div class="app-shell-main">
+          <div class="app-ph">
+            <div class="app-ph-breadcrumb"><span>Overblik</span><span>›</span><span>Mine sager</span></div>
+            <div class="app-ph-eyebrow">Fagperson</div>
+            <div class="app-ph-title">Mine sager</div>
+            <div class="app-ph-sub">2 aktive forløb</div>
+          </div>
+          <div class="app-cc">
+            <div class="app-list-item" style="margin-bottom:8px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div class="app-list-avatar amber">KL</div>
+                <div>
+                  <div style="font-weight:500;font-size:13px;color:#1A1F1C;">Borger KL · 18–25 år</div>
+                  <div style="display:flex;align-items:center;gap:8px;margin-top:3px;"><span class="app-badge app-badge-green dot-before">Aktiv</span><span style="font-size:11px;color:#6B7569;">5 t/uge</span><span style="font-size:11px;color:#6B7569;">§85</span></div>
+                </div>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C8C0B0" stroke-width="1.75" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+            <div class="app-list-item" style="margin-bottom:8px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div class="app-list-avatar amber">RM</div>
+                <div>
+                  <div style="font-weight:500;font-size:13px;color:#1A1F1C;">Borger RM · 26–45 år</div>
+                  <div style="display:flex;align-items:center;gap:8px;margin-top:3px;"><span class="app-badge app-badge-green dot-before">Aktiv</span><span style="font-size:11px;color:#6B7569;">3 t/uge</span><span style="font-size:11px;color:#6B7569;">§52</span></div>
+                </div>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C8C0B0" stroke-width="1.75" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+            <div class="app-list-item" style="opacity:.55;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div class="app-list-avatar" style="background:#F3F4F6;color:#6B7280;">HN</div>
+                <div>
+                  <div style="font-weight:500;font-size:13px;color:#1A1F1C;">Borger HN · 46–65 år</div>
+                  <div style="display:flex;align-items:center;gap:8px;margin-top:3px;"><span class="app-badge app-badge-default">Afsluttet</span><span style="font-size:11px;color:#6B7569;">4 t/uge</span></div>
+                </div>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C8C0B0" stroke-width="1.75" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- 07: MIN PROFIL -->
+  <div class="wt-sc" id="profil">
+    <div class="sc-meta"><span class="sc-badge pro">Fagperson</span><span class="sc-n">07</span><code class="sc-route">/dashboard/profile</code></div>
+    <h2 class="sc-title">Min profil</h2>
+    <p class="sc-desc">Kompetenceprofil brugt direkte i match-algoritmen. Fagpersonen opdaterer kompetencer, metoder, målgrupper, geografi og tilgængelighed. Dokumenter uploades via koordinator (amber-notice tilføjet i seneste patch).</p>
+    <div class="browser"><div class="bc-chrome"><div class="bc-dots"><span class="d r"></span><span class="d y"></span><span class="d g"></span></div><div class="bc-addr">kursskiftematch.dk/dashboard/profile</div></div>
+    <div class="bv">
+      <div class="app-shell">
+        <div class="app-shell-sb">
+          <div class="app-shell-sb-logo"><div class="app-shell-sb-logo-row"><div class="app-shell-sb-logo-sq"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 13L8 3L13 13" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 9.5h6" stroke="white" stroke-width="1.75" stroke-linecap="round"/></svg></div><div class="app-shell-sb-name">Kursskifte</div></div><div class="app-shell-sb-sub">Kontaktperson</div></div>
+          <div class="app-shell-sb-nav">
+            <div class="sb-nav-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Overblik</div>
+            <div class="sb-nav-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Mine sager</div>
+            <div class="sb-nav-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Sessionsdokumentation</div>
+            <div class="sb-nav-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Timeregistrering</div>
+            <div class="sb-nav-item active"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Min profil</div>
+          </div>
+          <div style="padding:14px 18px;border-top:1px solid rgba(255,255,255,0.08);"><div style="font-size:12px;color:rgba(255,255,255,0.6);">Sarah M. Jensen</div></div>
+        </div>
+        <div class="app-shell-main">
+          <div class="app-ph">
+            <div class="app-ph-breadcrumb"><span>Overblik</span><span>›</span><span>Min profil</span></div>
+            <div class="app-ph-eyebrow">Kontaktperson</div>
+            <div class="app-ph-title">Min profil</div>
+            <div class="app-ph-sub">Kompetenceprofil — bruges direkte i matching</div>
+          </div>
+          <div class="app-cc">
+            <!-- Stamdata -->
+            <div style="background:#fff;border:1px solid #E0DAD0;border-radius:12px;padding:18px;margin-bottom:14px;">
+              <div style="font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6B7569;margin-bottom:14px;">Stamdata</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div><label class="app-label">Fulde navn</label><input class="app-input" value="Sarah Møller Jensen" style="font-size:12.5px;padding:7px 11px;"></div>
+                <div><label class="app-label">Profession</label><select class="app-select" style="font-size:12.5px;padding:7px 11px;"><option>Socialpædagog</option></select></div>
+                <div><label class="app-label">Erfaring (år)</label><input class="app-input" value="8" style="font-size:12.5px;padding:7px 11px;"></div>
+                <div><label class="app-label">Kapacitet (t/uge)</label><input class="app-input" value="12" style="font-size:12.5px;padding:7px 11px;"></div>
+              </div>
+            </div>
+            <!-- Kompetencer -->
+            <div style="background:#fff;border:1px solid #E0DAD0;border-radius:12px;padding:18px;margin-bottom:14px;">
+              <div style="font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6B7569;margin-bottom:12px;">Kompetencer</div>
+              <div class="app-tag-row">
+                <span class="app-tag">Psykisk sårbarhed</span><span class="app-tag">Unge voksne</span><span class="app-tag">Angstproblematik</span><span class="app-tag">Social isolation</span><span class="app-tag">§85-støtte</span>
+                <span style="font-size:11.5px;background:#F6F3EE;color:#6B7569;padding:3px 8px;border-radius:5px;border:1px dashed #D0C8BC;">+ Tilføj kompetence</span>
+              </div>
+            </div>
+            <!-- Dokumenter — med amber notice -->
+            <div style="background:#fff;border:1px solid #E0DAD0;border-radius:12px;padding:18px;margin-bottom:14px;">
+              <div style="font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6B7569;margin-bottom:12px;">Dokumenter</div>
+              <div class="app-notice">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <div><strong>Dokumenter uploades via koordinator</strong><p>Send dine dokumenter direkte til din Kursskifte-koordinator. Koordinatoren uploader og godkender dem herinde. Du kan følge status nedenfor.</p></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:7px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border:1px solid #E0DAD0;border-radius:8px;background:#F6F3EE;font-size:12px;"><span style="color:#1A1F1C;">Straffeattest</span><span class="app-badge app-badge-green">Godkendt</span></div>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border:1px solid #E0DAD0;border-radius:8px;background:#F6F3EE;font-size:12px;"><span style="color:#1A1F1C;">Børneattest</span><span class="app-badge app-badge-green">Godkendt</span></div>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border:1px solid #E0DAD0;border-radius:8px;background:#F6F3EE;font-size:12px;"><span style="color:#1A1F1C;">CV</span><span class="app-badge app-badge-amber">Afventer</span></div>
+              </div>
+            </div>
+            <button style="padding:9px 18px;background:#1C3829;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Gem ændringer</button>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- 08: SESSIONSLOGS -->
+  <div class="wt-sc" id="sessionslogs">
+    <div class="sc-meta"><span class="sc-badge pro">Fagperson</span><span class="sc-n">08</span><code class="sc-route">/dashboard/session-logs</code></div>
+    <h2 class="sc-title">Sessionslogs</h2>
+    <p class="sc-desc">Fagpersonen dokumenterer hver session med dato, varighed, observationer og stemningstone. Logs gemmes i DRAFT eller FINAL tilstand. Bruges til forløbsdokumentation over for kommunen.</p>
+    <div class="browser"><div class="bc-chrome"><div class="bc-dots"><span class="d r"></span><span class="d y"></span><span class="d g"></span></div><div class="bc-addr">kursskiftematch.dk/dashboard/session-logs</div></div>
+    <div class="bv">
+      <div class="app-shell">
+        <div class="app-shell-sb">
+          <div class="app-shell-sb-logo"><div class="app-shell-sb-logo-row"><div class="app-shell-sb-logo-sq"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 13L8 3L13 13" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 9.5h6" stroke="white" stroke-width="1.75" stroke-linecap="round"/></svg></div><div class="app-shell-sb-name">Kursskifte</div></div><div class="app-shell-sb-sub">Kontaktperson</div></div>
+          <div class="app-shell-sb-nav">
+            <div class="sb-nav-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Overblik</div>
+            <div class="sb-nav-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Mine sager</div>
+            <div class="sb-nav-item active"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Sessionsdokumentation</div>
+            <div class="sb-nav-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Timeregistrering</div>
+            <div class="sb-nav-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Min profil</div>
+          </div>
+          <div style="padding:14px 18px;border-top:1px solid rgba(255,255,255,0.08);"><div style="font-size:12px;color:rgba(255,255,255,0.6);">Sarah M. Jensen</div></div>
+        </div>
+        <div class="app-shell-main">
+          <div class="app-ph" style="display:flex;justify-content:space-between;align-items:flex-end;">
+            <div>
+              <div class="app-ph-breadcrumb"><span>Overblik</span><span>›</span><span>Sessionslogs</span></div>
+              <div class="app-ph-eyebrow">Dokumentation</div>
+              <div class="app-ph-title">Sessionslogs</div>
+              <div class="app-ph-sub">14 registrerede sessioner</div>
+            </div>
+            <button style="height:36px;padding:0 14px;background:#1C3829;color:#fff;border:none;border-radius:9px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;margin-bottom:18px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Ny sessionslog
+            </button>
+          </div>
+          <div class="app-cc" style="padding-top:16px;">
+            <div style="display:flex;gap:8px;margin-bottom:16px;">
+              <select class="app-select" style="width:auto;font-size:12px;padding:6px 28px 6px 10px;"><option>Alle sager</option><option>Borger KL</option><option>Borger RM</option></select>
+            </div>
+            <div style="background:#fff;border:1px solid #E0DAD0;border-radius:12px;overflow:hidden;">
+              <div style="display:grid;grid-template-columns:90px 72px 1fr 80px 80px;gap:0;padding:8px 14px;background:#F6F3EE;border-bottom:1px solid #E0DAD0;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6B7569;">
+                <span>Dato</span><span>Varighed</span><span>Observationer</span><span>Sag</span><span>Status</span>
+              </div>
+              <div style="display:grid;grid-template-columns:90px 72px 1fr 80px 80px;gap:0;padding:11px 14px;border-bottom:1px solid #F0EDE7;font-size:12px;align-items:center;">
+                <span style="color:#1A1F1C;">2. jul 2025</span><span style="color:#6B7569;">60 min</span><span style="color:#6B7569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:12px;">Positiv session, god kontakt, arbejdede med rutiner…</span><span><div class="app-list-avatar amber" style="width:26px;height:26px;font-size:11px;border-radius:7px;">KL</div></span><span><span class="app-badge app-badge-green">Final</span></span>
+              </div>
+              <div style="display:grid;grid-template-columns:90px 72px 1fr 80px 80px;gap:0;padding:11px 14px;border-bottom:1px solid #F0EDE7;font-size:12px;align-items:center;">
+                <span style="color:#1A1F1C;">28. jun 2025</span><span style="color:#6B7569;">90 min</span><span style="color:#6B7569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:12px;">Hjemmebesøg. Borger udtrykte bekymring vedr. økonomi…</span><span><div class="app-list-avatar amber" style="width:26px;height:26px;font-size:11px;border-radius:7px;">RM</div></span><span><span class="app-badge app-badge-green">Final</span></span>
+              </div>
+              <div style="display:grid;grid-template-columns:90px 72px 1fr 80px 80px;gap:0;padding:11px 14px;border-bottom:1px solid #F0EDE7;font-size:12px;align-items:center;">
+                <span style="color:#1A1F1C;">25. jun 2025</span><span style="color:#6B7569;">45 min</span><span style="color:#6B7569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:12px;">Kort opfølgning. God stemning, planer for ugen gennemgået.</span><span><div class="app-list-avatar amber" style="width:26px;height:26px;font-size:11px;border-radius:7px;">KL</div></span><span><span class="app-badge app-badge-amber">Kladde</span></span>
+              </div>
+              <div style="display:grid;grid-template-columns:90px 72px 1fr 80px 80px;gap:0;padding:11px 14px;font-size:12px;align-items:center;">
+                <span style="color:#1A1F1C;">20. jun 2025</span><span style="color:#6B7569;">75 min</span><span style="color:#6B7569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:12px;">Introducerende møde. Afklaring af forventninger og mål…</span><span><div class="app-list-avatar amber" style="width:26px;height:26px;font-size:11px;border-radius:7px;">RM</div></span><span><span class="app-badge app-badge-green">Final</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+</div><!-- /wt-grp fagperson -->
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- GROUP: ADMINISTRATION                                 -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="wt-grp">
+  <div class="wt-grp-hd">
+    <span class="wt-grp-name">Administration</span>
+    <span class="wt-grp-sub">Kræver login med rollen <em>admin</em></span>
+  </div>
+
+  <!-- Shared admin sidebar macro (inline each time with active item varied) -->
+
+  <!-- 09: ADMIN DASHBOARD -->
+  <div class="wt-sc" id="admin">
+    <div class="sc-meta"><span class="sc-badge adm">Admin</span><span class="sc-n">09</span><code class="sc-route">/admin</code></div>
+    <h2 class="sc-title">Admin — Dashboard</h2>
+    <p class="sc-desc">Administratorens startside. Fire live-stats og genveje til alle administrative funktioner. Badges viser afventende opgaver — nye henvendelser, match-kørsler klar til beslutning.</p>
+    <div class="browser"><div class="bc-chrome"><div class="bc-dots"><span class="d r"></span><span class="d y"></span><span class="d g"></span></div><div class="bc-addr">kursskiftematch.dk/admin</div></div>
+    <div class="bv">
+      <div class="app-shell">
+        <div class="app-shell-sb">
+          <div class="app-shell-sb-logo"><div class="app-shell-sb-logo-row"><div class="app-shell-sb-logo-sq"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 13L8 3L13 13" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 9.5h6" stroke="white" stroke-width="1.75" stroke-linecap="round"/></svg></div><div class="app-shell-sb-name">Kursskifte</div></div><div class="app-shell-sb-sub">Administration</div></div>
+          <div class="app-shell-sb-nav">
+            <div class="sb-section-label">Oversigt</div>
+            <div class="sb-nav-item active"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</div>
+            <div class="sb-section-label">Sagsbehandling</div>
+            <div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Sager</div>
+            <div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Matching</div>
+            <div class="sb-section-label">Brugere</div>
+            <div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Fagpersoner</div>
+            <div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><line x1="3" y1="22" x2="21" y2="22"/><polygon points="12 2 20 7 4 7"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/></svg>Kommuner</div>
+            <div class="sb-section-label">Kommunikation</div>
+            <div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Henvendelser <span style="margin-left:auto;background:#C8993A;color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;">3</span></div>
+            <div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Notifikationer</div>
+            <div class="sb-section-label">Indhold</div>
+            <div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Artikler</div>
+          </div>
+          <div style="padding:14px 18px;border-top:1px solid rgba(255,255,255,0.08);"><div style="font-size:12px;color:rgba(255,255,255,0.6);">Admin</div></div>
+        </div>
+        <div class="app-shell-main">
+          <div class="app-ph">
+            <div class="app-ph-eyebrow">Dashboard</div>
+            <div class="app-ph-title">Administration</div>
+            <div class="app-ph-sub">Kursskiftematch — administrationsplatform</div>
+          </div>
+          <div class="app-cc">
+            <div class="app-stats">
+              <div class="app-stat"><div class="app-stat-label">Aktive sager</div><div class="app-stat-val">12</div></div>
+              <div class="app-stat"><div class="app-stat-label">Aktive fagpersoner</div><div class="app-stat-val">8</div></div>
+              <div class="app-stat"><div class="app-stat-label">Nye henvendelser</div><div class="app-stat-val" style="color:#C8993A;">3</div></div>
+              <div class="app-stat"><div class="app-stat-label">Klar til tildeling</div><div class="app-stat-val" style="color:#16A34A;">2</div><div class="app-stat-sub">match-kørsler</div></div>
+            </div>
+            <div class="app-section-title">Genveje</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+              <div class="app-qlink"><div class="app-qlink-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div><div class="app-qlink-name">Sagsstyring</div><div class="app-qlink-sub">Opret og administrer sager</div><span class="app-badge app-badge-brand" style="margin-top:5px;display:inline-block;">12 aktive</span></div></div>
+              <div class="app-qlink"><div class="app-qlink-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div><div><div class="app-qlink-name">Matching</div><div class="app-qlink-sub">Start match-kørsler</div><span class="app-badge app-badge-green" style="margin-top:5px;display:inline-block;">2 klar</span></div></div>
+              <div class="app-qlink"><div class="app-qlink-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div><div class="app-qlink-name">Fagpersoner</div><div class="app-qlink-sub">Profiler og dokumenter</div></div></div>
+              <div class="app-qlink"><div class="app-qlink-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div><div class="app-qlink-name">Henvendelser</div><div class="app-qlink-sub">Kommunehenvendelser</div><span class="app-badge app-badge-amber" style="margin-top:5px;display:inline-block;">3 nye</span></div></div>
+              <div class="app-qlink"><div class="app-qlink-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><line x1="3" y1="22" x2="21" y2="22"/><polygon points="12 2 20 7 4 7"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/></svg></div><div><div class="app-qlink-name">Kommuner</div><div class="app-qlink-sub">Aftaler og kontakter</div></div></div>
+              <div class="app-qlink"><div class="app-qlink-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><div><div class="app-qlink-name">Notifikationer</div><div class="app-qlink-sub">Log og genforsendelse</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- 10: SAGSOVERSIGT -->
+  <div class="wt-sc" id="admin-sager">
+    <div class="sc-meta"><span class="sc-badge adm">Admin</span><span class="sc-n">10</span><code class="sc-route">/admin/cases</code></div>
+    <h2 class="sc-title">Sagsoversigt</h2>
+    <p class="sc-desc">Komplet sagsliste med filterbar tabel — status, kompleksitet, kommune og fritekst. Admin opretter sager, starter matching og kan tilgå fuld sagsdokumentation inkl. forslag og overdragelseslog.</p>
+    <div class="browser"><div class="bc-chrome"><div class="bc-dots"><span class="d r"></span><span class="d y"></span><span class="d g"></span></div><div class="bc-addr">kursskiftematch.dk/admin/cases</div></div>
+    <div class="bv">
+      <div class="app-shell">
+        <div class="app-shell-sb">
+          <div class="app-shell-sb-logo"><div class="app-shell-sb-logo-row"><div class="app-shell-sb-logo-sq"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 13L8 3L13 13" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 9.5h6" stroke="white" stroke-width="1.75" stroke-linecap="round"/></svg></div><div class="app-shell-sb-name">Kursskifte</div></div><div class="app-shell-sb-sub">Administration</div></div>
+          <div class="app-shell-sb-nav">
+            <div class="sb-section-label">Oversigt</div>
+            <div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</div>
+            <div class="sb-section-label">Sagsbehandling</div>
+            <div class="sb-nav-item active"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Sager</div>
+            <div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Matching</div>
+            <div class="sb-section-label">Brugere</div>
+            <div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Fagpersoner</div>
+            <div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><line x1="3" y1="22" x2="21" y2="22"/><polygon points="12 2 20 7 4 7"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/></svg>Kommuner</div>
+            <div class="sb-section-label">Kommunikation</div>
+            <div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Henvendelser</div>
+            <div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Notifikationer</div>
+          </div>
+        </div>
+        <div class="app-shell-main">
+          <div class="app-ph" style="display:flex;justify-content:space-between;align-items:flex-end;">
+            <div>
+              <div class="app-ph-breadcrumb"><span>Administration</span><span>›</span><span>Sager</span></div>
+              <div class="app-ph-eyebrow">Administration</div>
+              <div class="app-ph-title">Sager</div>
+              <div class="app-ph-sub">Oversigt over alle aktive og arkiverede sager</div>
+            </div>
+            <button style="height:34px;padding:0 12px;background:#1C3829;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;margin-bottom:18px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Ny sag</button>
+          </div>
+          <div class="app-cc" style="padding-top:14px;">
+            <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+              <input class="app-input" placeholder="Søg…" style="width:180px;font-size:12px;padding:6px 10px;">
+              <select class="app-select" style="width:auto;font-size:12px;padding:6px 28px 6px 10px;"><option>Alle statuser</option></select>
+              <select class="app-select" style="width:auto;font-size:12px;padding:6px 28px 6px 10px;"><option>Alle kommuner</option></select>
+            </div>
+            <div style="background:#fff;border:1px solid #E0DAD0;border-radius:12px;overflow:hidden;">
+              <div style="display:grid;grid-template-columns:50px 80px 80px 110px 80px 80px;padding:8px 12px;background:#F6F3EE;border-bottom:1px solid #E0DAD0;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6B7569;gap:8px;">
+                <span>Init.</span><span>Alder</span><span>Kompleks.</span><span>Kommune</span><span>Timer</span><span>Status</span>
+              </div>
+              <div style="display:grid;grid-template-columns:50px 80px 80px 110px 80px 80px;padding:10px 12px;border-bottom:1px solid #F0EDE7;align-items:center;gap:8px;font-size:12px;">
+                <div class="app-list-avatar amber" style="width:30px;height:30px;font-size:11px;border-radius:8px;">KL</div><span>18–25</span><span class="app-badge app-badge-amber">Mellem</span><span style="font-size:11.5px;color:#6B7569;">Aalborg</span><span>5 t/u</span><span class="app-badge app-badge-green dot-before">Aktiv</span>
+              </div>
+              <div style="display:grid;grid-template-columns:50px 80px 80px 110px 80px 80px;padding:10px 12px;border-bottom:1px solid #F0EDE7;align-items:center;gap:8px;font-size:12px;">
+                <div class="app-list-avatar amber" style="width:30px;height:30px;font-size:11px;border-radius:8px;">RM</div><span>26–45</span><span class="app-badge app-badge-amber">Mellem</span><span style="font-size:11.5px;color:#6B7569;">Hjørring</span><span>3 t/u</span><span class="app-badge app-badge-green dot-before">Aktiv</span>
+              </div>
+              <div style="display:grid;grid-template-columns:50px 80px 80px 110px 80px 80px;padding:10px 12px;border-bottom:1px solid #F0EDE7;align-items:center;gap:8px;font-size:12px;">
+                <div class="app-list-avatar amber" style="width:30px;height:30px;font-size:11px;border-radius:8px;">TH</div><span>13–17</span><span class="app-badge app-badge-red">Høj</span><span style="font-size:11.5px;color:#6B7569;">Aalborg</span><span>8 t/u</span><span class="app-badge app-badge-amber dot-before">Forslag sendt</span>
+              </div>
+              <div style="display:grid;grid-template-columns:50px 80px 80px 110px 80px 80px;padding:10px 12px;border-bottom:1px solid #F0EDE7;align-items:center;gap:8px;font-size:12px;">
+                <div class="app-list-avatar" style="width:30px;height:30px;font-size:11px;border-radius:8px;background:#F6F3EE;color:#6B7569;">BN</div><span>46–65</span><span class="app-badge app-badge-green">Lav</span><span style="font-size:11.5px;color:#6B7569;">Brønderslev</span><span>4 t/u</span><span class="app-badge app-badge-amber dot-before">Åben</span>
+              </div>
+              <div style="display:grid;grid-template-columns:50px 80px 80px 110px 80px 80px;padding:10px 12px;align-items:center;gap:8px;font-size:12px;">
+                <div class="app-list-avatar" style="width:30px;height:30px;font-size:11px;border-radius:8px;background:#F6F3EE;color:#6B7569;">PL</div><span>26–45</span><span class="app-badge app-badge-red">Kritisk</span><span style="font-size:11.5px;color:#6B7569;">Frederikshavn</span><span>10 t/u</span><span class="app-badge app-badge-blue dot-before">Matchet</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- 11: MATCHING -->
+  <div class="wt-sc" id="matching">
+    <div class="sc-meta"><span class="sc-badge adm">Admin</span><span class="sc-n">11</span><code class="sc-route">/admin/matching</code></div>
+    <h2 class="sc-title">Match-administration</h2>
+    <p class="sc-desc">Admin starter algoritme-kørsler for åbne sager. Systemet scorer kandidater — admin foretager den endelige menneskelige beslutning. Godkendte forslag sendes til kommunen med éngangslink.</p>
+    <div class="browser"><div class="bc-chrome"><div class="bc-dots"><span class="d r"></span><span class="d y"></span><span class="d g"></span></div><div class="bc-addr">kursskiftematch.dk/admin/matching</div></div>
+    <div class="bv">
+      <div class="app-shell">
+        <div class="app-shell-sb">
+          <div class="app-shell-sb-logo"><div class="app-shell-sb-logo-row"><div class="app-shell-sb-logo-sq"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 13L8 3L13 13" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 9.5h6" stroke="white" stroke-width="1.75" stroke-linecap="round"/></svg></div><div class="app-shell-sb-name">Kursskifte</div></div><div class="app-shell-sb-sub">Administration</div></div>
+          <div class="app-shell-sb-nav">
+            <div class="sb-section-label">Oversigt</div>
+            <div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</div>
+            <div class="sb-section-label">Sagsbehandling</div>
+            <div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Sager</div>
+            <div class="sb-nav-item active"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Matching</div>
+            <div class="sb-section-label">Brugere</div>
+            <div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Fagpersoner</div>
+            <div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><line x1="3" y1="22" x2="21" y2="22"/><polygon points="12 2 20 7 4 7"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/></svg>Kommuner</div>
+            <div class="sb-section-label">Kommunikation</div>
+            <div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Henvendelser</div>
+            <div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Notifikationer</div>
+          </div>
+        </div>
+        <div class="app-shell-main">
+          <div class="app-ph">
+            <div class="app-ph-breadcrumb"><span>Administration</span><span>›</span><span>Matching</span></div>
+            <div class="app-ph-eyebrow">Matching</div>
+            <div class="app-ph-title">Match-administration</div>
+            <div class="app-ph-sub">Tildel fagpersoner til sager baseret på algoritme-scoren</div>
+          </div>
+          <div class="app-cc">
+            <div class="app-stats" style="margin-bottom:20px;">
+              <div class="app-stat"><div class="app-stat-label">Åbne sager</div><div class="app-stat-val" style="color:#C8993A;">3</div></div>
+              <div class="app-stat"><div class="app-stat-label">Afventende match</div><div class="app-stat-val">2</div></div>
+              <div class="app-stat"><div class="app-stat-label">Matchede sager</div><div class="app-stat-val">2</div></div>
+              <div class="app-stat"><div class="app-stat-label">Klar til tildeling</div><div class="app-stat-val" style="color:#16A34A;">2</div></div>
+            </div>
+
+            <div class="app-section-title">Igangværende match-kørsler</div>
+            <div style="font-size:12px;color:#6B7569;margin-bottom:12px;">Algoritmen har scoret kandidater — klar til menneskelig beslutning</div>
+            <div class="app-list-item" style="margin-bottom:8px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div class="app-qlink-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div>
+                <div><div style="font-weight:500;font-size:13px;color:#1A1F1C;">Match-kørsel</div><div style="font-size:11.5px;color:#6B7569;">Borger TH · 13–17 år · Algoritme v1.2</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;"><span class="app-badge app-badge-green dot-before">Klar til tildeling</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C8C0B0" stroke-width="1.75" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+            </div>
+            <div class="app-list-item" style="margin-bottom:20px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div class="app-qlink-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div>
+                <div><div style="font-weight:500;font-size:13px;color:#1A1F1C;">Match-kørsel</div><div style="font-size:11.5px;color:#6B7569;">Borger PL · 26–45 år · Algoritme v1.2</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;"><span class="app-badge app-badge-green dot-before">Klar til tildeling</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C8C0B0" stroke-width="1.75" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+            </div>
+
+            <div class="app-section-title">Sager klar til matching</div>
+            <div style="font-size:12px;color:#6B7569;margin-bottom:12px;">Åbne sager uden tildelt fagperson</div>
+            <div class="app-list-item" style="margin-bottom:8px;">
+              <div style="display:flex;align-items:center;gap:10px;"><div class="app-list-avatar amber" style="width:34px;height:34px;font-size:12px;border-radius:9px;">BN</div><div><div style="font-weight:500;font-size:13px;color:#1A1F1C;">Borger BN · 46–65 år</div><div style="display:flex;align-items:center;gap:6px;margin-top:3px;"><span class="app-badge app-badge-green" style="font-size:10px;">Lav</span><span style="font-size:11px;color:#6B7569;">4 t/uge</span></div></div></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span class="app-badge app-badge-amber dot-before">Åben</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C8C0B0" stroke-width="1.75" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+
+  <!-- 12: FAGPERSONER (list) -->
+  <div class="wt-sc" id="professionals">
+    <div class="sc-meta"><span class="sc-badge adm">Admin</span><span class="sc-n">12</span><code class="sc-route">/admin/professionals</code></div>
+    <h2 class="sc-title">Fagpersonoversigt</h2>
+    <p class="sc-desc">Samlet liste over alle fagpersoner. Admin kan filtrere på status og profession, se kapacitet og klikke ind på enkeltprofiler for at godkende dokumenter og styre tilknytninger.</p>
+    <div class="browser"><div class="bc-chrome"><div class="bc-dots"><span class="d r"></span><span class="d y"></span><span class="d g"></span></div><div class="bc-addr">kursskiftematch.dk/admin/professionals</div></div>
+    <div class="bv">
+      <div class="app-shell">
+        <div class="app-shell-sb">
+          <div class="app-shell-sb-logo"><div class="app-shell-sb-logo-row"><div class="app-shell-sb-logo-sq"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 13L8 3L13 13" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 9.5h6" stroke="white" stroke-width="1.75" stroke-linecap="round"/></svg></div><div class="app-shell-sb-name">Kursskifte</div></div><div class="app-shell-sb-sub">Administration</div></div>
+          <div class="app-shell-sb-nav">
+            <div class="sb-section-label">Oversigt</div><div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</div>
+            <div class="sb-section-label">Sagsbehandling</div><div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Sager</div><div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Matching</div>
+            <div class="sb-section-label">Brugere</div><div class="sb-nav-item active"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Fagpersoner</div><div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><line x1="3" y1="22" x2="21" y2="22"/><polygon points="12 2 20 7 4 7"/></svg>Kommuner</div>
+            <div class="sb-section-label">Kommunikation</div><div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Henvendelser</div><div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Notifikationer</div>
+          </div>
+        </div>
+        <div class="app-shell-main">
+          <div class="app-ph"><div class="app-ph-breadcrumb"><span>Administration</span><span>›</span><span>Fagpersoner</span></div><div class="app-ph-eyebrow">Administration</div><div class="app-ph-title">Fagpersoner</div><div class="app-ph-sub">8 aktive · 3 registrerede · 1 inaktiv</div></div>
+          <div class="app-cc" style="padding-top:14px;">
+            <div style="display:flex;gap:8px;margin-bottom:14px;">
+              <input class="app-input" placeholder="Søg navn eller e-mail…" style="width:200px;font-size:12px;padding:6px 10px;">
+              <select class="app-select" style="width:auto;font-size:12px;padding:6px 28px 6px 10px;"><option>Alle statuser</option></select>
+              <select class="app-select" style="width:auto;font-size:12px;padding:6px 28px 6px 10px;"><option>Alle professioner</option></select>
+            </div>
+            <div style="background:#fff;border:1px solid #E0DAD0;border-radius:12px;overflow:hidden;">
+              <div style="display:grid;grid-template-columns:1fr 120px 80px 70px 80px;padding:8px 14px;background:#F6F3EE;border-bottom:1px solid #E0DAD0;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6B7569;gap:8px;">
+                <span>Navn</span><span>Profession</span><span>Kapacitet</span><span>Sager</span><span>Status</span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 120px 80px 70px 80px;padding:10px 14px;border-bottom:1px solid #F0EDE7;align-items:center;gap:8px;font-size:12.5px;">
+                <div style="display:flex;align-items:center;gap:8px;"><div class="app-list-avatar green" style="width:30px;height:30px;font-size:11px;border-radius:8px;">SM</div><div><div style="font-weight:500;color:#1A1F1C;">Sarah M. Jensen</div><div style="font-size:11px;color:#6B7569;">s.jensen@mail.dk</div></div></div>
+                <span style="color:#6B7569;font-size:12px;">Socialpædagog</span><span style="color:#6B7569;">12 t/uge</span><span style="color:#1A1F1C;font-weight:600;">2</span><span class="app-badge app-badge-green">Aktiv</span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 120px 80px 70px 80px;padding:10px 14px;border-bottom:1px solid #F0EDE7;align-items:center;gap:8px;font-size:12.5px;">
+                <div style="display:flex;align-items:center;gap:8px;"><div class="app-list-avatar green" style="width:30px;height:30px;font-size:11px;border-radius:8px;">MR</div><div><div style="font-weight:500;color:#1A1F1C;">Mikkel R. Sørensen</div><div style="font-size:11px;color:#6B7569;">m.sorensen@mail.dk</div></div></div>
+                <span style="color:#6B7569;font-size:12px;">Psykolog</span><span style="color:#6B7569;">8 t/uge</span><span style="color:#1A1F1C;font-weight:600;">1</span><span class="app-badge app-badge-green">Aktiv</span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 120px 80px 70px 80px;padding:10px 14px;border-bottom:1px solid #F0EDE7;align-items:center;gap:8px;font-size:12.5px;">
+                <div style="display:flex;align-items:center;gap:8px;"><div class="app-list-avatar green" style="width:30px;height:30px;font-size:11px;border-radius:8px;">AK</div><div><div style="font-weight:500;color:#1A1F1C;">Anne K. Nielsen</div><div style="font-size:11px;color:#6B7569;">a.nielsen@mail.dk</div></div></div>
+                <span style="color:#6B7569;font-size:12px;">Socialrådgiver</span><span style="color:#6B7569;">15 t/uge</span><span style="color:#1A1F1C;font-weight:600;">3</span><span class="app-badge app-badge-green">Aktiv</span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 120px 80px 70px 80px;padding:10px 14px;align-items:center;gap:8px;font-size:12.5px;opacity:.65;">
+                <div style="display:flex;align-items:center;gap:8px;"><div class="app-list-avatar" style="width:30px;height:30px;font-size:11px;border-radius:8px;background:#F6F3EE;color:#6B7569;">JB</div><div><div style="font-weight:500;color:#1A1F1C;">Jonas B. Christensen</div><div style="font-size:11px;color:#6B7569;">j.christensen@mail.dk</div></div></div>
+                <span style="color:#6B7569;font-size:12px;">Pædagog</span><span style="color:#6B7569;">—</span><span style="color:#6B7569;">0</span><span class="app-badge app-badge-amber">Registreret</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- 13: FAGPERSON-DETALJE -->
+  <div class="wt-sc" id="pro-detalje">
+    <div class="sc-meta"><span class="sc-badge adm">Admin</span><span class="sc-n">13</span><code class="sc-route">/admin/professionals/[id]</code></div>
+    <h2 class="sc-title">Fagperson-detalje</h2>
+    <p class="sc-desc">Fuld visning af én fagpersons profil set fra admin. Viser dokumentstatus (admin godkender/afviser), kompetencer, aktive tilknytninger og tilgængelighed. Admin kan ændre status direkte herfra.</p>
+    <div class="browser"><div class="bc-chrome"><div class="bc-dots"><span class="d r"></span><span class="d y"></span><span class="d g"></span></div><div class="bc-addr">kursskiftematch.dk/admin/professionals/a4f2…</div></div>
+    <div class="bv">
+      <div class="app-shell">
+        <div class="app-shell-sb">
+          <div class="app-shell-sb-logo"><div class="app-shell-sb-logo-row"><div class="app-shell-sb-logo-sq"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 13L8 3L13 13" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 9.5h6" stroke="white" stroke-width="1.75" stroke-linecap="round"/></svg></div><div class="app-shell-sb-name">Kursskifte</div></div><div class="app-shell-sb-sub">Administration</div></div>
+          <div class="app-shell-sb-nav">
+            <div class="sb-section-label">Oversigt</div><div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</div>
+            <div class="sb-section-label">Sagsbehandling</div><div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Sager</div><div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Matching</div>
+            <div class="sb-section-label">Brugere</div><div class="sb-nav-item active"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Fagpersoner</div><div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><line x1="3" y1="22" x2="21" y2="22"/><polygon points="12 2 20 7 4 7"/></svg>Kommuner</div>
+            <div class="sb-section-label">Kommunikation</div><div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Henvendelser</div><div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Notifikationer</div>
+          </div>
+        </div>
+        <div class="app-shell-main">
+          <div class="app-ph" style="display:flex;justify-content:space-between;align-items:flex-end;">
+            <div><div class="app-ph-breadcrumb"><span>Administration</span><span>›</span><span>Fagpersoner</span><span>›</span><span>Sarah M. Jensen</span></div><div class="app-ph-eyebrow">Fagperson</div><div class="app-ph-title">Sarah Møller Jensen</div><div class="app-ph-sub">Socialpædagog · 8 års erfaring</div></div>
+            <div style="display:flex;gap:6px;margin-bottom:18px;">
+              <span class="app-badge app-badge-green" style="padding:5px 10px;font-size:12px;">Aktiv</span>
+              <button style="height:32px;padding:0 12px;background:#F6F3EE;border:1px solid #E0DAD0;border-radius:8px;font-size:12px;color:#1A1F1C;cursor:pointer;font-family:inherit;">Skift status</button>
+            </div>
+          </div>
+          <div class="app-cc" style="padding-top:14px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+              <div style="background:#fff;border:1px solid #E0DAD0;border-radius:12px;padding:16px;">
+                <div style="font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6B7569;margin-bottom:12px;">Stamdata</div>
+                <div style="display:grid;gap:8px;">
+                  <div style="display:flex;justify-content:space-between;font-size:12.5px;"><span style="color:#6B7569;">E-mail</span><span style="color:#1A1F1C;">s.jensen@mail.dk</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:12.5px;"><span style="color:#6B7569;">Telefon</span><span style="color:#1A1F1C;">20 34 56 78</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:12.5px;"><span style="color:#6B7569;">Kapacitet</span><span style="color:#1A1F1C;">12 t/uge</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:12.5px;"><span style="color:#6B7569;">Geografi</span><span style="color:#1A1F1C;">Aalborg, Hjørring</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:12.5px;"><span style="color:#6B7569;">Aktive sager</span><span style="font-weight:600;color:#1A1F1C;">2</span></div>
+                </div>
+              </div>
+              <div style="background:#fff;border:1px solid #E0DAD0;border-radius:12px;padding:16px;">
+                <div style="font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6B7569;margin-bottom:12px;">Kompetencer</div>
+                <div class="app-tag-row"><span class="app-tag">Psykisk sårbarhed</span><span class="app-tag">Unge voksne</span><span class="app-tag">Angstproblematik</span><span class="app-tag">Social isolation</span><span class="app-tag">§85</span></div>
+                <div style="margin-top:10px;font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6B7569;margin-bottom:8px;">Metoder</div>
+                <div class="app-tag-row"><span class="app-tag">Kognitiv adfærdsterapi</span><span class="app-tag">Motivationssamtale</span></div>
+              </div>
+            </div>
+            <!-- Dokumenter -->
+            <div style="background:#fff;border:1px solid #E0DAD0;border-radius:12px;padding:16px;">
+              <div style="font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6B7569;margin-bottom:12px;">Dokumenter</div>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border:1px solid #E0DAD0;border-radius:8px;font-size:12.5px;">
+                  <div><span style="color:#1A1F1C;font-weight:500;">Straffeattest</span><span style="font-size:11px;color:#6B7569;margin-left:8px;">Udløber: 15. jan 2026</span></div>
+                  <div style="display:flex;gap:6px;align-items:center;"><span class="app-badge app-badge-green">Godkendt</span></div>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border:1px solid #E0DAD0;border-radius:8px;font-size:12.5px;">
+                  <div><span style="color:#1A1F1C;font-weight:500;">Børneattest</span><span style="font-size:11px;color:#6B7569;margin-left:8px;">Udløber: 3. mar 2026</span></div>
+                  <span class="app-badge app-badge-green">Godkendt</span>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border:1px solid #FEF3C7;background:#FEFDF8;border-radius:8px;font-size:12.5px;">
+                  <div><span style="color:#1A1F1C;font-weight:500;">CV</span><span style="font-size:11px;color:#6B7569;margin-left:8px;">Modtaget — afventer gennemgang</span></div>
+                  <div style="display:flex;gap:6px;align-items:center;"><button style="height:26px;padding:0 10px;background:#16A34A;color:#fff;border:none;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit;">Godkend</button><button style="height:26px;padding:0 10px;background:#fff;color:#991B1B;border:1px solid #FECACA;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit;">Afvis</button><span class="app-badge app-badge-amber">Afventer</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- 14: HENVENDELSER -->
+  <div class="wt-sc" id="henvendelser">
+    <div class="sc-meta"><span class="sc-badge adm">Admin</span><span class="sc-n">14</span><code class="sc-route">/admin/inquiries</code></div>
+    <h2 class="sc-title">Henvendelser</h2>
+    <p class="sc-desc">Indkomne henvendelser fra kommuner og fagpersonsansøgere via kontaktformularer. Admin markerer som gennemset, konverterer til aftale eller afviser. Understøtter MUNICIPALITY_INQUIRY, PROFESSIONAL_APPLICATION og PARTNER_LEAD.</p>
+    <div class="browser"><div class="bc-chrome"><div class="bc-dots"><span class="d r"></span><span class="d y"></span><span class="d g"></span></div><div class="bc-addr">kursskiftematch.dk/admin/inquiries</div></div>
+    <div class="bv">
+      <div class="app-shell">
+        <div class="app-shell-sb">
+          <div class="app-shell-sb-logo"><div class="app-shell-sb-logo-row"><div class="app-shell-sb-logo-sq"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 13L8 3L13 13" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 9.5h6" stroke="white" stroke-width="1.75" stroke-linecap="round"/></svg></div><div class="app-shell-sb-name">Kursskifte</div></div><div class="app-shell-sb-sub">Administration</div></div>
+          <div class="app-shell-sb-nav">
+            <div class="sb-section-label">Oversigt</div><div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</div>
+            <div class="sb-section-label">Sagsbehandling</div><div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Sager</div><div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Matching</div>
+            <div class="sb-section-label">Brugere</div><div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Fagpersoner</div><div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><line x1="3" y1="22" x2="21" y2="22"/><polygon points="12 2 20 7 4 7"/></svg>Kommuner</div>
+            <div class="sb-section-label">Kommunikation</div><div class="sb-nav-item active"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Henvendelser <span style="margin-left:auto;background:#C8993A;color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;">3</span></div><div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Notifikationer</div>
+          </div>
+        </div>
+        <div class="app-shell-main">
+          <div class="app-ph"><div class="app-ph-breadcrumb"><span>Administration</span><span>›</span><span>Henvendelser</span></div><div class="app-ph-eyebrow">Administration</div><div class="app-ph-title">Henvendelser</div><div class="app-ph-sub">Indkomne kommunehenvendelser og fagpersonansøgninger</div></div>
+          <div class="app-cc" style="padding-top:14px;">
+            <div style="display:flex;gap:8px;margin-bottom:14px;">
+              <select class="app-select" style="width:auto;font-size:12px;padding:6px 28px 6px 10px;"><option>Alle typer</option></select>
+              <select class="app-select" style="width:auto;font-size:12px;padding:6px 28px 6px 10px;"><option>Alle statuser</option></select>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="background:#fff;border:1px solid #E0DAD0;border-radius:12px;padding:14px 16px;">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+                  <div style="flex:1;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-weight:600;font-size:13px;color:#1A1F1C;">Lise Borch Hansen</span><span class="app-badge app-badge-blue" style="font-size:10px;">Kommune-henvendelse</span></div><div style="font-size:12px;color:#6B7569;margin-bottom:6px;">Frederikshavn Kommune · l.borch@frederikshavn.dk · 3. jul 2025</div><p style="font-size:12.5px;color:#1A1F1C;line-height:1.55;">Vi er interesserede i at høre mere om Kursskifte Match og mulighederne for samarbejde ifm. §85-støtte til unge voksne i Frederikshavn.</p></div>
+                  <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;"><button style="height:28px;padding:0 10px;background:#1C3829;color:#fff;border:none;border-radius:7px;font-size:11px;cursor:pointer;font-family:inherit;">Markér gennemset</button><span class="app-badge app-badge-amber" style="text-align:center;">Ny</span></div>
+                </div>
+              </div>
+              <div style="background:#fff;border:1px solid #E0DAD0;border-radius:12px;padding:14px 16px;">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+                  <div style="flex:1;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-weight:600;font-size:13px;color:#1A1F1C;">Jonas B. Christensen</span><span class="app-badge app-badge-brand" style="font-size:10px;">Fagpersonsansøgning</span></div><div style="font-size:12px;color:#6B7569;margin-bottom:6px;">Pædagog · j.christensen@mail.dk · 1. jul 2025</div><p style="font-size:12.5px;color:#1A1F1C;line-height:1.55;">Jeg er uddannet pædagog med 12 års erfaring og ønsker at tilbyde kontaktpersonforløb i Aalborg-området.</p></div>
+                  <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;"><button style="height:28px;padding:0 10px;background:#1C3829;color:#fff;border:none;border-radius:7px;font-size:11px;cursor:pointer;font-family:inherit;">Konvertér til bruger</button><span class="app-badge app-badge-amber" style="text-align:center;">Ny</span></div>
+                </div>
+              </div>
+              <div style="background:#fff;border:1px solid #E0DAD0;border-radius:12px;padding:14px 16px;opacity:.65;">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+                  <div style="flex:1;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-weight:600;font-size:13px;color:#1A1F1C;">Mette Dahl Andersen</span><span class="app-badge app-badge-blue" style="font-size:10px;">Kommune-henvendelse</span></div><div style="font-size:12px;color:#6B7569;">Hjørring Kommune · 24. jun 2025</div></div>
+                  <span class="app-badge app-badge-green" style="flex-shrink:0;">Konverteret</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- 15: NOTIFIKATIONER -->
+  <div class="wt-sc" id="notifikationer">
+    <div class="sc-meta"><span class="sc-badge adm">Admin</span><span class="sc-n">15</span><code class="sc-route">/admin/notifications</code></div>
+    <h2 class="sc-title">Notifikationslog</h2>
+    <p class="sc-desc">Komplet log over alle udsendte systemnotifikationer (e-mail via Resend). Viser type, modtager, leveringsstatus og tidspunkt. Admin kan genudsende fejlede notifikationer direkte herfra. Tilføjet i seneste patch: proposal-e-mails logges nu via <code style="font-size:11px;background:#F0EDE7;padding:1px 4px;border-radius:3px;">sendNotification()</code> frem for direkte Resend-kald.</p>
+    <div class="browser"><div class="bc-chrome"><div class="bc-dots"><span class="d r"></span><span class="d y"></span><span class="d g"></span></div><div class="bc-addr">kursskiftematch.dk/admin/notifications</div></div>
+    <div class="bv">
+      <div class="app-shell">
+        <div class="app-shell-sb">
+          <div class="app-shell-sb-logo"><div class="app-shell-sb-logo-row"><div class="app-shell-sb-logo-sq"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 13L8 3L13 13" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 9.5h6" stroke="white" stroke-width="1.75" stroke-linecap="round"/></svg></div><div class="app-shell-sb-name">Kursskifte</div></div><div class="app-shell-sb-sub">Administration</div></div>
+          <div class="app-shell-sb-nav">
+            <div class="sb-section-label">Oversigt</div><div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</div>
+            <div class="sb-section-label">Sagsbehandling</div><div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Sager</div><div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Matching</div>
+            <div class="sb-section-label">Brugere</div><div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Fagpersoner</div><div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><line x1="3" y1="22" x2="21" y2="22"/><polygon points="12 2 20 7 4 7"/></svg>Kommuner</div>
+            <div class="sb-section-label">Kommunikation</div><div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Henvendelser</div><div class="sb-nav-item active"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Notifikationer</div>
+          </div>
+        </div>
+        <div class="app-shell-main">
+          <div class="app-ph"><div class="app-ph-breadcrumb"><span>Administration</span><span>›</span><span>Notifikationer</span></div><div class="app-ph-eyebrow">Administration</div><div class="app-ph-title">Notifikationer</div><div class="app-ph-sub">Log over alle udsendte beskeder — genudsend fejlede direkte herfra</div></div>
+          <div class="app-cc" style="padding-top:14px;">
+            <div style="display:flex;gap:8px;margin-bottom:14px;">
+              <select class="app-select" style="width:auto;font-size:12px;padding:6px 28px 6px 10px;"><option>Alle typer</option></select>
+              <select class="app-select" style="width:auto;font-size:12px;padding:6px 28px 6px 10px;"><option>Alle statuser</option></select>
+            </div>
+            <div style="background:#fff;border:1px solid #E0DAD0;border-radius:12px;overflow:hidden;">
+              <div style="display:grid;grid-template-columns:140px 1fr 160px 60px 80px;padding:8px 14px;background:#F6F3EE;border-bottom:1px solid #E0DAD0;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6B7569;gap:8px;">
+                <span>Type</span><span>Emne</span><span>Modtager</span><span>Kanal</span><span>Status</span>
+              </div>
+              <div style="display:grid;grid-template-columns:140px 1fr 160px 60px 80px;padding:10px 14px;border-bottom:1px solid #F0EDE7;align-items:center;gap:8px;font-size:12px;">
+                <span style="font-size:11px;color:#6B7569;">PROPOSAL_SENT</span><span style="color:#1A1F1C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Forslag til kontaktperson — Kursskiftematch</span><span style="color:#6B7569;font-size:11.5px;overflow:hidden;text-overflow:ellipsis;">m.andersen@aalborg.dk</span><span style="color:#6B7569;">E-mail</span><span class="app-badge app-badge-green">Leveret</span>
+              </div>
+              <div style="display:grid;grid-template-columns:140px 1fr 160px 60px 80px;padding:10px 14px;border-bottom:1px solid #F0EDE7;align-items:center;gap:8px;font-size:12px;">
+                <span style="font-size:11px;color:#6B7569;">PROPOSAL_SENT</span><span style="color:#1A1F1C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Forslag sendt til kommunen — Kursskiftematch</span><span style="color:#6B7569;font-size:11.5px;">— (intern admin)</span><span style="color:#6B7569;">E-mail</span><span class="app-badge app-badge-green">Leveret</span>
+              </div>
+              <div style="display:grid;grid-template-columns:140px 1fr 160px 60px 80px;padding:10px 14px;border-bottom:1px solid #F0EDE7;align-items:center;gap:8px;font-size:12px;">
+                <span style="font-size:11px;color:#6B7569;">PROPOSAL_ACCEPTED</span><span style="color:#1A1F1C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Kommunen har accepteret forslaget</span><span style="color:#6B7569;font-size:11.5px;">— (intern admin)</span><span style="color:#6B7569;">E-mail</span><span class="app-badge app-badge-green">Leveret</span>
+              </div>
+              <div style="display:grid;grid-template-columns:140px 1fr 160px 60px 80px;padding:10px 14px;align-items:center;gap:8px;font-size:12px;">
+                <span style="font-size:11px;color:#6B7569;">INTAKE_RECEIVED</span><span style="color:#1A1F1C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Ny sag modtaget — Kursskiftematch</span><span style="color:#6B7569;font-size:11.5px;">— (intern admin)</span><span style="color:#6B7569;">E-mail</span><div style="display:flex;align-items:center;gap:5px;"><span class="app-badge app-badge-red">Fejlet</span><button style="height:22px;padding:0 8px;background:#1C3829;color:#fff;border:none;border-radius:5px;font-size:10px;cursor:pointer;font-family:inherit;">Genudsend</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+</div><!-- /wt-grp admin -->
+
+</main>
+</div><!-- /wt-body -->
+</div><!-- /wt -->
+
+<script>
+const links = document.querySelectorAll('.sb-link');
+const sections = document.querySelectorAll('.wt-sc');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      links.forEach(l => l.classList.remove('active'));
+      const a = document.querySelector(`.sb-link[href="#${e.target.id}"]`);
+      if (a) a.classList.add('active');
+    }
+  });
+}, { threshold: 0.25, rootMargin: '-52px 0px 0px 0px' });
+sections.forEach(s => obs.observe(s));
+</script>

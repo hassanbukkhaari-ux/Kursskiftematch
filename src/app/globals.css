@@ -129,3 +129,78 @@ body {
 .scroll-ios {
   -webkit-overflow-scrolling: touch;
 }
+
+/* Article markdown prose styles */
+.prose-kursskifte h2 {
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: 1.375rem;
+  font-weight: 400;
+  color: #1A1F1C;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.35;
+}
+.prose-kursskifte h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1A1F1C;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+.prose-kursskifte p {
+  font-size: 0.9375rem;
+  color: #3A3F3C;
+  line-height: 1.75;
+  margin-bottom: 1rem;
+}
+.prose-kursskifte ul,
+.prose-kursskifte ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+.prose-kursskifte li {
+  font-size: 0.9375rem;
+  color: #3A3F3C;
+  line-height: 1.7;
+  margin-bottom: 0.3rem;
+}
+.prose-kursskifte ul li {
+  list-style-type: disc;
+}
+.prose-kursskifte ol li {
+  list-style-type: decimal;
+}
+.prose-kursskifte strong {
+  font-weight: 600;
+  color: #1A1F1C;
+}
+.prose-kursskifte a {
+  color: #1C3829;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prose-kursskifte table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+.prose-kursskifte th {
+  text-align: left;
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 2px solid #E0DAD0;
+  color: #1A1F1C;
+}
+.prose-kursskifte td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #E0DAD0;
+  color: #3A3F3C;
+}
+.prose-kursskifte blockquote {
+  border-left: 3px solid #C8993A;
+  padding-left: 1rem;
+  margin-left: 0;
+  color: #6B7569;
+  font-style: italic;
+}

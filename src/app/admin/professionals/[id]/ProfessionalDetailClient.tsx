@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
-import type { ProfessionalDetail } from './page'
+import type { ProfessionalDetail, AvailabilityPeriod } from './page'
 import type { DocumentRow, CertificateRow } from '@/app/dashboard/profile/page'
 
 // ── Types ────────────────────────────────────────────────────────────────
@@ -21,6 +21,7 @@ interface Props {
   targetGroupNames: string[]
   workTaskNames: string[]
   languageNames: string[]
+  availabilityPeriods: AvailabilityPeriod[]
 }
 
 // ── Sub-components ───────────────────────────────────────────────────────
@@ -51,6 +52,401 @@ function ChipList({ items }: { items: string[] }) {
         </span>
       ))}
     </div>
+  )
+}
+
+// ── Capacity + Availability Panel ────────────────────────────────────────
+
+const AVAILABILITY_OPTIONS = [
+  { value: 'AVAILABLE', label: 'Ledig', color: 'text-[#1C3829]', bg: 'bg-[#EEF4F0]', border: 'border-[#C8DDD1]' },
+  { value: 'PARTIALLY_AVAILABLE', label: 'Delvist ledig', color: 'text-[#92660A]', bg: 'bg-[#FEF2E2]', border: 'border-[#F5DDB0]' },
+  { value: 'UNAVAILABLE', label: 'Ikke ledig', color: 'text-red-700', bg: 'bg-red-50', border: 'border-red-200' },
+]
+
+const PERIOD_TYPE_LABEL: Record<string, string> = {
+  VACATION: 'Ferie',
+  PAUSE: 'Pause',
+}
+
+function formatDate(iso: string) {
+  return new Intl.DateTimeFormat('da-DK', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(iso))
+}
+
+function isActivePeriod(period: AvailabilityPeriod): boolean {
+  const today = new Date().toISOString().slice(0, 10)
+  return period.start_date <= today && (period.end_date == null || period.end_date >= today)
+}
+
+function CapacityPanel({
+  professionalId,
+  professional: pro,
+  initialPeriods,
+}: {
+  professionalId: string
+  professional: ProfessionalDetail
+  initialPeriods: AvailabilityPeriod[]
+}) {
+  const router = useRouter()
+  const [, startT] = useTransition()
+
+  // Capacity edit state
+  const [editing, setEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [hoursWeek, setHoursWeek] = useState(String(pro.capacity_hours_week ?? 10))
+  const [maxCases, setMaxCases] = useState(String(pro.max_concurrent_cases ?? 3))
+  const [availStatus, setAvailStatus] = useState(pro.availability_status ?? 'AVAILABLE')
+  const [availFrom, setAvailFrom] = useState(pro.available_from_date ?? '')
+  const [availNote, setAvailNote] = useState(pro.availability_note ?? '')
+
+  // Vacation/pause periods state
+  const [periods, setPeriods] = useState<AvailabilityPeriod[]>(initialPeriods)
+  const [addingPeriod, setAddingPeriod] = useState(false)
+  const [periodType, setPeriodType] = useState<'VACATION' | 'PAUSE'>('VACATION')
+  const [periodStart, setPeriodStart] = useState('')
+  const [periodEnd, setPeriodEnd] = useState('')
+  const [periodNote, setPeriodNote] = useState('')
+  const [periodSaving, setPeriodSaving] = useState(false)
+  const [periodError, setPeriodError] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  function cancelEdit() {
+    setEditing(false)
+    setError(null)
+    setHoursWeek(String(pro.capacity_hours_week ?? 10))
+    setMaxCases(String(pro.max_concurrent_cases ?? 3))
+    setAvailStatus(pro.availability_status ?? 'AVAILABLE')
+    setAvailFrom(pro.available_from_date ?? '')
+    setAvailNote(pro.availability_note ?? '')
+  }
+
+  async function saveCapacity() {
+    const h = parseFloat(hoursWeek)
+    const m = parseInt(maxCases, 10)
+    if (isNaN(h) || h <= 0) { setError('Angiv et gyldigt antal timer'); return }
+    if (isNaN(m) || m < 1) { setError('Maks. sager skal være mindst 1'); return }
+
+    setSaving(true); setError(null)
+    try {
+      const body: Record<string, unknown> = {
+        capacity_hours_week: h,
+        max_concurrent_cases: m,
+        availability_status: availStatus,
+        availability_note: availNote.trim() || null,
+        available_from_date: (availStatus !== 'AVAILABLE' && availFrom) ? availFrom : null,
+      }
+      const res = await fetch(`/api/professionals/${professionalId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}))
+        setError((j as { error?: string }).error ?? 'Fejl')
+        return
+      }
+      setEditing(false)
+      startT(() => router.refresh())
+    } catch { setError('Netværksfejl') }
+    finally { setSaving(false) }
+  }
+
+  async function addPeriod() {
+    if (!periodStart) { setPeriodError('Angiv startdato'); return }
+    if (periodEnd && periodEnd < periodStart) { setPeriodError('Slutdato kan ikke være før startdato'); return }
+    setPeriodSaving(true); setPeriodError(null)
+    try {
+      const res = await fetch(`/api/professionals/${professionalId}/availability-periods`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          period_type: periodType,
+          start_date: periodStart,
+          end_date: periodEnd || null,
+          note: periodNote.trim() || null,
+        }),
+      })
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}))
+        setPeriodError((j as { error?: string }).error ?? 'Fejl')
+        return
+      }
+      const data = await res.json()
+      setPeriods(prev => [...prev, data].sort((a, b) => a.start_date.localeCompare(b.start_date)))
+      setAddingPeriod(false)
+      setPeriodStart(''); setPeriodEnd(''); setPeriodNote('')
+    } catch { setPeriodError('Netværksfejl') }
+    finally { setPeriodSaving(false) }
+  }
+
+  async function deletePeriod(periodId: string) {
+    setDeletingId(periodId)
+    try {
+      const res = await fetch(`/api/professionals/${professionalId}/availability-periods/${periodId}`, { method: 'DELETE' })
+      if (res.ok) {
+        setPeriods(prev => prev.filter(p => p.id !== periodId))
+      }
+    } catch { /* silent */ }
+    finally { setDeletingId(null) }
+  }
+
+  const statusOpt = AVAILABILITY_OPTIONS.find(o => o.value === availStatus) ?? AVAILABILITY_OPTIONS[0]
+  const currentStatusOpt = AVAILABILITY_OPTIONS.find(o => o.value === (pro.availability_status ?? 'AVAILABLE')) ?? AVAILABILITY_OPTIONS[0]
+  const activePeriods = periods.filter(isActivePeriod)
+
+  return (
+    <>
+      {/* Kapacitetskort */}
+      <Card className="!p-5">
+        <div className="flex items-center justify-between mb-4">
+          <SectionTitle>Kapacitet og tilgængelighed</SectionTitle>
+          {!editing && (
+            <button
+              onClick={() => setEditing(true)}
+              className="text-xs font-semibold text-[#1C3829] hover:underline"
+            >
+              Rediger
+            </button>
+          )}
+        </div>
+
+        {activePeriods.length > 0 && (
+          <div className="mb-4 px-3 py-2 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 font-medium">
+            Aktiv periode: {activePeriods.map(p =>
+              `${PERIOD_TYPE_LABEL[p.period_type]} (${formatDate(p.start_date)}${p.end_date ? ` – ${formatDate(p.end_date)}` : ' →'})`
+            ).join(', ')} — ekskluderet fra matching
+          </div>
+        )}
+
+        {!editing ? (
+          <dl className="space-y-0">
+            <InfoRow label="Timer pr. uge" value={pro.capacity_hours_week != null ? `${pro.capacity_hours_week} t/uge` : null} />
+            <InfoRow label="Maks. sager" value={pro.max_concurrent_cases != null ? `${pro.max_concurrent_cases} sager` : null} />
+            <InfoRow
+              label="Tilgængelighed"
+              value={
+                <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg ${currentStatusOpt.bg} ${currentStatusOpt.color} border ${currentStatusOpt.border}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${pro.availability_status === 'AVAILABLE' ? 'bg-[#1C3829]' : pro.availability_status === 'PARTIALLY_AVAILABLE' ? 'bg-amber-500' : 'bg-red-500'}`} />
+                  {currentStatusOpt.label}
+                </span>
+              }
+            />
+            {pro.available_from_date && (
+              <InfoRow label="Ledig fra" value={formatDate(pro.available_from_date)} />
+            )}
+            {pro.availability_note && (
+              <InfoRow label="Note" value={pro.availability_note} />
+            )}
+          </dl>
+        ) : (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-[#1A1F1C] mb-1">Timer pr. uge</label>
+                <input
+                  type="number" min="1" step="0.5"
+                  className="w-full h-9 px-3 bg-[#F6F3EE] rounded-lg text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]"
+                  value={hoursWeek}
+                  onChange={e => setHoursWeek(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#1A1F1C] mb-1">Maks. aktive sager</label>
+                <input
+                  type="number" min="1" max="20"
+                  className="w-full h-9 px-3 bg-[#F6F3EE] rounded-lg text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]"
+                  value={maxCases}
+                  onChange={e => setMaxCases(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-[#1A1F1C] mb-2">Tilgængelighed</label>
+              <div className="flex gap-2 flex-wrap">
+                {AVAILABILITY_OPTIONS.map(opt => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setAvailStatus(opt.value)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                      availStatus === opt.value
+                        ? `${opt.bg} ${opt.color} ${opt.border}`
+                        : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {availStatus !== 'AVAILABLE' && (
+              <div>
+                <label className="block text-xs font-semibold text-[#1A1F1C] mb-1">Ledig fra dato (valgfri)</label>
+                <input
+                  type="date"
+                  className="w-full h-9 px-3 bg-[#F6F3EE] rounded-lg text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]"
+                  value={availFrom}
+                  onChange={e => setAvailFrom(e.target.value)}
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-semibold text-[#1A1F1C] mb-1">Note (intern)</label>
+              <input
+                type="text"
+                placeholder="f.eks. tilbage efter sommerferie, reduceret kapacitet pga. privat aftale"
+                className="w-full h-9 px-3 bg-[#F6F3EE] rounded-lg text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]"
+                value={availNote}
+                onChange={e => setAvailNote(e.target.value)}
+              />
+            </div>
+
+            {error && <p className="text-sm text-red-600">{error}</p>}
+
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={saveCapacity}
+                disabled={saving}
+                className="h-8 px-4 bg-[#1C3829] text-white text-xs font-semibold rounded-lg hover:bg-[#2D5840] disabled:opacity-50 transition-colors"
+              >
+                {saving ? 'Gemmer…' : 'Gem'}
+              </button>
+              <button
+                onClick={cancelEdit}
+                disabled={saving}
+                className="h-8 px-4 border border-[#E0DAD0] text-xs font-semibold rounded-lg hover:bg-[#F6F3EE] transition-colors"
+              >
+                Annuller
+              </button>
+            </div>
+          </div>
+        )}
+      </Card>
+
+      {/* Ferier og pauser */}
+      <Card className="!p-5">
+        <div className="flex items-center justify-between mb-4">
+          <SectionTitle>Ferier og pauser</SectionTitle>
+          {!addingPeriod && (
+            <button
+              onClick={() => setAddingPeriod(true)}
+              className="text-xs font-semibold text-[#1C3829] hover:underline"
+            >
+              + Tilføj periode
+            </button>
+          )}
+        </div>
+
+        {periods.length === 0 && !addingPeriod && (
+          <p className="text-sm text-[#C8C0B0]">Ingen planlagte ferier eller pauser</p>
+        )}
+
+        {periods.length > 0 && (
+          <div className="space-y-2 mb-4">
+            {periods.map(p => {
+              const isActive = isActivePeriod(p)
+              return (
+                <div key={p.id} className={`flex items-start justify-between gap-3 py-2 border-b border-[#F0EBE3] last:border-0`}>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-md ${isActive ? 'bg-amber-100 text-amber-800' : 'bg-[#F6F3EE] text-[#6B7569]'}`}>
+                        {PERIOD_TYPE_LABEL[p.period_type]}
+                      </span>
+                      <span className="text-xs text-[#1A1F1C]">
+                        {formatDate(p.start_date)}
+                        {p.end_date ? ` – ${formatDate(p.end_date)}` : ' (åben slutdato)'}
+                      </span>
+                      {isActive && <span className="text-[10px] font-semibold text-amber-700 uppercase tracking-wide">Aktiv</span>}
+                    </div>
+                    {p.note && <p className="text-xs text-[#6B7569] mt-0.5">{p.note}</p>}
+                  </div>
+                  <button
+                    onClick={() => deletePeriod(p.id)}
+                    disabled={deletingId === p.id}
+                    className="shrink-0 text-[10px] font-semibold text-red-500 hover:text-red-700 disabled:opacity-50"
+                  >
+                    {deletingId === p.id ? '…' : 'Slet'}
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {addingPeriod && (
+          <div className="space-y-3 border-t border-[#F0EBE3] pt-4">
+            <div>
+              <label className="block text-xs font-semibold text-[#1A1F1C] mb-2">Type</label>
+              <div className="flex gap-2">
+                {(['VACATION', 'PAUSE'] as const).map(t => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setPeriodType(t)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                      periodType === t
+                        ? 'bg-[#1C3829] text-white border-[#1C3829]'
+                        : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]'
+                    }`}
+                  >
+                    {PERIOD_TYPE_LABEL[t]}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-[#1A1F1C] mb-1">Fra dato *</label>
+                <input
+                  type="date"
+                  className="w-full h-9 px-3 bg-[#F6F3EE] rounded-lg text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]"
+                  value={periodStart}
+                  onChange={e => setPeriodStart(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#1A1F1C] mb-1">Til dato (valgfri)</label>
+                <input
+                  type="date"
+                  className="w-full h-9 px-3 bg-[#F6F3EE] rounded-lg text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]"
+                  value={periodEnd}
+                  onChange={e => setPeriodEnd(e.target.value)}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#1A1F1C] mb-1">Note (valgfri)</label>
+              <input
+                type="text"
+                placeholder="f.eks. sommerferie 2026"
+                className="w-full h-9 px-3 bg-[#F6F3EE] rounded-lg text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]"
+                value={periodNote}
+                onChange={e => setPeriodNote(e.target.value)}
+              />
+            </div>
+            {periodError && <p className="text-sm text-red-600">{periodError}</p>}
+            <div className="flex gap-2">
+              <button
+                onClick={addPeriod}
+                disabled={periodSaving}
+                className="h-8 px-4 bg-[#1C3829] text-white text-xs font-semibold rounded-lg hover:bg-[#2D5840] disabled:opacity-50 transition-colors"
+              >
+                {periodSaving ? 'Gemmer…' : 'Tilføj'}
+              </button>
+              <button
+                onClick={() => { setAddingPeriod(false); setPeriodError(null); setPeriodStart(''); setPeriodEnd(''); setPeriodNote('') }}
+                className="h-8 px-4 border border-[#E0DAD0] text-xs font-semibold rounded-lg hover:bg-[#F6F3EE] transition-colors"
+              >
+                Annuller
+              </button>
+            </div>
+          </div>
+        )}
+      </Card>
+    </>
   )
 }
 
@@ -255,6 +651,7 @@ export function ProfessionalDetailClient({
   documents, certificates,
   geographyNames, competencyNames, methodNames,
   targetGroupNames, workTaskNames, languageNames,
+  availabilityPeriods,
 }: Props) {
   const boolLabel = (v: boolean) => v ? 'Ja' : 'Nej'
 
@@ -353,12 +750,17 @@ export function ProfessionalDetailClient({
         </div>
       </Card>
 
-      {/* Tilgængelighed + geografi */}
+      {/* Kapacitet og tilgængelighed — editbar */}
+      <CapacityPanel
+        professionalId={professionalId}
+        professional={pro}
+        initialPeriods={availabilityPeriods}
+      />
+
+      {/* Geografi og transport */}
       <Card className="!p-5">
-        <SectionTitle>Tilgængelighed og geografi</SectionTitle>
+        <SectionTitle>Geografi og transport</SectionTitle>
         <dl className="space-y-0">
-          <InfoRow label="Timer/uge" value={pro.max_hours_per_week?.toString()} />
-          <InfoRow label="Tilgængelighed" value={availabilityFlags.length ? availabilityFlags.join(', ') : null} />
           <InfoRow label="Har kørekort" value={pro.has_drivers_license ? boolLabel(pro.has_drivers_license) : null} />
           <InfoRow label="Har bil" value={pro.has_own_car ? boolLabel(pro.has_own_car) : null} />
           <InfoRow label="Kan transportere borger" value={pro.can_transport_citizen ? boolLabel(pro.can_transport_citizen) : null} />

@@ -61,6 +61,7 @@ export function HoursClient({ initialHours, cases, defaultCaseId }: Props) {
   const [error, setError] = useState<string | null>(null)
 
   const filtered = filter === 'ALL' ? initialHours : initialHours.filter(h => h.status === filter)
+
   const totalHours = filtered.reduce((sum, h) => sum + h.hours, 0)
 
   function openNew() {
@@ -125,6 +126,7 @@ export function HoursClient({ initialHours, cases, defaultCaseId }: Props) {
 
   return (
     <>
+      {/* Toolbar */}
       <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
         <div className="flex gap-1 bg-white border border-[#E0DAD0] rounded-xl p-1 flex-wrap">
           {TABS.map(t => (
@@ -154,6 +156,7 @@ export function HoursClient({ initialHours, cases, defaultCaseId }: Props) {
         </button>
       </div>
 
+      {/* Summary stat */}
       {filtered.length > 0 && (
         <div className="mb-4 flex items-center gap-6">
           <div className="bg-white border border-[#E0DAD0] rounded-xl px-5 py-3 flex items-center gap-3">
@@ -169,6 +172,7 @@ export function HoursClient({ initialHours, cases, defaultCaseId }: Props) {
         </div>
       )}
 
+      {/* List */}
       {filtered.length === 0 ? (
         <Card className="text-center py-12">
           <p className="text-sm text-[#6B7569] mb-3">
@@ -209,6 +213,7 @@ export function HoursClient({ initialHours, cases, defaultCaseId }: Props) {
         </div>
       )}
 
+      {/* Backdrop */}
       <div
         className={[
           'fixed inset-0 bg-[#1A1F1C]/40 z-40 transition-opacity duration-300',
@@ -218,6 +223,7 @@ export function HoursClient({ initialHours, cases, defaultCaseId }: Props) {
         aria-hidden="true"
       />
 
+      {/* Drawer */}
       <aside
         className={[
           'fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-2xl flex flex-col',
@@ -226,6 +232,7 @@ export function HoursClient({ initialHours, cases, defaultCaseId }: Props) {
         ].join(' ')}
         aria-label="Registrer timer"
       >
+        {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-[#E0DAD0] shrink-0">
           <h2 className="font-serif text-lg font-semibold text-[#1A1F1C]">Registrer timer</h2>
           <button onClick={closeDrawer} className="w-8 h-8 rounded-full hover:bg-[#F6F3EE] flex items-center justify-center text-[#6B7569] transition-colors" aria-label="Luk">
@@ -235,8 +242,10 @@ export function HoursClient({ initialHours, cases, defaultCaseId }: Props) {
           </button>
         </div>
 
+        {/* Body */}
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
 
+          {/* Case */}
           <div>
             <label className="block text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Sag *</label>
             <select
@@ -251,6 +260,7 @@ export function HoursClient({ initialHours, cases, defaultCaseId }: Props) {
             </select>
           </div>
 
+          {/* Date + Hours */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Dato *</label>
@@ -276,6 +286,7 @@ export function HoursClient({ initialHours, cases, defaultCaseId }: Props) {
             </div>
           </div>
 
+          {/* Work type */}
           <div>
             <label className="block text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Arbejdstype *</label>
             <div className="grid grid-cols-2 gap-2">
@@ -297,6 +308,7 @@ export function HoursClient({ initialHours, cases, defaultCaseId }: Props) {
             </div>
           </div>
 
+          {/* Description */}
           <div>
             <label className="block text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Beskrivelse</label>
             <textarea
@@ -313,6 +325,7 @@ export function HoursClient({ initialHours, cases, defaultCaseId }: Props) {
           )}
         </div>
 
+        {/* Footer */}
         <div className="px-6 py-4 border-t border-[#E0DAD0] flex gap-3 shrink-0">
           <button
             onClick={closeDrawer}

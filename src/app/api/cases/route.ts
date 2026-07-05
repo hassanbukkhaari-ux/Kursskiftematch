@@ -14,12 +14,13 @@ const CreateCaseSchema = z.object({
   citizen_notes: z.string().optional(),
   weekly_hours: z.number().min(0).default(0),
   complexity_level: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).default('LOW'),
-  inquiry_id: z.string().uuid().optional(),
+  inquiry_id: z.string().uuid().optional(), // source inquiry to mark as CONVERTED
   problem_area_codes: z.array(z.string()).optional(),
   goal_codes: z.array(z.string()).optional(),
   special_wish_codes: z.array(z.string()).optional(),
 })
 
+// GET /api/cases — admin sees all, professionals see assigned
 export async function GET(request: NextRequest) {
   return withAuth(request, async (userId, role) => {
     const { createClient } = await import('@/lib/supabase/server')
@@ -31,6 +32,7 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0')
 
     if (role !== 'admin') {
+      // Professionals see only their assigned cases
       const { data, error } = await db
         .from('v_cases_with_professional')
         .select('*')
@@ -41,9 +43,13 @@ export async function GET(request: NextRequest) {
       return ok({ data, count: data?.length || 0, limit, offset })
     }
 
-    let query = db.from('v_cases_with_professional').select('*', { count: 'exact' })
+    let query = db
+      .from('v_cases_with_professional')
+      .select('*', { count: 'exact' })
+
     if (status) query = query.eq('status', status as 'OPEN' | 'MATCHED' | 'ACTIVE' | 'COMPLETED' | 'ARCHIVED')
     if (municipality_id) query = query.eq('municipality_id', municipality_id)
+
     query = query.order('id', { ascending: false }).range(offset, offset + limit - 1)
 
     const { data, error, count } = await query
@@ -52,6 +58,7 @@ export async function GET(request: NextRequest) {
   })
 }
 
+// POST /api/cases — admin only
 export async function POST(request: NextRequest) {
   return withAdminAuth(request, async (userId) => {
     const { createClient } = await import('@/lib/supabase/server')
@@ -65,9 +72,15 @@ export async function POST(request: NextRequest) {
 
     const { inquiry_id, problem_area_codes, goal_codes, special_wish_codes, ...caseData } = parsed.data
 
-    const { data: newCase, error } = await db.from('cases').insert(caseData).select().single()
+    const { data: newCase, error } = await db
+      .from('cases')
+      .insert(caseData)
+      .select()
+      .single()
+
     if (error || !newCase) return serverError(error?.message)
 
+    // Link intake tags (problem areas / goals / special wishes) by lookup code
     await Promise.all([
       linkProblemAreas(db, newCase.id, problem_area_codes),
       linkGoals(db, newCase.id, goal_codes),
@@ -82,6 +95,7 @@ export async function POST(request: NextRequest) {
       metadata: { citizen_initials: newCase.citizen_initials, municipality_id: newCase.municipality_id },
     })
 
+    // Mark inquiry as CONVERTED
     if (inquiry_id) {
       await db.from('inbound_inquiries').update({
         status: 'CONVERTED',
@@ -92,6 +106,7 @@ export async function POST(request: NextRequest) {
       }).eq('id', inquiry_id)
     }
 
+    // Notify admin
     const { subject, body: emailBody } = adminEmailBody('CASE_CREATED', newCase.id)
     await sendNotification({
       db,

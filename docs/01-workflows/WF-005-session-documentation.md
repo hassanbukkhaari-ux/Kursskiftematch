@@ -220,4 +220,20 @@ All required amendments have been applied to `docs/02-technical-specification/TE
 
 ---
 
+## API ENDPOINTS
+
+| Trin | Metode | Endpoint | Auth | Tabel |
+|---|---|---|---|---|
+| Opret sessionlog (kladde) | `POST` | `/api/session-logs` | Professional/Admin | `session_logs` |
+| Rediger kladde | `PATCH` | `/api/session-logs/:id` | Own (DRAFT) | `session_logs` |
+| Finaliser sessionlog | `POST` | `/api/session-logs/:id/finalize` | Own | `session_logs` |
+| Opret korrektionsnotat | `POST` | `/api/session-logs/:id/corrections` | Own/Admin | `session_log_corrections`, `session_logs` |
+| Hent korrektioner | `GET` | `/api/session-logs/:id/corrections` | Own/Admin | `session_log_corrections` |
+| Kvitter for safeguarding | `POST` | `/api/session-logs/:id/safeguarding/acknowledge` | Admin | `session_logs` |
+| Hent sessionlogs | `GET` | `/api/session-logs` | Own/Admin | `session_logs` |
+
+**TS-002 reference:** §7.1–7.7 (Session Log Endpoints)
+
+---
+
 **This workflow is implementation-ready. Owned by Delivery Domain. Enables WF-006 (optional session log reference in hour registration) and WF-008 (handover log transfer).**

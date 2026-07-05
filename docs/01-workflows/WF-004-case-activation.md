@@ -155,4 +155,18 @@ Case Coordinator navigates to a case with status=MATCHED and confirms it is read
 
 ---
 
+## API ENDPOINTS
+
+| Trin | Metode | Endpoint | Auth | Tabel |
+|---|---|---|---|---|
+| Aktivér sag (MATCHED→ACTIVE) | `POST` | `/api/cases/:id/status` | Admin | `cases` |
+| Opret tilskudsperiode | `POST` | `/api/cases/:id/grants` | Admin | `case_grants` |
+| Opdater tilskudsperiode | `PATCH` | `/api/cases/:id/grants/:grantId` | Admin | `case_grants` |
+| Bekræft tildeling | `POST` | `/api/cases/:id/assignments` | Admin | `case_assignments` |
+| Afgiv kontaktoplysninger | `POST` | `/api/cases/:id/contact-disclosures` | Admin | `contact_disclosures` |
+
+**TS-002 reference:** §6.5 (Case status), §6.7–6.9 (Grants), §6.4 (Assignments), §7.9 (Contact Disclosures)
+
+---
+
 **This workflow is implementation-ready. Depends on CaseAssignment (WF-003) and CaseGrant (WF-002). Enables WF-005 and WF-006.**

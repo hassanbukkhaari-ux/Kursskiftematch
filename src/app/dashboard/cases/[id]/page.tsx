@@ -33,6 +33,7 @@ export default async function DashboardCasePage({ params }: PageProps) {
 
   if (!caseData) notFound()
 
+  // Professionals may only see their own cases
   if (caseData.professional_id !== user.id) notFound()
 
   const [muniRes, logsRes, caseDetailRes, tagsRes, problemAreasRes, goalsRes, specialWishesRes] = await Promise.all([
@@ -73,7 +74,11 @@ export default async function DashboardCasePage({ params }: PageProps) {
 
       <ContentContainer>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+          {/* Main column */}
           <div className="lg:col-span-2 space-y-6">
+
+            {/* Case summary */}
             <Card>
               <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-4">Sagsoplysninger</div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -114,6 +119,7 @@ export default async function DashboardCasePage({ params }: PageProps) {
               )}
             </Card>
 
+            {/* Intake tags: problem areas, goals, special wishes */}
             {((tagsRes.data?.problem_area_codes?.length ?? 0) > 0 ||
               (tagsRes.data?.goal_codes?.length ?? 0) > 0 ||
               (tagsRes.data?.special_wish_codes?.length ?? 0) > 0) && (
@@ -159,20 +165,28 @@ export default async function DashboardCasePage({ params }: PageProps) {
               </Card>
             )}
 
+            {/* Session logs */}
             <div>
               <SectionHeader
                 title="Sessionslogs"
                 description={`${logsRes.data?.length ?? 0} af dine seneste sessioner`}
                 actions={
-                  <Link href={`/dashboard/session-logs?case_id=${id}`} className="text-xs font-semibold text-[#1C3829] hover:underline">
+                  <Link
+                    href={`/dashboard/session-logs?case_id=${id}`}
+                    className="text-xs font-semibold text-[#1C3829] hover:underline"
+                  >
                     Se alle →
                   </Link>
                 }
               />
+
               {(logsRes.data?.length ?? 0) === 0 ? (
                 <Card className="text-center py-10">
                   <p className="text-sm text-[#6B7569] mb-3">Ingen sessionslogs endnu</p>
-                  <Link href="/dashboard/session-logs" className="text-sm font-semibold text-[#1C3829] hover:underline">
+                  <Link
+                    href="/dashboard/session-logs"
+                    className="text-sm font-semibold text-[#1C3829] hover:underline"
+                  >
                     Opret første sessionslog →
                   </Link>
                 </Card>
@@ -191,7 +205,9 @@ export default async function DashboardCasePage({ params }: PageProps) {
                         </div>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        {log.follow_up_needed && <Badge variant="amber">Opfølgning</Badge>}
+                        {log.follow_up_needed && (
+                          <Badge variant="amber">Opfølgning</Badge>
+                        )}
                         {log.duration_minutes && (
                           <span className="text-xs text-[#6B7569]">{log.duration_minutes} min.</span>
                         )}
@@ -206,18 +222,27 @@ export default async function DashboardCasePage({ params }: PageProps) {
             </div>
           </div>
 
+          {/* Right column */}
           <div className="space-y-4">
+
+            {/* Quick actions */}
             <Card>
               <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-3">Handlinger</div>
               <div className="space-y-2">
-                <Link href={`/dashboard/session-logs?case_id=${id}`} className="flex items-center justify-between w-full h-10 px-4 bg-[#1C3829] text-[#F6F3EE] rounded-xl text-sm font-semibold hover:bg-[#2D5840] transition-colors">
+                <Link
+                  href={`/dashboard/session-logs?case_id=${id}`}
+                  className="flex items-center justify-between w-full h-10 px-4 bg-[#1C3829] text-[#F6F3EE] rounded-xl text-sm font-semibold hover:bg-[#2D5840] transition-colors"
+                >
                   <span>Ny sessionslog</span>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                     <line x1="12" y1="5" x2="12" y2="19" />
                     <line x1="5" y1="12" x2="19" y2="12" />
                   </svg>
                 </Link>
-                <Link href={`/dashboard/hours?case_id=${id}`} className="flex items-center justify-between w-full h-10 px-4 bg-white border border-[#E0DAD0] text-[#1C3829] rounded-xl text-sm font-semibold hover:bg-[#EEF4F0] transition-colors">
+                <Link
+                  href={`/dashboard/hours?case_id=${id}`}
+                  className="flex items-center justify-between w-full h-10 px-4 bg-white border border-[#E0DAD0] text-[#1C3829] rounded-xl text-sm font-semibold hover:bg-[#EEF4F0] transition-colors"
+                >
                   <span>Registrer timer</span>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                     <circle cx="12" cy="12" r="10" />
@@ -227,6 +252,7 @@ export default async function DashboardCasePage({ params }: PageProps) {
               </div>
             </Card>
 
+            {/* Municipality contact */}
             {muniRes.data && (
               <Card>
                 <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-3">Kommunekontakt</div>

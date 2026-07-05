@@ -5,13 +5,31 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import AdminCaseActionsClient, { type Grant, type AvailableProfessional } from './AdminCaseActionsClient'
-import type { HandoverReason, HandoverStatus } from '@/types/database'
+import type { HandoverReason, HandoverStatus, ProposalStatus } from '@/types/database'
 
 const STATUS_LABEL: Record<string, string> = {
-  OPEN: 'Åben', MATCHED: 'Matchet', ACTIVE: 'Aktiv', COMPLETED: 'Afsluttet', ARCHIVED: 'Arkiveret',
+  OPEN: 'Åben', MATCHED: 'Matchet', PROPOSED: 'Forslag sendt', ACTIVE: 'Aktiv', COMPLETED: 'Afsluttet', ARCHIVED: 'Arkiveret',
 }
 const STATUS_BADGE: Record<string, 'amber' | 'brand' | 'green' | 'default'> = {
-  OPEN: 'amber', MATCHED: 'brand', ACTIVE: 'green', COMPLETED: 'default', ARCHIVED: 'default',
+  OPEN: 'amber', MATCHED: 'brand', PROPOSED: 'amber', ACTIVE: 'green', COMPLETED: 'default', ARCHIVED: 'default',
+}
+
+const PROPOSAL_STATUS_LABEL: Record<ProposalStatus, string> = {
+  DRAFT: 'Kladde', SENT: 'Sendt', ACCEPTED: 'Accepteret', DECLINED: 'Afvist',
+}
+const PROPOSAL_STATUS_BADGE: Record<ProposalStatus, 'amber' | 'brand' | 'green' | 'default' | 'red'> = {
+  DRAFT: 'default', SENT: 'amber', ACCEPTED: 'green', DECLINED: 'red',
+}
+
+interface ProposalRow {
+  id: string
+  status: ProposalStatus
+  proposal_note: string | null
+  estimated_hours_week: number | null
+  sent_at: string | null
+  responded_at: string | null
+  municipality_response_note: string | null
+  created_at: string
 }
 const COMPLEXITY_LABEL: Record<string, string> = {
   LOW: 'Lav', MEDIUM: 'Mellem', HIGH: 'Høj', CRITICAL: 'Kritisk',
@@ -86,10 +104,11 @@ export default async function AdminCasePage({ params }: PageProps) {
     grantsRes,
     prosRes,
     handoversRes,
+    proposalsRes,
   ] = await Promise.all([
     db.from('municipalities').select('name, sagsbehandler_name, sagsbehandler_email').eq('id', caseData.municipality_id).single(),
     db.from('session_logs').select('id, session_date, duration_minutes, professional_id', { count: 'exact' }).eq('case_id', id).order('session_date', { ascending: false }).limit(5),
-    db.from('cases').select('citizen_gender, citizen_notes').eq('id', id).single(),
+    dba.from('cases').select('citizen_gender, citizen_notes, intake_contact_name, intake_contact_email').eq('id', id).single(),
     db.from('v_case_tags').select('problem_area_codes, goal_codes, special_wish_codes').eq('case_id', id).single(),
     db.from('problem_areas').select('code, label_da'),
     db.from('goals_lookup').select('code, label_da'),
@@ -97,7 +116,13 @@ export default async function AdminCasePage({ params }: PageProps) {
     dba.from('case_grants').select('id, granted_hours, period_start, period_end, status, approved_at').eq('case_id', id).order('period_start', { ascending: false }),
     dba.from('professionals').select('id, profiles!inner(full_name)').eq('status', 'ACTIVE'),
     dba.from('case_handovers').select('id, reason, status, handover_note, is_urgent, session_logs_transferred, created_at, completed_at, outgoing_professional_id, incoming_professional_id, created_by').eq('case_id', id).order('created_at', { ascending: false }),
+    dba.from('case_proposals').select('id, status, proposal_note, estimated_hours_week, sent_at, responded_at, municipality_response_note, created_at').eq('case_id', id).order('created_at', { ascending: false }),
   ])
+
+  const intakeContactEmail = caseDetailRes.data?.intake_contact_email ?? null
+  const intakeContactName = caseDetailRes.data?.intake_contact_name ?? null
+  const isIntakeCase = !!intakeContactEmail
+  const proposals: ProposalRow[] = proposalsRes.data ?? []
 
   const labelMap = (rows: { code: string; label_da: string }[] | null) =>
     Object.fromEntries((rows ?? []).map(r => [r.code, r.label_da]))
@@ -327,6 +352,44 @@ export default async function AdminCasePage({ params }: PageProps) {
               </div>
             )}
 
+            {/* Proposal history */}
+            {proposals.length > 0 && (
+              <div>
+                <SectionHeader
+                  title="Forslagshistorik"
+                  description={`${proposals.length} ${proposals.length === 1 ? 'forslag' : 'forslag'}`}
+                />
+                <div className="space-y-2">
+                  {proposals.map(p => (
+                    <Card key={p.id}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Badge variant={(PROPOSAL_STATUS_BADGE[p.status] ?? 'default') as any}>
+                              {PROPOSAL_STATUS_LABEL[p.status]}
+                            </Badge>
+                          </div>
+                          <div className="text-xs text-[#6B7569] space-y-0.5">
+                            {p.estimated_hours_week && (
+                              <div>{p.estimated_hours_week} timer/uge</div>
+                            )}
+                            {p.sent_at && <div>Sendt {fmt(p.sent_at)}</div>}
+                            {p.responded_at && <div>Svar modtaget {fmt(p.responded_at)}</div>}
+                          </div>
+                          {p.proposal_note && (
+                            <p className="mt-2 text-xs text-[#6B7569] italic border-l-2 border-[#E0DAD0] pl-2">{p.proposal_note}</p>
+                          )}
+                          {p.municipality_response_note && (
+                            <p className="mt-1 text-xs text-[#6B7569] italic border-l-2 border-[#F5DDB0] pl-2">Kommunens svar: {p.municipality_response_note}</p>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Session logs */}
             <div>
               <SectionHeader
@@ -420,12 +483,31 @@ export default async function AdminCasePage({ params }: PageProps) {
               </Card>
             )}
 
+            {/* Intake contact (municipality-submitted cases) */}
+            {isIntakeCase && (
+              <Card>
+                <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-3">Kommunens kontakt</div>
+                <div className="space-y-1.5">
+                  {intakeContactName && (
+                    <div className="text-sm font-medium text-[#1A1F1C]">{intakeContactName}</div>
+                  )}
+                  {intakeContactEmail && (
+                    <a href={`mailto:${intakeContactEmail}`} className="text-xs text-[#1C3829] hover:underline block">
+                      {intakeContactEmail}
+                    </a>
+                  )}
+                  <div className="text-[10px] text-[#6B7569] pt-1">Indsendt via intake-portalen</div>
+                </div>
+              </Card>
+            )}
+
             {/* Dynamic admin actions */}
             <AdminCaseActionsClient
               caseId={id}
               currentStatus={caseData.status}
               grants={grants}
               professionals={availableProfessionals}
+              isIntakeCase={isIntakeCase}
             />
           </div>
         </div>

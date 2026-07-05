@@ -6,7 +6,7 @@ import PublicFooter from '@/components/public/PublicFooter'
 export const metadata: Metadata = {
   title: 'Om Kursskifte | Kontaktpersonforløb i Nordjylland',
   description:
-    'Kursskifte er en nordjysk platform der forbinder kommuner med kvalitetssikrede fagpersoner til kontaktpersonforløb og socialfaglige indsatser. Vi varetager matching, dokumentation og opfølgning — så kommunen kan fokusere på borgeren.',
+    'Kursskifte er en nordjysk platform der forbinder kommuner med kvalitetssikrede fagpersoner til kontaktpersonforløb og socialfaglige indsatser. Vi varetager matching, dokumentation og opfølgning — so kommunen kan fokusere på borgeren.',
   alternates: { canonical: '/om-kursskifte' },
   openGraph: {
     title: 'Om Kursskifte | Kontaktpersonforløb i Nordjylland',

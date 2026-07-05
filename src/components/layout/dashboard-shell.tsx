@@ -151,7 +151,7 @@ const adminNav: NavItem[] = [
   },
 ]
 
-// ── Sub-components (no hooks — safe to define at module scope) ──────
+// ── Sub-components (no hooks — safe to define at module scope) ──────────
 
 function LogoMark({ size = 'md' }: { size?: 'sm' | 'md' }) {
   const dim = size === 'sm' ? 'w-6 h-6 rounded-md' : 'w-7 h-7 rounded-lg'
@@ -214,7 +214,7 @@ function SidebarUser({
   )
 }
 
-// ── Props ───────────────────────────────────────────────────────────────────
+// ── Props ───────────────────────────────────────────────────────────────
 
 interface DashboardShellProps {
   children: React.ReactNode
@@ -222,7 +222,7 @@ interface DashboardShellProps {
   role?: 'admin' | 'professional'
 }
 
-// ── Main component ────────────────────────────────────────────────────────
+// ── Main component ──────────────────────────────────────────────────────
 
 export function DashboardShell({ children, userName, role = 'admin' }: DashboardShellProps) {
   const pathname = usePathname()

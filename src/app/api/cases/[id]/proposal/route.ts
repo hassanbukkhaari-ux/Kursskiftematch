@@ -86,7 +86,7 @@ export async function POST(
       // Promote case to PROPOSED and send email — draft creation leaves case status unchanged
       await dba.from('cases').update({ status: 'PROPOSED', updated_at: new Date().toISOString() }).eq('id', id)
 
-      // Send anonymized email to municipality contact (logged to notification_log)
+      // Send anonymized email to municipality contact
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kursskiftematch.dk'
       const responseUrl = `${appUrl}/proposal/${proposal.response_token}`
 

@@ -9,12 +9,12 @@ BEGIN;
 -- ── 1. Allow NULL triggered_by on match_runs (system-triggered intake runs) ──
 ALTER TABLE public.match_runs ALTER COLUMN triggered_by DROP NOT NULL;
 
--- ── 2. Add PROPOSED to case status constraint ────────────────────────────────────
+-- ── 2. Add PROPOSED to case status constraint ────────────────────────────────
 ALTER TABLE public.cases DROP CONSTRAINT IF EXISTS valid_status;
 ALTER TABLE public.cases ADD CONSTRAINT valid_status
   CHECK (status IN ('OPEN', 'MATCHED', 'PROPOSED', 'ACTIVE', 'COMPLETED', 'ARCHIVED'));
 
--- ── 3. Intake tracking columns on cases ────────────────────────────────────
+-- ── 3. Intake tracking columns on cases ──────────────────────────────────────
 ALTER TABLE public.cases
   ADD COLUMN IF NOT EXISTS intake_token         UUID    DEFAULT gen_random_uuid(),
   ADD COLUMN IF NOT EXISTS intake_contact_name  TEXT,
@@ -23,7 +23,7 @@ ALTER TABLE public.cases
 CREATE UNIQUE INDEX IF NOT EXISTS idx_cases_intake_token
   ON public.cases(intake_token) WHERE intake_token IS NOT NULL;
 
--- ── 4. case_proposals ─────────────────────────────────────────────────────
+-- ── 4. case_proposals ────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.case_proposals (
   id                         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   case_id                    UUID        NOT NULL REFERENCES public.cases(id),
@@ -51,7 +51,7 @@ ALTER TABLE public.case_proposals ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "case_proposals_admin_all" ON public.case_proposals
   FOR ALL USING (is_admin()) WITH CHECK (is_admin());
 
--- ── 5. New notification types ──────────────────────────────────────────────────
+-- ── 5. New notification types ────────────────────────────────────────────────
 DO $$ BEGIN
   ALTER TYPE public.notification_type ADD VALUE IF NOT EXISTS 'PROPOSAL_SENT';
 EXCEPTION WHEN duplicate_object THEN NULL;

@@ -15,6 +15,7 @@ interface MatchingUIProps {
   caseId: string
   runStatus: string
   caseData?: CaseRequirements
+  hasIntakeEmail?: boolean
 }
 
 type FilterState = {
@@ -23,7 +24,7 @@ type FilterState = {
   search: string
 }
 
-export function MatchingUI({ candidates, runId, caseId, runStatus, caseData }: MatchingUIProps) {
+export function MatchingUI({ candidates, runId, caseId, runStatus, caseData, hasIntakeEmail = false }: MatchingUIProps) {
   const [selected, setSelected] = useState<MatchCandidate | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [assigning, startAssign] = useTransition()
@@ -104,14 +105,29 @@ export function MatchingUI({ candidates, runId, caseId, runStatus, caseData }: M
           </svg>
         </div>
         <h3 className="font-serif text-xl font-semibold text-[#1A1F1C] mb-1">Tildeling gennemført</h3>
-        <p className="text-[#6B7569] text-sm">{assignedName} er nu tildelt sagen.</p>
+        <p className="text-[#6B7569] text-sm">
+          {hasIntakeEmail
+            ? `${assignedName} er valgt som fagperson. Gå til sagen for at sende et forslag til kommunen.`
+            : `${assignedName} er nu tildelt sagen.`}
+        </p>
+        {hasIntakeEmail && (
+          <a
+            href={`/admin/cases/${caseId}`}
+            className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-[#1C3829] hover:underline"
+          >
+            Gå til sagen
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </a>
+        )}
       </div>
     )
   }
 
   return (
     <>
-      {/* ── Filter bar ────────────────────────────────────────────────────── */}
+      {/* ── Filter bar ────────────────────────────────────────────── */}
       <div className="bg-white border-b border-[#E0DAD0] sticky top-14 lg:top-0 z-20">
 
         {/* Mobile search — above the scrollable row */}

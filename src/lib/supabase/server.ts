@@ -24,6 +24,20 @@ export async function createClient() {
   )
 }
 
+// Anon client — no cookies, for public data reads with ISR/SSG (RLS allows public SELECT)
+export function createAnonClient() {
+  return createServerClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() { return [] },
+        setAll() {},
+      },
+    }
+  )
+}
+
 // Service client — no session, for public endpoints and GDPR operations
 export function createServiceClient() {
   return createServerClient<Database>(

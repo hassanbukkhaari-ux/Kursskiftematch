@@ -47,7 +47,7 @@ export default function PublicFooter() {
             <div className="space-y-2">
               <Link href="/om-kursskifte" className="block text-sm text-[#6B7569] hover:text-[#1C3829] transition-colors">Om os</Link>
               <Link href="/kontakt" className="block text-sm text-[#6B7569] hover:text-[#1C3829] transition-colors">Kontakt</Link>
-              <a href="#" className="block text-sm text-[#6B7569] hover:text-[#1C3829] transition-colors">Privatlivspolitik</a>
+              <Link href="/privatlivspolitik" className="block text-sm text-[#6B7569] hover:text-[#1C3829] transition-colors">Privatlivspolitik</Link>
             </div>
           </div>
         </div>

@@ -374,6 +374,39 @@ a { text-decoration: none; color: inherit; }
 .app-notice p { font-size: 12px; color: #B45309; }
 .app-notice strong { font-size: 11.5px; color: #92400E; display: block; margin-bottom: 2px; }
 
+/* ── Messaging (beskeder) ─────────────────────────────── */
+.msg-cat {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 9.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 5px; line-height: 1.5; white-space: nowrap;
+}
+.msg-cat.q { background: #DBEAFE; color: #1E40AF; }      /* Spørgsmål */
+.msg-cat.dok { background: #EEF4F0; color: #1C3829; }    /* Dokumentation */
+.msg-cat.aendr { background: #FEF3C7; color: #92400E; }  /* Ændring i sag */
+.msg-cat.akut { background: #DC2626; color: #fff; }      /* Akut besked */
+.msg-cat.opf { background: #F3E8FF; color: #6B21A8; }    /* Opfølgning */
+.msg-cat.koord { background: #F3F4F6; color: #4B5563; }  /* Praktisk koordinering */
+.conv-status {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 600; white-space: nowrap;
+}
+.conv-status.ulaest { color: #2563EB; }
+.conv-status.besvaret { color: #16A34A; }
+.conv-status.afventer { color: #B45309; }
+.conv-status.handling { color: #DC2626; }
+.conv-status.lukket { color: #9B9590; }
+.conv-dot { width: 7px; height: 7px; border-radius: 50%; background: #2563EB; flex-shrink: 0; }
+.msg-bubble-in { background: #F6F3EE; border-radius: 12px 12px 12px 3px; padding: 10px 14px; max-width: 340px; }
+.msg-bubble-out { background: #1C3829; border-radius: 12px 12px 3px 12px; padding: 10px 14px; max-width: 340px; }
+.msg-bubble-in p { font-size: 12.5px; color: #1A1F1C; line-height: 1.6; }
+.msg-bubble-out p { font-size: 12.5px; color: #fff; line-height: 1.6; }
+.msg-cat-select {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid #E0DAD0; border-radius: 8px; background: #F6F3EE;
+  font-size: 11.5px; color: #1A1F1C; padding: 7px 10px;
+  white-space: nowrap; flex-shrink: 0; cursor: pointer;
+}
+
 /* Separator arrow */
 .arr { color: rgba(255,255,255,0.5); font-size: 12px; }
 
@@ -545,7 +578,7 @@ a { text-decoration: none; color: inherit; }
       <div class="wt-logo-sub">Digital platform · Systemgennemgang</div>
     </div>
     <div class="wt-hd-sep"></div>
-    <span class="wt-hd-title">25 centrale sider</span>
+    <span class="wt-hd-title">27 centrale sider</span>
   </div>
   <span class="wt-hd-count">Interaktiv systemdokumentation</span>
 </header>
@@ -589,7 +622,9 @@ a { text-decoration: none; color: inherit; }
   </div>
   <div class="sb-grp">
     <span class="sb-grp-label">Kommunikation</span>
-    <a class="sb-link" href="#beskeder"><span class="sb-link-n">21</span><span class="sb-dot pro"></span>Beskedsystem</a>
+    <a class="sb-link" href="#beskeder"><span class="sb-link-n">21</span><span class="sb-dot pro"></span>Beskeder (fagperson)</a>
+    <a class="sb-link" href="#beskeder-admin"><span class="sb-link-n">26</span><span class="sb-dot adm"></span>Beskeder (admin)</a>
+    <a class="sb-link" href="#beskeder-kommune"><span class="sb-link-n">27</span><span class="sb-dot pub"></span>Beskeder (kommune)</a>
     <a class="sb-link" href="#kommune-sammenfatning"><span class="sb-link-n">18</span><span class="sb-dot pub"></span>Kommunesammenfatning</a>
   </div>
 </nav>
@@ -2730,17 +2765,17 @@ a { text-decoration: none; color: inherit; }
     </div>
   </div>
 
-  <!-- 21: BESKEDSYSTEM -->
+  <!-- 21: BESKEDER (FAGPERSON) -->
   <div class="wt-sc" id="beskeder">
     <div class="sc-meta">
       <span class="sc-badge pro">Fagperson</span>
       <span class="sc-n">21</span>
-      <code class="sc-route">/messages</code>
+      <code class="sc-route">/dashboard/messages</code>
     </div>
-    <h2 class="sc-title">Beskedsystem</h2>
-    <p class="sc-desc">Internt kommunikationssystem. Tråde imellem fagpersoner, koordinatorer og admin. Understøtter @mentions, læste/ulæste-status, vedhæftede dokumenter og notifikationsbadges i sidemenu.</p>
+    <h2 class="sc-title">Beskeder — fagperson</h2>
+    <p class="sc-desc">Fagpersonens beskedcenter. Hver samtale er knyttet til én konkret sag og føres udelukkende med Kursskiftes koordinationsteam — aldrig direkte med kommunen eller andre kontaktpersoner. Alle beskeder kategoriseres (spørgsmål, dokumentation, ændring i sag, akut besked, opfølgning, praktisk koordinering), og akutte beskeder markeres tydeligt.</p>
     <div class="browser">
-      <div class="bc-chrome"><div class="bc-dots"><span class="d r"></span><span class="d y"></span><span class="d g"></span></div><div class="bc-addr">kursskiftematch.dk/messages</div></div>
+      <div class="bc-chrome"><div class="bc-dots"><span class="d r"></span><span class="d y"></span><span class="d g"></span></div><div class="bc-addr">kursskiftematch.dk/dashboard/messages</div></div>
       <div class="bv">
         <div class="app-shell">
           <div class="app-shell-sb">
@@ -2748,106 +2783,505 @@ a { text-decoration: none; color: inherit; }
             <div class="app-shell-sb-nav">
               <div class="sb-nav-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Overblik</div>
               <div class="sb-nav-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Mine sager</div>
-              <div class="sb-nav-item active"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Beskeder <span style="margin-left:auto;background:#C8993A;color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;">2</span></div>
+              <div class="sb-nav-item active"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Beskeder <span style="margin-left:auto;background:#C8993A;color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;">1</span></div>
               <div class="sb-nav-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Min profil</div>
             </div>
             <div style="padding:14px 18px;border-top:1px solid rgba(255,255,255,0.08);"><div style="font-size:12px;color:rgba(255,255,255,0.6);">Sarah M. Jensen</div></div>
           </div>
-          <div class="app-shell-main" style="display:flex;flex-direction:row;height:560px;">
-            <!-- Thread list -->
-            <div style="width:220px;flex-shrink:0;border-right:1px solid #E0DAD0;background:#F6F3EE;display:flex;flex-direction:column;">
-              <div style="padding:14px 14px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #E0DAD0;">
-                <span style="font-size:13px;font-weight:600;color:#1A1F1C;">Samtaler</span>
-                <button style="width:24px;height:24px;border:none;background:#1C3829;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                </button>
+          <div class="app-shell-main" style="display:flex;flex-direction:column;">
+            <!-- Policy note: only Kursskifte as counterpart -->
+            <div style="background:#EEF4F0;border-bottom:1px solid #E0DAD0;padding:10px 18px;display:flex;gap:10px;align-items:center;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1C3829" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <p style="font-size:12px;color:#1C3829;line-height:1.5;"><strong style="font-weight:700;">Du kommunikerer udelukkende med Kursskiftes koordinationsteam.</strong> Beskeder kan ikke sendes til kommuner eller andre kontaktpersoner.</p>
+            </div>
+            <div style="display:flex;flex-direction:row;height:520px;">
+              <!-- Conversation list -->
+              <div style="width:236px;flex-shrink:0;border-right:1px solid #E0DAD0;background:#F6F3EE;display:flex;flex-direction:column;">
+                <div style="padding:12px 14px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #E0DAD0;">
+                  <span style="font-size:13px;font-weight:600;color:#1A1F1C;">Samtaler</span>
+                  <button style="height:26px;padding:0 9px;border:none;background:#1C3829;border-radius:7px;cursor:pointer;display:flex;align-items:center;gap:5px;color:#fff;font-size:10.5px;font-weight:600;font-family:inherit;">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Ny besked
+                  </button>
+                </div>
+                <div style="flex:1;overflow-y:auto;">
+                  <!-- Active conversation (selected) -->
+                  <div style="padding:11px 12px;background:#fff;border-bottom:1px solid #E0DAD0;border-left:3px solid #1C3829;cursor:pointer;">
+                    <div style="display:flex;gap:9px;">
+                      <div style="width:30px;height:30px;border-radius:9px;background:#EEF4F0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#1C3829;flex-shrink:0;">KL</div>
+                      <div style="flex:1;min-width:0;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+                          <span style="font-size:12px;font-weight:600;color:#1A1F1C;">Sag KL-2025-0041</span>
+                          <span style="font-size:10px;color:#9B9590;">10:02</span>
+                        </div>
+                        <div style="margin-bottom:4px;"><span class="app-badge app-badge-green" style="font-size:9.5px;padding:1px 6px;">Aktiv sag</span></div>
+                        <div style="font-size:11px;color:#6B7569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Du: Perfekt — så udfylder jeg skabelonen…</div>
+                        <div style="margin-top:5px;"><span class="msg-cat dok">Dokumentation</span></div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Unread conversation -->
+                  <div style="padding:11px 12px;border-bottom:1px solid #E0DAD0;cursor:pointer;">
+                    <div style="display:flex;gap:9px;">
+                      <div style="width:30px;height:30px;border-radius:9px;background:#FBF3E1;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#92660A;flex-shrink:0;">RM</div>
+                      <div style="flex:1;min-width:0;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+                          <span style="font-size:12px;font-weight:700;color:#1A1F1C;">Sag RM-2025-0038</span>
+                          <span style="font-size:10px;color:#2563EB;font-weight:600;">i går</span>
+                        </div>
+                        <div style="margin-bottom:4px;"><span class="app-badge app-badge-green" style="font-size:9.5px;padding:1px 6px;">Aktiv sag</span></div>
+                        <div style="font-size:11px;color:#1A1F1C;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Kursskifte: Husk opfølgningsmødet torsdag…</div>
+                        <div style="margin-top:5px;display:flex;justify-content:space-between;align-items:center;">
+                          <span class="msg-cat opf">Opfølgning</span>
+                          <span class="conv-status ulaest"><span class="conv-dot"></span>Ulæst</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Closed conversation -->
+                  <div style="padding:11px 12px;border-bottom:1px solid #E0DAD0;cursor:pointer;opacity:.6;">
+                    <div style="display:flex;gap:9px;">
+                      <div style="width:30px;height:30px;border-radius:9px;background:#F3F4F6;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#6B7280;flex-shrink:0;">OD</div>
+                      <div style="flex:1;min-width:0;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+                          <span style="font-size:12px;font-weight:600;color:#1A1F1C;">Sag OD-2025-0019</span>
+                          <span style="font-size:10px;color:#9B9590;">12. jun</span>
+                        </div>
+                        <div style="margin-bottom:4px;"><span class="app-badge app-badge-default" style="font-size:9.5px;padding:1px 6px;">Afsluttet</span></div>
+                        <div style="font-size:11px;color:#6B7569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Kursskifte: Tak for et godt forløb — samtalen…</div>
+                        <div style="margin-top:5px;display:flex;justify-content:space-between;align-items:center;">
+                          <span class="msg-cat koord">Praktisk koordinering</span>
+                          <span class="conv-status lukket"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>Lukket</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div style="flex:1;overflow-y:auto;">
-                <!-- Active thread -->
-                <div style="padding:12px 14px;background:#fff;border-bottom:1px solid #E0DAD0;cursor:pointer;border-left:3px solid #1C3829;">
-                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
-                    <span style="font-size:12.5px;font-weight:600;color:#1A1F1C;">Koordinator Nina</span>
-                    <span style="font-size:10.5px;color:#C8993A;font-weight:600;">2</span>
+              <!-- Thread: always with Kursskifte -->
+              <div style="flex:1;display:flex;flex-direction:column;background:#fff;min-width:0;">
+                <div style="padding:12px 18px;border-bottom:1px solid #E0DAD0;display:flex;align-items:center;gap:10px;">
+                  <div style="width:32px;height:32px;border-radius:50%;background:#1C3829;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="16" height="16" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="10.5" fill="#1C3829" stroke="rgba(200,153,58,0.75)" stroke-width="0.7"/><path d="M11 1.5 L9.7 11 L12.3 11 Z" fill="#C8993A"/><path d="M11 20.5 L9.7 11 L12.3 11 Z" fill="rgba(180,180,200,0.4)"/><circle cx="11" cy="11" r="1.8" fill="#C8993A" stroke="rgba(0,0,0,0.2)" stroke-width="0.4"/><circle cx="11" cy="11" r="0.75" fill="rgba(255,255,255,0.9)"/></svg></div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:13px;font-weight:600;color:#1A1F1C;">Kursskifte — koordinationsteam</div>
+                    <div style="font-size:11px;color:#6B7569;">Sag KL-2025-0041 · Borger KL · Aalborg Kommune</div>
                   </div>
-                  <div style="font-size:11.5px;color:#6B7569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">@Sarah kan du sende de opdaterede…</div>
-                  <div style="font-size:10.5px;color:#9B9590;margin-top:2px;">i dag 09:14</div>
+                  <span class="app-badge app-badge-green dot-before">Aktiv sag</span>
                 </div>
-                <div style="padding:12px 14px;border-bottom:1px solid #E0DAD0;cursor:pointer;">
-                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
-                    <span style="font-size:12.5px;font-weight:600;color:#1A1F1C;">Sag KL-2025-0041</span>
-                    <span style="font-size:10.5px;color:#9B9590;">i går</span>
+                <div style="flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:14px;">
+                  <!-- Professional asks about documentation -->
+                  <div style="display:flex;gap:10px;align-items:flex-end;flex-direction:row-reverse;">
+                    <div style="width:28px;height:28px;border-radius:50%;background:#1C3829;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;">SM</div>
+                    <div style="display:flex;flex-direction:column;align-items:flex-end;min-width:0;">
+                      <div style="margin-bottom:4px;"><span class="msg-cat dok">Dokumentation</span></div>
+                      <div class="msg-bubble-out">
+                        <p>Hej Kursskifte. Aalborg Kommune har bedt om en samlet statusrapport for borger KL inden 15. juli. Skal jeg bruge den nye skabelon fra kvalitetsmodellen, eller er mine sessionslogs fra juni tilstrækkelige?</p>
+                        <div style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;background:rgba(255,255,255,0.14);border-radius:7px;padding:5px 9px;font-size:11px;color:#fff;font-weight:600;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>Sessionslog_KL_25jun.pdf</div>
+                      </div>
+                      <div style="font-size:10.5px;color:#9B9590;margin-top:3px;padding-right:4px;">i går 14:32 · Sendt ✓</div>
+                    </div>
                   </div>
-                  <div style="font-size:11.5px;color:#6B7569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Opstartsmøde bekræftet til 10. jul</div>
+                  <!-- Admin responds -->
+                  <div style="display:flex;gap:10px;align-items:flex-end;">
+                    <div style="width:28px;height:28px;border-radius:50%;background:#1C3829;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="14" height="14" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="10.5" fill="#1C3829" stroke="rgba(200,153,58,0.75)" stroke-width="0.7"/><path d="M11 1.5 L9.7 11 L12.3 11 Z" fill="#C8993A"/><path d="M11 20.5 L9.7 11 L12.3 11 Z" fill="rgba(180,180,200,0.4)"/><circle cx="11" cy="11" r="1.8" fill="#C8993A" stroke="rgba(0,0,0,0.2)" stroke-width="0.4"/><circle cx="11" cy="11" r="0.75" fill="rgba(255,255,255,0.9)"/></svg></div>
+                    <div style="display:flex;flex-direction:column;align-items:flex-start;min-width:0;">
+                      <div style="margin-bottom:4px;"><span class="msg-cat dok">Dokumentation</span></div>
+                      <div class="msg-bubble-in">
+                        <p>Hej Sarah. Brug den nye skabelon (v2) — den ligger under sagens dokumenter. Sessionslogs fra juni skal vedhæftes som bilag. Vi kvalitetssikrer rapporten her og sender den samlet videre til kommunen.</p>
+                      </div>
+                      <div style="font-size:10.5px;color:#9B9590;margin-top:3px;padding-left:4px;">i dag 09:12 · Kursskifte</div>
+                    </div>
+                  </div>
+                  <!-- Professional confirms -->
+                  <div style="display:flex;gap:10px;align-items:flex-end;flex-direction:row-reverse;">
+                    <div style="width:28px;height:28px;border-radius:50%;background:#1C3829;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;">SM</div>
+                    <div style="display:flex;flex-direction:column;align-items:flex-end;min-width:0;">
+                      <div style="margin-bottom:4px;"><span class="msg-cat dok">Dokumentation</span></div>
+                      <div class="msg-bubble-out">
+                        <p>Perfekt — så udfylder jeg skabelonen i denne uge og uploader den her senest onsdag.</p>
+                      </div>
+                      <div style="font-size:10.5px;color:#9B9590;margin-top:3px;padding-right:4px;">i dag 10:02 · Læst ✓✓</div>
+                    </div>
+                  </div>
+                  <div style="text-align:center;">
+                    <span class="conv-status besvaret" style="background:#DCFCE7;padding:3px 10px;border-radius:8px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Besvaret af Kursskifte</span>
+                  </div>
                 </div>
-                <div style="padding:12px 14px;border-bottom:1px solid #E0DAD0;cursor:pointer;">
-                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
-                    <span style="font-size:12.5px;font-weight:600;color:#1A1F1C;">Administrationen</span>
-                    <span style="font-size:10.5px;color:#9B9590;">30. jun</span>
-                  </div>
-                  <div style="font-size:11.5px;color:#6B7569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Din Straffeattest er modtaget og godkendt</div>
-                </div>
-                <div style="padding:12px 14px;border-bottom:1px solid #E0DAD0;cursor:pointer;">
-                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
-                    <span style="font-size:12.5px;font-weight:600;color:#1A1F1C;">Sag RM-2025-0038</span>
-                    <span style="font-size:10.5px;color:#9B9590;">28. jun</span>
-                  </div>
-                  <div style="font-size:11.5px;color:#6B7569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Ny sessionslog afventer gennemsyn</div>
+                <!-- Reply composer with category -->
+                <div style="padding:10px 14px;border-top:1px solid #E0DAD0;display:flex;gap:8px;align-items:center;background:#fff;">
+                  <div class="msg-cat-select">Dokumentation<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#6B7569" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+                  <button style="width:32px;height:32px;border:1px solid #E0DAD0;background:#F6F3EE;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#6B7569;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
+                  <input style="flex:1;border:1px solid #E0DAD0;border-radius:20px;padding:8px 14px;font-size:12.5px;color:#1A1F1C;background:#F6F3EE;font-family:inherit;outline:none;min-width:0;" placeholder="Skriv til Kursskifte…">
+                  <button style="width:34px;height:34px;border:none;background:#1C3829;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                  </button>
                 </div>
               </div>
             </div>
-            <!-- Active conversation -->
-            <div style="flex:1;display:flex;flex-direction:column;background:#fff;">
-              <div style="padding:14px 18px;border-bottom:1px solid #E0DAD0;display:flex;align-items:center;gap:10px;">
-                <div style="width:32px;height:32px;border-radius:50%;background:#EEF4F0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#1C3829;flex-shrink:0;">NK</div>
-                <div>
-                  <div style="font-size:13px;font-weight:600;color:#1A1F1C;">Koordinator Nina Krog</div>
-                  <div style="font-size:11px;color:#6B7569;">Online</div>
-                </div>
-              </div>
-              <div style="flex:1;overflow-y:auto;padding:18px 18px;display:flex;flex-direction:column;gap:14px;">
-                <!-- Message from coordinator -->
-                <div style="display:flex;gap:10px;align-items:flex-end;">
-                  <div style="width:28px;height:28px;border-radius:50%;background:#EEF4F0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#1C3829;flex-shrink:0;">NK</div>
-                  <div>
-                    <div style="background:#F6F3EE;border-radius:12px 12px 12px 3px;padding:10px 14px;max-width:320px;">
-                      <p style="font-size:12.5px;color:#1A1F1C;line-height:1.6;">Hej Sarah! Har du set de nye mål, vi har opsat for Kasper? <span style="color:#1C3829;font-weight:600;">@Sarah</span> kan du sende de opdaterede sessionslogs til mig, når du har dem klar?</p>
+            <!-- Compose dialog (shown expanded) -->
+            <div style="background:#E8E4DC;border-top:1px solid #E0DAD0;padding:28px 20px 32px;">
+              <div style="max-width:460px;margin:0 auto;">
+                <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#6B7569;text-align:center;margin-bottom:12px;">Dialog — „Ny besked"</div>
+                <div style="background:#fff;border-radius:16px;box-shadow:0 16px 48px rgba(0,0,0,0.18);padding:22px;">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+                    <div style="font-family:Georgia,serif;font-size:17px;color:#1A1F1C;">Ny besked til Kursskifte</div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9B9590" stroke-width="2" stroke-linecap="round" style="cursor:pointer;flex-shrink:0;margin-top:3px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </div>
+                  <div style="font-size:11.5px;color:#6B7569;margin-bottom:16px;">Modtager: Kursskiftes koordinationsteam <span style="color:#9B9590;">(fast — kan ikke ændres)</span></div>
+                  <div class="app-form-group">
+                    <label class="app-label">Sag</label>
+                    <div class="app-select">Sag KL-2025-0041 — Borger KL (Aalborg Kommune)</div>
+                  </div>
+                  <div class="app-form-group">
+                    <label class="app-label">Emne</label>
+                    <div class="app-input" style="color:#1A1F1C;">Statusrapport — deadline 15. juli</div>
+                  </div>
+                  <div class="app-form-group" style="margin-bottom:14px;">
+                    <label class="app-label">Kategori</label>
+                    <div class="app-select">Dokumentation</div>
+                    <div style="border:1px solid #E0DAD0;border-radius:10px;background:#fff;box-shadow:0 10px 28px rgba(0,0,0,0.12);margin-top:6px;overflow:hidden;">
+                      <div style="padding:8px 12px;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;color:#1A1F1C;border-bottom:1px solid #F0EDE7;"><span>Spørgsmål</span><span class="msg-cat q">Spørgsmål</span></div>
+                      <div style="padding:8px 12px;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;color:#1A1F1C;background:#EEF4F0;border-bottom:1px solid #F0EDE7;"><span style="display:inline-flex;align-items:center;gap:6px;font-weight:600;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1C3829" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Dokumentation</span><span class="msg-cat dok">Dokumentation</span></div>
+                      <div style="padding:8px 12px;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;color:#1A1F1C;border-bottom:1px solid #F0EDE7;"><span>Ændring i sag</span><span class="msg-cat aendr">Ændring i sag</span></div>
+                      <div style="padding:8px 12px;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;background:#FEF2F2;border-bottom:1px solid #F0EDE7;"><span style="color:#DC2626;font-weight:600;">Akut besked <span style="display:block;font-size:10.5px;font-weight:500;color:#B91C1C;">Besvares inden for 2 timer (hverdage)</span></span><span class="msg-cat akut">Akut besked</span></div>
+                      <div style="padding:8px 12px;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;color:#1A1F1C;border-bottom:1px solid #F0EDE7;"><span>Opfølgning</span><span class="msg-cat opf">Opfølgning</span></div>
+                      <div style="padding:8px 12px;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;color:#1A1F1C;"><span>Praktisk koordinering</span><span class="msg-cat koord">Praktisk koordinering</span></div>
                     </div>
-                    <div style="font-size:10.5px;color:#9B9590;margin-top:3px;padding-left:4px;">09:14 · Læst ✓✓</div>
+                  </div>
+                  <div class="app-form-group">
+                    <label class="app-label">Besked</label>
+                    <div class="app-textarea" style="color:#1A1F1C;">Hej Kursskifte. Kommunen har bedt om en samlet statusrapport…</div>
+                  </div>
+                  <div class="app-form-group">
+                    <label class="app-label">Vedhæftning (valgfri)</label>
+                    <div style="border:1.5px dashed #C8C0B0;border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;color:#6B7569;background:#F6F3EE;">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>Vedhæft fil — PDF eller billede, maks. 10 MB
+                    </div>
+                  </div>
+                  <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px;">
+                    <button style="height:38px;padding:0 16px;background:transparent;color:#1C3829;border:1px solid #C8DDD1;border-radius:9px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;">Annullér</button>
+                    <button style="height:38px;padding:0 18px;background:#1C3829;color:#fff;border:none;border-radius:9px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Send besked</button>
                   </div>
                 </div>
-                <!-- Message from self -->
-                <div style="display:flex;gap:10px;align-items:flex-end;flex-direction:row-reverse;">
-                  <div style="width:28px;height:28px;border-radius:50%;background:#1C3829;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;">SM</div>
-                  <div>
-                    <div style="background:#1C3829;border-radius:12px 12px 3px 12px;padding:10px 14px;max-width:320px;">
-                      <p style="font-size:12.5px;color:#fff;line-height:1.6;">Hej Nina! Ja, jeg sender dem i dag inden 14:00. Sessionslogen fra 2. juli er allerede Final — jeg arbejder på at afslutte den fra 25. juni.</p>
-                    </div>
-                    <div style="font-size:10.5px;color:#9B9590;margin-top:3px;text-align:right;padding-right:4px;">09:22 · Sendt ✓</div>
-                  </div>
-                </div>
-                <!-- System message -->
-                <div style="text-align:center;">
-                  <span style="font-size:11px;color:#9B9590;background:#F6F3EE;padding:3px 10px;border-radius:8px;">Dokument vedhæftet: Sessionslog_KL_25jun.pdf</span>
-                </div>
-                <!-- Latest message -->
-                <div style="display:flex;gap:10px;align-items:flex-end;">
-                  <div style="width:28px;height:28px;border-radius:50%;background:#EEF4F0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#1C3829;flex-shrink:0;">NK</div>
-                  <div>
-                    <div style="background:#F6F3EE;border-radius:12px 12px 12px 3px;padding:10px 14px;max-width:320px;">
-                      <p style="font-size:12.5px;color:#1A1F1C;line-height:1.6;">Perfekt! Husk at opstartsmødet med Rasmus er torsdag kl. 10 — han er bekræftet.</p>
-                    </div>
-                    <div style="font-size:10.5px;color:#C8993A;font-weight:600;margin-top:3px;padding-left:4px;">Ulæst · 09:41</div>
-                  </div>
-                </div>
-              </div>
-              <div style="padding:12px 14px;border-top:1px solid #E0DAD0;display:flex;gap:8px;align-items:center;">
-                <input style="flex:1;border:1px solid #E0DAD0;border-radius:20px;padding:8px 14px;font-size:12.5px;color:#1A1F1C;background:#F6F3EE;font-family:inherit;outline:none;" placeholder="Skriv en besked...">
-                <button style="width:34px;height:34px;border:none;background:#1C3829;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                </button>
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 26: BESKEDER (ADMIN) -->
+  <div class="wt-sc" id="beskeder-admin">
+    <div class="sc-meta">
+      <span class="sc-badge adm">Admin</span>
+      <span class="sc-n">26</span>
+      <code class="sc-route">/admin/messages</code>
+    </div>
+    <h2 class="sc-title">Beskeder — admin</h2>
+    <p class="sc-desc">Administrationens samlede beskedindbakke. Alle tråde fra både kommuner og fagpersoner samles her — Kursskifte er altid den ene part i enhver samtale og formidler mellem siderne. Statusmarkeringer (ulæst, besvaret, afventer svar, kræver handling, lukket) prioriterer arbejdet, og kontaktpersoners identitet eksponeres aldrig over for kommunen.</p>
+    <div class="browser">
+      <div class="bc-chrome"><div class="bc-dots"><span class="d r"></span><span class="d y"></span><span class="d g"></span></div><div class="bc-addr">kursskiftematch.dk/admin/messages</div></div>
+      <div class="bv">
+        <div class="app-shell">
+          <div class="app-shell-sb">
+            <div class="app-shell-sb-logo"><div class="app-shell-sb-logo-row"><div class="app-shell-sb-logo-sq"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="10.5" fill="#1C3829" stroke="rgba(200,153,58,0.75)" stroke-width="0.7"/><path d="M11 1.5 L9.7 11 L12.3 11 Z" fill="#C8993A"/><path d="M11 20.5 L9.7 11 L12.3 11 Z" fill="rgba(180,180,200,0.4)"/><circle cx="11" cy="11" r="1.8" fill="#C8993A" stroke="rgba(0,0,0,0.2)" stroke-width="0.4"/><circle cx="11" cy="11" r="0.75" fill="rgba(255,255,255,0.9)"/></svg></div><div class="app-shell-sb-name">Kursskifte</div></div><div class="app-shell-sb-sub">Administration</div></div>
+            <div class="app-shell-sb-nav">
+              <div class="sb-section-label">Oversigt</div>
+              <div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</div>
+              <div class="sb-section-label">Sagsbehandling</div>
+              <div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Sager</div>
+              <div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Matching</div>
+              <div class="sb-section-label">Kommunikation</div>
+              <div class="sb-nav-item active"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Beskeder <span style="margin-left:auto;background:#DC2626;color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;">1</span></div>
+              <div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Notifikationer</div>
+              <div class="sb-section-label">Brugere</div>
+              <div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Fagpersoner</div>
+              <div class="sb-nav-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><line x1="3" y1="22" x2="21" y2="22"/><polygon points="12 2 20 7 4 7"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/></svg>Kommuner</div>
+            </div>
+            <div style="padding:14px 18px;border-top:1px solid rgba(255,255,255,0.08);"><div style="font-size:12px;color:rgba(255,255,255,0.6);">Admin</div></div>
+          </div>
+          <div class="app-shell-main" style="display:flex;flex-direction:row;height:620px;">
+            <!-- Inbox: all threads -->
+            <div style="width:296px;flex-shrink:0;border-right:1px solid #E0DAD0;background:#F6F3EE;display:flex;flex-direction:column;">
+              <div style="padding:12px 14px 8px;">
+                <div style="font-size:13.5px;font-weight:600;color:#1A1F1C;">Beskeder</div>
+                <div style="font-size:11px;color:#6B7569;">12 samtaler · kommuner og fagpersoner</div>
+              </div>
+              <div style="display:flex;gap:4px;padding:0 12px 10px;border-bottom:1px solid #E0DAD0;flex-wrap:wrap;">
+                <span style="font-size:10.5px;font-weight:600;padding:4px 9px;border-radius:6px;background:#1C3829;color:#fff;">Alle</span>
+                <span style="font-size:10.5px;font-weight:600;padding:4px 9px;border-radius:6px;border:1px solid #E0DAD0;color:#6B7569;background:#fff;">Kommuner</span>
+                <span style="font-size:10.5px;font-weight:600;padding:4px 9px;border-radius:6px;border:1px solid #E0DAD0;color:#6B7569;background:#fff;">Fagpersoner</span>
+                <span style="font-size:10.5px;font-weight:600;padding:4px 9px;border-radius:6px;border:1px solid #FECACA;color:#DC2626;background:#FEF2F2;">Kræver handling · 1</span>
+              </div>
+              <div style="flex:1;overflow-y:auto;">
+                <!-- 1: Kræver handling (selected) -->
+                <div style="padding:11px 12px;background:#fff;border-bottom:1px solid #E0DAD0;border-left:3px solid #DC2626;cursor:pointer;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                    <span class="app-badge app-badge-blue" style="font-size:9.5px;padding:1px 6px;">Kommune</span>
+                    <span style="font-size:10px;color:#9B9590;">i dag 08:47</span>
+                  </div>
+                  <div style="font-size:12px;font-weight:700;color:#1A1F1C;margin-bottom:1px;">Aalborg Kommune · Sag KL-2025-0041</div>
+                  <div style="font-size:11px;color:#6B7569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Borgerens situation er ændret akut — familien er…</div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+                    <span class="msg-cat akut">Akut besked</span>
+                    <span class="conv-status handling"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Kræver handling</span>
+                  </div>
+                </div>
+                <!-- 2: Ulæst -->
+                <div style="padding:11px 12px;border-bottom:1px solid #E0DAD0;cursor:pointer;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                    <span class="app-badge app-badge-brand" style="font-size:9.5px;padding:1px 6px;">Fagperson</span>
+                    <span style="font-size:10px;color:#2563EB;font-weight:600;">i dag 07:55</span>
+                  </div>
+                  <div style="font-size:12px;font-weight:700;color:#1A1F1C;margin-bottom:1px;">Sarah M. Jensen · Sag RM-2025-0038</div>
+                  <div style="font-size:11px;color:#1A1F1C;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Ny sessionslog klar til gennemsyn — vil I kvalitets…</div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+                    <span class="msg-cat dok">Dokumentation</span>
+                    <span class="conv-status ulaest"><span class="conv-dot"></span>Ulæst</span>
+                  </div>
+                </div>
+                <!-- 3: Afventer svar -->
+                <div style="padding:11px 12px;border-bottom:1px solid #E0DAD0;cursor:pointer;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                    <span class="app-badge app-badge-blue" style="font-size:9.5px;padding:1px 6px;">Kommune</span>
+                    <span style="font-size:10px;color:#9B9590;">i går</span>
+                  </div>
+                  <div style="font-size:12px;font-weight:600;color:#1A1F1C;margin-bottom:1px;">Hjørring Kommune · Sag HJ-2025-0033</div>
+                  <div style="font-size:11px;color:#6B7569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Kan timetallet udvides fra 5 til 7 timer/uge fra…</div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+                    <span class="msg-cat q">Spørgsmål</span>
+                    <span class="conv-status afventer"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Afventer svar</span>
+                  </div>
+                </div>
+                <!-- 4: Besvaret -->
+                <div style="padding:11px 12px;border-bottom:1px solid #E0DAD0;cursor:pointer;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                    <span class="app-badge app-badge-brand" style="font-size:9.5px;padding:1px 6px;">Fagperson</span>
+                    <span style="font-size:10px;color:#9B9590;">i går</span>
+                  </div>
+                  <div style="font-size:12px;font-weight:600;color:#1A1F1C;margin-bottom:1px;">Mikkel A. Sørensen · Sag FR-2025-0029</div>
+                  <div style="font-size:11px;color:#6B7569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Tak — mødetid bekræftet torsdag kl. 10.</div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+                    <span class="msg-cat koord">Praktisk koordinering</span>
+                    <span class="conv-status besvaret"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Besvaret</span>
+                  </div>
+                </div>
+                <!-- 5: Lukket -->
+                <div style="padding:11px 12px;border-bottom:1px solid #E0DAD0;cursor:pointer;opacity:.55;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                    <span class="app-badge app-badge-blue" style="font-size:9.5px;padding:1px 6px;">Kommune</span>
+                    <span style="font-size:10px;color:#9B9590;">28. jun</span>
+                  </div>
+                  <div style="font-size:12px;font-weight:600;color:#1A1F1C;margin-bottom:1px;">Aarhus Kommune · Sag AA-2025-0021</div>
+                  <div style="font-size:11px;color:#6B7569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Forløbet er afsluttet — tak for samarbejdet.</div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+                    <span class="msg-cat opf">Opfølgning</span>
+                    <span class="conv-status lukket"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>Lukket</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Selected thread -->
+            <div style="flex:1;display:flex;flex-direction:column;background:#fff;min-width:0;">
+              <div style="padding:12px 18px;border-bottom:1px solid #E0DAD0;display:flex;align-items:center;gap:10px;">
+                <div style="width:32px;height:32px;border-radius:50%;background:#DBEAFE;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1E40AF" stroke-width="1.75" stroke-linecap="round"><line x1="3" y1="22" x2="21" y2="22"/><polygon points="12 2 20 7 4 7"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/></svg></div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:13px;font-weight:600;color:#1A1F1C;">Aalborg Kommune — Familieafdelingen</div>
+                  <div style="font-size:11px;color:#6B7569;">Sag KL-2025-0041 · Borger KL · §52, stk. 3, nr. 6</div>
+                </div>
+                <span class="msg-cat akut">Akut besked</span>
+                <span class="conv-status handling"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Kræver handling</span>
+              </div>
+              <div style="flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:14px;">
+                <!-- From municipality -->
+                <div style="display:flex;gap:10px;align-items:flex-end;">
+                  <div style="width:28px;height:28px;border-radius:50%;background:#DBEAFE;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#1E40AF;flex-shrink:0;">AK</div>
+                  <div style="display:flex;flex-direction:column;align-items:flex-start;min-width:0;">
+                    <div style="margin-bottom:4px;"><span class="msg-cat akut">Akut besked</span></div>
+                    <div class="msg-bubble-in" style="border:1px solid #FECACA;background:#FEF2F2;">
+                      <p>Borger KL's situation er ændret akut. Familien er flyttet til midlertidig bolig i Aalborg Øst hen over weekenden. Kan kontaktpersonforløbet fortsætte uændret, og kan mødestedet flyttes fra ungecentret?</p>
+                    </div>
+                    <div style="font-size:10.5px;color:#9B9590;margin-top:3px;padding-left:4px;">i dag 08:47 · Aalborg Kommune</div>
+                  </div>
+                </div>
+                <!-- Admin reply: professional referenced by initials only -->
+                <div style="display:flex;gap:10px;align-items:flex-end;flex-direction:row-reverse;">
+                  <div style="width:28px;height:28px;border-radius:50%;background:#1C3829;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="14" height="14" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="10.5" fill="#1C3829" stroke="rgba(200,153,58,0.75)" stroke-width="0.7"/><path d="M11 1.5 L9.7 11 L12.3 11 Z" fill="#C8993A"/><path d="M11 20.5 L9.7 11 L12.3 11 Z" fill="rgba(180,180,200,0.4)"/><circle cx="11" cy="11" r="1.8" fill="#C8993A" stroke="rgba(0,0,0,0.2)" stroke-width="0.4"/><circle cx="11" cy="11" r="0.75" fill="rgba(255,255,255,0.9)"/></svg></div>
+                  <div style="display:flex;flex-direction:column;align-items:flex-end;min-width:0;">
+                    <div style="margin-bottom:4px;"><span class="msg-cat aendr">Ændring i sag</span></div>
+                    <div class="msg-bubble-out">
+                      <p>Tak for jeres besked — sagen er markeret som akut hos os. Jeres kontaktperson (initialer SJ) er orienteret og kan fortsætte forløbet uændret. Vi bekræfter nyt mødested senest i morgen kl. 12.00.</p>
+                    </div>
+                    <div style="font-size:10.5px;color:#9B9590;margin-top:3px;padding-right:4px;">i dag 09:05 · Sendt ✓</div>
+                  </div>
+                </div>
+                <!-- Privacy system note -->
+                <div style="text-align:center;">
+                  <span style="font-size:11px;color:#6B7569;background:#F6F3EE;padding:4px 12px;border-radius:8px;display:inline-flex;align-items:center;gap:6px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6B7569" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Kontaktpersoners navn og kontaktoplysninger deles aldrig med kommunen — der henvises kun til initialer eller rolle.</span>
+                </div>
+              </div>
+              <!-- Admin composer: recipient pre-set -->
+              <div style="border-top:1px solid #E0DAD0;background:#fff;padding:10px 14px 12px;">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+                  <span style="font-size:10.5px;color:#6B7569;font-weight:600;">Til:</span>
+                  <span class="app-badge app-badge-blue" style="font-size:10px;">Aalborg Kommune · Sag KL-2025-0041</span>
+                  <span style="font-size:10px;color:#9B9590;">Fast modtager — samtalens ejer</span>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;">
+                  <div class="msg-cat-select">Ændring i sag<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#6B7569" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+                  <input style="flex:1;border:1px solid #E0DAD0;border-radius:20px;padding:8px 14px;font-size:12.5px;color:#1A1F1C;background:#F6F3EE;font-family:inherit;outline:none;min-width:0;" placeholder="Skriv et svar til kommunen…">
+                  <button style="width:34px;height:34px;border:none;background:#1C3829;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 27: BESKEDER (KOMMUNE) -->
+  <div class="wt-sc" id="beskeder-kommune">
+    <div class="sc-meta">
+      <span class="sc-badge pub">Offentlig</span>
+      <span class="sc-n">27</span>
+      <code class="sc-route">/proposal/[token]/messages</code>
+    </div>
+    <h2 class="sc-title">Beskeder — kommune</h2>
+    <p class="sc-desc">Tokenbaseret beskedside til kommunen. Viser udelukkende samtaler om kommunens egne indsendte sager og besvares altid af Kursskiftes koordinationsteam — aldrig af kontaktpersonen direkte. Kategorien „Akut besked" er fremhævet til akutte ændringer i sagen, og kontaktpersoner omtales kun med initialer.</p>
+    <div class="browser">
+      <div class="bc-chrome"><div class="bc-dots"><span class="d r"></span><span class="d y"></span><span class="d g"></span></div><div class="bc-addr">kursskiftematch.dk/proposal/a8f3c…/messages</div></div>
+      <div class="bv" style="background:#F6F3EE;">
+        <div style="max-width:620px;margin:0 auto;padding:36px 20px 56px;">
+
+          <!-- Header -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="13.5" fill="#1C3829" stroke="#C8993A" stroke-width="0.8"/><path d="M14 1.5 L12.7 14 L15.3 14 Z" fill="#C8993A"/><path d="M14 26.5 L12.7 14 L15.3 14 Z" fill="rgba(180,180,200,0.4)"/><circle cx="14" cy="14" r="2.1" fill="#C8993A" stroke="rgba(0,0,0,0.2)" stroke-width="0.4"/><circle cx="14" cy="14" r="0.85" fill="rgba(255,255,255,0.9)"/></svg>
+              <div>
+                <div style="font-family:Georgia,serif;font-size:14px;color:#1A1F1C;font-weight:600;">Kursskifte</div>
+                <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#9B9590;">Beskeder</div>
+              </div>
+            </div>
+            <span class="app-badge app-badge-brand">Aalborg Kommune</span>
+          </div>
+
+          <!-- Akut callout -->
+          <div style="background:#fff;border:1px solid #FECACA;border-left:4px solid #DC2626;border-radius:12px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <div style="display:flex;gap:10px;align-items:flex-start;flex:1;min-width:220px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <div>
+                <div style="font-size:12.5px;font-weight:700;color:#DC2626;margin-bottom:2px;">Akut ændring i sagen?</div>
+                <div style="font-size:11.5px;color:#6B7569;line-height:1.5;">Vælg kategorien „Akut besked" — akutte henvendelser besvares inden for 2 timer på hverdage.</div>
+              </div>
+            </div>
+            <button style="height:34px;padding:0 14px;background:#DC2626;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">Ny akut besked</button>
+          </div>
+
+          <!-- Conversation list: own cases only -->
+          <div style="background:#fff;border:1px solid #E0DAD0;border-radius:16px;overflow:hidden;margin-bottom:14px;">
+            <div style="padding:14px 16px 12px;border-bottom:1px solid #E0DAD0;display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div style="font-size:13px;font-weight:600;color:#1A1F1C;">Jeres samtaler</div>
+                <div style="font-size:11px;color:#6B7569;">Kun samtaler om jeres egne indsendte sager</div>
+              </div>
+              <button style="height:30px;padding:0 12px;background:#1C3829;color:#fff;border:none;border-radius:8px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:5px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Ny besked</button>
+            </div>
+            <div style="padding:12px 16px;border-bottom:1px solid #F0EDE7;background:#F6F9F7;cursor:pointer;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+                <span style="font-size:12.5px;font-weight:600;color:#1A1F1C;">Sag KL-2025-0041 · Borger KL</span>
+                <span style="font-size:10px;color:#9B9590;">i dag 09:05</span>
+              </div>
+              <div style="font-size:11.5px;color:#6B7569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Kursskifte: Tak for jeres besked — sagen er markeret som akut…</div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+                <span class="msg-cat akut">Akut besked</span>
+                <span class="conv-status besvaret"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Besvaret</span>
+              </div>
+            </div>
+            <div style="padding:12px 16px;cursor:pointer;opacity:.6;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+                <span style="font-size:12.5px;font-weight:600;color:#1A1F1C;">Sag KL-2025-0027 · Borger MT</span>
+                <span style="font-size:10px;color:#9B9590;">14. maj</span>
+              </div>
+              <div style="font-size:11.5px;color:#6B7569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Kursskifte: Slutrapporten er fremsendt — samtalen lukkes.</div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+                <span class="msg-cat opf">Opfølgning</span>
+                <span class="conv-status lukket"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>Lukket</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Open thread -->
+          <div style="background:#fff;border:1px solid #E0DAD0;border-radius:16px;overflow:hidden;margin-bottom:14px;">
+            <div style="padding:12px 16px;border-bottom:1px solid #E0DAD0;display:flex;align-items:center;gap:10px;">
+              <div style="width:30px;height:30px;border-radius:50%;background:#1C3829;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="15" height="15" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="10.5" fill="#1C3829" stroke="rgba(200,153,58,0.75)" stroke-width="0.7"/><path d="M11 1.5 L9.7 11 L12.3 11 Z" fill="#C8993A"/><path d="M11 20.5 L9.7 11 L12.3 11 Z" fill="rgba(180,180,200,0.4)"/><circle cx="11" cy="11" r="1.8" fill="#C8993A" stroke="rgba(0,0,0,0.2)" stroke-width="0.4"/><circle cx="11" cy="11" r="0.75" fill="rgba(255,255,255,0.9)"/></svg></div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:12.5px;font-weight:600;color:#1A1F1C;">Kursskifte — koordinationsteam</div>
+                <div style="font-size:10.5px;color:#6B7569;">Sag KL-2025-0041 · Borger KL</div>
+              </div>
+              <span class="app-badge app-badge-green dot-before">Forløb aktivt</span>
+            </div>
+            <div style="padding:16px;display:flex;flex-direction:column;gap:14px;">
+              <!-- Municipality message -->
+              <div style="display:flex;gap:10px;align-items:flex-end;flex-direction:row-reverse;">
+                <div style="width:26px;height:26px;border-radius:50%;background:#DBEAFE;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:700;color:#1E40AF;flex-shrink:0;">AK</div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;min-width:0;">
+                  <div style="margin-bottom:4px;"><span class="msg-cat akut">Akut besked</span></div>
+                  <div class="msg-bubble-out">
+                    <p>Borger KL's situation er ændret akut. Familien er flyttet til midlertidig bolig i Aalborg Øst. Kan forløbet fortsætte uændret, og kan mødestedet flyttes?</p>
+                  </div>
+                  <div style="font-size:10.5px;color:#9B9590;margin-top:3px;padding-right:4px;">i dag 08:47 · Sendt ✓</div>
+                </div>
+              </div>
+              <!-- Kursskifte reply -->
+              <div style="display:flex;gap:10px;align-items:flex-end;">
+                <div style="width:26px;height:26px;border-radius:50%;background:#EEF4F0;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:700;color:#1C3829;flex-shrink:0;">K</div>
+                <div style="display:flex;flex-direction:column;align-items:flex-start;min-width:0;">
+                  <div style="margin-bottom:4px;"><span class="msg-cat aendr">Ændring i sag</span></div>
+                  <div class="msg-bubble-in">
+                    <p>Tak for jeres besked — sagen er markeret som akut hos os. Jeres kontaktperson (initialer SJ) er orienteret og kan fortsætte forløbet uændret. Vi bekræfter nyt mødested senest i morgen kl. 12.00.</p>
+                  </div>
+                  <div style="font-size:10.5px;color:#9B9590;margin-top:3px;padding-left:4px;">i dag 09:05 · Kursskifte</div>
+                </div>
+              </div>
+              <div style="text-align:center;">
+                <span style="font-size:10.5px;color:#6B7569;background:#F6F3EE;padding:4px 12px;border-radius:8px;">Kontaktpersonen omtales kun med initialer — al kontakt sker via Kursskifte.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Compose -->
+          <div style="background:#fff;border:1px solid #E0DAD0;border-radius:16px;padding:18px;margin-bottom:20px;">
+            <div style="font-size:13px;font-weight:600;color:#1A1F1C;margin-bottom:2px;">Ny besked til Kursskifte</div>
+            <div style="font-size:11px;color:#6B7569;margin-bottom:14px;">Beskeden sendes sikkert til Kursskiftes koordinationsteam — aldrig direkte til kontaktpersonen.</div>
+            <div class="app-form-group" style="margin-bottom:12px;">
+              <label class="app-label">Sag</label>
+              <div class="app-select" style="font-size:12.5px;">Sag KL-2025-0041 — Borger KL</div>
+            </div>
+            <div class="app-form-group" style="margin-bottom:12px;">
+              <label class="app-label">Kategori</label>
+              <div class="app-select" style="font-size:12.5px;color:#9B9590;">Vælg kategori…</div>
+              <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;">
+                <span class="msg-cat q">Spørgsmål</span>
+                <span class="msg-cat dok">Dokumentation</span>
+                <span class="msg-cat aendr">Ændring i sag</span>
+                <span class="msg-cat akut">Akut besked</span>
+                <span class="msg-cat opf">Opfølgning</span>
+                <span class="msg-cat koord">Praktisk koordinering</span>
+              </div>
+            </div>
+            <div class="app-form-group" style="margin-bottom:14px;">
+              <label class="app-label">Besked</label>
+              <div class="app-textarea" style="color:#9B9590;">Skriv jeres besked her…</div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;">
+              <button style="height:38px;padding:0 18px;background:#1C3829;color:#fff;border:none;border-radius:9px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Send besked</button>
+            </div>
+          </div>
+
+          <p style="font-size:11.5px;color:#9B9590;text-align:center;line-height:1.5;">Denne side er personlig og genereret til Aalborg Kommune. Kursskifte · kursskifte.dk</p>
         </div>
       </div>
     </div>

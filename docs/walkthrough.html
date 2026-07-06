@@ -345,6 +345,22 @@ a { text-decoration: none; color: inherit; }
 }
 .app-checkbox { width: 14px; height: 14px; border-radius: 4px; border: 1.5px solid #C8C0B0; flex-shrink: 0; background: #fff; }
 .app-checkbox.checked { background: #1C3829; border-color: #1C3829; }
+.app-radio-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.app-radio-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12.5px; color: #1A1F1C; padding: 7px 12px;
+  border: 1px solid #E0DAD0; border-radius: 8px; background: #F6F3EE;
+}
+.app-radio-item.checked { border-color: #1C3829; background: #EEF4F0; }
+.app-radio { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid #C8C0B0; flex-shrink: 0; background: #fff; }
+.app-radio.checked { border: 4.5px solid #1C3829; }
+.app-prio-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11.5px; font-weight: 500; padding: 5px 11px; border-radius: 7px;
+  cursor: pointer; line-height: 1.4;
+}
+.app-prio-tag.must { background: #C8993A; border: 1px solid #C8993A; color: #fff; }
+.app-prio-tag.nice { background: #fff; border: 1px solid #C8C0B0; color: #1A1F1C; }
 .app-footer-bar {
   background: #F6F3EE; border-top: 1px solid #E0DAD0;
   padding: 40px; text-align: center; font-size: 12px; color: #9B9590;
@@ -854,7 +870,7 @@ a { text-decoration: none; color: inherit; }
       <code class="sc-route">/intake</code>
     </div>
     <h2 class="sc-title">Intake-formular</h2>
-    <p class="sc-desc">Kommunens indgang til platformen. Sagsbehandleren beskriver borgerens situation, målgruppe og behov — ingen personidentificerbare data om borgeren. Rate-begrænset til 10 indmeldinger/IP/time.</p>
+    <p class="sc-desc">Kommunens indgang til platformen. Sagsbehandleren beskriver borgerens situation, målgruppe og behov — ingen personidentificerbare data om borgeren. Hvert valgt kriterium prioriteres til sidst som <em>Skal</em> eller <em>Ønskeligt</em>, så matchteamet ved præcis, hvad der er ufravigeligt. Rate-begrænset til 10 indmeldinger/IP/time.</p>
     <div class="browser">
       <div class="bc-chrome">
         <div class="bc-dots"><span class="d r"></span><span class="d y"></span><span class="d g"></span></div>
@@ -872,7 +888,7 @@ a { text-decoration: none; color: inherit; }
               <label class="app-label">Kommune</label>
               <select class="app-select"><option>Aalborg Kommune</option></select>
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;">
               <div class="app-form-group" style="margin-bottom:0;">
                 <label class="app-label">Borger — initialer</label>
                 <input class="app-input" type="text" placeholder="f.eks. JM" value="KL">
@@ -881,6 +897,18 @@ a { text-decoration: none; color: inherit; }
                 <label class="app-label">Alder</label>
                 <input class="app-input" type="number" placeholder="f.eks. 22" value="14">
               </div>
+            </div>
+            <div class="app-form-group">
+              <label class="app-label">Ønske til kontaktperson <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#9B9590;">(hvis fagligt begrundet — valgfrit)</span></label>
+              <div class="app-radio-row">
+                <div class="app-radio-item"><div class="app-radio"></div>Intet ønske</div>
+                <div class="app-radio-item"><div class="app-radio"></div>Kvinde foretrækkes</div>
+                <div class="app-radio-item checked"><div class="app-radio checked"></div>Mand foretrækkes</div>
+              </div>
+            </div>
+            <div class="app-form-group" style="margin-bottom:0;">
+              <label class="app-label">Begrundelse <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#9B9590;">(valgfri, men anbefales hvis køn er valgt)</span></label>
+              <input class="app-input" type="text" placeholder="Kort faglig begrundelse…" value="Borgeren har tidligere haft bedst relation til mandlige fagpersoner.">
             </div>
           </div>
 
@@ -1004,11 +1032,15 @@ a { text-decoration: none; color: inherit; }
           </div>
 
           <div style="background:#fff;border:1px solid #E0DAD0;border-radius:16px;padding:24px;margin-bottom:16px;">
-            <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6B7569;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #F0EDE7;">Kapacitet og beskrivelse</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6B7569;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #F0EDE7;">Forløbsbehov</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px;">
               <div>
                 <label class="app-label">Ugentlige timer (estimat)</label>
                 <input class="app-input" type="number" placeholder="f.eks. 4" value="5">
+              </div>
+              <div>
+                <label class="app-label">Forventet varighed</label>
+                <select class="app-select"><option>6–12 måneder</option></select>
               </div>
               <div>
                 <label class="app-label">Kompleksitetsniveau</label>
@@ -1018,6 +1050,226 @@ a { text-decoration: none; color: inherit; }
             <div class="app-form-group" style="margin-bottom:0;">
               <label class="app-label">Sagsbeskrivelse</label>
               <textarea class="app-textarea" placeholder="Beskriv borgerens situation og behov...">Ung mand med angstproblematik og social isolation. Har tidligere haft kontaktperson, men forløbet blev afbrudt. Ønsker stabil kontakt med fagperson med erfaring inden for unge voksne.</textarea>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #E0DAD0;border-radius:16px;padding:24px;margin-bottom:16px;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6B7569;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #F0EDE7;">Faglig profil <span style="font-weight:400;color:#9B9590;">(ønskede professioner — vælg alle relevante)</span></div>
+
+            <div style="font-size:10.5px;font-weight:700;color:#9B9590;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;margin-top:4px;">Social- og pædagogiske</div>
+            <div class="app-checkbox-grid" style="margin-bottom:14px;">
+              <div class="app-checkbox-item"><div class="app-checkbox checked"></div>Socialpædagog</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Pædagog</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Pædagogmedhjælper</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Familiebehandler</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Familiekonsulent</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Kontaktperson</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Støtteperson</div>
+              <div class="app-checkbox-item"><div class="app-checkbox checked"></div>Mentor</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Bostøttemedarbejder (§85)</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Socialfaglig konsulent</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Gadeplansmedarbejder</div>
+              <div class="app-checkbox-item"><div class="app-checkbox checked"></div>SSP-medarbejder</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Ungekonsulent</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Opsøgende medarbejder</div>
+            </div>
+
+            <div style="font-size:10.5px;font-weight:700;color:#9B9590;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Sundhed</div>
+            <div class="app-checkbox-grid" style="margin-bottom:14px;">
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Social- og sundhedsassistent (SSA)</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Social- og sundhedshjælper (SSH)</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Sygeplejerske</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Psykiatrisk sygeplejerske</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Ergoterapeut</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Fysioterapeut</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Psykomotorisk terapeut</div>
+            </div>
+
+            <div style="font-size:10.5px;font-weight:700;color:#9B9590;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Psykologi og terapi</div>
+            <div class="app-checkbox-grid" style="margin-bottom:14px;">
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Psykolog</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Psykoterapeut</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Familieterapeut</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Narrativ terapeut</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Misbrugsbehandler</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Rusmiddelkonsulent</div>
+            </div>
+
+            <div style="font-size:10.5px;font-weight:700;color:#9B9590;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Skole og uddannelse</div>
+            <div class="app-checkbox-grid" style="margin-bottom:14px;">
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Lærer</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Speciallærer</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>UU-vejleder</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>SPS-vejleder</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>AKT-medarbejder</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Skolepædagog</div>
+            </div>
+
+            <div style="font-size:10.5px;font-weight:700;color:#9B9590;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Beskæftigelse</div>
+            <div class="app-checkbox-grid" style="margin-bottom:14px;">
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Jobkonsulent</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Virksomhedskonsulent</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Beskæftigelsesmentor</div>
+            </div>
+
+            <div style="font-size:10.5px;font-weight:700;color:#9B9590;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Kriminalitetsforebyggelse</div>
+            <div class="app-checkbox-grid" style="margin-bottom:14px;">
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Exit-medarbejder</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Konfliktmægler</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Kriminalpræventiv medarbejder</div>
+            </div>
+
+            <div style="font-size:10.5px;font-weight:700;color:#9B9590;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Andet</div>
+            <div class="app-checkbox-grid" style="margin-bottom:18px;">
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Studerende (relevant uddannelse)</div>
+              <div class="app-checkbox-item"><div class="app-checkbox"></div>Anden relevant socialfaglig baggrund (med beskrivelse)</div>
+            </div>
+
+            <div style="border-top:1px solid #F0EDE7;padding-top:16px;">
+              <label class="app-label">Forventet relationstype <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#9B9590;">(sæt kryds ved det mest relevante)</span></label>
+              <div class="app-checkbox-grid">
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Meget strukturerende</div>
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Motiverende</div>
+                <div class="app-checkbox-item"><div class="app-checkbox checked"></div>Rolig og lyttende</div>
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Praktisk støtte</div>
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Udadvendt</div>
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Autoritativ</div>
+                <div class="app-checkbox-item"><div class="app-checkbox checked"></div>Relationsopbyggende</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #E0DAD0;border-radius:16px;padding:24px;margin-bottom:16px;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6B7569;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #F0EDE7;">Praktiske krav</div>
+
+            <div class="app-form-group">
+              <label class="app-label">Maksimal køretid fra kontaktpersonens bopæl</label>
+              <div class="app-radio-row">
+                <div class="app-radio-item"><div class="app-radio"></div>15 min</div>
+                <div class="app-radio-item checked"><div class="app-radio checked"></div>30 min</div>
+                <div class="app-radio-item"><div class="app-radio"></div>45 min</div>
+                <div class="app-radio-item"><div class="app-radio"></div>60+ min</div>
+              </div>
+            </div>
+
+            <div class="app-form-group">
+              <label class="app-label">Praktiske krav til kontaktperson</label>
+              <div class="app-checkbox-grid">
+                <div class="app-checkbox-item"><div class="app-checkbox checked"></div>Kørekort</div>
+                <div class="app-checkbox-item"><div class="app-checkbox checked"></div>Bil</div>
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Røgfri</div>
+                <div class="app-checkbox-item"><div class="app-checkbox checked"></div>Kan arbejde aften</div>
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Kan arbejde weekend</div>
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Kan ledsage på ferie</div>
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Kan rejse med borger</div>
+              </div>
+            </div>
+
+            <div class="app-form-group">
+              <label class="app-label">Borgeren taler <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#9B9590;">(primære sprog)</span></label>
+              <div class="app-checkbox-grid" style="margin-bottom:8px;">
+                <div class="app-checkbox-item"><div class="app-checkbox checked"></div>Dansk</div>
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Engelsk</div>
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Arabisk</div>
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Somali</div>
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Tyrkisk</div>
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Urdu</div>
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Farsi</div>
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Andet</div>
+              </div>
+              <input class="app-input" type="text" placeholder="Andet sprog — angiv…">
+            </div>
+
+            <div class="app-form-group" style="margin-bottom:0;">
+              <label class="app-label">Borgerens interesser <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#9B9590;">(bruges til at skabe fælles grundlag)</span></label>
+              <div class="app-checkbox-grid">
+                <div class="app-checkbox-item"><div class="app-checkbox checked"></div>Gaming</div>
+                <div class="app-checkbox-item"><div class="app-checkbox checked"></div>Fodbold</div>
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Fitness</div>
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Madlavning</div>
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Musik</div>
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Natur</div>
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Kreative aktiviteter</div>
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Dyr</div>
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Biler</div>
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Fiskeri</div>
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Friluftsliv</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #E0DAD0;border-radius:16px;padding:24px;margin-bottom:16px;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6B7569;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #F0EDE7;">Opstart og opfølgning</div>
+
+            <div class="app-form-group">
+              <label class="app-label">Hvornår er der behov for opstart?</label>
+              <div class="app-radio-row">
+                <div class="app-radio-item"><div class="app-radio"></div>Akut (24–48 timer)</div>
+                <div class="app-radio-item checked"><div class="app-radio checked"></div>Inden for 1 uge</div>
+                <div class="app-radio-item"><div class="app-radio"></div>Inden for 2 uger</div>
+                <div class="app-radio-item"><div class="app-radio"></div>Fleksibel opstart</div>
+              </div>
+            </div>
+
+            <div class="app-form-group">
+              <label class="app-label">Er kontinuitet særligt vigtig i denne sag?</label>
+              <div class="app-radio-row">
+                <div class="app-radio-item checked"><div class="app-radio checked"></div>Ja — prioritér kontaktpersoner med stabil langvarig kapacitet</div>
+                <div class="app-radio-item"><div class="app-radio"></div>Nej</div>
+              </div>
+            </div>
+
+            <div class="app-form-group">
+              <label class="app-label">Ønsket opfølgningshyppighed fra Kursskifte</label>
+              <div class="app-radio-row">
+                <div class="app-radio-item"><div class="app-radio"></div>Ugentlig</div>
+                <div class="app-radio-item checked"><div class="app-radio checked"></div>Hver 14. dag</div>
+                <div class="app-radio-item"><div class="app-radio"></div>Månedlig</div>
+                <div class="app-radio-item"><div class="app-radio"></div>Efter behov</div>
+              </div>
+            </div>
+
+            <div class="app-form-group" style="margin-bottom:0;">
+              <label class="app-label">Hvilken dokumentation ønskes løbende?</label>
+              <div class="app-checkbox-grid">
+                <div class="app-checkbox-item"><div class="app-checkbox checked"></div>Kort status</div>
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Udvidet status</div>
+                <div class="app-checkbox-item"><div class="app-checkbox checked"></div>Progressionsrapport</div>
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Handleplansopfølgning</div>
+                <div class="app-checkbox-item"><div class="app-checkbox"></div>Afslutningsrapport</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:2px solid #C8993A;border-radius:16px;padding:24px;margin-bottom:16px;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#92660A;margin-bottom:6px;">Prioritering af kriterier</div>
+            <p style="font-size:12.5px;color:#6B7569;line-height:1.6;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid #F0EDE7;">Angiv for hvert valgte kriterium om det er et <strong style="color:#1A1F1C;">krav</strong> eller et <strong style="color:#1A1F1C;">ønske</strong>. Klik på et kriterium for at flytte det. Det fortæller matchteamet, hvad der er ufravigeligt, og hvad der er foretrukket.</p>
+
+            <div style="font-size:10.5px;font-weight:700;color:#92660A;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Skal opfyldes</div>
+            <div class="app-tag-row" style="margin-bottom:18px;">
+              <span class="app-prio-tag must">Socialpædagog</span>
+              <span class="app-prio-tag must">Maks. 30 min køretid</span>
+              <span class="app-prio-tag must">Opstart inden for 1 uge</span>
+              <span class="app-prio-tag must">Kørekort</span>
+              <span class="app-prio-tag must">Bil</span>
+            </div>
+
+            <div style="font-size:10.5px;font-weight:700;color:#9B9590;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Ønskeligt</div>
+            <div class="app-tag-row" style="margin-bottom:16px;">
+              <span class="app-prio-tag nice">Mand foretrækkes</span>
+              <span class="app-prio-tag nice">Mentor</span>
+              <span class="app-prio-tag nice">SSP-medarbejder</span>
+              <span class="app-prio-tag nice">Rolig og lyttende</span>
+              <span class="app-prio-tag nice">Relationsopbyggende</span>
+              <span class="app-prio-tag nice">Gaming</span>
+              <span class="app-prio-tag nice">Fodbold</span>
+              <span class="app-prio-tag nice">Kan arbejde aften</span>
+              <span class="app-prio-tag nice">Kontinuitet</span>
+            </div>
+
+            <div style="display:flex;gap:14px;align-items:center;font-size:11px;color:#9B9590;border-top:1px solid #F0EDE7;padding-top:12px;">
+              <span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:3px;background:#C8993A;display:inline-block;"></span>Skal = ufravigeligt krav</span>
+              <span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:3px;border:1px solid #C8C0B0;background:#fff;display:inline-block;"></span>Ønskeligt = foretrukket</span>
             </div>
           </div>
 

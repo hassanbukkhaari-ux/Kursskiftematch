@@ -55,7 +55,7 @@ function Hero() {
       </p>
       <div className="flex flex-wrap gap-3">
         <Link
-          href="/intake"
+          href="/kontakt"
           className="h-12 px-6 bg-[#1C3829] text-white font-semibold text-sm rounded-xl hover:bg-[#2D5840] transition-colors inline-flex items-center gap-2"
         >
           Indsend sag <ArrowRight />
@@ -91,7 +91,7 @@ function AudiencePaths() {
           </div>
           <div className="flex flex-wrap items-center gap-4">
             <Link
-              href="/intake"
+              href="/kontakt"
               className="h-10 px-5 bg-[#C8993A] text-white text-sm font-semibold rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center gap-2"
             >
               Indsend sag <ArrowRight />
@@ -236,7 +236,7 @@ function CtaStrip() {
           </div>
           <div className="flex flex-col items-start gap-3 shrink-0">
             <Link
-              href="/intake"
+              href="/kontakt"
               className="h-11 px-6 bg-[#C8993A] text-white text-sm font-semibold rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center gap-2"
             >
               Indsend sag <ArrowRight />

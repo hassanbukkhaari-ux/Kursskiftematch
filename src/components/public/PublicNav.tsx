@@ -60,7 +60,7 @@ export default function PublicNav() {
         {/* Desktop CTA */}
         <div className="hidden lg:block">
           <Link
-            href="/intake"
+            href="/kontakt"
             className="h-9 px-4 bg-[#1C3829] text-white text-sm font-semibold rounded-xl hover:bg-[#2D5840] transition-colors inline-flex items-center gap-1.5"
           >
             Indsend sag
@@ -73,7 +73,7 @@ export default function PublicNav() {
         {/* Mobile: CTA + hamburger */}
         <div className="flex lg:hidden items-center gap-2">
           <Link
-            href="/intake"
+            href="/kontakt"
             className="h-8 px-3 bg-[#1C3829] text-white text-xs font-semibold rounded-lg hover:bg-[#2D5840] transition-colors inline-flex items-center"
           >
             Indsend sag

@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/dashboard', '/admin', '/api/', '/auth/', '/proposal/', '/status/'],
+        disallow: ['/dashboard', '/admin', '/api/', '/auth/'],
       },
     ],
     sitemap: 'https://kursskifte.dk/sitemap.xml',

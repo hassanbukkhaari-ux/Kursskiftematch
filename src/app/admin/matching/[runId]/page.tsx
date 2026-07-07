@@ -45,7 +45,7 @@ export default async function MatchRunPage({ params }: PageProps) {
   const dba = db as any // eslint-disable-line @typescript-eslint/no-explicit-any
   const { data: caseData } = await dba
     .from('cases')
-    .select('id, citizen_initials, citizen_age_range, complexity_level, weekly_hours, status, intake_contact_email')
+    .select('id, citizen_initials, citizen_age_range, complexity_level, weekly_hours, status')
     .eq('id', run.case_id)
     .single()
 
@@ -110,7 +110,6 @@ export default async function MatchRunPage({ params }: PageProps) {
         caseId={run.case_id}
         runStatus={run.status}
         caseData={caseData ?? undefined}
-        hasIntakeEmail={!!caseData?.intake_contact_email}
       />
     </div>
   )

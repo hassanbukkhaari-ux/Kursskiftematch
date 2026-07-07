@@ -6,15 +6,12 @@ const PUBLIC_PATHS = [
   '/forgot-password',
   '/reset-password',
   '/auth/callback',
-  '/intake',
   '/indsigt',
   '/kommuner',
   '/kontaktpersoner',
   '/metode',
   '/om-kursskifte',
   '/kontakt',
-  '/status',
-  '/proposal',
 ]
 
 export async function middleware(request: NextRequest) {

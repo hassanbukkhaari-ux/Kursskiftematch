@@ -70,13 +70,9 @@ export async function POST(
 
     if (assignError || !assignment) return serverError(assignError?.message)
 
-    // Determine target case status: intake cases wait for municipality proposal acceptance
     const dba = db as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    const { data: caseRow } = await dba.from('cases').select('intake_contact_email').eq('id', run.case_id).single()
-    const isIntakeCase = !!(caseRow?.intake_contact_email)
-    const newCaseStatus = isIntakeCase ? 'MATCHED' : 'ACTIVE'
 
-    // Link assignment back to match run + update case status
+    // Link assignment back to match run + activate case
     await Promise.all([
       db.from('match_runs')
         .update({
@@ -88,7 +84,7 @@ export async function POST(
         })
         .eq('id', id),
       dba.from('cases')
-        .update({ status: newCaseStatus, updated_at: new Date().toISOString() })
+        .update({ status: 'ACTIVE', updated_at: new Date().toISOString() })
         .eq('id', run.case_id),
     ])
 

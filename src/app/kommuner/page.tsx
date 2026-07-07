@@ -79,7 +79,7 @@ export default function KommunerPage() {
             Vi hjælper kommuner i Nordjylland — herunder Aalborg, Hjørring, Brønderslev og Frederikshavn — med at finde kvalitetssikrede kontaktpersoner til §32 og §85-forløb. Indsend sagen, og Kursskifte sender et fagligt begrundet forslag.
           </p>
           <Link
-            href="/intake"
+            href="/kontakt"
             className="h-12 px-6 bg-[#1C3829] text-white font-semibold text-sm rounded-xl hover:bg-[#2D5840] transition-colors inline-flex items-center gap-2"
           >
             Indsend sag nu <ArrowRight />
@@ -192,7 +192,7 @@ export default function KommunerPage() {
               <p className="text-sm text-white/65">Det tager få minutter. Vi vender tilbage hurtigt.</p>
             </div>
             <Link
-              href="/intake"
+              href="/kontakt"
               className="shrink-0 h-11 px-6 bg-[#C8993A] text-white text-sm font-semibold rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center gap-2"
             >
               Indsend sag <ArrowRight />

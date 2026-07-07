@@ -54,10 +54,9 @@ interface Props {
   currentStatus: string
   grants: Grant[]
   professionals: AvailableProfessional[]
-  isIntakeCase?: boolean
 }
 
-export default function AdminCaseActionsClient({ caseId, currentStatus, grants: initialGrants, professionals, isIntakeCase = false }: Props) {
+export default function AdminCaseActionsClient({ caseId, currentStatus, grants: initialGrants, professionals }: Props) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
 
@@ -79,13 +78,6 @@ export default function AdminCaseActionsClient({ caseId, currentStatus, grants: 
   const [handoverPro, setHandoverPro] = useState('')
   const [handoverNote, setHandoverNote] = useState('')
   const [handoverUrgent, setHandoverUrgent] = useState(false)
-
-  // Proposal state (intake cases only)
-  const [showProposal, setShowProposal] = useState(false)
-  const [proposalPro, setProposalPro] = useState('')
-  const [proposalNote, setProposalNote] = useState('')
-  const [proposalHours, setProposalHours] = useState('')
-  const [proposalSendNow, setProposalSendNow] = useState(true)
 
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -185,38 +177,11 @@ export default function AdminCaseActionsClient({ caseId, currentStatus, grants: 
     })
   }
 
-  function handleProposal() {
-    if (!proposalPro) { setError('Vælg den fagperson, der skal foreslås'); return }
-    const hours = proposalHours ? parseFloat(proposalHours) : undefined
-    if (proposalHours && (isNaN(hours!) || hours! <= 0)) { setError('Angiv gyldigt timetal'); return }
-    startTransition(async () => {
-      try {
-        await doFetch(`/api/cases/${caseId}/proposal`, 'POST', {
-          professional_id: proposalPro,
-          proposal_note: proposalNote.trim() || undefined,
-          estimated_hours_week: hours,
-          send_now: proposalSendNow,
-        })
-        setSuccess(proposalSendNow
-          ? 'Forslag sendt til kommunen. Afvent svar.'
-          : 'Forslag oprettet som kladde.')
-        setShowProposal(false)
-        setProposalPro('')
-        setProposalNote('')
-        setProposalHours('')
-        router.refresh()
-      } catch (e) {
-        setError(e instanceof Error ? e.message : 'Ukendt fejl')
-      }
-    })
-  }
-
   const isActive = currentStatus === 'ACTIVE'
   const isCompleted = currentStatus === 'COMPLETED'
   const canClose = isActive || currentStatus === 'OPEN' || currentStatus === 'MATCHED' || currentStatus === 'PROPOSED'
   const canArchive = isCompleted
   const canHandover = isActive
-  const canPropose = isIntakeCase && (currentStatus === 'MATCHED' || currentStatus === 'PROPOSED')
 
   return (
     <div className="space-y-4">
@@ -287,76 +252,6 @@ export default function AdminCaseActionsClient({ caseId, currentStatus, grants: 
                   Bekræft lukning
                 </Button>
                 <Button variant="secondary" size="sm" onClick={() => setShowClose(false)}>
-                  Annuller
-                </Button>
-              </div>
-            </div>
-          )}
-        </Card>
-      )}
-
-      {/* Proposal (intake cases) */}
-      {canPropose && (
-        <Card>
-          <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-3">Forslag til kommunen</div>
-          {!showProposal ? (
-            <Button
-              variant="primary"
-              size="sm"
-              className="w-full justify-center"
-              onClick={() => { setShowProposal(true); setShowClose(false); setShowHandover(false); setShowGrantForm(false) }}
-            >
-              Send forslag til kommunen
-            </Button>
-          ) : (
-            <div className="space-y-3">
-              <div>
-                <label className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] block mb-1">Fagperson *</label>
-                <select
-                  value={proposalPro}
-                  onChange={e => setProposalPro(e.target.value)}
-                  className="w-full border border-[#E0DAD0] rounded-xl px-3 py-2 text-sm text-[#1A1F1C] focus:outline-none focus:ring-2 focus:ring-[#1C3829]/20 bg-white"
-                >
-                  <option value="">Vælg fagperson…</option>
-                  {professionals.map(p => <option key={p.id} value={p.id}>{p.full_name}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] block mb-1">Timer/uge (estimat)</label>
-                <input
-                  type="number"
-                  min="0.5"
-                  step="0.5"
-                  value={proposalHours}
-                  onChange={e => setProposalHours(e.target.value)}
-                  className="w-full border border-[#E0DAD0] rounded-xl px-3 py-2 text-sm text-[#1A1F1C] focus:outline-none focus:ring-2 focus:ring-[#1C3829]/20"
-                  placeholder="F.eks. 5"
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] block mb-1">Bemærkning</label>
-                <textarea
-                  value={proposalNote}
-                  onChange={e => setProposalNote(e.target.value)}
-                  rows={3}
-                  className="w-full border border-[#E0DAD0] rounded-xl px-3 py-2 text-sm text-[#1A1F1C] focus:outline-none focus:ring-2 focus:ring-[#1C3829]/20 resize-none"
-                  placeholder="Valgfri bemærkning til kommunen…"
-                />
-              </div>
-              <label className="flex items-center gap-2 text-sm text-[#1A1F1C] cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={proposalSendNow}
-                  onChange={e => setProposalSendNow(e.target.checked)}
-                  className="rounded border-[#E0DAD0]"
-                />
-                Send til kommunen med det samme
-              </label>
-              <div className="flex gap-2">
-                <Button variant="primary" size="sm" loading={pending} onClick={handleProposal} className="flex-1 justify-center">
-                  {proposalSendNow ? 'Send forslag' : 'Gem kladde'}
-                </Button>
-                <Button variant="secondary" size="sm" onClick={() => setShowProposal(false)}>
                   Annuller
                 </Button>
               </div>

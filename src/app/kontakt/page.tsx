@@ -96,7 +96,7 @@ export default function KontaktPage() {
                 </div>
               </div>
               <Link
-                href="/intake"
+                href="/kontakt"
                 className="mt-auto h-10 px-5 bg-[#C8993A] text-white text-sm font-semibold rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center gap-2 self-start"
               >
                 Indsend sag direkte <ArrowRight />

@@ -180,7 +180,7 @@ export default async function IndsightPage({
                 <p className="text-sm text-[#6B7569]">Vi varetager matchning, dokumentation og koordination.</p>
               </div>
               <div className="flex flex-wrap gap-3">
-                <Link href="/intake" className="h-10 px-5 bg-[#1C3829] text-white text-sm font-semibold rounded-xl hover:bg-[#2D5840] transition-colors inline-flex items-center gap-2">
+                <Link href="/kontakt" className="h-10 px-5 bg-[#1C3829] text-white text-sm font-semibold rounded-xl hover:bg-[#2D5840] transition-colors inline-flex items-center gap-2">
                   Indsend sag <ArrowRight />
                 </Link>
                 <Link href="/kontakt" className="h-10 px-5 border border-[#1C3829] text-[#1C3829] text-sm font-semibold rounded-xl hover:bg-[#EEF4F0] transition-colors inline-flex items-center">

@@ -118,7 +118,7 @@ export default function OmKursskiftePage() {
                 <Link href="/kontakt" className="h-10 px-5 bg-[#1C3829] text-white text-sm font-semibold rounded-xl hover:bg-[#2D5840] transition-colors inline-flex items-center gap-2">
                   Kontakt os <ArrowRight />
                 </Link>
-                <Link href="/intake" className="h-10 px-5 border border-[#1C3829] text-[#1C3829] text-sm font-semibold rounded-xl hover:bg-[#EEF4F0] transition-colors inline-flex items-center gap-2">
+                <Link href="/kontakt" className="h-10 px-5 border border-[#1C3829] text-[#1C3829] text-sm font-semibold rounded-xl hover:bg-[#EEF4F0] transition-colors inline-flex items-center gap-2">
                   Indsend sag
                 </Link>
               </div>

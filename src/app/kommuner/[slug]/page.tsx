@@ -103,7 +103,7 @@ export default async function KommuneLandingPage({ params }: { params: Promise<{
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
-              href="/intake"
+              href="/kontakt"
               className="h-12 px-6 bg-[#1C3829] text-white font-semibold text-sm rounded-xl hover:bg-[#2D5840] transition-colors inline-flex items-center gap-2"
             >
               Indsend sag nu <ArrowRight />
@@ -277,7 +277,7 @@ export default async function KommuneLandingPage({ params }: { params: Promise<{
                 <p className="text-sm text-white/65">Vi bekræfter modtagelse og vender typisk tilbage inden for 1–3 arbejdsdage.</p>
               </div>
               <Link
-                href="/intake"
+                href="/kontakt"
                 className="shrink-0 h-11 px-6 bg-[#C8993A] text-white text-sm font-semibold rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center gap-2"
               >
                 Indsend sag <ArrowRight />

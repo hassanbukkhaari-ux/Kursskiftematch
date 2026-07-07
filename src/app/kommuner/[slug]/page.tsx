@@ -142,7 +142,7 @@ export default async function KommuneLandingPage({ params }: { params: Promise<{
                   <p className="text-sm text-white/80 leading-relaxed mb-4">{m.services_description}</p>
                   <div className="space-y-2 pt-2 border-t border-white/10">
                     {[
-                      'Kontaktpersonforløb §52 (børn og unge)',
+                      'Kontaktpersonforløb §32 i barnets lov (børn og unge)',
                       'Socialpædagogisk støtte §85 (voksne)',
                       'Bostøtte og støttekontaktpersonordning',
                       'Faglig anbefaling og koordination',

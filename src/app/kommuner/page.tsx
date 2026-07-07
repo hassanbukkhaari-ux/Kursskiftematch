@@ -4,14 +4,14 @@ import PublicNav from '@/components/public/PublicNav'
 import PublicFooter from '@/components/public/PublicFooter'
 
 export const metadata: Metadata = {
-  title: 'Til kommuner | Kontaktperson §52 og §85',
+  title: 'Til kommuner | Kontaktperson §32 og §85',
   description:
-    'Indsend en sag til Kursskifte og modtag et fagligt begrundet forslag med en kvalitetssikret kontaktperson. Vi hjælper kommuner i Nordjylland med §52- og §85-forløb, socialpædagogisk støtte og bostøtte til borgere i mistrivsel.',
+    'Indsend en sag til Kursskifte og modtag et fagligt begrundet forslag med en kvalitetssikret kontaktperson. Vi hjælper kommuner i Nordjylland med §32 og §85-forløb, socialpædagogisk støtte og bostøtte til borgere i mistrivsel.',
   alternates: { canonical: '/kommuner' },
   openGraph: {
-    title: 'Til kommuner | Kontaktperson §52 og §85 — Kursskifte',
+    title: 'Til kommuner | Kontaktperson §32 og §85 — Kursskifte',
     description:
-      'Kursskifte hjælper kommuner i Nordjylland — Aalborg, Hjørring, Brønderslev og Frederikshavn — med at finde kvalitetssikrede kontaktpersoner til §52- og §85-forløb.',
+      'Kursskifte hjælper kommuner i Nordjylland — Aalborg, Hjørring, Brønderslev og Frederikshavn — med at finde kvalitetssikrede kontaktpersoner til §32 og §85-forløb.',
     url: '/kommuner',
   },
 }
@@ -47,7 +47,7 @@ const serviceSchema = {
   name: 'Kontaktpersonforløb til kommuner',
   provider: { '@type': 'Organization', name: 'Kursskifte ApS', url: 'https://kursskifte.dk' },
   description:
-    'Kursskifte hjælper kommuner i Nordjylland med at finde og koordinere kvalitetssikrede kontaktpersoner til §52- og §85-forløb — socialpædagogisk støtte, bostøtte og relationsbaseret indsats til borgere i mistrivsel.',
+    'Kursskifte hjælper kommuner i Nordjylland med at finde og koordinere kvalitetssikrede kontaktpersoner til §32 og §85-forløb — socialpædagogisk støtte, bostøtte og relationsbaseret indsats til borgere i mistrivsel.',
   areaServed: [
     { '@type': 'City', name: 'Aalborg' },
     { '@type': 'City', name: 'Hjørring' },
@@ -76,7 +76,7 @@ export default function KommunerPage() {
             Én henvendelse. Et fagligt begrundet forslag.
           </h1>
           <p className="text-[17px] text-[#6B7569] leading-relaxed max-w-xl mb-8">
-            Vi hjælper kommuner i Nordjylland — herunder Aalborg, Hjørring, Brønderslev og Frederikshavn — med at finde kvalitetssikrede kontaktpersoner til §52- og §85-forløb. Indsend sagen, og Kursskifte sender et fagligt begrundet forslag.
+            Vi hjælper kommuner i Nordjylland — herunder Aalborg, Hjørring, Brønderslev og Frederikshavn — med at finde kvalitetssikrede kontaktpersoner til §32 og §85-forløb. Indsend sagen, og Kursskifte sender et fagligt begrundet forslag.
           </p>
           <Link
             href="/intake"
@@ -150,7 +150,7 @@ export default function KommunerPage() {
                 </p>
                 <div className="space-y-3">
                   {[
-                    'Kontaktpersonforløb §52 og §85 — socialpædagogisk støtte og bostøtte',
+                    'Kontaktpersonforløb §32 i barnets lov og §85 — socialpædagogisk støtte og bostøtte',
                     'Lav til kritisk kompleksitet — vi vurderer',
                     'Børn og unge (0–18) samt voksne (18+)',
                     'Akutte behov kan håndteres ved særlig aftale',

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Kontakt Kursskifte',
     description:
-      'Henvendelser fra kommuner og fagpersoner i Nordjylland besvares hurtigt og fagligt. Kontakt os om §52- og §85-forløb, kontaktpersonforløb og socialpædagogisk støtte.',
+      'Henvendelser fra kommuner og fagpersoner i Nordjylland besvares hurtigt og fagligt. Kontakt os om §32 og §85-forløb, kontaktpersonforløb og socialpædagogisk støtte.',
     url: '/kontakt',
   },
 }

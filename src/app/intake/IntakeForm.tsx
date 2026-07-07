@@ -267,7 +267,7 @@ export default function IntakeForm({ municipalities, problemAreas, goals, specia
             {municipalities.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
           </select>
         </Field>
-        <Field label="Dit navn (sagsbehandler) *">
+        <Field label="Dit navn (kommunens kontaktperson) *">
           <input
             type="text"
             className={inputCls}

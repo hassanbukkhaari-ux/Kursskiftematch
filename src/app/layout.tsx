@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     default: 'Kursskifte | Kvalitetssikrede kontaktpersoner til kommuner',
   },
   description:
-    'Kursskifte matcher kommuner med kvalitetssikrede kontaktpersoner til §52- og §85-forløb. Faglig anbefaling, dokumenteret og GDPR-compliant. Vi betjener kommuner i Nordjylland — bl.a. Aalborg, Hjørring og Brønderslev.',
+    'Kursskifte matcher kommuner med kvalitetssikrede kontaktpersoner til §32 og §85-forløb. Faglig anbefaling, dokumenteret og GDPR-compliant. Vi betjener kommuner i Nordjylland — bl.a. Aalborg, Hjørring og Brønderslev.',
   openGraph: {
     siteName: 'Kursskifte',
     locale: 'da_DK',

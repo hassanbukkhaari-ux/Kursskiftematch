@@ -662,7 +662,7 @@ table.data tr:hover td { background: var(--amber-soft); }
         caseAccepted: false,
         caseSubmitted: false,
         notif: 0,
-        borger: { navn: "Kasper Larsen", init: "KL", alder: 14, par: "§52", timer: 5 }
+        borger: { navn: "Kasper Larsen", init: "KL", alder: 14, par: "§32", timer: 5 }
       },
       kontaktperson: {
         navn: "Sofie Holm",
@@ -800,7 +800,7 @@ table.data tr:hover td { background: var(--amber-soft); }
           <div class="case-row">
             <span class="case-id">KS-260630-142</span>
             <div class="avatar" style="width:30px;height:30px;font-size:0.72rem">EJ</div>
-            <div class="case-main"><div class="t">Emma Jensen · 13 år · §52 · 4 t/uge</div><div class="s">Kontaktperson: KB · Seneste notat: 1. jul</div></div>
+            <div class="case-main"><div class="t">Emma Jensen · 13 år · §32 · 4 t/uge</div><div class="s">Kontaktperson: KB · Seneste notat: 1. jul</div></div>
             <span class="pill pill-green">● Aktiv</span>
           </div>
           <div class="case-row">
@@ -812,7 +812,7 @@ table.data tr:hover td { background: var(--amber-soft); }
           <div class="case-row" style="background:#FEFCE8;">
             <span class="case-id">KS-260615-097</span>
             <div class="avatar" style="width:30px;height:30px;font-size:0.72rem;background:#D97706;color:#fff;">HN</div>
-            <div class="case-main"><div class="t">Hanne Nielsen · 54 år · §85 · 4 t/uge</div><div class="s">Overdragelse i gang — Kursskifte finder ny kontaktperson · Forventet opstart: 14. jul</div></div>
+            <div class="case-main"><div class="t">Hanne Nielsen · 54 år · §85 · 4 t/uge</div><div class="s">🟡 Overdragelse i gang — Kursskifte overtager koordineringen · Forventet opstart: 14. jul</div></div>
             <span class="pill pill-amber">🟡 Overdragelse</span>
           </div>
           ${K().caseSubmitted ? `
@@ -836,9 +836,9 @@ table.data tr:hover td { background: var(--amber-soft); }
           <hr class="divider">
           <div class="form-grid">
             <div class="field">
-              <label for="f-navn">Borgers fulde navn</label>
-              <input id="f-navn" class="input" value="Kasper Larsen">
-              <div class="hint">Behandles fortroligt — deles kun med den godkendte kontaktperson</div>
+              <label for="f-navn">Borger — initialer</label>
+              <input id="f-navn" class="input" value="KL" maxlength="4" placeholder="f.eks. KL">
+              <div class="hint">Kun initialer på denne side — fulde navn angives inde i portalen (GDPR)</div>
             </div>
             <div class="field">
               <label for="f-alder">Alder</label>
@@ -847,7 +847,7 @@ table.data tr:hover td { background: var(--amber-soft); }
             <div class="field">
               <label for="f-par">Paragraf</label>
               <select id="f-par" class="input">
-                <option selected>§52 – Børn og unge</option>
+                <option selected>§32 (barnets lov) – Børn og unge</option>
                 <option>§85 – Socialpædagogisk støtte</option>
               </select>
             </div>
@@ -1198,7 +1198,7 @@ table.data tr:hover td { background: var(--amber-soft); }
               <div class="avatar lg forest">KL</div>
               <div class="case-main">
                 <div class="t" style="font-size:1.05rem">Kasper Larsen · 14 år</div>
-                <div class="s">Sag KS-260707-241 · §52 · 5 t/uge · Aalborg · Opstart inden for 1 uge</div>
+                <div class="s">Sag KS-260707-241 · §32 · 5 t/uge · Aalborg · Opstart inden for 1 uge</div>
               </div>
               ${diamonds(6)}
             </div>
@@ -1226,7 +1226,7 @@ table.data tr:hover td { background: var(--amber-soft); }
         <div class="two-col">
           <div class="card mb0">
             <h3>Kasper Larsen · 14 år</h3>
-            <p class="muted small">Sag KS-260707-241 · §52 · 5 t/uge · Aalborg Kommune · Startet 6. jul 2026</p>
+            <p class="muted small">Sag KS-260707-241 · §32 · 5 t/uge · Aalborg Kommune · Startet 6. jul 2026</p>
             <p class="small"><span class="pill pill-green">● Aktiv</span>&nbsp; <span class="pill pill-grey">Næste opfølgning om 12 dage</span></p>
             <p class="small muted mb0">Husk: statusnotat efter hvert besøg styrker kommunens indblik i forløbet.</p>
           </div>
@@ -1378,7 +1378,7 @@ table.data tr:hover td { background: var(--amber-soft); }
             <div class="avatar lg forest">TH</div>
             <div class="case-main">
               <div class="t" style="font-size:1.1rem">Thomas Hedegaard · 15 år · Aalborg</div>
-              <div class="s">KS-260628-315 · §52 · 8 t/uge · Indsendt af Aalborg Kommune 5. jul</div>
+              <div class="s">KS-260628-315 · §32 · 8 t/uge · Indsendt af Aalborg Kommune 5. jul</div>
             </div>
             <span class="pill pill-red">Høj kompleksitet</span>
           </div>
@@ -1727,7 +1727,7 @@ table.data tr:hover td { background: var(--amber-soft); }
         d.borger.init = d.borger.navn.split(/\s+/).map((w) => w.charAt(0)).join("").toUpperCase().slice(0, 3) || "KL";
         d.borger.alder = ($("#f-alder") && $("#f-alder").value) || 14;
         d.borger.timer = ($("#f-timer") && $("#f-timer").value) || 5;
-        d.borger.par = ($("#f-par") && $("#f-par").value.indexOf("85") > -1) ? "§85" : "§52";
+        d.borger.par = ($("#f-par") && $("#f-par").value.indexOf("85") > -1) ? "§85" : "§32";
         /* Sagsnummer: KS-YYMMDD-[3-cifret løbenummer] */
         const _n = new Date(); const _yy = String(_n.getFullYear()).slice(2); const _mm = String(_n.getMonth()+1).padStart(2,'0'); const _dd = String(_n.getDate()).padStart(2,'0');
         d.caseId = "KS-" + _yy + _mm + _dd + "-" + String(200 + Math.floor(Math.random()*200)).padStart(3,'0');

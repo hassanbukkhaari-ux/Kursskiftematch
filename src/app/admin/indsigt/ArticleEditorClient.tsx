@@ -226,7 +226,7 @@ export function ArticleEditorClient({
             type="text"
             value={tagsInput}
             onChange={handleTagsChange}
-            placeholder="kontaktperson, §52, vejledning"
+            placeholder="kontaktperson, §32 i barnets lov, vejledning"
             className={inputClass}
           />
         </div>

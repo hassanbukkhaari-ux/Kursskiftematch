@@ -8,12 +8,12 @@ import PublicFooter from '@/components/public/PublicFooter'
 export const metadata: Metadata = {
   title: 'Kursskifte | Kvalitetssikrede kontaktpersoner til kommuner',
   description:
-    'Kursskifte matcher kommuner med kvalitetssikrede kontaktpersoner til §52- og §85-forløb. Vi varetager sagsvurdering, match og faglig anbefaling — struktureret og dokumenteret. Vi betjener kommuner i Nordjylland.',
+    'Kursskifte matcher kommuner med kvalitetssikrede kontaktpersoner til §32 og §85-forløb. Vi varetager sagsvurdering, match og faglig anbefaling — struktureret og dokumenteret. Vi betjener kommuner i Nordjylland.',
   alternates: { canonical: '/' },
   openGraph: {
     title: 'Kursskifte | Kvalitetssikrede kontaktpersoner til kommuner',
     description:
-      'Kursskifte matcher kommuner med kvalitetssikrede kontaktpersoner til §52- og §85-forløb. Vi betjener kommuner i Nordjylland — Aalborg, Hjørring, Brønderslev og Frederikshavn.',
+      'Kursskifte matcher kommuner med kvalitetssikrede kontaktpersoner til §32 og §85-forløb. Vi betjener kommuner i Nordjylland — Aalborg, Hjørring, Brønderslev og Frederikshavn.',
     url: '/',
   },
 }
@@ -86,7 +86,7 @@ function AudiencePaths() {
               Send én sag.<br />Få et fagligt begrundet forslag.
             </h2>
             <p className="text-sm text-white/60 leading-relaxed max-w-sm">
-              Kursskifte varetager match, verifikation og faglig anbefaling til §52- og §85-forløb — sikkert og dokumenteret. Vi betjener kommuner i Nordjylland.
+              Kursskifte varetager match, verifikation og faglig anbefaling til §32 og §85-forløb — sikkert og dokumenteret. Vi betjener kommuner i Nordjylland.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-4">
@@ -266,7 +266,7 @@ export default async function Home() {
     name: 'Kursskifte ApS',
     url: 'https://kursskifte.dk',
     description:
-      'Kursskifte forbinder kommuner med kvalitetssikrede kontaktpersoner til §52- og §85-forløb — socialpædagogisk støtte, bostøtte og relationsbaseret indsats til borgere i mistrivsel i Nordjylland.',
+      'Kursskifte forbinder kommuner med kvalitetssikrede kontaktpersoner til §32 og §85-forløb — socialpædagogisk støtte, bostøtte og relationsbaseret indsats til borgere i mistrivsel i Nordjylland.',
     email: 'info@kursskifte.dk',
     areaServed: [
       { '@type': 'City', name: 'Aalborg' },

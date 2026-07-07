@@ -223,7 +223,7 @@ export function MatchingUI({ candidates, runId, caseId, runStatus, caseData, has
 
         {filtered.length === 0 ? (
           <EmptyState
-            title="Ingen kandidater matcher filtrene"
+            title="Ingen resultater matcher de valgte filtre"
             description="Prøv at justere filtrene for at se flere resultater"
           />
         ) : (

@@ -526,9 +526,8 @@ table.data tr:hover td { background: var(--amber-soft); }
       <span class="wordmark">Kurs<span>skifte</span></span>
     </div>
     <div class="role-tabs" role="tablist" aria-label="Vælg rolle">
-      <button class="role-tab on" data-action="switch" data-journey="kommune">Kommune</button>
+      <button class="role-tab on" data-action="switch" data-journey="admin">Admin</button>
       <button class="role-tab" data-action="switch" data-journey="kontaktperson">Kontaktperson</button>
-      <button class="role-tab" data-action="switch" data-journey="admin">Admin</button>
       <button class="role-tab" data-action="switch" data-journey="ledelse">Ledelse</button>
     </div>
     <div class="nav-context">
@@ -653,17 +652,10 @@ table.data tr:hover td { background: var(--amber-soft); }
   }
 
   const state = {
-    currentJourney: "kommune",
+    currentJourney: "admin",
     currentStep: 0,
-    steps: { kommune: 0, kontaktperson: 0, admin: 0, ledelse: 0 },
+    steps: { kontaktperson: 0, admin: 0, ledelse: 0 },
     data: {
-      kommune: {
-        caseId: "KS-260707-241",
-        caseAccepted: false,
-        caseSubmitted: false,
-        notif: 0,
-        borger: { navn: "Kasper Larsen", init: "KL", alder: 14, par: "§32", timer: 5 }
-      },
       kontaktperson: {
         navn: "Sofie Holm",
         uploads: { straffeattest: false, boerneattest: false, cv: false, legitimation: false },
@@ -674,8 +666,7 @@ table.data tr:hover td { background: var(--amber-soft); }
       admin: {
         applications: 2,
         marieApproved: false,
-        kommuneApproved: false,
-        proposalSent: false,
+        caseAssigned: false,
         selectedCandidate: null,
         notif: 4
       },
@@ -742,306 +733,6 @@ table.data tr:hover td { background: var(--amber-soft); }
   }
 
   /* ================================================================
-     JOURNEY 1 — KOMMUNE
-     ================================================================ */
-  const K = () => state.data.kommune;
-
-  const kommuneSteps = [
-    {
-      name: "Log ind",
-      render: () => `
-        <div style="max-width:420px;margin:6vh auto 0">
-          <div class="card" style="padding:30px">
-            <div class="center" style="margin-bottom:18px">
-              <h1>Log ind</h1>
-              <p class="muted small mb0">Kommuneportal · Kursskifte</p>
-            </div>
-            <div class="field">
-              <label for="k-email">E-mail</label>
-              <input id="k-email" class="input" type="email" value="sagsbehandler@aalborg.dk" autocomplete="off">
-            </div>
-            <div class="field">
-              <label for="k-pass">Adgangskode</label>
-              <input id="k-pass" class="input" type="password" value="••••••••••">
-            </div>
-            <button class="btn btn-primary btn-lg btn-block" data-action="next" style="margin-top:6px">Log ind</button>
-            <p class="muted small center" style="margin:14px 0 0">Glemt adgangskode? Kontakt Kursskiftes team.</p>
-            <hr class="divider">
-            <p class="muted small center mb0">Ny kommune? <b>Kontakt Kursskifte for at komme i gang.</b><br>Adgang oprettes af Kursskiftes team — I modtager en invitationsmail med et opsætningslink, hvor I selv vælger adgangskode.</p>
-          </div>
-        </div>`
-    },
-    {
-      name: "Overblik",
-      skeleton: true,
-      render: () => {
-        const accepted = K().caseAccepted;
-        return `
-        <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;margin-bottom:18px">
-          <div>
-            <h1>Aalborg Kommune · Socialforvaltningen</h1>
-            <p class="muted mb0">${getGreeting()}. Her er jeres overblik.</p>
-          </div>
-          <button class="btn btn-amber btn-lg" data-action="goto" data-step="2">+ Indsend ny sag</button>
-        </div>
-        <div class="stats">
-          <div class="stat accent"><div class="num">${accepted ? 4 : 3}</div><div class="lbl">Aktive sager</div></div>
-          <div class="stat"><div class="num">${K().caseSubmitted && !accepted ? 1 : accepted ? 0 : 1}</div><div class="lbl">Forslag afventer</div></div>
-          <div class="stat"><div class="num">0</div><div class="lbl">Ulæste beskeder</div></div>
-        </div>
-        ${K().notif > 0 ? `
-        <div class="notif-banner">
-          <span>🔔</span>
-          <span style="flex:1">Kursskifte har fundet en kandidat til ${K().borger.navn} (${K().caseId}).</span>
-          <button class="btn btn-sm btn-primary" data-action="goto" data-step="4">Se forslag</button>
-        </div>` : ""}
-        <div class="card">
-          <h3>Jeres sager</h3>
-          <div class="case-row">
-            <span class="case-id">KS-260630-142</span>
-            <div class="avatar" style="width:30px;height:30px;font-size:0.72rem">EJ</div>
-            <div class="case-main"><div class="t">Emma Jensen · 13 år · §32 · 4 t/uge</div><div class="s">Kontaktperson: KB · Seneste notat: 1. jul</div></div>
-            <span class="pill pill-green">● Aktiv</span>
-          </div>
-          <div class="case-row">
-            <span class="case-id">KS-260705-183</span>
-            <div class="avatar" style="width:30px;height:30px;font-size:0.72rem">RM</div>
-            <div class="case-main"><div class="t">Rasmus Madsen · 22 år · §85 · 3 t/uge</div><div class="s">Kontaktperson: AT · Seneste notat: 28. jun</div></div>
-            <span class="pill pill-green">● Aktiv</span>
-          </div>
-          <div class="case-row" style="background:#FEFCE8;">
-            <span class="case-id">KS-260615-097</span>
-            <div class="avatar" style="width:30px;height:30px;font-size:0.72rem;background:#D97706;color:#fff;">HN</div>
-            <div class="case-main"><div class="t">Hanne Nielsen · 54 år · §85 · 4 t/uge</div><div class="s">🟡 Overdragelse i gang — Kursskifte overtager koordineringen · Forventet opstart: 14. jul</div></div>
-            <span class="pill pill-amber">🟡 Overdragelse</span>
-          </div>
-          ${K().caseSubmitted ? `
-          <div class="case-row">
-            <span class="case-id">${K().caseId}</span>
-            <div class="avatar" style="width:30px;height:30px;font-size:0.72rem">${K().borger.init}</div>
-            <div class="case-main"><div class="t">${K().borger.navn} · ${K().borger.alder} år · ${K().borger.par} · ${K().borger.timer} t/uge</div>
-            <div class="s">${accepted ? "Kontaktperson: SH · Opstartsmøde planlægges" : "Indsendt i dag · Kursskifte matcher nu"}</div></div>
-            ${accepted ? '<span class="pill pill-green">● Aktiv</span>' : '<span class="pill pill-amber">⏳ Afventer match</span>'}
-          </div>` : ""}
-        </div>`;
-      }
-    },
-    {
-      name: "Ny sag",
-      render: () => `
-        ${backBtn()}
-        <div class="card" style="max-width:680px;margin:12px auto 0;padding:28px">
-          <h2>Indsend ny sag</h2>
-          <p class="muted small">Kursskifte behandler kun de oplysninger, der er nødvendige for at finde den rette kontaktperson.</p>
-          <hr class="divider">
-          <div class="form-grid">
-            <div class="field">
-              <label for="f-navn">Borger — initialer</label>
-              <input id="f-navn" class="input" value="KL" maxlength="4" placeholder="f.eks. KL">
-              <div class="hint">Kun initialer på denne side — fulde navn angives inde i portalen (GDPR)</div>
-            </div>
-            <div class="field">
-              <label for="f-alder">Alder</label>
-              <input id="f-alder" class="input" type="number" value="14" min="0" max="99">
-            </div>
-            <div class="field">
-              <label for="f-par">Paragraf</label>
-              <select id="f-par" class="input">
-                <option selected>§32 (barnets lov) – Børn og unge</option>
-                <option>§85 – Socialpædagogisk støtte</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="f-timer">Timer pr. uge</label>
-              <input id="f-timer" class="input" type="number" value="5" min="1" max="37">
-            </div>
-            <div class="field">
-              <label>Kompleksitet</label>
-              <div class="choice-row" data-single="1">
-                <span class="chip" data-action="chip">Lav</span>
-                <span class="chip on" data-action="chip">Mellem</span>
-                <span class="chip" data-action="chip">Høj</span>
-              </div>
-            </div>
-            <div class="field">
-              <label for="f-prioritet">Hastighed</label>
-              <select id="f-prioritet" class="input">
-                <option selected>⚪ Normal</option>
-                <option>🟡 Hurtig</option>
-                <option>🔴 Akut (24 timer)</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="f-start">Ønsket opstart</label>
-              <select id="f-start" class="input">
-                <option selected>Inden for 1 uge</option>
-                <option>Inden for 2 uger</option>
-                <option>Inden for 1 måned</option>
-                <option>Fleksibel opstart</option>
-              </select>
-            </div>
-          </div>
-          <div class="field">
-            <label>Ønske til kontaktpersonens køn <span class="muted" style="font-weight:400">(valgfrit — hvis fagligt begrundet)</span></label>
-            <div class="choice-row" data-single="1">
-              <span class="chip on" data-action="chip">Intet ønske</span>
-              <span class="chip" data-action="chip">Kvinde foretrækkes</span>
-              <span class="chip" data-action="chip">Mand foretrækkes</span>
-            </div>
-            <input class="input" style="margin-top:8px" type="text" placeholder="Kort faglig begrundelse (anbefales, hvis køn er valgt)…">
-          </div>
-          <div class="field">
-            <label>Hvad har borgeren brug for støtte til? <span class="muted" style="font-weight:400">(vælg alle relevante)</span></label>
-            ${competenceChecklist(["Skolevægring", "Angst", "Social usikkerhed"])}
-          </div>
-          <div class="field">
-            <label>Ønsket profession <span class="muted" style="font-weight:400">(vælg alle relevante)</span></label>
-            ${professionChecklist(["Socialpædagog"])}
-          </div>
-          <div class="field">
-            <label>Målgruppe</label>
-            ${targetGroupChecklist(["Unge 13-17 år"])}
-          </div>
-          <div class="form-grid">
-            <div class="field">
-              <label>Sprogkrav <span class="muted" style="font-weight:400">(valgfrit)</span></label>
-              <select class="input">
-                <option selected>Dansk</option>
-                <option>Engelsk</option>
-                <option>Arabisk</option>
-                <option>Somali</option>
-                <option>Tyrkisk</option>
-                <option>Andet sprog / tolk nødvendig</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Dokumentation fra kontaktpersonen</label>
-              <select class="input">
-                <option>Ugentlig status</option>
-                <option selected>Status hver 14. dag</option>
-                <option>Månedlig status</option>
-                <option>Efter behov</option>
-              </select>
-            </div>
-          </div>
-          <div class="field">
-            <label>Særlige tidspunkter <span class="muted" style="font-weight:400">(valgfrit)</span></label>
-            <div class="choice-row">
-              <span class="chip" data-action="chip">Aften</span>
-              <span class="chip" data-action="chip">Weekend</span>
-              <span class="chip" data-action="chip">Helligdage</span>
-            </div>
-          </div>
-          <div class="field">
-            <label>Er kontinuitet i forløbet vigtig?</label>
-            <div class="choice-row" data-single="1">
-              <span class="chip on" data-action="chip">Ja – samme kontaktperson hele forløbet</span>
-              <span class="chip" data-action="chip">Mindre vigtigt</span>
-            </div>
-          </div>
-          <div class="btn-row">
-            <button class="btn btn-primary btn-lg" data-action="submitCase">Indsend sag</button>
-            <button class="btn btn-ghost" data-action="prev">Annullér</button>
-          </div>
-        </div>`
-    },
-    {
-      name: "Sag indsendt",
-      render: () => `
-        <div class="card center" style="max-width:520px;margin:6vh auto 0;padding:40px 32px">
-          ${checkAnim()}
-          <h1>Sag modtaget</h1>
-          <p class="muted">Kursskifte vender tilbage hurtigst muligt med et begrundet forslag til kontaktperson.</p>
-          <p><span class="pill pill-forest">Sagsnr. ${K().caseId}</span></p>
-          <button class="btn btn-primary btn-lg" data-action="compass" data-step="4" style="margin-top:10px">Se dine sager</button>
-        </div>`
-    },
-    {
-      name: "Forslag",
-      skeleton: true,
-      render: () => `
-        <div style="max-width:680px;margin:0 auto">
-          <div class="notif-banner">
-            <span>🔔</span><span>Kursskifte har fundet en kandidat til ${K().borger.navn} · Sag ${K().caseId}</span>
-          </div>
-          <div class="card" style="padding:28px">
-            <p class="muted small" style="margin-bottom:14px">Sag ${K().caseId} · ${K().borger.navn} · ${K().borger.alder} år · ${K().borger.par}</p>
-            <div class="cand">
-              <div class="avatar lg">SH</div>
-              <div class="cand-meta">
-                <div class="cand-name">SH <span class="pill pill-green" style="vertical-align:2px">✓ Godkendt af Kursskifte</span></div>
-                <div class="cand-sub"><b>Socialpædagog</b> · 11 års erfaring · Aalborg · 8 km fra borger</div>
-                ${scoreBlock(6)}
-                <ul class="crit-list">
-                  <li><span class="ck">✓</span> Målgruppeerfaring</li>
-                  <li><span class="ck">✓</span> Relationskompetencer</li>
-                  <li><span class="ck">✓</span> Geografi</li>
-                  <li><span class="ck">✓</span> Tilgængelighed</li>
-                  <li><span class="ck">✓</span> Kontinuitet</li>
-                  <li><span class="ck">✓</span> Kompetencer</li>
-                </ul>
-              </div>
-            </div>
-            <hr class="divider">
-            <div class="btn-row" style="margin-top:0">
-              <button class="btn btn-primary btn-lg" data-action="acceptProposal">Acceptér forslag</button>
-              <button class="btn btn-secondary" data-action="askQuestion">Stil spørgsmål</button>
-              <button class="btn btn-secondary" data-action="requestNewCandidate">Afvis forslag og bed om ny kandidat</button>
-              <button class="btn btn-ghost" data-action="goto" data-step="5">Se fuld profil →</button>
-            </div>
-          </div>
-        </div>`
-    },
-    {
-      name: "Faglig begrundelse",
-      render: () => `
-        <div style="max-width:680px;margin:0 auto">
-          ${backBtn()}
-          <div class="card" style="padding:28px;margin-top:12px">
-            <p class="muted small">Sag ${K().caseId} · ${K().borger.navn} · ${K().borger.alder} år</p>
-            <div class="cand" style="margin-bottom:16px">
-              <div class="avatar lg">SH</div>
-              <div class="cand-meta">
-                <div class="cand-name">SH</div>
-                <div class="cand-sub"><b>Socialpædagog</b> · 11 års erfaring · Aalborg · 8 km fra borger</div>
-                ${scoreBlock(6)}
-              </div>
-            </div>
-            <h3>Faglig begrundelse</h3>
-            <p style="font-family:Georgia,serif;font-size:1.02rem;line-height:1.7">
-              Kontaktpersonen anbefales, fordi vedkommende har 11 års erfaring med unge med skolefravær
-              og angst, arbejder relationsorienteret, ønsker at arbejde med aldersgruppen 13–17 år og har
-              kapacitet til at følge borgeren gennem hele bevillingsperioden.
-            </p>
-            <ul style="margin:10px 0 0;padding-left:20px;line-height:1.9">
-              <li>Dokumenteret erfaring med angstproblematik og skolevægring hos unge</li>
-              <li>Relationsorienteret tilgang med fokus på tryghed og kontinuitet</li>
-              <li>Bor 8 km fra borgeren og kan starte inden for én uge</li>
-              <li>Har kapacitet til ${K().borger.timer} t/uge gennem hele bevillingsperioden</li>
-            </ul>
-            <hr class="divider">
-            <div class="btn-row" style="margin-top:0">
-              <button class="btn btn-primary btn-lg" data-action="acceptProposal">Acceptér</button>
-              <button class="btn btn-ghost" data-action="prev">Tilbage til forslag</button>
-            </div>
-          </div>
-        </div>`
-    },
-    {
-      name: "Accepteret",
-      render: () => `
-        <div class="card center" style="max-width:540px;margin:6vh auto 0;padding:42px 32px;position:relative;overflow:hidden">
-          ${confetti()}
-          ${checkAnim()}
-          <h1>Forløb er aktiveret</h1>
-          <p class="muted">Kontaktperson SH er notificeret og vil kontakte jer inden for 48 timer for at aftale opstartsmøde.</p>
-          <p><span class="pill pill-forest">Sagsnr. ${K().caseId}</span> &nbsp; <span class="pill pill-green">● Aktiv</span></p>
-          <button class="btn btn-primary btn-lg" data-action="goto" data-step="1" style="margin-top:10px">Tilbage til overblik</button>
-        </div>`
-    }
-  ];
-
-  /* ================================================================
      JOURNEY 2 — KONTAKTPERSON
      ================================================================ */
   const P = () => state.data.kontaktperson;
@@ -1092,7 +783,7 @@ table.data tr:hover td { background: var(--amber-soft); }
             <input id="p-email" class="input" type="email" value="sofie.holm.demo@eksempel.dk">
           </div>
           <div class="field">
-            <label>Profession <span class="muted" style="font-weight:400">(vælg alle relevante — samme liste som kommunerne matcher på)</span></label>
+            <label>Profession <span class="muted" style="font-weight:400">(vælg alle relevante)</span></label>
             ${professionChecklist(["Socialpædagog"])}
           </div>
           <div class="field">
@@ -1165,7 +856,7 @@ table.data tr:hover td { background: var(--amber-soft); }
           </div>
           <hr class="divider">
           <div class="field">
-            <label>Kompetenceområder <span class="muted" style="font-weight:400">(samme liste som kommunernes intake)</span></label>
+            <label>Kompetenceområder <span class="muted" style="font-weight:400">(matcher sagernes krav)</span></label>
             ${competenceChecklist(["Angst", "Skolevægring", "Social usikkerhed", "Isolation", "Lavt selvværd"])}
           </div>
           <div class="field">
@@ -1228,7 +919,7 @@ table.data tr:hover td { background: var(--amber-soft); }
             <h3>Kasper Larsen · 14 år</h3>
             <p class="muted small">Sag KS-260707-241 · §32 · 5 t/uge · Aalborg Kommune · Startet 6. jul 2026</p>
             <p class="small"><span class="pill pill-green">● Aktiv</span>&nbsp; <span class="pill pill-grey">Næste opfølgning om 12 dage</span></p>
-            <p class="small muted mb0">Husk: statusnotat efter hvert besøg styrker kommunens indblik i forløbet.</p>
+            <p class="small muted mb0">Husk: statusnotat efter hvert besøg styrker Kursskiftes overblik over forløbet.</p>
           </div>
           <div class="card mb0" id="noteCard">
             ${P().noteSaved ? `
@@ -1290,11 +981,10 @@ table.data tr:hover td { background: var(--amber-soft); }
           <div class="stat warn"><div class="num">1</div><div class="lbl">Dokument mangler</div></div>
           <div class="stat"><div class="num">18</div><div class="lbl">Aktive fagpersoner</div></div>
         </div>
-        ${A().proposalSent ? `
+        ${A().caseAssigned ? `
         <div class="card">
           <h3>Seneste aktivitet</h3>
-          <div class="case-row"><span class="case-id">10.42</span><div class="case-main"><div class="t">Aalborg Kommune accepterede forslag i sag KS-260628-315</div><div class="s">Forløb aktiveret · Kontaktperson MK er notificeret</div></div><span class="pill pill-green">● Aktiv</span></div>
-          <div class="case-row"><span class="case-id">10.18</span><div class="case-main"><div class="t">Forslag sendt til Aalborg Kommune</div><div class="s">Sag KS-260628-315 · Kandidat MK · Vurdering 6/6</div></div><span class="pill pill-grey">Sendt</span></div>
+          <div class="case-row"><span class="case-id">10.42</span><div class="case-main"><div class="t">Fagperson MK tildelt og aktiveret — sag KS-260628-315</div><div class="s">Thomas Hedegaard · Kontaktperson MK notificeret · Sag aktiv</div></div><span class="pill pill-green">● Aktiv</span></div>
         </div>` : ""}
         <div class="two-col">
           <div class="card mb0">
@@ -1303,8 +993,7 @@ table.data tr:hover td { background: var(--amber-soft); }
             <div class="case-row"><div class="case-main"><div class="t">🔴 Akut: Sag KS-260707-389 — Hanne Nielsen mangler kontaktperson</div><div class="s">Aalborg · Høj kompleksitet · 24-timers SLA · Matcher nu</div></div><button class="btn btn-sm btn-primary" data-action="goto" data-step="4">Match nu</button></div>
             <div class="case-row"><div class="case-main"><div class="t">Sag KS-260628-315 klar til matching</div><div class="s">Thomas Hedegaard · Aalborg · Høj kompleksitet</div></div><button class="btn btn-sm btn-secondary" data-action="goto" data-step="4">Åbn</button></div>
             <div class="case-row" style="background:#FFFBEB;border-radius:8px;padding:10px 12px;margin:4px 0;"><div class="case-main"><div class="t" style="color:#92400E;">⚠ Sag KS-260625-067 — ingen egnet kandidat fundet endnu</div><div class="s">Birgit Nielsen · Brønderslev · Kursskifte arbejder aktivt på sagen — kontaktpersoner fra Nordjylland og Vendsyssel kontaktes</div></div><span class="pill pill-amber">Aktiv søgning</span></div>
-            ${A().kommuneApproved ? "" : `
-            <div class="case-row"><div class="case-main"><div class="t">Ny kommune afventer adgang</div><div class="s">Hjørring Kommune · Henvendelse via kursskifte.dk/intake · 5. jul</div></div><button class="btn btn-sm btn-primary" data-action="approveKommune">Godkend kommune-adgang</button></div>`}
+
           </div>
           <div class="card mb0">
             <h3>Dokumenter</h3>
@@ -1378,7 +1067,7 @@ table.data tr:hover td { background: var(--amber-soft); }
             <div class="avatar lg forest">TH</div>
             <div class="case-main">
               <div class="t" style="font-size:1.1rem">Thomas Hedegaard · 15 år · Aalborg</div>
-              <div class="s">KS-260628-315 · §32 · 8 t/uge · Indsendt af Aalborg Kommune 5. jul</div>
+              <div class="s">KS-260628-315 · §32 · 8 t/uge · Henvendelse fra Aalborg Kommune 5. jul</div>
             </div>
             <span class="pill pill-red">Høj kompleksitet</span>
           </div>
@@ -1407,11 +1096,11 @@ table.data tr:hover td { background: var(--amber-soft); }
         <p class="small muted center">Kriterier: Målgruppeerfaring · Relationskompetencer · Geografi · Tilgængelighed · Kontinuitet · Kompetencer</p>`
     },
     {
-      name: "Send forslag",
+      name: "Tildel fagperson",
       render: () => `
         ${backBtn()}
         <div class="card" style="max-width:640px;margin:12px auto 0;padding:28px">
-          <h2>Send forslag til kommunen</h2>
+          <h2>Tildel fagperson til sag</h2>
           <p class="muted small">Sag KS-260628-315 · Thomas Hedegaard · Aalborg Kommune</p>
           <hr class="divider">
           <div class="cand" style="margin-bottom:14px">
@@ -1430,7 +1119,7 @@ table.data tr:hover td { background: var(--amber-soft); }
           </p>
           <hr class="divider">
           <div class="btn-row" style="margin-top:0">
-            <button class="btn btn-primary btn-lg" data-action="sendProposal">Send forslag til kommunen</button>
+            <button class="btn btn-primary btn-lg" data-action="assignDirect">Tildel og aktiver sag</button>
             <button class="btn btn-ghost" data-action="prev">Vælg anden kandidat</button>
           </div>
         </div>`
@@ -1446,10 +1135,9 @@ table.data tr:hover td { background: var(--amber-soft); }
           </div>
           <hr class="divider">
           <ul class="timeline">
-            <li class="done"><span class="tl-dot">✓</span><div class="tl-body"><div class="tl-title">Kommunen accepterede forslaget</div><div class="small muted">I dag 10.42 · Forløb aktiveret automatisk</div></div></li>
-            <li class="done"><span class="tl-dot">✓</span><div class="tl-body"><div class="tl-title">Kontaktperson MK notificeret</div><div class="small muted">I dag 10.42 · Kontakter kommunen inden 48 timer</div></div></li>
-            <li class="done"><span class="tl-dot">✓</span><div class="tl-body"><div class="tl-title">Forslag sendt til Aalborg Kommune</div><div class="small muted">I dag 10.18 · Kandidat MK · Kursskiftes vurdering 6/6</div></div></li>
-            <li class="done"><span class="tl-dot">✓</span><div class="tl-body"><div class="tl-title">Sag modtaget fra kommunen</div><div class="small muted">5. jul 14.03</div></div></li>
+            <li class="done"><span class="tl-dot">✓</span><div class="tl-body"><div class="tl-title">Fagperson MK tildelt — sag aktiveret</div><div class="small muted">I dag 10.42 · MK notificeret direkte</div></div></li>
+            <li class="done"><span class="tl-dot">✓</span><div class="tl-body"><div class="tl-title">Match gennemført — MK rangeret nr. 1 af 3</div><div class="small muted">I dag 10.18 · Kursskiftes vurdering 6/6</div></div></li>
+            <li class="done"><span class="tl-dot">✓</span><div class="tl-body"><div class="tl-title">Sag oprettet af Kursskifte</div><div class="small muted">5. jul 14.03 · Henvendelse fra Aalborg Kommune</div></div></li>
           </ul>
           <hr class="divider">
           <button class="btn btn-primary" data-action="goto" data-step="0">Tilbage til overblik</button>
@@ -1554,7 +1242,7 @@ table.data tr:hover td { background: var(--amber-soft); }
         </div>
         <div class="insight">
           <div class="big">94%</div>
-          <p style="flex:1;min-width:220px"><b>Genmatch-rate: 94%</b> — første match accepteres i 94% af sagerne. Når det første forslag rammer rigtigt, sparer kommunen ugers sagsbehandling og borgeren undgår et skifte.</p>
+          <p style="flex:1;min-width:220px"><b>Genmatch-rate: 94%</b> — første match accepteres i 94% af sagerne. Når det første forslag rammer rigtigt, sparer tid og borgeren undgår et unødigt skifte.</p>
         </div>`
     }
   ];
@@ -1563,9 +1251,8 @@ table.data tr:hover td { background: var(--amber-soft); }
      Journey registry & rendering
      ================================================================ */
   const journeys = {
-    kommune: { steps: kommuneSteps, indicator: () => (state.currentStep > 0 ? "Aalborg Kommune" : "Kommuneportal"), avatar: "AK", showStepper: true, narrow: true },
-    kontaktperson: { steps: kpSteps, indicator: () => (state.currentStep >= 4 ? "Sofie Holm · Kontaktperson" : "Fagpersoner"), avatar: "SH", showStepper: true, narrow: true },
     admin: { steps: adminSteps, indicator: () => "Kursskifte · Admin", avatar: "KA", showStepper: true, narrow: false, sidebar: true },
+    kontaktperson: { steps: kpSteps, indicator: () => (state.currentStep >= 4 ? "Sofie Holm · Kontaktperson" : "Fagpersoner"), avatar: "SH", showStepper: true, narrow: true },
     ledelse: { steps: ledelseSteps, indicator: () => "Kursskifte · Ledelse", avatar: "KL", showStepper: false, narrow: false }
   };
 
@@ -1704,9 +1391,8 @@ table.data tr:hover td { background: var(--amber-soft); }
       case "goto": navigate(state.currentJourney, parseInt(btn.dataset.step, 10)); break;
       case "noop": toast("Denne del er ikke med i demoen endnu", "warning"); break;
       case "bell": {
-        const n = state.data[state.currentJourney].notif || 0;
-        if (state.currentJourney === "kommune" && n > 0) navigate("kommune", 4);
-        else toast(n > 0 ? "Du har " + n + " notifikationer" : "Ingen nye notifikationer", n > 0 ? "warning" : "success");
+        const n = state.data[state.currentJourney]?.notif || 0;
+        toast(n > 0 ? "Du har " + n + " notifikationer" : "Ingen nye notifikationer", n > 0 ? "warning" : "success");
         break;
       }
       case "chip": {
@@ -1720,40 +1406,6 @@ table.data tr:hover td { background: var(--amber-soft); }
         break;
       }
 
-      /* --- Kommune --- */
-      case "submitCase": {
-        const d = state.data.kommune;
-        d.borger.navn = ($("#f-navn") && $("#f-navn").value.trim()) || "Kasper Larsen";
-        d.borger.init = d.borger.navn.split(/\s+/).map((w) => w.charAt(0)).join("").toUpperCase().slice(0, 3) || "KL";
-        d.borger.alder = ($("#f-alder") && $("#f-alder").value) || 14;
-        d.borger.timer = ($("#f-timer") && $("#f-timer").value) || 5;
-        d.borger.par = ($("#f-par") && $("#f-par").value.indexOf("85") > -1) ? "§85" : "§32";
-        /* Sagsnummer: KS-YYMMDD-[3-cifret løbenummer] */
-        const _n = new Date(); const _yy = String(_n.getFullYear()).slice(2); const _mm = String(_n.getMonth()+1).padStart(2,'0'); const _dd = String(_n.getDate()).padStart(2,'0');
-        d.caseId = "KS-" + _yy + _mm + _dd + "-" + String(200 + Math.floor(Math.random()*200)).padStart(3,'0');
-        d.caseSubmitted = true;
-        toast("Sag " + d.caseId + " indsendt");
-        navigate("kommune", 3);
-        break;
-      }
-      case "requestNewCandidate":
-        toast("Forslaget er afvist — Kursskifte finder en ny kandidat og vender tilbage hurtigst muligt", "warning");
-        break;
-      case "compass":
-        runCompass("Kursskifte kortlægger egnede kandidater…",
-          "Målgruppeerfaring · Relationskompetencer · Geografi · Tilgængelighed · Kontinuitet · Kompetencer",
-          () => { state.data.kommune.notif = 1; navigate("kommune", parseInt(btn.dataset.step, 10)); });
-        break;
-      case "askQuestion":
-        toast("Dit spørgsmål er sendt til Kursskiftes team");
-        break;
-      case "acceptProposal":
-        state.data.kommune.caseAccepted = true;
-        state.data.kommune.notif = 0;
-        toast("Forslag accepteret – forløb aktiveret");
-        navigate("kommune", 6);
-        break;
-
       /* --- Kontaktperson --- */
       case "upload": simulateUpload(btn.dataset.doc, btn); break;
       case "saveProfile":
@@ -1764,7 +1416,7 @@ table.data tr:hover td { background: var(--amber-soft); }
         break;
       case "kpAccept":
         state.data.kontaktperson.notif = 0;
-        toast("Sag accepteret – kommunen er notificeret");
+        toast("Sag accepteret – Kursskiftes team er notificeret");
         navigate("kontaktperson", 7);
         break;
       case "kpReject":
@@ -1774,16 +1426,12 @@ table.data tr:hover td { background: var(--amber-soft); }
         state.data.kontaktperson.noteSaved = true;
         toast("Statusnotat gemt og delt");
         const card = $("#noteCard");
-        if (card) card.innerHTML = '<h3>Statusnotat</h3><p><span class="pill pill-green">✓ Notat gemt · 6. jul 2026</span></p><p class="small muted mb0">Notatet er delt med Aalborg Kommune og Kursskiftes team.</p>';
+        if (card) card.innerHTML = '<h3>Statusnotat</h3><p><span class="pill pill-green">✓ Notat gemt · 6. jul 2026</span></p><p class="small muted mb0">Notatet er delt med Kursskiftes team.</p>';
         break;
       }
 
       /* --- Admin --- */
-      case "approveKommune":
-        state.data.admin.kommuneApproved = true;
-        toast("Hjørring Kommune er godkendt — invitationsmail med opsætningslink er sendt");
-        navigate("admin", 0);
-        break;
+
       case "approveApplicant":
         state.data.admin.marieApproved = true;
         state.data.admin.applications = 1;
@@ -1803,13 +1451,10 @@ table.data tr:hover td { background: var(--amber-soft); }
         navigate("admin", 6);
         break;
       }
-      case "sendProposal":
-        state.data.admin.proposalSent = true;
-        toast("Forslag sendt til Aalborg Kommune");
-        setTimeout(() => {
-          toast("Aalborg Kommune har accepteret forslaget");
-          navigate("admin", 7);
-        }, 1400);
+      case "assignDirect":
+        state.data.admin.caseAssigned = true;
+        toast("Fagperson MK tildelt — sag KS-260628-315 er nu aktiv");
+        navigate("admin", 7);
         break;
     }
   });
@@ -1820,12 +1465,7 @@ table.data tr:hover td { background: var(--amber-soft); }
     if (r) { const out = document.getElementById(r.dataset.range); if (out) out.textContent = r.value; }
   });
 
-  /* Enter key submits login */
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && state.currentJourney === "kommune" && state.currentStep === 0 && e.target.classList.contains("input")) {
-      nextStep();
-    }
-  });
+
 
   /* ---------------- Time-based greeting ---------------- */
   function getGreeting() {

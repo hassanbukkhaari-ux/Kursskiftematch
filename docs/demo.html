@@ -780,7 +780,7 @@ table.data tr:hover td { background: var(--amber-soft); }
         <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;margin-bottom:18px">
           <div>
             <h1>Aalborg Kommune · Socialforvaltningen</h1>
-            <p class="muted mb0">Godmorgen. Her er jeres overblik.</p>
+            <p class="muted mb0">${getGreeting()}. Her er jeres overblik.</p>
           </div>
           <button class="btn btn-amber btn-lg" data-action="goto" data-step="2">+ Indsend ny sag</button>
         </div>
@@ -1215,7 +1215,7 @@ table.data tr:hover td { background: var(--amber-soft); }
       name: "Aktivt forløb",
       render: () => `
         <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;margin-bottom:18px">
-          <div><h1>Godmorgen, Sofie</h1><p class="muted mb0">Dit overblik som kontaktperson</p></div>
+          <div><h1>${getGreeting()}, Sofie</h1><p class="muted mb0">Dit overblik som kontaktperson</p></div>
           <span class="pill pill-green">● 1 aktiv sag</span>
         </div>
         <div class="stats">
@@ -1826,6 +1826,15 @@ table.data tr:hover td { background: var(--amber-soft); }
       nextStep();
     }
   });
+
+  /* ---------------- Time-based greeting ---------------- */
+  function getGreeting() {
+    const h = new Date().getHours();
+    if (h >= 5 && h < 12) return 'Godmorgen';
+    if (h >= 12 && h < 14) return 'Godmiddag';
+    if (h >= 14 && h < 18) return 'Godeftermiddag';
+    return 'Godaften';
+  }
 
   /* ---------------- Boot ---------------- */
   renderScreen(false);

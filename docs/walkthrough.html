@@ -523,6 +523,50 @@ a { text-decoration: none; color: inherit; }
   /* Cases table: hide less important columns */
   .app-shell-main { overflow-x: hidden; }
 }
+
+/* ── Demo-mode (single screen at a time) ─────────── */
+.demo-mode .wt-grp-hd  { display: none !important; }
+.demo-mode .wt-grp     { margin-bottom: 0 !important; }
+.demo-mode .wt-sc      { display: none !important; }
+.demo-mode .wt-sc.wt-cur { display: block !important; }
+.demo-mode .wt-main    { padding-bottom: 80px !important; }
+
+.screen-nav {
+  display: none;
+  position: fixed; bottom: 0; left: 232px; right: 0; z-index: 90;
+  background: var(--surface); border-top: 1px solid var(--border);
+  padding: 10px 20px;
+  align-items: center; gap: 10px;
+  box-shadow: 0 -2px 12px rgba(0,0,0,0.07);
+}
+@media (max-width: 700px) { .screen-nav { left: 0; } }
+.screen-nav-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 16px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text);
+  font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer;
+  white-space: nowrap; transition: background .12s, border-color .12s; flex-shrink: 0;
+}
+.screen-nav-btn:hover:not(:disabled) { border-color: var(--accent); background: var(--route-bg); }
+.screen-nav-btn:disabled { opacity: .3; cursor: not-allowed; }
+.nav-title { flex: 1; text-align: center; font-size: 12px; color: var(--muted); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nav-counter { font-size: 11px; color: var(--muted); font-weight: 700; white-space: nowrap; flex-shrink: 0; }
+.demo-toggle-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 11px; border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.28); background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.85); font: inherit; font-size: 11.5px; font-weight: 600;
+  cursor: pointer; transition: background .15s; white-space: nowrap;
+}
+.demo-toggle-btn:hover { background: rgba(255,255,255,0.2); }
+.demo-toggle-btn.on { background: var(--accent); border-color: var(--accent); color: #2B2109; }
+/* Make internal sidebar items in screens look clickable */
+.bv .sb-nav-item, .bv .sb-section-label + .sb-nav-item {
+  cursor: pointer;
+}
+.bv .sb-nav-item:not(.active):hover {
+  background: rgba(200,153,58,0.1) !important;
+}
 </style>
 
 <div class="wt">
@@ -578,10 +622,29 @@ a { text-decoration: none; color: inherit; }
       <div class="wt-logo-sub">Digital platform · Systemgennemgang</div>
     </div>
     <div class="wt-hd-sep"></div>
-    <span class="wt-hd-title">27 centrale sider</span>
+    <span class="wt-hd-title" id="hdScreenTitle">28 skærme</span>
   </div>
-  <span class="wt-hd-count">Interaktiv systemdokumentation</span>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span class="wt-hd-count" id="hdCounter" style="display:none;"></span>
+    <button class="demo-toggle-btn on" id="demoToggle" title="Skift mellem demo-tilstand og scroll-oversigt">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Demo-tilstand
+    </button>
+  </div>
 </header>
+
+<div id="screenNav" class="screen-nav">
+  <button class="screen-nav-btn" id="navPrev">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+    Forrige
+  </button>
+  <span class="nav-title" id="navTitle"></span>
+  <span class="nav-counter" id="navCounter"></span>
+  <button class="screen-nav-btn" id="navNext">
+    Næste
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+  </button>
+</div>
 
 <div class="wt-body">
 
@@ -619,6 +682,7 @@ a { text-decoration: none; color: inherit; }
     <a class="sb-link" href="#notifikationer"><span class="sb-link-n">15</span><span class="sb-dot adm"></span>Notifikationer</a>
     <a class="sb-link" href="#match-detalje"><span class="sb-link-n">16</span><span class="sb-dot adm"></span>Match-detalje</a>
     <a class="sb-link" href="#statistik"><span class="sb-link-n">22</span><span class="sb-dot adm"></span>Statistik</a>
+    <a class="sb-link" href="#overdragelse-admin"><span class="sb-link-n">WF8</span><span class="sb-dot adm"></span>Overdragelse</a>
   </div>
   <div class="sb-grp">
     <span class="sb-grp-label">Kommunikation</span>
@@ -1625,7 +1689,7 @@ a { text-decoration: none; color: inherit; }
         <div class="app-shell-main">
           <div class="app-ph">
             <div class="app-ph-eyebrow">Mit overblik</div>
-            <div class="app-ph-title">Hej, Sarah</div>
+            <div class="app-ph-title"><span class="dyn-greeting">Godmorgen</span>, Sarah</div>
             <div class="app-ph-sub">Kursskifte — din platform</div>
           </div>
           <div class="app-cc">
@@ -1883,7 +1947,7 @@ a { text-decoration: none; color: inherit; }
         <div class="app-shell-main">
           <div class="app-ph">
             <div class="app-ph-eyebrow">Dashboard</div>
-            <div class="app-ph-title">Administration</div>
+            <div class="app-ph-title"><span class="dyn-greeting">Godmorgen</span></div>
             <div class="app-ph-sub">Kursskifte — administrationsplatform</div>
           </div>
           <div class="app-cc">
@@ -3977,35 +4041,212 @@ a { text-decoration: none; color: inherit; }
 </div><!-- /wt -->
 
 <script>
-// ── Sidebar active-link tracking ──────────────────────
-const links = document.querySelectorAll('.sb-link');
-const sections = document.querySelectorAll('.wt-sc');
-const obs = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      links.forEach(l => l.classList.remove('active'));
-      const a = document.querySelector(`.sb-link[href="#${e.target.id}"]`);
-      if (a) a.classList.add('active');
-    }
-  });
-}, { threshold: 0.25, rootMargin: '-52px 0px 0px 0px' });
-sections.forEach(s => obs.observe(s));
+// ══════════════════════════════════════════════════════
+// KURSSKIFTE WALKTHROUGH — INTERACTIVE NAVIGATION
+// ══════════════════════════════════════════════════════
 
-// ── Mobile sidebar toggle ─────────────────────────────
-const sidebar = document.getElementById('sidebar');
-const menuBtn = document.getElementById('menuBtn');
-const overlay = document.getElementById('sbOverlay');
+// ── Ordered screen list ───────────────────────────────
+const SCREENS = [
+  'forside','login','intake','forslag',
+  'dashboard','mine-sager','profil','sessionslogs',
+  'admin','admin-sager','matching','professionals','pro-detalje',
+  'henvendelser','notifikationer','match-detalje','overdragelse-admin',
+  'sagsforloeb',
+  'kommune-sammenfatning','metode','faq',
+  'beskeder','beskeder-admin','beskeder-kommune',
+  'statistik','juridisk','til-fagpersoner','kvalitet'
+];
 
-function closeSidebar() { sidebar.classList.remove('open'); }
-function openSidebar()  { sidebar.classList.add('open'); }
+// ── Internal nav item text → screen id ───────────────
+// Context: the text inside .sb-nav-item elements within the app shells
+const NAVMAP = {
+  'Overblik':              'dashboard',
+  'Mine sager':            'mine-sager',
+  'Sessionsdokumentation': 'sessionslogs',
+  'Min profil':            'profil',
+  'Dashboard':             'admin',
+  'Sager':                 'admin-sager',
+  'Matching':              'matching',
+  'Fagpersoner':           'professionals',
+  'Henvendelser':          'henvendelser',
+  'Notifikationer':        'notifikationer',
+  'Statistik':             'statistik',
+  'Beskeder':              'beskeder',
+  'Sagsoversigt':          'admin-sager',
+  'Match-administration':  'matching',
+  'Timeregistrering':      null,
+  'Artikler':              null,
+  'Kommuner':              null,
+};
 
-menuBtn.addEventListener('click', () => {
-  sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+let curIdx  = 0;
+let demoMode = false; // set to true in boot
+
+// ── Time-based greeting ───────────────────────────────
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h >= 5  && h < 12) return 'Godmorgen';
+  if (h >= 12 && h < 14) return 'Godmiddag';
+  if (h >= 14 && h < 18) return 'Godeftermiddag';
+  return 'Godaften';
+}
+document.querySelectorAll('.dyn-greeting').forEach(el => {
+  el.textContent = getGreeting();
 });
-overlay.addEventListener('click', closeSidebar);
 
-// Close sidebar when a link is tapped on mobile
-links.forEach(l => l.addEventListener('click', () => {
-  if (window.innerWidth <= 640) closeSidebar();
-}));
+// ── DOM refs ──────────────────────────────────────────
+const sidebarEl  = document.getElementById('sidebar');
+const menuBtn    = document.getElementById('menuBtn');
+const overlayEl  = document.getElementById('sbOverlay');
+const demoToggle = document.getElementById('demoToggle');
+const screenNav  = document.getElementById('screenNav');
+const navPrev    = document.getElementById('navPrev');
+const navNext    = document.getElementById('navNext');
+const navCounter = document.getElementById('navCounter');
+const navTitle   = document.getElementById('navTitle');
+const hdCounter  = document.getElementById('hdCounter');
+const hdTitle    = document.getElementById('hdScreenTitle');
+const wtEl       = document.querySelector('.wt');
+const sbLinks    = document.querySelectorAll('.sb-link');
+const allScreens = document.querySelectorAll('.wt-sc');
+
+function getScreenLabel(id) {
+  const el = document.getElementById(id);
+  if (!el) return id;
+  const t = el.querySelector('.sc-title');
+  return t ? t.textContent.trim() : id;
+}
+
+// ── Navigation ────────────────────────────────────────
+function goTo(target) {
+  let idx = typeof target === 'number'
+    ? Math.max(0, Math.min(SCREENS.length - 1, target))
+    : Math.max(0, SCREENS.indexOf(target));
+  if (SCREENS.indexOf(SCREENS[idx]) < 0) return; // unknown id — bail
+  curIdx = idx;
+  const id = SCREENS[idx];
+
+  if (demoMode) {
+    allScreens.forEach(el => el.classList.remove('wt-cur'));
+    const el = document.getElementById(id);
+    if (el) el.classList.add('wt-cur');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  } else {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // Sync left sidebar highlight
+  sbLinks.forEach(l => l.classList.remove('active'));
+  const activeLink = document.querySelector(`.sb-link[href="#${id}"]`);
+  if (activeLink) {
+    activeLink.classList.add('active');
+    activeLink.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  updateBottomNav();
+}
+
+function updateBottomNav() {
+  if (navPrev)    navPrev.disabled    = curIdx === 0;
+  if (navNext)    navNext.disabled    = curIdx === SCREENS.length - 1;
+  if (navCounter) navCounter.textContent = `${curIdx + 1} / ${SCREENS.length}`;
+  if (navTitle)   navTitle.textContent   = getScreenLabel(SCREENS[curIdx]);
+  if (hdCounter)  hdCounter.textContent  = `${curIdx + 1} / ${SCREENS.length}`;
+}
+
+// ── Demo / scroll mode toggle ─────────────────────────
+function setDemoMode(on) {
+  demoMode = on;
+
+  if (on) {
+    wtEl.classList.add('demo-mode');
+    demoToggle.classList.add('on');
+    demoToggle.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Afslut demo`;
+    screenNav.style.display = 'flex';
+    hdCounter.style.display = 'inline';
+    hdTitle.textContent = getScreenLabel(SCREENS[curIdx]);
+    goTo(curIdx);
+  } else {
+    wtEl.classList.remove('demo-mode');
+    demoToggle.classList.remove('on');
+    demoToggle.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg> Demo-tilstand`;
+    screenNav.style.display = 'none';
+    hdCounter.style.display = 'none';
+    hdTitle.textContent = `${SCREENS.length} skærme`;
+    allScreens.forEach(el => el.classList.remove('wt-cur'));
+    // Restore scroll-based active tracking via observer
+    const el = document.getElementById(SCREENS[curIdx]);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+// ── Sidebar link clicks ───────────────────────────────
+sbLinks.forEach(l => {
+  l.addEventListener('click', (e) => {
+    if (demoMode) {
+      e.preventDefault();
+      const id = l.getAttribute('href').replace('#', '');
+      goTo(id);
+    }
+    if (window.innerWidth <= 700) sidebarEl.classList.remove('open');
+  });
+});
+
+// ── Internal app-shell nav item clicks ───────────────
+document.addEventListener('click', (e) => {
+  if (!demoMode) return;
+  const item = e.target.closest('.sb-nav-item');
+  if (!item) return;
+  // Get plain text (strip child SVG text nodes)
+  const text = Array.from(item.childNodes)
+    .filter(n => n.nodeType === Node.TEXT_NODE)
+    .map(n => n.textContent.trim())
+    .join('').trim()
+    || item.textContent.trim().replace(/\s+/g, ' ');
+  // Find best match key
+  const key = Object.keys(NAVMAP).find(k => text.startsWith(k));
+  if (key && NAVMAP[key]) goTo(NAVMAP[key]);
+});
+
+// ── Bottom nav ────────────────────────────────────────
+navPrev?.addEventListener('click', () => goTo(curIdx - 1));
+navNext?.addEventListener('click', () => goTo(curIdx + 1));
+
+// ── Keyboard navigation ───────────────────────────────
+document.addEventListener('keydown', (e) => {
+  if (!demoMode) return;
+  if (document.activeElement && ['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown')  { e.preventDefault(); goTo(curIdx + 1); }
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')    { e.preventDefault(); goTo(curIdx - 1); }
+});
+
+// ── Demo mode toggle button ───────────────────────────
+demoToggle?.addEventListener('click', () => setDemoMode(!demoMode));
+
+// ── Mobile sidebar ────────────────────────────────────
+menuBtn?.addEventListener('click', () =>
+  sidebarEl.classList.contains('open')
+    ? sidebarEl.classList.remove('open')
+    : sidebarEl.classList.add('open')
+);
+overlayEl?.addEventListener('click', () => sidebarEl.classList.remove('open'));
+
+// ── Intersection observer (scroll mode only) ──────────
+const obs = new IntersectionObserver(entries => {
+  if (demoMode) return;
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const idx = SCREENS.indexOf(e.target.id);
+    if (idx >= 0) curIdx = idx;
+    sbLinks.forEach(l => l.classList.remove('active'));
+    const a = document.querySelector(`.sb-link[href="#${e.target.id}"]`);
+    if (a) a.classList.add('active');
+  });
+}, { threshold: 0.2, rootMargin: '-52px 0px 0px 0px' });
+allScreens.forEach(s => obs.observe(s));
+
+// ── Boot ──────────────────────────────────────────────
+setDemoMode(true);
+updateBottomNav();
 </script>

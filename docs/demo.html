@@ -973,7 +973,10 @@ table.data tr:hover td { background: var(--amber-soft); }
       name: "Overblik",
       skeleton: true,
       render: () => `
-        <div style="margin-bottom:18px"><h1>Kursskifte · Administration</h1><p class="muted mb0">Driftsoverblik · Mandag 6. juli 2026</p></div>
+        <div style="margin-bottom:18px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px">
+          <div><h1>Kursskifte · Administration</h1><p class="muted mb0">Driftsoverblik · Mandag 6. juli 2026</p></div>
+          <button class="btn btn-primary" data-action="goto" data-step="4">+ Ny sag</button>
+        </div>
         <div class="stats">
           <div class="stat accent"><div class="num">12</div><div class="lbl">Aktive sager</div></div>
           <div class="stat"><div class="num">4</div><div class="lbl">Matcher afventer</div></div>
@@ -990,8 +993,9 @@ table.data tr:hover td { background: var(--amber-soft); }
           <div class="card mb0">
             <h3>Kræver handling</h3>
             <div class="case-row"><div class="case-main"><div class="t">${A().applications} ${A().applications === 1 ? "ny ansøgning" : "nye ansøgninger"} afventer dokumentkontrol</div><div class="s">Ældste: ${A().marieApproved ? "1 dag" : "2 dage"}</div></div><button class="btn btn-sm btn-secondary" data-action="goto" data-step="1">Åbn</button></div>
-            <div class="case-row"><div class="case-main"><div class="t">🔴 Akut: Sag KS-260707-389 — Hanne Nielsen mangler kontaktperson</div><div class="s">Aalborg · Høj kompleksitet · 24-timers SLA · Matcher nu</div></div><button class="btn btn-sm btn-primary" data-action="goto" data-step="4">Match nu</button></div>
-            <div class="case-row"><div class="case-main"><div class="t">Sag KS-260628-315 klar til matching</div><div class="s">Thomas Hedegaard · Aalborg · Høj kompleksitet</div></div><button class="btn btn-sm btn-secondary" data-action="goto" data-step="4">Åbn</button></div>
+            <div class="case-row" style="background:#EFF6FF;border-radius:8px;padding:10px 12px;margin:4px 0 8px;border:1px solid #BFDBFE"><div class="case-main"><div class="t" style="color:#1E40AF">📧 Ny henvendelse fra Aalborg Kommune · 5. jul</div><div class="s">Krypteret e-mail modtaget — pris og opstart aftalt. Opret sag i systemet.</div></div><button class="btn btn-sm btn-primary" data-action="goto" data-step="4">Opret sag</button></div>
+            <div class="case-row"><div class="case-main"><div class="t">🔴 Akut: Sag KS-260707-389 — Hanne Nielsen mangler kontaktperson</div><div class="s">Aalborg · Høj kompleksitet · 24-timers SLA · Matcher nu</div></div><button class="btn btn-sm btn-primary" data-action="goto" data-step="5">Match nu</button></div>
+            <div class="case-row"><div class="case-main"><div class="t">Sag KS-260628-315 klar til matching</div><div class="s">Thomas Hedegaard · Aalborg · Høj kompleksitet</div></div><button class="btn btn-sm btn-secondary" data-action="goto" data-step="5">Åbn</button></div>
             <div class="case-row" style="background:#FFFBEB;border-radius:8px;padding:10px 12px;margin:4px 0;"><div class="case-main"><div class="t" style="color:#92400E;">⚠ Sag KS-260625-067 — ingen egnet kandidat fundet endnu</div><div class="s">Birgit Nielsen · Brønderslev · Kursskifte arbejder aktivt på sagen — kontaktpersoner fra Nordjylland og Vendsyssel kontaktes</div></div><span class="pill pill-amber">Aktiv søgning</span></div>
 
           </div>
@@ -1054,7 +1058,90 @@ table.data tr:hover td { background: var(--amber-soft); }
           <p class="muted">Ansøgeren er notificeret og bliver bedt om at udfylde sin profil. Herefter kan hun modtage sager.</p>
           <div class="btn-row" style="justify-content:center">
             <button class="btn btn-primary" data-action="goto" data-step="0">Til overblik</button>
-            <button class="btn btn-secondary" data-action="goto" data-step="4">Næste: Åben sag →</button>
+            <button class="btn btn-secondary" data-action="goto" data-step="5">Næste: Åben sag →</button>
+          </div>
+        </div>`
+    },
+    {
+      name: "Opret sag",
+      render: () => `
+        ${backBtn()}
+        <div style="margin-bottom:18px"><h1>Opret sag</h1><p class="muted mb0">Ny sag oprettes manuelt efter henvendelse fra kommunen</p></div>
+        <div class="notif-banner">
+          <span>📧</span>
+          <span><b>E-mail fra Aalborg Kommune · 5. jul 2026</b> — Ung på 15 år med behov for kontaktperson. Pris og opstart aftalt. Tilknyt til §32. 8 t/uge, høj kompleksitet.</span>
+        </div>
+        <div class="card" style="max-width:640px;padding:28px">
+          <h2 style="margin-bottom:4px">Sagsdetaljer</h2>
+          <p class="muted small">Alle personoplysninger om borgeren er kun synlige i det godkendte system — aldrig i mails eller offentlige sider.</p>
+          <hr class="divider">
+          <div class="form-grid">
+            <div class="field">
+              <label>Kommune</label>
+              <select class="input"><option selected>Aalborg Kommune</option><option>Hjørring Kommune</option><option>Brønderslev Kommune</option><option>Frederikshavn Kommune</option></select>
+            </div>
+            <div class="field">
+              <label>Initialer (borger)</label>
+              <input class="input" value="TH" maxlength="2">
+              <div class="hint">Maks 2 bogstaver — ingen fulde navne her</div>
+            </div>
+            <div class="field">
+              <label>Aldersgruppe &amp; lovgrundlag</label>
+              <select class="input">
+                <option>0–5 år · §32 barnets lov</option>
+                <option>6–12 år · §32 barnets lov</option>
+                <option selected>13–18 år · §32 barnets lov</option>
+                <option>18+ · §85 serviceloven</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Køn</label>
+              <select class="input"><option selected>Dreng / Mand</option><option>Pige / Kvinde</option><option>Andet / Ukendt</option></select>
+            </div>
+            <div class="field">
+              <label>Kompleksitet</label>
+              <select class="input"><option>Lav</option><option>Middel</option><option selected>Høj</option><option>Kritisk</option></select>
+            </div>
+            <div class="field">
+              <label>Timer pr. uge</label>
+              <div style="display:flex;align-items:center;gap:14px">
+                <input type="range" min="0" max="30" value="8" data-range="new-hours-val">
+                <span class="range-val" id="new-hours-val">8</span>
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Hastighed</label>
+            <div class="choice-row" data-single="1">
+              <button class="chip on" data-action="chip">⚪ Normal</button>
+              <button class="chip" data-action="chip">🟡 Hurtig</button>
+              <button class="chip" data-action="chip">🔴 Akut (24 timer)</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Problemområder</label>
+            <div class="choice-row" style="flex-wrap:wrap">
+              <button class="chip on" data-action="chip">Udadreagerende adfærd</button>
+              <button class="chip on" data-action="chip">Vrede / aggression</button>
+              <button class="chip on" data-action="chip">Familiekonflikter</button>
+              <button class="chip" data-action="chip">Skolevægring</button>
+              <button class="chip" data-action="chip">Lavt selvværd</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Kommunens sagsbehandler (ekstern kontakt)</label>
+            <div class="form-grid" style="gap:8px">
+              <input class="input" placeholder="Navn" value="Jette Andersen">
+              <input class="input" type="email" placeholder="E-mail" value="jette.andersen@aalborg.dk">
+            </div>
+          </div>
+          <div class="field">
+            <label>Interne noter</label>
+            <textarea class="input" style="min-height:72px">Ung med udadreagerende adfærd og familiekonflikter. Kommunen ønsker socialpædagog med erfaring i lavaffektiv tilgang. Opstart inden for 2 uger.</textarea>
+          </div>
+          <div class="btn-row" style="margin-top:4px">
+            <button class="btn btn-primary btn-lg" data-action="createCase">Opret sag</button>
+            <button class="btn btn-ghost" data-action="goto" data-step="0">Annullér</button>
           </div>
         </div>`
     },
@@ -1080,7 +1167,7 @@ table.data tr:hover td { background: var(--amber-soft); }
             <li><span class="ck" style="color:var(--muted)">◆</span> Kompetencebehov: Udadreagerende adfærd · Vrede/aggression · Familiekonflikter</li>
           </div>
           <div class="btn-row">
-            <button class="btn btn-amber btn-lg" data-action="adminCompass" data-step="5">Start matching</button>
+            <button class="btn btn-amber btn-lg" data-action="adminCompass" data-step="6">Start matching</button>
           </div>
         </div>`
     },
@@ -1451,10 +1538,14 @@ table.data tr:hover td { background: var(--amber-soft); }
         navigate("admin", 6);
         break;
       }
+      case "createCase":
+        toast("Sag KS-260628-315 oprettet — klar til matching");
+        navigate("admin", 5);
+        break;
       case "assignDirect":
         state.data.admin.caseAssigned = true;
         toast("Fagperson MK tildelt — sag KS-260628-315 er nu aktiv");
-        navigate("admin", 7);
+        navigate("admin", 8);
         break;
     }
   });

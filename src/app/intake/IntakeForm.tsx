@@ -224,12 +224,13 @@ export default function IntakeForm({ municipalities, problemAreas, goals, specia
             problem_area_ids: selectedProblemAreas.length ? selectedProblemAreas : undefined,
             goal_ids: selectedGoals.length ? selectedGoals : undefined,
             special_wish_ids: selectedWishes.length ? selectedWishes : undefined,
-            // TODO(migration): Include the new fields once the intake schema and
-            // API route support them: genderPreference, genderPreferenceReason,
-            // selectedProfessions, professionOtherDescription, maxDrivingTime,
-            // startUrgency, selectedRelationTypes, selectedInterests,
-            // selectedLanguages, languageOther, selectedPracticalRequirements,
-            // continuityImportant, followUpFrequency, selectedDocumentationTypes,
+            desired_start: startUrgency || undefined,
+            // TODO(migration): Include remaining fields once schema supports them:
+            // genderPreference, genderPreferenceReason, selectedProfessions,
+            // professionOtherDescription, maxDrivingTime, selectedRelationTypes,
+            // selectedInterests, selectedLanguages, languageOther,
+            // selectedPracticalRequirements, continuityImportant,
+            // followUpFrequency, selectedDocumentationTypes,
             // priorities (must-have / nice-to-have per criterion).
           }),
         })

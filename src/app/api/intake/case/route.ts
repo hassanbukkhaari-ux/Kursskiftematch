@@ -19,7 +19,17 @@ const IntakeCaseSchema = z.object({
   problem_area_ids: z.array(z.string().uuid()).optional(),
   goal_ids: z.array(z.string().uuid()).optional(),
   special_wish_ids: z.array(z.string().uuid()).optional(),
+  // Ønsket opstart from intake — maps to urgency for case prioritisation.
+  // "Hastighed" (urgency) and "Ønsket opstart" are separate concerns per governance;
+  // the intake value is stored as urgency until admin overrides it.
+  desired_start: z.enum(['ACUTE', 'WITHIN_1_WEEK', 'WITHIN_2_WEEKS', 'FLEXIBLE']).optional(),
 })
+
+function deriveUrgency(desiredStart: string | undefined): 'AKUT' | 'HURTIG' | 'NORMAL' {
+  if (desiredStart === 'ACUTE') return 'AKUT'
+  if (desiredStart === 'WITHIN_1_WEEK') return 'HURTIG'
+  return 'NORMAL'
+}
 
 // POST /api/intake/case — public, no auth (service role)
 export async function POST(request: NextRequest) {
@@ -45,6 +55,7 @@ export async function POST(request: NextRequest) {
   const { data: newCase, error: caseError } = await dba.from('cases').insert({
     municipality_id: parsed.data.municipality_id,
     status: 'OPEN',
+    urgency: deriveUrgency(parsed.data.desired_start),
     citizen_initials: parsed.data.citizen_initials,
     citizen_age_range: parsed.data.citizen_age_range,
     citizen_gender: parsed.data.citizen_gender || null,

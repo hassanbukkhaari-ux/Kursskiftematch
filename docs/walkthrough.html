@@ -2356,6 +2356,115 @@ a { text-decoration: none; color: inherit; }
     </div></div>
   </div>
 
+  <!-- WF-008: OVERDRAGELSE — ADMIN -->
+  <div class="wt-sc" id="overdragelse-admin">
+    <div class="sc-meta"><span class="sc-badge adm">Admin</span><span class="sc-n">WF-008</span><code class="sc-route">/admin/cases/[id]/handover</code></div>
+    <h2 class="sc-title">Overdragelse af sag</h2>
+    <p class="sc-desc">Admin initierer overdragelse. Tre trin er obligatoriske: (1) begrundelse + note til indgående fagperson, (2) navn på indgående fagperson og overlappende møde, (3) notifikation til kommunen. Kommunen er aktiv aktør i alle faser og skal orienteres ved enhver overdragelse. Badge sættes til "🟡 Overdragelse i gang — Kursskifte overtager koordineringen" indtil ny fagperson er aktiv.</p>
+    <div class="browser"><div class="bc-chrome"><div class="bc-dots"><span class="d r"></span><span class="d y"></span><span class="d g"></span></div><div class="bc-addr">kursskiftematch.dk/admin/cases/ks-260707-001/handover</div></div>
+    <div class="bv">
+      <div class="app-shell">
+        <div class="app-shell-sb">
+          <div class="app-shell-sb-logo"><div class="app-shell-sb-logo-row"><div class="app-shell-sb-logo-sq"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="10.5" fill="#1C3829" stroke="rgba(200,153,58,0.75)" stroke-width="0.7"/><path d="M11 1.5 L9.7 11 L12.3 11 Z" fill="#C8993A"/><path d="M11 20.5 L9.7 11 L12.3 11 Z" fill="rgba(180,180,200,0.4)"/><circle cx="11" cy="11" r="1.8" fill="#C8993A" stroke="rgba(0,0,0,0.2)" stroke-width="0.4"/><circle cx="11" cy="11" r="0.75" fill="rgba(255,255,255,0.9)"/></svg></div><div class="app-shell-sb-name">Kursskifte</div></div><div class="app-shell-sb-sub">Admin</div></div>
+          <div class="app-shell-sb-nav">
+            <div class="sb-nav-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</div>
+            <div class="sb-nav-item active"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Sager</div>
+            <div class="sb-nav-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Fagpersoner</div>
+            <div class="sb-nav-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Beskeder</div>
+          </div>
+        </div>
+        <div class="app-shell-main">
+          <div class="app-ph">
+            <div class="app-ph-breadcrumb"><span>Sager</span><span>›</span><span>KS-260707-001</span><span>›</span><span>Overdragelse</span></div>
+            <div class="app-ph-eyebrow">WF-008</div>
+            <div class="app-ph-title">Initiér overdragelse</div>
+            <div class="app-ph-sub">Borger HN · Aalborg Kommune · §85</div>
+          </div>
+          <div class="app-cc" style="max-width:620px;">
+
+            <!-- Step 1: Årsag -->
+            <div style="background:#fff;border:1px solid #E0DAD0;border-radius:12px;padding:18px;margin-bottom:12px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+                <div style="width:22px;height:22px;border-radius:50%;background:#1C3829;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;">1</div>
+                <div style="font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#1A1F1C;">Årsag &amp; note</div>
+              </div>
+              <div style="margin-bottom:10px;">
+                <label class="app-label">Årsag til overdragelse *</label>
+                <select class="app-select" style="font-size:12.5px;">
+                  <option>Fagperson stopper</option>
+                  <option>Kapacitetsproblem</option>
+                  <option>Borger ønsker skift</option>
+                  <option>Andet</option>
+                </select>
+              </div>
+              <div>
+                <label class="app-label">Note til indgående fagperson</label>
+                <textarea class="app-input" style="height:64px;resize:vertical;font-size:12px;padding:8px 11px;" placeholder="Beskriv baggrund og aktuel status for sagen..."></textarea>
+              </div>
+            </div>
+
+            <!-- Step 2: Fagperson + Møde -->
+            <div style="background:#fff;border:1px solid #E0DAD0;border-radius:12px;padding:18px;margin-bottom:12px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+                <div style="width:22px;height:22px;border-radius:50%;background:#1C3829;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;">2</div>
+                <div style="font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#1A1F1C;">Indgående fagperson &amp; overlappende møde</div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+                <div>
+                  <label class="app-label">Indgående fagperson *</label>
+                  <select class="app-select" style="font-size:12.5px;"><option>Vælg fagperson...</option><option selected>Anders K. Hansen</option><option>Mette L. Nielsen</option></select>
+                </div>
+                <div>
+                  <label class="app-label">Dato for overlappende møde *</label>
+                  <input class="app-input" type="text" value="15. jul 2026" style="font-size:12.5px;padding:7px 11px;">
+                </div>
+              </div>
+              <div style="background:#F6F3EE;border:1px solid #E0DAD0;border-radius:9px;padding:10px 12px;font-size:11.5px;color:#6B7569;">
+                Det overlappende møde er obligatorisk — overdragelsen kan ikke afsluttes uden registrering af mødet.
+              </div>
+            </div>
+
+            <!-- Step 3: Kommunenotifikation (MANDATORY) -->
+            <div style="background:#FEF9F0;border:1px solid #F5CBA7;border-radius:12px;padding:18px;margin-bottom:16px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+                <div style="width:22px;height:22px;border-radius:50%;background:#C8993A;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;">3</div>
+                <div style="font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#92660A;">Kommunenotifikation — obligatorisk</div>
+              </div>
+              <p style="font-size:12px;color:#6B5020;line-height:1.55;margin-bottom:12px;">Kommunen er aktiv aktør i sagen fra indledning til afslutning. Aalborg Kommunes sagsbehandler skal notificeres om overdragelsen via det tokenbaserede beskedkanalen, inden overdragelsen godkendes i systemet.</p>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid #FDE68A;border-radius:9px;background:#FFFBEB;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C8993A" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  <span style="font-size:12px;color:#1A1F1C;">Notifikation til <strong>sagsbehandler@aalborg.dk</strong></span>
+                  <span class="app-badge" style="background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;margin-left:auto;">Afventer afsendelse</span>
+                </div>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                  <input type="checkbox" checked style="width:15px;height:15px;accent-color:#C8993A;">
+                  <span style="font-size:12px;color:#1A1F1C;">Send notifikation til kommunen ved overdragelsens start</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                  <input type="checkbox" checked style="width:15px;height:15px;accent-color:#C8993A;">
+                  <span style="font-size:12px;color:#1A1F1C;">Informér kommunen når ny fagperson er aktiv</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Status badge preview -->
+            <div style="background:#F6F3EE;border:1px solid #E0DAD0;border-radius:9px;padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:16px;font-size:12px;color:#6B7569;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B7569" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Sagen får badge: <span class="app-badge" style="background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;margin-left:4px;">🟡 Overdragelse i gang — Kursskifte overtager koordineringen</span>
+            </div>
+
+            <div style="display:flex;gap:10px;">
+              <button style="flex:1;height:40px;background:transparent;color:#1C3829;border:1px solid #C8DDD1;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Annuller</button>
+              <button style="flex:2;height:40px;background:#1C3829;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Bekræft &amp; notificér kommunen</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
 </div><!-- /wt-grp admin -->
 
 <!-- ═══════════════════════════════════════════════════ -->
@@ -2446,6 +2555,19 @@ a { text-decoration: none; color: inherit; }
             </div>
 
             <button style="width:100%;height:40px;background:#F6F3EE;color:#1C3829;border:1px solid #C8DDD1;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:6px;">+ Tilføj ny session</button>
+
+            <!-- §133 Underretningspligt -->
+            <div style="background:#FEF9F0;border:1px solid #F5CBA7;border-radius:12px;padding:16px;margin-top:20px;">
+              <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#C8993A" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#92660A;">Underretningspligt — barnets lov §133</div>
+              </div>
+              <p style="font-size:11.5px;color:#6B5020;line-height:1.55;margin-bottom:12px;">Du har en personlig og øjeblikkelig pligt til at underrette kommunen direkte ved bekymring for borgerens sikkerhed eller trivsel. Registrering i platformen er et supplement — det erstatter <strong>ikke</strong> din direkte underretningspligt.</p>
+              <a href="#" style="display:flex;align-items:center;justify-content:center;gap:6px;height:36px;background:#C8993A;color:#fff;border-radius:9px;font-size:12px;font-weight:600;text-decoration:none;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                Underret kommunen direkte
+              </a>
+            </div>
           </div>
         </div>
       </div>

@@ -274,6 +274,39 @@ export default async function DashboardCasePage({ params }: PageProps) {
                 </div>
               </Card>
             )}
+
+            {/* §133 Underretningspligt */}
+            <div className="rounded-2xl border border-[#F5CBA7] bg-[#FEF9F0] p-4">
+              <div className="flex items-start gap-2.5 mb-2">
+                <svg className="shrink-0 mt-0.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C8993A" strokeWidth="2" strokeLinecap="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                  <line x1="12" y1="9" x2="12" y2="13" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+                <div className="text-[10px] font-semibold uppercase tracking-widest text-[#92660A]">
+                  Underretningspligt — barnets lov §133
+                </div>
+              </div>
+              <p className="text-xs text-[#6B5020] leading-relaxed mb-3">
+                Du har en personlig og øjeblikkelig pligt til at underrette kommunen direkte, hvis du har bekymring for borgerens sikkerhed eller trivsel. Registrering i platformen er et supplement og erstatter <strong>ikke</strong> din direkte underretningspligt.
+              </p>
+              {muniRes.data?.sagsbehandler_email ? (
+                <a
+                  href={`mailto:${muniRes.data.sagsbehandler_email}?subject=Underretning%20vedr.%20borger%20${encodeURIComponent(caseData.citizen_initials)}`}
+                  className="flex items-center gap-1.5 w-full h-9 px-3 bg-[#C8993A] text-white rounded-xl text-xs font-semibold hover:bg-[#B8891A] transition-colors justify-center"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                    <polyline points="22,6 12,13 2,6" />
+                  </svg>
+                  Underret kommunen direkte
+                </a>
+              ) : (
+                <p className="text-xs text-[#92660A] font-medium">
+                  Kontakt kommunens sagsbehandler direkte.
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </ContentContainer>

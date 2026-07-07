@@ -279,6 +279,8 @@ export type Database = {
           id: string
           municipality_id: string
           status: CaseStatus
+          urgency: CaseUrgency
+          case_number: string | null
           citizen_initials: string
           citizen_age_range: AgeRange
           citizen_gender: Gender | null
@@ -297,6 +299,8 @@ export type Database = {
           id?: string
           municipality_id: string
           status?: CaseStatus
+          urgency?: CaseUrgency
+          case_number?: string | null
           citizen_initials: string
           citizen_age_range: AgeRange
           citizen_gender?: Gender | null
@@ -314,6 +318,8 @@ export type Database = {
         Update: {
           municipality_id?: string
           status?: CaseStatus
+          urgency?: CaseUrgency
+          case_number?: string | null
           citizen_initials?: string
           citizen_age_range?: AgeRange
           citizen_gender?: Gender | null
@@ -1054,6 +1060,8 @@ export type Database = {
           id: string
           municipality_id: string
           status: CaseStatus
+          urgency: CaseUrgency
+          case_number: string | null
           citizen_initials: string
           citizen_age_range: AgeRange
           complexity_level: ComplexityLevel
@@ -1144,6 +1152,7 @@ export type DocumentType =
 export type DocumentStatus = 'PENDING_UPLOAD' | 'UNVERIFIED' | 'VERIFIED' | 'ARCHIVED'
 
 export type CaseStatus = 'OPEN' | 'MATCHED' | 'PROPOSED' | 'ACTIVE' | 'COMPLETED' | 'ARCHIVED'
+export type CaseUrgency = 'NORMAL' | 'HURTIG' | 'AKUT'
 
 export type ProposalStatus = 'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED'
 

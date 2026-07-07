@@ -261,6 +261,20 @@ textarea.input { resize: vertical; min-height: 96px; }
 .chip.on { background: var(--forest); border-color: var(--forest); color: #fff; }
 .chip.on::before { content: "✓"; color: var(--amber); font-weight: 700; }
 input[type="range"] { width: 100%; accent-color: var(--amber); }
+
+/* ---------- Grouped option checklist (shared KURSSKIFTE_OPTIONS) ---------- */
+.opt-list {
+  max-height: 280px; overflow-y: auto;
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 2px 14px 12px; background: var(--warm-bg);
+}
+.opt-group {
+  font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--muted); margin: 12px 0 5px;
+}
+.opt-item { display: flex; align-items: center; gap: 9px; font-size: 0.88rem; padding: 3px 0; cursor: pointer; }
+.opt-item input { accent-color: var(--forest); width: 15px; height: 15px; flex-shrink: 0; }
+.opt-free { margin: 4px 0 2px; }
 .range-val { font-family: Georgia, serif; font-size: 1.2rem; font-weight: 700; color: var(--forest); min-width: 3ch; text-align: center; }
 :root[data-theme="dark"] .range-val { color: var(--amber); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .range-val { color: var(--amber); } }
@@ -567,17 +581,88 @@ table.data tr:hover td { background: var(--amber-soft); }
 (function () {
   "use strict";
 
+  /* ================================================================
+     KURSSKIFTE_OPTIONS — shared option lists (single source of truth).
+     Municipality intake and professional application/profile render
+     from these SAME lists everywhere they appear.
+     ================================================================ */
+  const KURSSKIFTE_OPTIONS = {
+    professions: {
+      "Kontaktperson og støtte": ["Kontaktperson", "Støttekontaktperson", "Bostøtte", "Mentor", "Støtteperson"],
+      "Social- og pædagogiske": ["Socialpædagog", "Pædagog", "Pædagogmedhjælper", "Familiebehandler", "Familiekonsulent", "Ungekonsulent", "SSP-medarbejder", "Gadeplansmedarbejder", "Opsøgende medarbejder"],
+      "Misbrug og kriminalitet": ["Misbrugsbehandler", "Rusmiddelkonsulent", "Konfliktmægler"],
+      "Skole og uddannelse": ["Lærer", "Speciallærer", "AKT-medarbejder", "Skolepædagog", "UU-vejleder"],
+      "Beskæftigelse": ["Jobkonsulent", "Beskæftigelsesmentor"],
+      "Sundhed og psykologi": ["Psykiatrisk medarbejder", "Social- og sundhedsassistent", "Sygeplejerske", "Psykolog", "Psykoterapeut", "Tolk"],
+      "Andet": ["Anden relevant fagperson"]
+    },
+    competenceAreas: {
+      "Psykisk helbred": ["Angst", "Depression", "ADHD", "ADD", "Autisme", "PTSD", "OCD", "Spiseforstyrrelse", "Selvskade", "Selvmordstanker", "Psykisk sårbarhed", "Personlighedsforstyrrelse", "Bipolar lidelse", "Psykoseproblematikker"],
+      "Socialt og hverdagsliv": ["Isolation", "Ensomhed", "Manglende struktur", "Personlig hygiejne", "Rengøring", "Indkøb", "Madlavning", "Økonomi", "Aftaler", "Transport", "Døgnrytme", "Netværk"],
+      "Børn og unge": ["Skolevægring", "Skolefravær", "Familiekonflikter", "Udadreagerende adfærd", "Lavt selvværd", "Social usikkerhed", "Overgange skole/uddannelse", "Forældresamarbejde"],
+      "Kriminalitet og risiko": ["Kriminalitetstruet ung", "SSP", "Exit", "Banderelationer", "Konflikthåndtering", "Vrede/aggression", "Dom eller vilkår"],
+      "Misbrug og afhængighed": ["Hash", "Alkohol", "Kokain", "Medicinmisbrug", "Gambling", "Digital afhængighed"],
+      "Bolig og praktisk liv": ["Hjemløshed", "Ustabil bolig", "Flytning", "Nabokonflikter", "Praktisk støtte"],
+      "Beskæftigelse og uddannelse": ["Praktik", "Job", "Uddannelse", "Fastholdelse", "Motivation", "Struktur omkring hverdagen"],
+      "Andet": ["Andet"]
+    },
+    targetGroups: ["Spædbørn 0-2 år", "Børn 3-12 år", "Unge 13-17 år", "Unge voksne 18-25 år", "Voksne 26-64 år", "Seniorer 65+", "Familier", "Forældre", "Kriminalitetstruede unge", "Borgere med psykisk sårbarhed", "Borgere med misbrug", "Borgere med handicap", "Borgere i social isolation", "Andet"],
+    availability: {
+      hoursPerWeek: ["1-3 timer/uge", "4-6 timer/uge", "7-10 timer/uge", "11-15 timer/uge", "16-20 timer/uge", "20+ timer/uge", "Fleksibel efter opgave"],
+      practical: ["Akut opstart mulig", "Aften", "Weekend", "Helligdage", "Kan tage længerevarende forløb", "Midlertidigt ikke tilgængelig"]
+    }
+  };
+  const FREETEXT_ITEMS = ["Andet", "Anden relevant fagperson"];
+
+  /* Render a grouped (or flat) list as a scrollable checkbox list */
+  function optChecklist(groups, checked) {
+    checked = checked || [];
+    const grouped = Array.isArray(groups) ? { "": groups } : groups;
+    let out = '<div class="opt-list">';
+    Object.keys(grouped).forEach((g) => {
+      if (g) out += '<div class="opt-group">' + g + "</div>";
+      grouped[g].forEach((item) => {
+        out += '<label class="opt-item"><input type="checkbox"' + (checked.indexOf(item) > -1 ? " checked" : "") + "><span>" + item + "</span></label>";
+        if (FREETEXT_ITEMS.indexOf(item) > -1) out += '<input class="input opt-free" type="text" placeholder="Beskriv…">';
+      });
+    });
+    return out + "</div>";
+  }
+  const professionChecklist = (checked) => optChecklist(KURSSKIFTE_OPTIONS.professions, checked);
+  const competenceChecklist = (checked) => optChecklist(KURSSKIFTE_OPTIONS.competenceAreas, checked);
+  const targetGroupChecklist = (checked) => optChecklist(KURSSKIFTE_OPTIONS.targetGroups, checked);
+  function hoursSelect(id, selected) {
+    let out = '<select id="' + id + '" class="input">';
+    KURSSKIFTE_OPTIONS.availability.hoursPerWeek.forEach((h) => {
+      out += "<option" + (h === selected ? " selected" : "") + ">" + h + "</option>";
+    });
+    return out + "</select>";
+  }
+  function availabilityFields(selectedHours, checkedPractical) {
+    return `
+      <div class="field">
+        <label>Timetal pr. uge</label>
+        ${hoursSelect("pf-timer", selectedHours)}
+      </div>
+      <div class="field">
+        <label>Praktisk tilgængelighed</label>
+        ${optChecklist(KURSSKIFTE_OPTIONS.availability.practical, checkedPractical)}
+        <div class="hint" style="margin-top:8px">Ledig fra dato</div>
+        <input class="input" type="date" value="2026-07-13" style="max-width:200px">
+      </div>`;
+  }
+
   const state = {
     currentJourney: "kommune",
     currentStep: 0,
     steps: { kommune: 0, kontaktperson: 0, admin: 0, ledelse: 0 },
     data: {
       kommune: {
-        caseId: "KS-2026-0147",
+        caseId: "KS-2026-07-07-KL",
         caseAccepted: false,
         caseSubmitted: false,
         notif: 0,
-        borger: { init: "KL", alder: 14, par: "§52", timer: 5 }
+        borger: { navn: "Kasper Larsen", init: "KL", alder: 14, par: "§52", timer: 5 }
       },
       kontaktperson: {
         navn: "Sofie Holm",
@@ -589,6 +674,7 @@ table.data tr:hover td { background: var(--amber-soft); }
       admin: {
         applications: 2,
         marieApproved: false,
+        kommuneApproved: false,
         proposalSent: false,
         selectedCandidate: null,
         notif: 4
@@ -680,6 +766,8 @@ table.data tr:hover td { background: var(--amber-soft); }
             </div>
             <button class="btn btn-primary btn-lg btn-block" data-action="next" style="margin-top:6px">Log ind</button>
             <p class="muted small center" style="margin:14px 0 0">Glemt adgangskode? Kontakt Kursskiftes team.</p>
+            <hr class="divider">
+            <p class="muted small center mb0">Ny kommune? <b>Kontakt Kursskifte for at komme i gang.</b><br>Adgang oprettes af Kursskiftes team — I modtager en invitationsmail med et opsætningslink, hvor I selv vælger adgangskode.</p>
           </div>
         </div>`
     },
@@ -704,30 +792,34 @@ table.data tr:hover td { background: var(--amber-soft); }
         ${K().notif > 0 ? `
         <div class="notif-banner">
           <span>🔔</span>
-          <span style="flex:1">Kursskifte har fundet en kandidat til Borger ${K().borger.init}.</span>
+          <span style="flex:1">Kursskifte har fundet en kandidat til ${K().borger.navn} (${K().caseId}).</span>
           <button class="btn btn-sm btn-primary" data-action="goto" data-step="4">Se forslag</button>
         </div>` : ""}
         <div class="card">
           <h3>Jeres sager</h3>
           <div class="case-row">
-            <span class="case-id">KS-2026-0121</span>
-            <div class="case-main"><div class="t">Borger MJ · 16 år · §85 · 6 t/uge</div><div class="s">Kontaktperson: AT · Seneste notat: 28. jun</div></div>
+            <span class="case-id">KS-2026-06-30-EJ</span>
+            <div class="avatar" style="width:30px;height:30px;font-size:0.72rem">EJ</div>
+            <div class="case-main"><div class="t">Emma Jensen · 13 år · §52 · 4 t/uge</div><div class="s">Kontaktperson: KB · Seneste notat: 1. jul</div></div>
             <span class="pill pill-green">● Aktiv</span>
           </div>
           <div class="case-row">
-            <span class="case-id">KS-2026-0128</span>
-            <div class="case-main"><div class="t">Borger LN · 13 år · §52 · 4 t/uge</div><div class="s">Kontaktperson: KB · Seneste notat: 1. jul</div></div>
+            <span class="case-id">KS-2026-07-05-RM</span>
+            <div class="avatar" style="width:30px;height:30px;font-size:0.72rem">RM</div>
+            <div class="case-main"><div class="t">Rasmus Madsen · 22 år · §85 · 3 t/uge</div><div class="s">Kontaktperson: AT · Seneste notat: 28. jun</div></div>
             <span class="pill pill-green">● Aktiv</span>
           </div>
           <div class="case-row">
-            <span class="case-id">KS-2026-0135</span>
-            <div class="case-main"><div class="t">Borger PW · 17 år · §85 · 3 t/uge</div><div class="s">Kontaktperson: EF · Seneste notat: 3. jul</div></div>
+            <span class="case-id">KS-2026-06-15-HN</span>
+            <div class="avatar" style="width:30px;height:30px;font-size:0.72rem">HN</div>
+            <div class="case-main"><div class="t">Hanne Nielsen · 54 år · §85 · 4 t/uge</div><div class="s">Kontaktperson: EF · Seneste notat: 3. jul</div></div>
             <span class="pill pill-green">● Aktiv</span>
           </div>
           ${K().caseSubmitted ? `
           <div class="case-row">
             <span class="case-id">${K().caseId}</span>
-            <div class="case-main"><div class="t">Borger ${K().borger.init} · ${K().borger.alder} år · ${K().borger.par} · ${K().borger.timer} t/uge</div>
+            <div class="avatar" style="width:30px;height:30px;font-size:0.72rem">${K().borger.init}</div>
+            <div class="case-main"><div class="t">${K().borger.navn} · ${K().borger.alder} år · ${K().borger.par} · ${K().borger.timer} t/uge</div>
             <div class="s">${accepted ? "Kontaktperson: SH · Opstartsmøde planlægges" : "Indsendt i dag · Kursskifte matcher nu"}</div></div>
             ${accepted ? '<span class="pill pill-green">● Aktiv</span>' : '<span class="pill pill-amber">⏳ Afventer match</span>'}
           </div>` : ""}
@@ -744,13 +836,13 @@ table.data tr:hover td { background: var(--amber-soft); }
           <hr class="divider">
           <div class="form-grid">
             <div class="field">
-              <label for="f-init">Borgers initialer</label>
-              <input id="f-init" class="input" value="KL" maxlength="3">
-              <div class="hint">Aldrig fulde navne eller personnumre</div>
+              <label for="f-navn">Borgers fulde navn</label>
+              <input id="f-navn" class="input" value="Kasper Larsen">
+              <div class="hint">Behandles fortroligt — deles kun med den godkendte kontaktperson</div>
             </div>
             <div class="field">
               <label for="f-alder">Alder</label>
-              <input id="f-alder" class="input" type="number" value="14" min="0" max="25">
+              <input id="f-alder" class="input" type="number" value="14" min="0" max="99">
             </div>
             <div class="field">
               <label for="f-par">Paragraf</label>
@@ -774,19 +866,63 @@ table.data tr:hover td { background: var(--amber-soft); }
             <div class="field">
               <label for="f-start">Ønsket opstart</label>
               <select id="f-start" class="input">
+                <option>Akut (24–48 timer)</option>
                 <option selected>Inden for 1 uge</option>
                 <option>Inden for 2 uger</option>
                 <option>Inden for 1 måned</option>
+                <option>Fleksibel opstart</option>
               </select>
             </div>
           </div>
           <div class="field">
-            <label>Ønsket profession</label>
+            <label>Ønske til kontaktpersonens køn <span class="muted" style="font-weight:400">(valgfrit — hvis fagligt begrundet)</span></label>
+            <div class="choice-row" data-single="1">
+              <span class="chip on" data-action="chip">Intet ønske</span>
+              <span class="chip" data-action="chip">Kvinde foretrækkes</span>
+              <span class="chip" data-action="chip">Mand foretrækkes</span>
+            </div>
+            <input class="input" style="margin-top:8px" type="text" placeholder="Kort faglig begrundelse (anbefales, hvis køn er valgt)…">
+          </div>
+          <div class="field">
+            <label>Hvad har borgeren brug for støtte til? <span class="muted" style="font-weight:400">(vælg alle relevante)</span></label>
+            ${competenceChecklist(["Skolevægring", "Angst", "Social usikkerhed"])}
+          </div>
+          <div class="field">
+            <label>Ønsket profession <span class="muted" style="font-weight:400">(vælg alle relevante)</span></label>
+            ${professionChecklist(["Socialpædagog"])}
+          </div>
+          <div class="field">
+            <label>Målgruppe</label>
+            ${targetGroupChecklist(["Unge 13-17 år"])}
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Sprogkrav <span class="muted" style="font-weight:400">(valgfrit)</span></label>
+              <select class="input">
+                <option selected>Dansk</option>
+                <option>Engelsk</option>
+                <option>Arabisk</option>
+                <option>Somali</option>
+                <option>Tyrkisk</option>
+                <option>Andet sprog / tolk nødvendig</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Dokumentation fra kontaktpersonen</label>
+              <select class="input">
+                <option>Ugentlig status</option>
+                <option selected>Status hver 14. dag</option>
+                <option>Månedlig status</option>
+                <option>Efter behov</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Særlige tidspunkter <span class="muted" style="font-weight:400">(valgfrit)</span></label>
             <div class="choice-row">
-              <span class="chip on" data-action="chip">Socialpædagog</span>
-              <span class="chip" data-action="chip">Pædagog</span>
-              <span class="chip" data-action="chip">Socialrådgiver</span>
-              <span class="chip" data-action="chip">Lærer</span>
+              <span class="chip" data-action="chip">Aften</span>
+              <span class="chip" data-action="chip">Weekend</span>
+              <span class="chip" data-action="chip">Helligdage</span>
             </div>
           </div>
           <div class="field">
@@ -819,9 +955,10 @@ table.data tr:hover td { background: var(--amber-soft); }
       render: () => `
         <div style="max-width:680px;margin:0 auto">
           <div class="notif-banner">
-            <span>🔔</span><span>Kursskifte har fundet en kandidat til Borger ${K().borger.init}</span>
+            <span>🔔</span><span>Kursskifte har fundet en kandidat til ${K().borger.navn} · Sag ${K().caseId}</span>
           </div>
           <div class="card" style="padding:28px">
+            <p class="muted small" style="margin-bottom:14px">Sag ${K().caseId} · ${K().borger.navn} · ${K().borger.alder} år · ${K().borger.par}</p>
             <div class="cand">
               <div class="avatar lg">SH</div>
               <div class="cand-meta">
@@ -842,6 +979,7 @@ table.data tr:hover td { background: var(--amber-soft); }
             <div class="btn-row" style="margin-top:0">
               <button class="btn btn-primary btn-lg" data-action="acceptProposal">Acceptér forslag</button>
               <button class="btn btn-secondary" data-action="askQuestion">Stil spørgsmål</button>
+              <button class="btn btn-secondary" data-action="requestNewCandidate">Afvis forslag og bed om ny kandidat</button>
               <button class="btn btn-ghost" data-action="goto" data-step="5">Se fuld profil →</button>
             </div>
           </div>
@@ -853,6 +991,7 @@ table.data tr:hover td { background: var(--amber-soft); }
         <div style="max-width:680px;margin:0 auto">
           ${backBtn()}
           <div class="card" style="padding:28px;margin-top:12px">
+            <p class="muted small">Sag ${K().caseId} · ${K().borger.navn} · ${K().borger.alder} år</p>
             <div class="cand" style="margin-bottom:16px">
               <div class="avatar lg">SH</div>
               <div class="cand-meta">
@@ -946,14 +1085,8 @@ table.data tr:hover td { background: var(--amber-soft); }
             <input id="p-email" class="input" type="email" value="sofie.holm.demo@eksempel.dk">
           </div>
           <div class="field">
-            <label for="p-udd">Uddannelse</label>
-            <select id="p-udd" class="input">
-              <option selected>Socialpædagog</option>
-              <option>Pædagog</option>
-              <option>Socialrådgiver</option>
-              <option>Lærer</option>
-              <option>Anden relevant baggrund</option>
-            </select>
+            <label>Profession <span class="muted" style="font-weight:400">(vælg alle relevante — samme liste som kommunerne matcher på)</span></label>
+            ${professionChecklist(["Socialpædagog"])}
           </div>
           <div class="field">
             <label for="p-erf">Antal års erfaring</label>
@@ -1025,41 +1158,21 @@ table.data tr:hover td { background: var(--amber-soft); }
           </div>
           <hr class="divider">
           <div class="field">
-            <label>Kompetenceområder</label>
-            <div class="choice-row">
-              <span class="chip on" data-action="chip">Angst &amp; skolevægring</span>
-              <span class="chip on" data-action="chip">Relationsarbejde</span>
-              <span class="chip on" data-action="chip">Mentalisering</span>
-              <span class="chip" data-action="chip">Misbrug</span>
-              <span class="chip" data-action="chip">Kriminalitetsforebyggelse</span>
-            </div>
+            <label>Kompetenceområder <span class="muted" style="font-weight:400">(samme liste som kommunernes intake)</span></label>
+            ${competenceChecklist(["Angst", "Skolevægring", "Social usikkerhed", "Isolation", "Lavt selvværd"])}
           </div>
           <div class="field">
             <label>Målgrupper</label>
-            <div class="choice-row">
-              <span class="chip on" data-action="chip">Unge 13–17</span>
-              <span class="chip on" data-action="chip">Angstproblematik</span>
-              <span class="chip" data-action="chip">Børn 6–12</span>
-              <span class="chip" data-action="chip">Voksne 18+</span>
-            </div>
+            ${targetGroupChecklist(["Unge 13-17 år", "Borgere med psykisk sårbarhed"])}
           </div>
-          <div class="form-grid">
-            <div class="field">
-              <label for="pf-timer">Tilgængelighed</label>
-              <select id="pf-timer" class="input">
-                <option selected>5 t/uge · ledig nu</option>
-                <option>10 t/uge · ledig nu</option>
-                <option>5 t/uge · ledig fra august</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="pf-geo">Geografi</label>
-              <select id="pf-geo" class="input">
-                <option selected>Max 30 min køretid</option>
-                <option>Max 15 min køretid</option>
-                <option>Max 60 min køretid</option>
-              </select>
-            </div>
+          ${availabilityFields("4-6 timer/uge", ["Aften", "Kan tage længerevarende forløb"])}
+          <div class="field">
+            <label for="pf-geo">Geografi</label>
+            <select id="pf-geo" class="input">
+              <option selected>Max 30 min køretid</option>
+              <option>Max 15 min køretid</option>
+              <option>Max 60 min køretid</option>
+            </select>
           </div>
           <button class="btn btn-primary btn-lg" data-action="saveProfile" style="margin-top:4px">Gem profil</button>
         </div>`
@@ -1077,12 +1190,12 @@ table.data tr:hover td { background: var(--amber-soft); }
             <div class="case-row" style="border:0;padding:0 0 6px">
               <div class="avatar lg forest">KL</div>
               <div class="case-main">
-                <div class="t" style="font-size:1.05rem">Borger KL · 14 år</div>
-                <div class="s">§52 · 5 t/uge · Aalborg · Opstart inden for 1 uge</div>
+                <div class="t" style="font-size:1.05rem">Kasper Larsen · 14 år</div>
+                <div class="s">Sag KS-2026-07-07-KL · §52 · 5 t/uge · Aalborg · Opstart inden for 1 uge</div>
               </div>
               ${diamonds(6)}
             </div>
-            <p class="small muted" style="margin-top:8px">Ung med skolefravær og angstproblematik. Kommunen ønsker en relationsorienteret kontaktperson, der kan følge borgeren gennem hele bevillingsperioden. Yderligere detaljer deles efter accept.</p>
+            <p class="small muted" style="margin-top:8px">Ung med skolevægring, angst og social usikkerhed. Kommunen ønsker en relationsorienteret kontaktperson, der kan følge borgeren gennem hele bevillingsperioden. Yderligere detaljer deles efter accept.</p>
             <hr class="divider">
             <div class="btn-row" style="margin-top:0">
               <button class="btn btn-primary btn-lg" data-action="kpAccept">Acceptér sagen</button>
@@ -1105,8 +1218,8 @@ table.data tr:hover td { background: var(--amber-soft); }
         </div>
         <div class="two-col">
           <div class="card mb0">
-            <h3>Borger KL · 14 år</h3>
-            <p class="muted small">§52 · 5 t/uge · Aalborg Kommune · Startet 6. jul 2026</p>
+            <h3>Kasper Larsen · 14 år</h3>
+            <p class="muted small">Sag KS-2026-07-07-KL · §52 · 5 t/uge · Aalborg Kommune · Startet 6. jul 2026</p>
             <p class="small"><span class="pill pill-green">● Aktiv</span>&nbsp; <span class="pill pill-grey">Næste opfølgning om 12 dage</span></p>
             <p class="small muted mb0">Husk: statusnotat efter hvert besøg styrker kommunens indblik i forløbet.</p>
           </div>
@@ -1118,7 +1231,7 @@ table.data tr:hover td { background: var(--amber-soft); }
             ` : `
               <h3>Upload statusnotat</h3>
               <div class="field" style="margin-bottom:10px">
-                <textarea id="noteText" class="input" placeholder="Kort status på forløbet – fx trivsel, fremmøde og næste skridt…">Første uge er gået godt. KL mødte op til begge aftaler, og vi har etableret god indledende kontakt. Næste skridt: gåtur + samtale om skolestart.</textarea>
+                <textarea id="noteText" class="input" placeholder="Kort status på forløbet – fx trivsel, fremmøde og næste skridt…">Første uge er gået godt. Kasper mødte op til begge aftaler, og vi har etableret god indledende kontakt. Næste skridt: gåtur + samtale om skolestart. (Sag KS-2026-07-07-KL)</textarea>
               </div>
               <button class="btn btn-primary" data-action="saveNote">Gem notat</button>
             `}
@@ -1173,14 +1286,16 @@ table.data tr:hover td { background: var(--amber-soft); }
         ${A().proposalSent ? `
         <div class="card">
           <h3>Seneste aktivitet</h3>
-          <div class="case-row"><span class="case-id">10.42</span><div class="case-main"><div class="t">Aalborg Kommune accepterede forslag i sag KS-2026-0152</div><div class="s">Forløb aktiveret · Kontaktperson MK er notificeret</div></div><span class="pill pill-green">● Aktiv</span></div>
-          <div class="case-row"><span class="case-id">10.18</span><div class="case-main"><div class="t">Forslag sendt til Aalborg Kommune</div><div class="s">Sag KS-2026-0152 · Kandidat MK · Vurdering 6/6</div></div><span class="pill pill-grey">Sendt</span></div>
+          <div class="case-row"><span class="case-id">10.42</span><div class="case-main"><div class="t">Aalborg Kommune accepterede forslag i sag KS-2026-06-28-TH</div><div class="s">Forløb aktiveret · Kontaktperson MK er notificeret</div></div><span class="pill pill-green">● Aktiv</span></div>
+          <div class="case-row"><span class="case-id">10.18</span><div class="case-main"><div class="t">Forslag sendt til Aalborg Kommune</div><div class="s">Sag KS-2026-06-28-TH · Kandidat MK · Vurdering 6/6</div></div><span class="pill pill-grey">Sendt</span></div>
         </div>` : ""}
         <div class="two-col">
           <div class="card mb0">
             <h3>Kræver handling</h3>
             <div class="case-row"><div class="case-main"><div class="t">${A().applications} ${A().applications === 1 ? "ny ansøgning" : "nye ansøgninger"} afventer dokumentkontrol</div><div class="s">Ældste: ${A().marieApproved ? "1 dag" : "2 dage"}</div></div><button class="btn btn-sm btn-secondary" data-action="goto" data-step="1">Åbn</button></div>
-            <div class="case-row"><div class="case-main"><div class="t">Sag KS-2026-0152 klar til matching</div><div class="s">Borger TH · Aalborg · Høj kompleksitet</div></div><button class="btn btn-sm btn-secondary" data-action="goto" data-step="4">Åbn</button></div>
+            <div class="case-row"><div class="case-main"><div class="t">Sag KS-2026-06-28-TH klar til matching</div><div class="s">Thomas Hedegaard · Aalborg · Høj kompleksitet</div></div><button class="btn btn-sm btn-secondary" data-action="goto" data-step="4">Åbn</button></div>
+            ${A().kommuneApproved ? "" : `
+            <div class="case-row"><div class="case-main"><div class="t">Ny kommune afventer adgang</div><div class="s">Hjørring Kommune · Henvendelse via kursskifte.dk/intake · 5. jul</div></div><button class="btn btn-sm btn-primary" data-action="approveKommune">Godkend kommune-adgang</button></div>`}
           </div>
           <div class="card mb0">
             <h3>Dokumenter</h3>
@@ -1253,8 +1368,8 @@ table.data tr:hover td { background: var(--amber-soft); }
           <div class="case-row" style="border:0;padding:0">
             <div class="avatar lg forest">TH</div>
             <div class="case-main">
-              <div class="t" style="font-size:1.1rem">Borger TH · 15 år · Aalborg</div>
-              <div class="s">KS-2026-0152 · §52 · 8 t/uge · Indsendt af Aalborg Kommune 5. jul</div>
+              <div class="t" style="font-size:1.1rem">Thomas Hedegaard · 15 år · Aalborg</div>
+              <div class="s">KS-2026-06-28-TH · §52 · 8 t/uge · Indsendt af Aalborg Kommune 5. jul</div>
             </div>
             <span class="pill pill-red">Høj kompleksitet</span>
           </div>
@@ -1263,7 +1378,8 @@ table.data tr:hover td { background: var(--amber-soft); }
             <li><span class="ck" style="color:var(--muted)">◆</span> Ønsket profession: Socialpædagog</li>
             <li><span class="ck" style="color:var(--muted)">◆</span> Opstart: Inden for 2 uger</li>
             <li><span class="ck" style="color:var(--muted)">◆</span> Kontinuitet: Vigtig</li>
-            <li><span class="ck" style="color:var(--muted)">◆</span> Særligt: Udadreagerende adfærd</li>
+            <li><span class="ck" style="color:var(--muted)">◆</span> Målgruppe: Unge 13-17 år</li>
+            <li><span class="ck" style="color:var(--muted)">◆</span> Kompetencebehov: Udadreagerende adfærd · Vrede/aggression · Familiekonflikter</li>
           </div>
           <div class="btn-row">
             <button class="btn btn-amber btn-lg" data-action="adminCompass" data-step="5">Start matching</button>
@@ -1273,7 +1389,7 @@ table.data tr:hover td { background: var(--amber-soft); }
     {
       name: "Kandidater",
       render: () => `
-        <div style="margin-bottom:18px"><h1>Kandidater til Borger TH</h1><p class="muted mb0">Kursskifte har rangeret 3 egnede kandidater ud fra 6 kriterier</p></div>
+        <div style="margin-bottom:18px"><h1>Kandidater til Thomas Hedegaard</h1><p class="muted mb0" style="font-size:0.85rem">Sag KS-2026-06-28-TH</p><p class="muted mb0">Kursskifte har rangeret 3 egnede kandidater ud fra 6 kriterier</p></div>
         <div class="card-row" style="margin-bottom:16px">
           ${candCard("MK", "Socialpædagog", 14, 6, 6, 0)}
           ${candCard("LP", "Socialpædagog", 9, 12, 5, 1)}
@@ -1287,7 +1403,7 @@ table.data tr:hover td { background: var(--amber-soft); }
         ${backBtn()}
         <div class="card" style="max-width:640px;margin:12px auto 0;padding:28px">
           <h2>Send forslag til kommunen</h2>
-          <p class="muted small">Sag KS-2026-0152 · Borger TH · Aalborg Kommune</p>
+          <p class="muted small">Sag KS-2026-06-28-TH · Thomas Hedegaard · Aalborg Kommune</p>
           <hr class="divider">
           <div class="cand" style="margin-bottom:14px">
             <div class="avatar lg">MK</div>
@@ -1313,7 +1429,7 @@ table.data tr:hover td { background: var(--amber-soft); }
     {
       name: "Status",
       render: () => `
-        <div style="margin-bottom:18px"><h1>Sag KS-2026-0152</h1><p class="muted mb0">Borger TH · Aalborg Kommune</p></div>
+        <div style="margin-bottom:18px"><h1>Sag KS-2026-06-28-TH</h1><p class="muted mb0">Thomas Hedegaard · Aalborg Kommune</p></div>
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
             <h3 class="mb0">Statusfeed</h3>
@@ -1420,9 +1536,9 @@ table.data tr:hover td { background: var(--amber-soft); }
                 <th style="text-align:right">Dage siden <span class="sort">▲▼</span></th>
               </tr></thead>
               <tbody>
-                <tr><td>KS-2026-0132</td><td>Borger MT</td><td>AT</td><td>12. jun</td><td style="text-align:right"><span class="pill pill-red">24</span></td></tr>
-                <tr><td>KS-2026-0139</td><td>Borger AB</td><td>IM</td><td>20. jun</td><td style="text-align:right"><span class="pill pill-amber">16</span></td></tr>
-                <tr><td>KS-2026-0141</td><td>Borger JS</td><td>PV</td><td>25. jun</td><td style="text-align:right"><span class="pill pill-amber">11</span></td></tr>
+                <tr><td>KS-2026-06-13-PL</td><td>Peter Lund</td><td>AT</td><td>12. jun</td><td style="text-align:right"><span class="pill pill-red">24</span></td></tr>
+                <tr><td>KS-2026-06-18-BN</td><td>Birgit Nielsen</td><td>IM</td><td>20. jun</td><td style="text-align:right"><span class="pill pill-amber">16</span></td></tr>
+                <tr><td>KS-2026-06-24-HN</td><td>Hanne Nielsen</td><td>PV</td><td>25. jun</td><td style="text-align:right"><span class="pill pill-amber">11</span></td></tr>
               </tbody>
             </table>
           </div>
@@ -1598,15 +1714,21 @@ table.data tr:hover td { background: var(--amber-soft); }
       /* --- Kommune --- */
       case "submitCase": {
         const d = state.data.kommune;
-        d.borger.init = ($("#f-init") && $("#f-init").value.trim().toUpperCase()) || "KL";
+        d.borger.navn = ($("#f-navn") && $("#f-navn").value.trim()) || "Kasper Larsen";
+        d.borger.init = d.borger.navn.split(/\s+/).map((w) => w.charAt(0)).join("").toUpperCase().slice(0, 3) || "KL";
         d.borger.alder = ($("#f-alder") && $("#f-alder").value) || 14;
         d.borger.timer = ($("#f-timer") && $("#f-timer").value) || 5;
         d.borger.par = ($("#f-par") && $("#f-par").value.indexOf("85") > -1) ? "§85" : "§52";
+        /* Sagsnummer: KS-YYYY-MM-DD-[INITIALER] — dato er sagens oprettelsesdato */
+        d.caseId = "KS-2026-07-07-" + d.borger.init;
         d.caseSubmitted = true;
         toast("Sag " + d.caseId + " indsendt");
         navigate("kommune", 3);
         break;
       }
+      case "requestNewCandidate":
+        toast("Forslaget er afvist — Kursskifte finder en ny kandidat og vender tilbage hurtigst muligt", "warning");
+        break;
       case "compass":
         runCompass("Kursskifte kortlægger egnede kandidater…",
           "Målgruppeerfaring · Relationskompetencer · Geografi · Tilgængelighed · Kontinuitet · Kompetencer",
@@ -1647,6 +1769,11 @@ table.data tr:hover td { background: var(--amber-soft); }
       }
 
       /* --- Admin --- */
+      case "approveKommune":
+        state.data.admin.kommuneApproved = true;
+        toast("Hjørring Kommune er godkendt — invitationsmail med opsætningslink er sendt");
+        navigate("admin", 0);
+        break;
       case "approveApplicant":
         state.data.admin.marieApproved = true;
         state.data.admin.applications = 1;
@@ -1655,7 +1782,7 @@ table.data tr:hover td { background: var(--amber-soft); }
         navigate("admin", 3);
         break;
       case "adminCompass":
-        runCompass("Kursskifte kortlægger egnede kandidater til Borger TH…",
+        runCompass("Kursskifte kortlægger egnede kandidater til Thomas Hedegaard…",
           "18 fagpersoner i netværket · 6 kriterier · rangeret liste på vej",
           () => navigate("admin", parseInt(btn.dataset.step, 10)));
         break;

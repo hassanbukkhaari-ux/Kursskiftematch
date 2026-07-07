@@ -40,6 +40,9 @@ type NewCaseForm = {
   citizen_gender: string
   weekly_hours: string
   complexity_level: string
+  urgency: string
+  intake_contact_name: string
+  intake_contact_email: string
   citizen_notes: string
   problem_area_codes: string[]
   goal_codes: string[]
@@ -53,6 +56,9 @@ const EMPTY_FORM: NewCaseForm = {
   citizen_gender: '',
   weekly_hours: '5',
   complexity_level: 'MEDIUM',
+  urgency: 'NORMAL',
+  intake_contact_name: '',
+  intake_contact_email: '',
   citizen_notes: '',
   problem_area_codes: [],
   goal_codes: [],
@@ -128,6 +134,9 @@ export function AdminCasesClient({
           citizen_gender: form.citizen_gender || undefined,
           weekly_hours: Number(form.weekly_hours),
           complexity_level: form.complexity_level,
+          urgency: form.urgency,
+          intake_contact_name: form.intake_contact_name || undefined,
+          intake_contact_email: form.intake_contact_email || undefined,
           citizen_notes: form.citizen_notes || undefined,
           problem_area_codes: form.problem_area_codes,
           goal_codes: form.goal_codes,
@@ -202,14 +211,27 @@ export function AdminCasesClient({
         <div className="space-y-3">
           {filtered.map(c => (
             <Link key={c.id} href={`/admin/cases/${c.id}`}>
-              <Card hover className="flex items-center justify-between gap-4">
+              <Card
+                hover
+                className={[
+                  'flex items-center justify-between gap-4',
+                  c.urgency === 'AKUT' ? 'border-red-200 bg-[#FEF2F2]' : '',
+                ].join(' ')}
+              >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-xl bg-[#FBF3E1] flex items-center justify-center shrink-0">
-                    <span className="text-sm font-bold text-[#92660A]">{c.citizen_initials}</span>
+                  <div className={[
+                    'w-9 h-9 rounded-xl flex items-center justify-center shrink-0',
+                    c.urgency === 'AKUT' ? 'bg-red-100' : 'bg-[#FBF3E1]',
+                  ].join(' ')}>
+                    <span className={`text-sm font-bold ${c.urgency === 'AKUT' ? 'text-red-700' : 'text-[#92660A]'}`}>
+                      {c.citizen_initials}
+                    </span>
                   </div>
                   <div className="min-w-0">
-                    <div className="font-medium text-[#1A1F1C] text-sm">
+                    <div className="font-medium text-[#1A1F1C] text-sm flex items-center gap-2">
                       Borger {c.citizen_initials} · {c.citizen_age_range}
+                      {c.urgency === 'AKUT' && <span className="text-[10px] font-bold uppercase tracking-widest text-red-700 bg-red-100 border border-red-200 rounded px-1.5 py-0.5">🔴 Akut</span>}
+                      {c.urgency === 'HURTIG' && <span className="text-[10px] font-bold uppercase tracking-widest text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">🟡 Hurtig</span>}
                     </div>
                     <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                       <Badge variant={COMPLEXITY_BADGE[c.complexity_level] ?? 'default'}>
@@ -382,6 +404,63 @@ export function AdminCasesClient({
               onChange={field('weekly_hours')}
               className={inputClass}
             />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-widest text-[#6B7569] mb-2">
+              Hastighed
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                { value: 'NORMAL', label: '⚪ Normal' },
+                { value: 'HURTIG', label: '🟡 Hurtig' },
+                { value: 'AKUT', label: '🔴 Akut' },
+              ] as const).map(opt => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, urgency: opt.value }))}
+                  className={[
+                    'h-10 rounded-xl text-xs font-semibold border transition-all',
+                    form.urgency === opt.value
+                      ? opt.value === 'AKUT'
+                        ? 'bg-red-700 text-white border-red-700'
+                        : opt.value === 'HURTIG'
+                          ? 'bg-amber-500 text-white border-amber-500'
+                          : 'bg-[#1C3829] text-white border-[#1C3829]'
+                      : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]',
+                  ].join(' ')}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            {form.urgency === 'AKUT' && (
+              <p className="text-xs text-red-600 mt-1.5 font-medium">Akut sager sorteres øverst og markeres med rødt i sagslisten.</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-widest text-[#6B7569] mb-2">
+              Kommunens kontakt (sagsbehandler)
+            </label>
+            <div className="space-y-2">
+              <input
+                type="text"
+                value={form.intake_contact_name}
+                onChange={field('intake_contact_name')}
+                placeholder="Navn"
+                className={inputClass}
+              />
+              <input
+                type="email"
+                value={form.intake_contact_email}
+                onChange={field('intake_contact_email')}
+                placeholder="E-mail"
+                className={inputClass}
+              />
+            </div>
+            <p className="text-[10px] text-[#6B7569] mt-1.5">Internt felt — vises kun i admin-portalen</p>
           </div>
 
           <div>

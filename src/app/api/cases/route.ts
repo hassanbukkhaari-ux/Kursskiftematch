@@ -14,7 +14,10 @@ const CreateCaseSchema = z.object({
   citizen_notes: z.string().optional(),
   weekly_hours: z.number().min(0).default(0),
   complexity_level: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).default('LOW'),
-  inquiry_id: z.string().uuid().optional(), // source inquiry to mark as CONVERTED
+  urgency: z.enum(['NORMAL', 'HURTIG', 'AKUT']).default('NORMAL'),
+  intake_contact_name: z.string().optional(),
+  intake_contact_email: z.string().email().optional().or(z.literal('')),
+  inquiry_id: z.string().uuid().optional(),
   problem_area_codes: z.array(z.string()).optional(),
   goal_codes: z.array(z.string()).optional(),
   special_wish_codes: z.array(z.string()).optional(),
@@ -70,7 +73,11 @@ export async function POST(request: NextRequest) {
     const parsed = CreateCaseSchema.safeParse(body)
     if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
 
-    const { inquiry_id, problem_area_codes, goal_codes, special_wish_codes, ...caseData } = parsed.data
+    const { inquiry_id, problem_area_codes, goal_codes, special_wish_codes, intake_contact_email, ...rest } = parsed.data
+    const caseData = {
+      ...rest,
+      intake_contact_email: intake_contact_email || null,
+    }
 
     const { data: newCase, error } = await db
       .from('cases')

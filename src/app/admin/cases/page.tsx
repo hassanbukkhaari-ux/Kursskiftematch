@@ -7,7 +7,7 @@ export default async function AdminCasesPage() {
 
   const [casesRes, munisRes, problemAreasRes, goalsRes, specialWishesRes] = await Promise.all([
     db.from('cases')
-      .select('id, citizen_initials, citizen_age_range, status, complexity_level, weekly_hours, municipality_id, created_at')
+      .select('id, citizen_initials, citizen_age_range, status, complexity_level, weekly_hours, municipality_id, urgency, created_at')
       .order('created_at', { ascending: false })
       .limit(200),
     db.from('municipalities')
@@ -23,10 +23,12 @@ export default async function AdminCasesPage() {
     (munisRes.data ?? []).map(m => [m.id, m.name]),
   )
 
-  const cases = (casesRes.data ?? []).map(c => ({
-    ...c,
-    municipality_name: muniMap[c.municipality_id] ?? 'Ukendt',
-  }))
+  const cases = (casesRes.data ?? [])
+    .map(c => ({ ...c, municipality_name: muniMap[c.municipality_id] ?? 'Ukendt' }))
+    .sort((a, b) => {
+      const urgencyOrder = { AKUT: 0, HURTIG: 1, NORMAL: 2 } as Record<string, number>
+      return (urgencyOrder[a.urgency] ?? 2) - (urgencyOrder[b.urgency] ?? 2)
+    })
 
   return (
     <div>
@@ -57,6 +59,7 @@ export type AdminCase = {
   citizen_age_range: string
   status: 'OPEN' | 'MATCHED' | 'PROPOSED' | 'ACTIVE' | 'COMPLETED' | 'ARCHIVED'
   complexity_level: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
+  urgency: 'NORMAL' | 'HURTIG' | 'AKUT'
   weekly_hours: number
   municipality_id: string
   municipality_name: string

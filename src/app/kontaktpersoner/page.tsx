@@ -81,7 +81,7 @@ export default function KontaktpersonerPage() {
                   {[
                     'Socialrådgiver, pædagog, lærer eller beslægtet baggrund',
                     'Erfaring med målgruppen (minimum 2 år anbefales)',
-                    'Ren straffeattest og børneattest',
+                    'Straffeattest indhentes og vurderes af Kursskiftes team',
                     'Evne til at dokumentere og registrere tid',
                     'Fleksibel tilgængelighed til forløb',
                   ].map(item => (
@@ -111,10 +111,16 @@ export default function KontaktpersonerPage() {
                   </div>
                 </div>
                 <div className="bg-[#F6F3EE] border border-[#E0DAD0] rounded-2xl p-6">
-                  <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-3">Dokumentation der kræves</div>
+                  <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-3">Dokumentation vi indhenter</div>
                   <div className="space-y-2">
-                    {['Straffeattest', 'Børneattest', 'CV', 'Uddannelsesbeviser', 'Eventuelt relevante certifikater'].map(doc => (
-                      <div key={doc} className="flex items-center gap-2">
+                    {[
+                      'Straffeattest (indhentes og verificeres af Kursskifte)',
+                      'Børneattest (Kursskifte rekvirerer fra Rigspolitiet med dit samtykke)',
+                      'CV',
+                      'Uddannelsesbeviser',
+                      'Eventuelt relevante certifikater',
+                    ].map(doc => (
+                      <div key={doc} className="flex items-start gap-2">
                         <CheckIcon />
                         <span className="text-sm text-[#1A1F1C]">{doc}</span>
                       </div>

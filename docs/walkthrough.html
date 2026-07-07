@@ -786,7 +786,7 @@ a { text-decoration: none; color: inherit; }
             <div>
               <div style="font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#C8993A;margin-bottom:16px;">Til kommuner</div>
               <div style="font-family:Georgia,serif;font-size:26px;color:#fff;font-weight:normal;line-height:1.2;margin-bottom:12px;max-width:240px;">Send én sag.<br>Få et fagligt begrundet forslag.</div>
-              <p style="font-size:13px;color:rgba(255,255,255,0.58);line-height:1.65;max-width:300px;">Kursskifte varetager match, verifikation og faglig anbefaling til §52- og §85-forløb — sikkert og dokumenteret.</p>
+              <p style="font-size:13px;color:rgba(255,255,255,0.58);line-height:1.65;max-width:300px;">Kursskifte varetager match, verifikation og faglig anbefaling til §32- og §85-forløb — sikkert og dokumenteret.</p>
             </div>
             <div style="display:flex;align-items:center;gap:16px;">
               <span class="app-btn-amber">Indsend sag <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
@@ -905,7 +905,7 @@ a { text-decoration: none; color: inherit; }
       <code class="sc-route">/intake</code>
     </div>
     <h2 class="sc-title">Intake-formular</h2>
-    <p class="sc-desc">Kommunens indgang til platformen. Sagsbehandleren beskriver borgerens situation, målgruppe og behov — ingen personidentificerbare data om borgeren. Hvert valgt kriterium prioriteres til sidst som <em>Skal</em> eller <em>Ønskeligt</em>, så matchteamet ved præcis, hvad der er ufravigeligt. Rate-begrænset til 10 indmeldinger/IP/time.</p>
+    <p class="sc-desc">Kommunens indgang til platformen. Sagsbehandleren beskriver borgerens situation, målgruppe og behov — <strong>ingen personidentificerbare data indsamles her</strong>: borgeren identificeres kun med initialer og alder. Fulde navne angives udelukkende inde i den autentificerede portal. Hvert valgt kriterium prioriteres til sidst som <em>Skal</em> eller <em>Ønskeligt</em>, så matchteamet ved præcis, hvad der er ufravigeligt. Rate-begrænset til 10 indmeldinger/IP/time.</p>
     <div class="browser">
       <div class="bc-chrome">
         <div class="bc-dots"><span class="d r"></span><span class="d y"></span><span class="d g"></span></div>
@@ -1237,11 +1237,20 @@ a { text-decoration: none; color: inherit; }
             <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6B7569;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #F0EDE7;">Opstart og opfølgning</div>
 
             <div class="app-form-group">
-              <label class="app-label">Hvornår er der behov for opstart?</label>
+              <label class="app-label">Hastighed</label>
               <div class="app-radio-row">
-                <div class="app-radio-item"><div class="app-radio"></div>Akut (24–48 timer)</div>
-                <div class="app-radio-item checked"><div class="app-radio checked"></div>Inden for 1 uge</div>
-                <div class="app-radio-item"><div class="app-radio"></div>Inden for 2 uger</div>
+                <div class="app-radio-item checked"><div class="app-radio checked"></div>⚪ Normal</div>
+                <div class="app-radio-item"><div class="app-radio"></div>🟡 Hurtig</div>
+                <div class="app-radio-item"><div class="app-radio"></div>🔴 Akut (24 timer)</div>
+              </div>
+            </div>
+
+            <div class="app-form-group">
+              <label class="app-label">Ønsket opstart</label>
+              <div class="app-radio-row">
+                <div class="app-radio-item"><div class="app-radio"></div>Inden for 1 uge</div>
+                <div class="app-radio-item checked"><div class="app-radio checked"></div>Inden for 2 uger</div>
+                <div class="app-radio-item"><div class="app-radio"></div>Inden for 1 måned</div>
                 <div class="app-radio-item"><div class="app-radio"></div>Fleksibel opstart</div>
               </div>
             </div>
@@ -1372,7 +1381,7 @@ a { text-decoration: none; color: inherit; }
           </div>
 
           <h1 style="font-family:Georgia,serif;font-size:28px;font-weight:normal;color:#1A1F1C;margin-bottom:4px;text-wrap:balance;">Forslag til kontaktperson</h1>
-          <p style="font-size:13px;color:#6B7569;margin-bottom:20px;">Sag KL-2025-0041 · Sendt 24. juni 2025 · Aalborg Kommune</p>
+          <p style="font-size:13px;color:#6B7569;margin-bottom:20px;">Sag KS-250624-041 · Sendt 24. juni 2025 · Aalborg Kommune</p>
 
           <!-- Professional card -->
           <div style="background:#fff;border:1px solid #E0DAD0;border-radius:18px;padding:24px;margin-bottom:14px;">
@@ -1387,7 +1396,7 @@ a { text-decoration: none; color: inherit; }
                   <span class="app-badge app-badge-brand">Unge</span>
                   <span class="app-badge app-badge-brand">Angst</span>
                   <span class="app-badge app-badge-brand">Social isolation</span>
-                  <span class="app-badge app-badge-brand">§52</span>
+                  <span class="app-badge app-badge-brand">§32</span>
                 </div>
               </div>
               <div style="text-align:right;flex-shrink:0;">
@@ -1444,7 +1453,7 @@ a { text-decoration: none; color: inherit; }
                 <span class="app-tag">Angstproblematik</span>
                 <span class="app-tag">Social isolation</span>
                 <span class="app-tag">Unge 13–18</span>
-                <span class="app-tag">§52-støtte</span>
+                <span class="app-tag">§32-støtte</span>
                 <span class="app-tag">KBT</span>
                 <span class="app-tag">Motivationsarbejde</span>
                 <span class="app-tag">Netværksopbygning</span>
@@ -1524,7 +1533,7 @@ a { text-decoration: none; color: inherit; }
                 </div>
                 <div>
                   <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6B7569;margin-bottom:5px;">Erfaring med lignende sager</div>
-                  <div style="font-size:12.5px;color:#1A1F1C;line-height:1.6;">4 afsluttede forløb med social isolation hos unge (§52) · Alle afsluttet positivt · Gennemsnitlig evaluering fra kommuner: 4,6 / 5</div>
+                  <div style="font-size:12.5px;color:#1A1F1C;line-height:1.6;">4 afsluttede forløb med social isolation hos unge (§32 i barnets lov) · Alle afsluttet positivt · Gennemsnitlig evaluering fra kommuner: 4,6 / 5</div>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                   <div>
@@ -1545,7 +1554,7 @@ a { text-decoration: none; color: inherit; }
             <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#6B7569;margin-bottom:12px;">Sagens detaljer</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;">
               <div><div style="font-size:10.5px;color:#9B9590;margin-bottom:1px;">Borger</div><div style="font-size:13px;color:#1A1F1C;font-weight:500;">Kasper Larsen · 14 år · Ung</div></div>
-              <div><div style="font-size:10.5px;color:#9B9590;margin-bottom:1px;">Paragraf</div><div style="font-size:13px;color:#1A1F1C;font-weight:500;">§52, stk. 3, nr. 6</div></div>
+              <div><div style="font-size:10.5px;color:#9B9590;margin-bottom:1px;">Paragraf</div><div style="font-size:13px;color:#1A1F1C;font-weight:500;">§32, stk. 1, nr. 6 i barnets lov</div></div>
               <div><div style="font-size:10.5px;color:#9B9590;margin-bottom:1px;">Timebehov</div><div style="font-size:13px;color:#1A1F1C;font-weight:500;">5 timer/uge</div></div>
               <div><div style="font-size:10.5px;color:#9B9590;margin-bottom:1px;">Sagsbehandler</div><div style="font-size:13px;color:#1A1F1C;font-weight:500;">Mette Andersen, Aalborg</div></div>
               <div style="grid-column:1/-1;"><div style="font-size:10.5px;color:#9B9590;margin-bottom:1px;">Primære problemstillinger</div><div style="font-size:13px;color:#1A1F1C;font-weight:500;">Angst · Social isolation</div></div>
@@ -1627,7 +1636,7 @@ a { text-decoration: none; color: inherit; }
               <div class="app-stat"><div class="app-stat-label">Konsulentstatus</div><div class="app-stat-val" style="font-size:18px;color:#16A34A;">Aktiv</div></div>
             </div>
             <div class="app-section-title">Mine sager</div>
-            <div class="app-list-item"><div style="display:flex;align-items:center;gap:10px;"><div class="app-list-avatar amber">KL</div><div><div style="font-weight:500;font-size:13px;color:#1A1F1C;">Kasper Larsen <span style="font-weight:400;color:#9B9590;font-size:11.5px;">· 14 år · Ung</span></div><div style="font-size:11.5px;color:#6B7569;">5 t/uge · §52</div></div></div><span class="app-badge app-badge-green dot-before">Aktiv</span></div>
+            <div class="app-list-item"><div style="display:flex;align-items:center;gap:10px;"><div class="app-list-avatar amber">KL</div><div><div style="font-weight:500;font-size:13px;color:#1A1F1C;">Kasper Larsen <span style="font-weight:400;color:#9B9590;font-size:11.5px;">· 14 år · Ung</span></div><div style="font-size:11.5px;color:#6B7569;">5 t/uge · §32 i barnets lov</div></div></div><span class="app-badge app-badge-green dot-before">Aktiv</span></div>
             <div class="app-list-item"><div style="display:flex;align-items:center;gap:10px;"><div class="app-list-avatar amber">RM</div><div><div style="font-weight:500;font-size:13px;color:#1A1F1C;">Rasmus Madsen <span style="font-weight:400;color:#9B9590;font-size:11.5px;">· 22 år · Ung voksen</span></div><div style="font-size:11.5px;color:#6B7569;">3 t/uge · §85</div></div></div><span class="app-badge app-badge-green dot-before">Aktiv</span></div>
             <div class="app-section-title" style="margin-top:22px;">Genveje</div>
             <div class="app-grid-3">
@@ -1673,7 +1682,7 @@ a { text-decoration: none; color: inherit; }
                 <div class="app-list-avatar amber">KL</div>
                 <div>
                   <div style="font-weight:500;font-size:13px;color:#1A1F1C;">Kasper Larsen <span style="font-weight:400;color:#9B9590;font-size:11.5px;">· 14 år · Ung</span></div>
-                  <div style="display:flex;align-items:center;gap:8px;margin-top:3px;"><span class="app-badge app-badge-green dot-before">Aktiv</span><span style="font-size:11px;color:#6B7569;">5 t/uge</span><span style="font-size:11px;color:#6B7569;">§85</span></div>
+                  <div style="display:flex;align-items:center;gap:8px;margin-top:3px;"><span class="app-badge app-badge-green dot-before">Aktiv</span><span style="font-size:11px;color:#6B7569;">5 t/uge</span><span style="font-size:11px;color:#6B7569;">§32</span></div>
                 </div>
               </div>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C8C0B0" stroke-width="1.75" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
@@ -1683,17 +1692,18 @@ a { text-decoration: none; color: inherit; }
                 <div class="app-list-avatar amber">RM</div>
                 <div>
                   <div style="font-weight:500;font-size:13px;color:#1A1F1C;">Borger RM · 32 år</div>
-                  <div style="display:flex;align-items:center;gap:8px;margin-top:3px;"><span class="app-badge app-badge-green dot-before">Aktiv</span><span style="font-size:11px;color:#6B7569;">3 t/uge</span><span style="font-size:11px;color:#6B7569;">§52</span></div>
+                  <div style="display:flex;align-items:center;gap:8px;margin-top:3px;"><span class="app-badge app-badge-green dot-before">Aktiv</span><span style="font-size:11px;color:#6B7569;">3 t/uge</span><span style="font-size:11px;color:#6B7569;">§85</span></div>
                 </div>
               </div>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C8C0B0" stroke-width="1.75" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
-            <div class="app-list-item" style="opacity:.55;">
+            <!-- Overdragelse state -->
+            <div class="app-list-item" style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:12px;padding:10px 12px;margin-bottom:8px;">
               <div style="display:flex;align-items:center;gap:10px;">
-                <div class="app-list-avatar" style="background:#F3F4F6;color:#6B7280;">HN</div>
+                <div class="app-list-avatar" style="background:#FEF3C7;color:#92400E;">HN</div>
                 <div>
                   <div style="font-weight:500;font-size:13px;color:#1A1F1C;">Borger HN · 54 år</div>
-                  <div style="display:flex;align-items:center;gap:8px;margin-top:3px;"><span class="app-badge app-badge-default">Afsluttet</span><span style="font-size:11px;color:#6B7569;">4 t/uge</span></div>
+                  <div style="display:flex;align-items:center;gap:8px;margin-top:3px;"><span class="app-badge" style="background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;">🟡 Overdragelse i gang</span><span style="font-size:11px;color:#6B7569;">§85</span></div>
                 </div>
               </div>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C8C0B0" stroke-width="1.75" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
@@ -1939,23 +1949,28 @@ a { text-decoration: none; color: inherit; }
               <select class="app-select" style="width:auto;font-size:12px;padding:6px 28px 6px 10px;"><option>Alle kommuner</option></select>
             </div>
             <div style="background:#fff;border:1px solid #E0DAD0;border-radius:12px;overflow:hidden;">
-              <div style="display:grid;grid-template-columns:50px 80px 80px 110px 80px 80px;padding:8px 12px;background:#F6F3EE;border-bottom:1px solid #E0DAD0;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6B7569;gap:8px;">
-                <span>Init.</span><span>Alder</span><span>Kompleks.</span><span>Kommune</span><span>Timer</span><span>Status</span>
+              <div style="display:grid;grid-template-columns:22px 50px 80px 80px 110px 80px 80px;padding:8px 12px;background:#F6F3EE;border-bottom:1px solid #E0DAD0;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6B7569;gap:8px;">
+                <span></span><span>Init.</span><span>Alder</span><span>Kompleks.</span><span>Kommune</span><span>Timer</span><span>Status</span>
               </div>
-              <div style="display:grid;grid-template-columns:50px 80px 80px 110px 80px 80px;padding:10px 12px;border-bottom:1px solid #F0EDE7;align-items:center;gap:8px;font-size:12px;">
-                <div class="app-list-avatar amber" style="width:30px;height:30px;font-size:11px;border-radius:8px;">KL</div><span>14</span><span class="app-badge app-badge-amber">Mellem</span><span style="font-size:11.5px;color:#6B7569;">Aalborg</span><span>5 t/u</span><span class="app-badge app-badge-green dot-before">Aktiv</span>
+              <!-- AKUT — auto-sorteret til top -->
+              <div style="display:grid;grid-template-columns:22px 50px 80px 80px 110px 80px 80px;padding:10px 12px;border-bottom:1px solid #FECACA;align-items:center;gap:8px;font-size:12px;background:#FEF2F2;">
+                <span style="font-size:13px;">🔴</span><div class="app-list-avatar amber" style="width:30px;height:30px;font-size:11px;border-radius:8px;">HN</div><span>17</span><span class="app-badge app-badge-red">Høj</span><span style="font-size:11.5px;color:#6B7569;">Aalborg</span><span>6 t/u</span><span class="app-badge" style="background:#DC2626;color:#fff;font-size:10px;">⚡ Akut</span>
               </div>
-              <div style="display:grid;grid-template-columns:50px 80px 80px 110px 80px 80px;padding:10px 12px;border-bottom:1px solid #F0EDE7;align-items:center;gap:8px;font-size:12px;">
-                <div class="app-list-avatar amber" style="width:30px;height:30px;font-size:11px;border-radius:8px;">RM</div><span>32</span><span class="app-badge app-badge-amber">Mellem</span><span style="font-size:11.5px;color:#6B7569;">Hjørring</span><span>3 t/u</span><span class="app-badge app-badge-green dot-before">Aktiv</span>
+              <div style="display:grid;grid-template-columns:22px 50px 80px 80px 110px 80px 80px;padding:10px 12px;border-bottom:1px solid #F0EDE7;align-items:center;gap:8px;font-size:12px;">
+                <span style="font-size:13px;">⚪</span><div class="app-list-avatar amber" style="width:30px;height:30px;font-size:11px;border-radius:8px;">KL</div><span>14</span><span class="app-badge app-badge-amber">Mellem</span><span style="font-size:11.5px;color:#6B7569;">Aalborg</span><span>5 t/u</span><span class="app-badge app-badge-green dot-before">Aktiv</span>
               </div>
-              <div style="display:grid;grid-template-columns:50px 80px 80px 110px 80px 80px;padding:10px 12px;border-bottom:1px solid #F0EDE7;align-items:center;gap:8px;font-size:12px;">
-                <div class="app-list-avatar amber" style="width:30px;height:30px;font-size:11px;border-radius:8px;">TH</div><span>15</span><span class="app-badge app-badge-red">Høj</span><span style="font-size:11.5px;color:#6B7569;">Aalborg</span><span>8 t/u</span><span class="app-badge app-badge-amber dot-before">Forslag sendt</span>
+              <div style="display:grid;grid-template-columns:22px 50px 80px 80px 110px 80px 80px;padding:10px 12px;border-bottom:1px solid #F0EDE7;align-items:center;gap:8px;font-size:12px;">
+                <span style="font-size:13px;">⚪</span><div class="app-list-avatar amber" style="width:30px;height:30px;font-size:11px;border-radius:8px;">RM</div><span>32</span><span class="app-badge app-badge-amber">Mellem</span><span style="font-size:11.5px;color:#6B7569;">Hjørring</span><span>3 t/u</span><span class="app-badge app-badge-green dot-before">Aktiv</span>
               </div>
-              <div style="display:grid;grid-template-columns:50px 80px 80px 110px 80px 80px;padding:10px 12px;border-bottom:1px solid #F0EDE7;align-items:center;gap:8px;font-size:12px;">
-                <div class="app-list-avatar" style="width:30px;height:30px;font-size:11px;border-radius:8px;background:#F6F3EE;color:#6B7569;">BN</div><span>52</span><span class="app-badge app-badge-green">Lav</span><span style="font-size:11.5px;color:#6B7569;">Brønderslev</span><span>4 t/u</span><span class="app-badge app-badge-amber dot-before">Åben</span>
+              <div style="display:grid;grid-template-columns:22px 50px 80px 80px 110px 80px 80px;padding:10px 12px;border-bottom:1px solid #F0EDE7;align-items:center;gap:8px;font-size:12px;">
+                <span style="font-size:13px;">🟡</span><div class="app-list-avatar amber" style="width:30px;height:30px;font-size:11px;border-radius:8px;">TH</div><span>15</span><span class="app-badge app-badge-red">Høj</span><span style="font-size:11.5px;color:#6B7569;">Aalborg</span><span>8 t/u</span><span class="app-badge app-badge-amber dot-before">Forslag sendt</span>
               </div>
-              <div style="display:grid;grid-template-columns:50px 80px 80px 110px 80px 80px;padding:10px 12px;align-items:center;gap:8px;font-size:12px;">
-                <div class="app-list-avatar" style="width:30px;height:30px;font-size:11px;border-radius:8px;background:#F6F3EE;color:#6B7569;">PL</div><span>42</span><span class="app-badge app-badge-red">Kritisk</span><span style="font-size:11.5px;color:#6B7569;">Frederikshavn</span><span>10 t/u</span><span class="app-badge app-badge-blue dot-before">Matchet</span>
+              <!-- No-match state: "Aktiv søgning" -->
+              <div style="display:grid;grid-template-columns:22px 50px 80px 80px 110px 80px 80px;padding:10px 12px;border-bottom:1px solid #FEF3C7;align-items:center;gap:8px;font-size:12px;background:#FFFBEB;">
+                <span style="font-size:13px;">⚪</span><div class="app-list-avatar" style="width:30px;height:30px;font-size:11px;border-radius:8px;background:#FEF3C7;color:#92400E;">BN</div><span>52</span><span class="app-badge app-badge-green">Lav</span><span style="font-size:11.5px;color:#6B7569;">Brønderslev</span><span>4 t/u</span><span class="app-badge" style="background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;font-size:10px;">Aktiv søgning</span>
+              </div>
+              <div style="display:grid;grid-template-columns:22px 50px 80px 80px 110px 80px 80px;padding:10px 12px;align-items:center;gap:8px;font-size:12px;">
+                <span style="font-size:13px;">⚪</span><div class="app-list-avatar" style="width:30px;height:30px;font-size:11px;border-radius:8px;background:#F6F3EE;color:#6B7569;">PL</div><span>42</span><span class="app-badge app-badge-red">Kritisk</span><span style="font-size:11.5px;color:#6B7569;">Frederikshavn</span><span>10 t/u</span><span class="app-badge app-badge-blue dot-before">Matchet</span>
               </div>
             </div>
           </div>
@@ -2020,12 +2035,14 @@ a { text-decoration: none; color: inherit; }
               <div style="display:flex;align-items:center;gap:8px;"><span class="app-badge app-badge-green dot-before">Klar til tildeling</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C8C0B0" stroke-width="1.75" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></div>
             </div>
 
-            <div class="app-section-title">Sager klar til matching</div>
-            <div style="font-size:12px;color:#6B7569;margin-bottom:12px;">Åbne sager uden tildelt fagperson</div>
-            <div class="app-list-item" style="margin-bottom:8px;">
-              <div style="display:flex;align-items:center;gap:10px;"><div class="app-list-avatar amber" style="width:34px;height:34px;font-size:12px;border-radius:9px;">BN</div><div><div style="font-weight:500;font-size:13px;color:#1A1F1C;">Borger BN · 52 år</div><div style="display:flex;align-items:center;gap:6px;margin-top:3px;"><span class="app-badge app-badge-green" style="font-size:10px;">Lav</span><span style="font-size:11px;color:#6B7569;">4 t/uge</span></div></div></div>
-              <div style="display:flex;align-items:center;gap:8px;"><span class="app-badge app-badge-amber dot-before">Åben</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C8C0B0" stroke-width="1.75" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+            <div class="app-section-title">Aktiv søgning — ingen match fundet endnu</div>
+            <div style="font-size:12px;color:#6B7569;margin-bottom:12px;">Kursskifte arbejder aktivt på sagen — kommunen underrettes, når kandidat er fundet</div>
+            <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:12px;padding:14px 16px;margin-bottom:8px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div style="display:flex;align-items:center;gap:10px;"><div class="app-list-avatar" style="width:34px;height:34px;font-size:12px;border-radius:9px;background:#FEF3C7;color:#92400E;">BN</div><div><div style="font-weight:500;font-size:13px;color:#1A1F1C;">Borger BN · 52 år</div><div style="display:flex;align-items:center;gap:6px;margin-top:3px;"><span class="app-badge app-badge-green" style="font-size:10px;">Lav</span><span style="font-size:11px;color:#6B7569;">4 t/uge</span></div></div></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span class="app-badge" style="background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;">Aktiv søgning</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C8C0B0" stroke-width="1.75" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></div>
             </div>
+            <div style="font-size:11.5px;color:#92400E;margin-top:10px;padding-top:10px;border-top:1px solid #FDE68A;">Kursskifte arbejder aktivt på sagen — ingen egnet kandidat fundet endnu</div>
           </div>
         </div>
       </div>
@@ -2255,7 +2272,7 @@ a { text-decoration: none; color: inherit; }
     <div class="sc-meta"><span class="sc-badge adm">Admin</span><span class="sc-n">16</span><code class="sc-route">/admin/matching/[runId]</code></div>
     <h2 class="sc-title">Match-detalje</h2>
     <p class="sc-desc">Detaljeret visning af ét matchingkørsels resultater. Admin ser alle rangerede kandidater med scores, kan udvide en kandidat for at se Kursskiftes begrundelse, og markerer den valgte kandidat inden forslagsafsendelse.</p>
-    <div class="browser"><div class="bc-chrome"><div class="bc-dots"><span class="d r"></span><span class="d y"></span><span class="d g"></span></div><div class="bc-addr">kursskiftematch.dk/admin/matching/run-2025-0041</div></div>
+    <div class="browser"><div class="bc-chrome"><div class="bc-dots"><span class="d r"></span><span class="d y"></span><span class="d g"></span></div><div class="bc-addr">kursskiftematch.dk/admin/matching/run-250624-041</div></div>
     <div class="bv">
       <div class="app-shell">
         <div class="app-shell-sb">
@@ -2267,10 +2284,10 @@ a { text-decoration: none; color: inherit; }
         </div>
         <div class="app-shell-main">
           <div class="app-ph">
-            <div class="app-ph-breadcrumb"><span>Admin</span><span>›</span><span>Matching</span><span>›</span><span>Sag KL-2025-0041</span></div>
+            <div class="app-ph-breadcrumb"><span>Admin</span><span>›</span><span>Matching</span><span>›</span><span>Sag KS-250624-041</span></div>
             <div class="app-ph-eyebrow">Matchingkørsel</div>
             <div class="app-ph-title">Kandidatoversigt — Kasper Larsen</div>
-            <div class="app-ph-sub">14 år · Ung · Angst, social isolation · 5 t/uge · §52 · Aalborg</div>
+            <div class="app-ph-sub">14 år · Ung · Angst, social isolation · 5 t/uge · §32 · Aalborg</div>
           </div>
           <div class="app-cc">
             <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
@@ -2355,7 +2372,7 @@ a { text-decoration: none; color: inherit; }
     <div class="sc-meta"><span class="sc-badge pro">Fagperson</span><span class="sc-n">17</span><code class="sc-route">/dashboard/cases/[id]</code></div>
     <h2 class="sc-title">Sagsforløb &amp; progression</h2>
     <p class="sc-desc">Detaljeret sagsvisning for fagpersonen. Viser den fulde tidslinje med sessionslogs, mål med progressionsbjælker og mulighed for at tilføje ny session. Borgerens identitet er kun synlig for fagpersonen og admin.</p>
-    <div class="browser"><div class="bc-chrome"><div class="bc-dots"><span class="d r"></span><span class="d y"></span><span class="d g"></span></div><div class="bc-addr">kursskiftematch.dk/dashboard/cases/kl-2025-0041</div></div>
+    <div class="browser"><div class="bc-chrome"><div class="bc-dots"><span class="d r"></span><span class="d y"></span><span class="d g"></span></div><div class="bc-addr">kursskiftematch.dk/dashboard/cases/ks-250624-041</div></div>
     <div class="bv">
       <div class="app-shell">
         <div class="app-shell-sb">
@@ -2373,7 +2390,7 @@ a { text-decoration: none; color: inherit; }
             <div class="app-ph-breadcrumb"><span>Mine sager</span><span>›</span><span>Kasper Larsen</span></div>
             <div class="app-ph-eyebrow">Sagsforløb</div>
             <div class="app-ph-title">Kasper Larsen · 14 år</div>
-            <div class="app-ph-sub">Aktiv · §52 · 5 t/uge · opstart 1. jul 2025</div>
+            <div class="app-ph-sub">Aktiv · §32 · 5 t/uge · opstart 1. jul 2025</div>
           </div>
           <div class="app-cc">
             <!-- Goals progress -->
@@ -2469,7 +2486,7 @@ a { text-decoration: none; color: inherit; }
 
         <!-- Summary card -->
         <div style="background:#1C3829;border-radius:20px;padding:28px;margin-bottom:16px;color:#fff;">
-          <div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#C8993A;margin-bottom:12px;">Aalborg Kommune — Sag KL-2025-0041</div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#C8993A;margin-bottom:12px;">Aalborg Kommune — Sag KS-250624-041</div>
           <div style="font-family:Georgia,serif;font-size:22px;font-weight:normal;line-height:1.2;margin-bottom:8px;">Kontaktperson matched og forløb igangsat</div>
           <p style="font-size:13px;color:rgba(255,255,255,0.65);line-height:1.6;margin-bottom:20px;">Kursskifte har identificeret og verificeret en egnet kontaktperson til sagen. Forløbet er startet 1. juli 2025.</p>
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
@@ -2489,7 +2506,7 @@ a { text-decoration: none; color: inherit; }
             </div>
             <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:1px solid #F0EDE7;">
               <span style="font-size:12.5px;color:#6B7569;">Paragraf</span>
-              <span style="font-size:12.5px;color:#1A1F1C;font-weight:500;">§52, stk. 3, nr. 6</span>
+              <span style="font-size:12.5px;color:#1A1F1C;font-weight:500;">§32, stk. 1, nr. 6 i barnets lov</span>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:1px solid #F0EDE7;">
               <span style="font-size:12.5px;color:#6B7569;">Opstart</span>
@@ -2595,7 +2612,7 @@ a { text-decoration: none; color: inherit; }
             <div style="background:#fff;border:1px solid #E0DAD0;border-radius:16px;padding:24px;">
               <div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#C8993A;margin-bottom:10px;">Kvalitetssikring</div>
               <h3 style="font-family:Georgia,serif;font-size:18px;font-weight:normal;color:#1A1F1C;margin-bottom:10px;">Ingen matcher uden godkendelse</h3>
-              <p style="font-size:12.5px;color:#6B7569;line-height:1.65;">Alle kontaktpersoner er screenet, baggrundstjekket og dokumentverificeret inden optagelse. Straffeattest, Børneattest og Kørekort fornyes hvert år. Intet forslag sendes uden menneskelig faglig godkendelse.</p>
+              <p style="font-size:12.5px;color:#6B7569;line-height:1.65;">Alle kontaktpersoner er screenet, baggrundstjekket og dokumentverificeret inden optagelse. Straffeattest og Kørekort indhentes og fornyes hvert år. Børneattest rekvireres af Kursskifte fra Rigspolitiet med fagpersonens samtykke. Intet forslag sendes uden menneskelig faglig godkendelse.</p>
             </div>
           </div>
           <!-- Kompasset -->
@@ -2810,7 +2827,7 @@ a { text-decoration: none; color: inherit; }
                       <div style="width:30px;height:30px;border-radius:9px;background:#EEF4F0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#1C3829;flex-shrink:0;">KL</div>
                       <div style="flex:1;min-width:0;">
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
-                          <span style="font-size:12px;font-weight:600;color:#1A1F1C;">Sag KL-2025-0041</span>
+                          <span style="font-size:12px;font-weight:600;color:#1A1F1C;">Sag KS-250624-041</span>
                           <span style="font-size:10px;color:#9B9590;">10:02</span>
                         </div>
                         <div style="margin-bottom:4px;"><span class="app-badge app-badge-green" style="font-size:9.5px;padding:1px 6px;">Aktiv sag</span></div>
@@ -2825,7 +2842,7 @@ a { text-decoration: none; color: inherit; }
                       <div style="width:30px;height:30px;border-radius:9px;background:#FBF3E1;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#92660A;flex-shrink:0;">RM</div>
                       <div style="flex:1;min-width:0;">
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
-                          <span style="font-size:12px;font-weight:700;color:#1A1F1C;">Sag RM-2025-0038</span>
+                          <span style="font-size:12px;font-weight:700;color:#1A1F1C;">Sag KS-250615-038</span>
                           <span style="font-size:10px;color:#2563EB;font-weight:600;">i går</span>
                         </div>
                         <div style="margin-bottom:4px;"><span class="app-badge app-badge-green" style="font-size:9.5px;padding:1px 6px;">Aktiv sag</span></div>
@@ -2843,7 +2860,7 @@ a { text-decoration: none; color: inherit; }
                       <div style="width:30px;height:30px;border-radius:9px;background:#F3F4F6;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#6B7280;flex-shrink:0;">OD</div>
                       <div style="flex:1;min-width:0;">
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
-                          <span style="font-size:12px;font-weight:600;color:#1A1F1C;">Sag OD-2025-0019</span>
+                          <span style="font-size:12px;font-weight:600;color:#1A1F1C;">Sag KS-250515-019</span>
                           <span style="font-size:10px;color:#9B9590;">12. jun</span>
                         </div>
                         <div style="margin-bottom:4px;"><span class="app-badge app-badge-default" style="font-size:9.5px;padding:1px 6px;">Afsluttet</span></div>
@@ -2863,7 +2880,7 @@ a { text-decoration: none; color: inherit; }
                   <div style="width:32px;height:32px;border-radius:50%;background:#1C3829;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="16" height="16" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="10.5" fill="#1C3829" stroke="rgba(200,153,58,0.75)" stroke-width="0.7"/><path d="M11 1.5 L9.7 11 L12.3 11 Z" fill="#C8993A"/><path d="M11 20.5 L9.7 11 L12.3 11 Z" fill="rgba(180,180,200,0.4)"/><circle cx="11" cy="11" r="1.8" fill="#C8993A" stroke="rgba(0,0,0,0.2)" stroke-width="0.4"/><circle cx="11" cy="11" r="0.75" fill="rgba(255,255,255,0.9)"/></svg></div>
                   <div style="flex:1;min-width:0;">
                     <div style="font-size:13px;font-weight:600;color:#1A1F1C;">Kursskifte — koordinationsteam</div>
-                    <div style="font-size:11px;color:#6B7569;">Sag KL-2025-0041 · Borger KL · Aalborg Kommune</div>
+                    <div style="font-size:11px;color:#6B7569;">Sag KS-250624-041 · Borger KL · Aalborg Kommune</div>
                   </div>
                   <span class="app-badge app-badge-green dot-before">Aktiv sag</span>
                 </div>
@@ -2929,7 +2946,7 @@ a { text-decoration: none; color: inherit; }
                   <div style="font-size:11.5px;color:#6B7569;margin-bottom:16px;">Modtager: Kursskiftes koordinationsteam <span style="color:#9B9590;">(fast — kan ikke ændres)</span></div>
                   <div class="app-form-group">
                     <label class="app-label">Sag</label>
-                    <div class="app-select">Sag KL-2025-0041 — Borger KL (Aalborg Kommune)</div>
+                    <div class="app-select">Sag KS-250624-041 — Borger KL (Aalborg Kommune)</div>
                   </div>
                   <div class="app-form-group">
                     <label class="app-label">Emne</label>
@@ -3020,7 +3037,7 @@ a { text-decoration: none; color: inherit; }
                     <span class="app-badge app-badge-blue" style="font-size:9.5px;padding:1px 6px;">Kommune</span>
                     <span style="font-size:10px;color:#9B9590;">i dag 08:47</span>
                   </div>
-                  <div style="font-size:12px;font-weight:700;color:#1A1F1C;margin-bottom:1px;">Aalborg Kommune · Sag KL-2025-0041</div>
+                  <div style="font-size:12px;font-weight:700;color:#1A1F1C;margin-bottom:1px;">Aalborg Kommune · Sag KS-250624-041</div>
                   <div style="font-size:11px;color:#6B7569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Borgerens situation er ændret akut — familien er…</div>
                   <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
                     <span class="msg-cat akut">Akut besked</span>
@@ -3033,7 +3050,7 @@ a { text-decoration: none; color: inherit; }
                     <span class="app-badge app-badge-brand" style="font-size:9.5px;padding:1px 6px;">Fagperson</span>
                     <span style="font-size:10px;color:#2563EB;font-weight:600;">i dag 07:55</span>
                   </div>
-                  <div style="font-size:12px;font-weight:700;color:#1A1F1C;margin-bottom:1px;">Sarah M. Jensen · Sag RM-2025-0038</div>
+                  <div style="font-size:12px;font-weight:700;color:#1A1F1C;margin-bottom:1px;">Sarah M. Jensen · Sag KS-250615-038</div>
                   <div style="font-size:11px;color:#1A1F1C;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Ny sessionslog klar til gennemsyn — vil I kvalitets…</div>
                   <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
                     <span class="msg-cat dok">Dokumentation</span>
@@ -3046,7 +3063,7 @@ a { text-decoration: none; color: inherit; }
                     <span class="app-badge app-badge-blue" style="font-size:9.5px;padding:1px 6px;">Kommune</span>
                     <span style="font-size:10px;color:#9B9590;">i går</span>
                   </div>
-                  <div style="font-size:12px;font-weight:600;color:#1A1F1C;margin-bottom:1px;">Hjørring Kommune · Sag HJ-2025-0033</div>
+                  <div style="font-size:12px;font-weight:600;color:#1A1F1C;margin-bottom:1px;">Hjørring Kommune · Sag KS-250608-033</div>
                   <div style="font-size:11px;color:#6B7569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Kan timetallet udvides fra 5 til 7 timer/uge fra…</div>
                   <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
                     <span class="msg-cat q">Spørgsmål</span>
@@ -3059,7 +3076,7 @@ a { text-decoration: none; color: inherit; }
                     <span class="app-badge app-badge-brand" style="font-size:9.5px;padding:1px 6px;">Fagperson</span>
                     <span style="font-size:10px;color:#9B9590;">i går</span>
                   </div>
-                  <div style="font-size:12px;font-weight:600;color:#1A1F1C;margin-bottom:1px;">Mikkel A. Sørensen · Sag FR-2025-0029</div>
+                  <div style="font-size:12px;font-weight:600;color:#1A1F1C;margin-bottom:1px;">Mikkel A. Sørensen · Sag KS-250602-029</div>
                   <div style="font-size:11px;color:#6B7569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Tak — mødetid bekræftet torsdag kl. 10.</div>
                   <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
                     <span class="msg-cat koord">Praktisk koordinering</span>
@@ -3072,7 +3089,7 @@ a { text-decoration: none; color: inherit; }
                     <span class="app-badge app-badge-blue" style="font-size:9.5px;padding:1px 6px;">Kommune</span>
                     <span style="font-size:10px;color:#9B9590;">28. jun</span>
                   </div>
-                  <div style="font-size:12px;font-weight:600;color:#1A1F1C;margin-bottom:1px;">Aarhus Kommune · Sag AA-2025-0021</div>
+                  <div style="font-size:12px;font-weight:600;color:#1A1F1C;margin-bottom:1px;">Aarhus Kommune · Sag KS-250520-021</div>
                   <div style="font-size:11px;color:#6B7569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Forløbet er afsluttet — tak for samarbejdet.</div>
                   <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
                     <span class="msg-cat opf">Opfølgning</span>
@@ -3087,7 +3104,7 @@ a { text-decoration: none; color: inherit; }
                 <div style="width:32px;height:32px;border-radius:50%;background:#DBEAFE;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1E40AF" stroke-width="1.75" stroke-linecap="round"><line x1="3" y1="22" x2="21" y2="22"/><polygon points="12 2 20 7 4 7"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/></svg></div>
                 <div style="flex:1;min-width:0;">
                   <div style="font-size:13px;font-weight:600;color:#1A1F1C;">Aalborg Kommune — Familieafdelingen</div>
-                  <div style="font-size:11px;color:#6B7569;">Sag KL-2025-0041 · Borger KL · §52, stk. 3, nr. 6</div>
+                  <div style="font-size:11px;color:#6B7569;">Sag KS-250624-041 · Borger KL · §32, stk. 1, nr. 6 i barnets lov</div>
                 </div>
                 <span class="msg-cat akut">Akut besked</span>
                 <span class="conv-status handling"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Kræver handling</span>
@@ -3124,7 +3141,7 @@ a { text-decoration: none; color: inherit; }
               <div style="border-top:1px solid #E0DAD0;background:#fff;padding:10px 14px 12px;">
                 <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
                   <span style="font-size:10.5px;color:#6B7569;font-weight:600;">Til:</span>
-                  <span class="app-badge app-badge-blue" style="font-size:10px;">Aalborg Kommune · Sag KL-2025-0041</span>
+                  <span class="app-badge app-badge-blue" style="font-size:10px;">Aalborg Kommune · Sag KS-250624-041</span>
                   <span style="font-size:10px;color:#9B9590;">Fast modtager — samtalens ejer</span>
                 </div>
                 <div style="display:flex;gap:8px;align-items:center;">
@@ -3191,7 +3208,7 @@ a { text-decoration: none; color: inherit; }
             </div>
             <div style="padding:12px 16px;border-bottom:1px solid #F0EDE7;background:#F6F9F7;cursor:pointer;">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
-                <span style="font-size:12.5px;font-weight:600;color:#1A1F1C;">Sag KL-2025-0041 · Borger KL</span>
+                <span style="font-size:12.5px;font-weight:600;color:#1A1F1C;">Sag KS-250624-041 · Borger KL</span>
                 <span style="font-size:10px;color:#9B9590;">i dag 09:05</span>
               </div>
               <div style="font-size:11.5px;color:#6B7569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Kursskifte: Tak for jeres besked — sagen er markeret som akut…</div>
@@ -3202,7 +3219,7 @@ a { text-decoration: none; color: inherit; }
             </div>
             <div style="padding:12px 16px;cursor:pointer;opacity:.6;">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
-                <span style="font-size:12.5px;font-weight:600;color:#1A1F1C;">Sag KL-2025-0027 · Borger MT</span>
+                <span style="font-size:12.5px;font-weight:600;color:#1A1F1C;">Sag KS-250601-027 · Borger MT</span>
                 <span style="font-size:10px;color:#9B9590;">14. maj</span>
               </div>
               <div style="font-size:11.5px;color:#6B7569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Kursskifte: Slutrapporten er fremsendt — samtalen lukkes.</div>
@@ -3219,7 +3236,7 @@ a { text-decoration: none; color: inherit; }
               <div style="width:30px;height:30px;border-radius:50%;background:#1C3829;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="15" height="15" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="10.5" fill="#1C3829" stroke="rgba(200,153,58,0.75)" stroke-width="0.7"/><path d="M11 1.5 L9.7 11 L12.3 11 Z" fill="#C8993A"/><path d="M11 20.5 L9.7 11 L12.3 11 Z" fill="rgba(180,180,200,0.4)"/><circle cx="11" cy="11" r="1.8" fill="#C8993A" stroke="rgba(0,0,0,0.2)" stroke-width="0.4"/><circle cx="11" cy="11" r="0.75" fill="rgba(255,255,255,0.9)"/></svg></div>
               <div style="flex:1;min-width:0;">
                 <div style="font-size:12.5px;font-weight:600;color:#1A1F1C;">Kursskifte — koordinationsteam</div>
-                <div style="font-size:10.5px;color:#6B7569;">Sag KL-2025-0041 · Borger KL</div>
+                <div style="font-size:10.5px;color:#6B7569;">Sag KS-250624-041 · Borger KL</div>
               </div>
               <span class="app-badge app-badge-green dot-before">Forløb aktivt</span>
             </div>
@@ -3258,7 +3275,7 @@ a { text-decoration: none; color: inherit; }
             <div style="font-size:11px;color:#6B7569;margin-bottom:14px;">Beskeden sendes sikkert til Kursskiftes koordinationsteam — aldrig direkte til kontaktpersonen.</div>
             <div class="app-form-group" style="margin-bottom:12px;">
               <label class="app-label">Sag</label>
-              <div class="app-select" style="font-size:12.5px;">Sag KL-2025-0041 — Borger KL</div>
+              <div class="app-select" style="font-size:12.5px;">Sag KS-250624-041 — Borger KL</div>
             </div>
             <div class="app-form-group" style="margin-bottom:12px;">
               <label class="app-label">Kategori</label>

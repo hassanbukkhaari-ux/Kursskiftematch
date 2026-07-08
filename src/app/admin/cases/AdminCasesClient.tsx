@@ -30,39 +30,84 @@ const AGE_OPTIONS = ['0-5', '6-12', '13-18', '18+'] as const
 const COMPLEXITY_OPTIONS = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as const
 const GENDER_OPTIONS = ['MALE', 'FEMALE', 'OTHER'] as const
 const GENDER_LABEL: Record<string, string> = { MALE: 'Dreng/mand', FEMALE: 'Pige/kvinde', OTHER: 'Andet' }
+const PROF_GENDER_OPTIONS = ['MALE', 'FEMALE', 'NO_PREF'] as const
+const PROF_GENDER_LABEL: Record<string, string> = { MALE: 'Mand', FEMALE: 'Kvinde', NO_PREF: 'Ingen præference' }
+const TRANSPORT_OPTIONS = ['JA', 'NEJ'] as const
+const LEGAL_BASIS_OPTIONS = [
+  { value: 'BARNETS_LOV_32', label: '§32 barnets lov', note: 'Børn 0–17 år' },
+  { value: 'SEL_85', label: '§85 serviceloven', note: 'Voksne 18+' },
+] as const
+const LANGUAGE_OPTIONS = ['Dansk', 'Engelsk', 'Arabisk', 'Tyrkisk', 'Urdu', 'Somalisk', 'Dari/Pashto', 'Bosnisk/Serbisk', 'Polsk', 'Rumænsk'] as const
+const DURATION_OPTIONS = [
+  { value: '3', label: '3 mdr.' },
+  { value: '6', label: '6 mdr.' },
+  { value: '12', label: '1 år' },
+  { value: '24', label: '2 år' },
+  { value: '36', label: '3+ år' },
+] as const
 
 type FilterKey = 'all' | 'OPEN' | 'MATCHED' | 'ACTIVE' | 'COMPLETED'
 
 type NewCaseForm = {
+  // Kommuneoplysninger
   municipality_id: string
-  citizen_initials: string
-  citizen_age_range: string
-  citizen_gender: string
-  weekly_hours: string
-  complexity_level: string
-  urgency: string
   intake_contact_name: string
   intake_contact_email: string
-  citizen_notes: string
+  intake_contact_phone: string        // TODO(migration): cases.intake_contact_phone
+  // Borger
+  citizen_initials: string
+  citizen_name: string                // TODO(migration): cases.citizen_name
+  citizen_dob: string                 // TODO(migration): cases.citizen_dob
+  citizen_age_range: string
+  legal_basis: string                 // TODO(migration): cases.legal_basis
+  citizen_gender: string
+  // Sagen
+  complexity_level: string
+  weekly_hours: string
+  urgency: string
+  expected_duration_months: string    // TODO(migration): cases.expected_duration_months
+  // Borgerens profil
+  diagnoses: string                   // TODO(migration): cases.diagnoses
+  daily_function: string              // TODO(migration): cases.daily_function
+  citizen_interests: string           // TODO(migration): cases.citizen_interests
   problem_area_codes: string[]
+  // Ønsker til fagperson
   goal_codes: string[]
   special_wish_codes: string[]
+  preferred_prof_gender: string       // TODO(migration): cases.preferred_prof_gender
+  required_languages: string[]        // TODO(migration): cases.required_languages
+  transport_needs: string             // TODO(migration): cases.transport_needs
+  geographical_area: string           // TODO(migration): cases.geographical_area
+  // Interne noter
+  citizen_notes: string
 }
 
 const EMPTY_FORM: NewCaseForm = {
   municipality_id: '',
-  citizen_initials: '',
-  citizen_age_range: '13-18',
-  citizen_gender: '',
-  weekly_hours: '5',
-  complexity_level: 'MEDIUM',
-  urgency: 'NORMAL',
   intake_contact_name: '',
   intake_contact_email: '',
-  citizen_notes: '',
+  intake_contact_phone: '',
+  citizen_initials: '',
+  citizen_name: '',
+  citizen_dob: '',
+  citizen_age_range: '13-18',
+  legal_basis: '',
+  citizen_gender: '',
+  complexity_level: 'MEDIUM',
+  weekly_hours: '5',
+  urgency: 'NORMAL',
+  expected_duration_months: '',
+  diagnoses: '',
+  daily_function: '',
+  citizen_interests: '',
   problem_area_codes: [],
   goal_codes: [],
   special_wish_codes: [],
+  preferred_prof_gender: '',
+  required_languages: [],
+  transport_needs: '',
+  geographical_area: '',
+  citizen_notes: '',
 }
 
 function toggleInArray(arr: string[], value: string): string[] {
@@ -71,6 +116,22 @@ function toggleInArray(arr: string[], value: string): string[] {
 
 const inputClass =
   'w-full border border-[#E0DAD0] rounded-xl px-4 py-2.5 text-sm text-[#1A1F1C] bg-[#F6F3EE] placeholder:text-[#C8C0B0] focus:outline-none focus:border-[#1C3829] focus:bg-white transition-colors'
+
+const labelClass = 'block text-xs font-semibold uppercase tracking-widest text-[#6B7569] mb-2'
+
+function FormSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="flex items-center gap-3 mb-4">
+        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#6B7569]">{title}</span>
+        <div className="flex-1 h-px bg-[#E0DAD0]" />
+      </div>
+      <div className="space-y-4">
+        {children}
+      </div>
+    </div>
+  )
+}
 
 export function AdminCasesClient({
   initialCases,
@@ -141,6 +202,11 @@ export function AdminCasesClient({
           problem_area_codes: form.problem_area_codes,
           goal_codes: form.goal_codes,
           special_wish_codes: form.special_wish_codes,
+          // TODO(migration): include when DB columns are added:
+          // citizen_name, citizen_dob, legal_basis, intake_contact_phone,
+          // expected_duration_months, diagnoses, daily_function,
+          // citizen_interests, preferred_prof_gender, required_languages,
+          // transport_needs, geographical_area
         }),
       })
       if (!res.ok) {
@@ -266,20 +332,23 @@ export function AdminCasesClient({
         aria-hidden="true"
       />
 
-      {/* New case drawer */}
+      {/* New case drawer — wide panel */}
       <aside
         role="dialog"
         aria-modal="true"
         aria-label="Opret ny sag"
         className={[
-          'fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-xl',
+          'fixed inset-y-0 right-0 z-50 w-full max-w-2xl bg-white shadow-xl',
           'flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]',
           drawerOpen ? 'translate-x-0' : 'translate-x-full',
         ].join(' ')}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-[#E0DAD0] shrink-0">
-          <h2 className="font-serif text-lg font-semibold text-[#1A1F1C]">Ny sag</h2>
+        <div className="flex items-center justify-between px-8 py-5 border-b border-[#E0DAD0] shrink-0">
+          <div>
+            <h2 className="font-serif text-xl font-semibold text-[#1A1F1C]">Opret ny sag</h2>
+            <p className="text-xs text-[#6B7569] mt-0.5">Udfyld borger- og sagsoplysninger</p>
+          </div>
           <button
             type="button"
             onClick={closeDrawer}
@@ -294,265 +363,447 @@ export function AdminCasesClient({
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-5">
+        <div className="flex-1 overflow-y-auto px-8 py-7 space-y-8">
 
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-widest text-[#6B7569] mb-2">
-              Kommune
-            </label>
-            <select value={form.municipality_id} onChange={field('municipality_id')} className={inputClass}>
-              <option value="">Vælg kommune...</option>
-              {municipalities.map(m => (
-                <option key={m.id} value={m.id}>{m.name}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-widest text-[#6B7569] mb-2">
-              Borgers initialer (2 bogstaver)
-            </label>
-            <input
-              type="text"
-              value={form.citizen_initials}
-              onChange={field('citizen_initials')}
-              maxLength={2}
-              placeholder="f.eks. AB"
-              className={`${inputClass} uppercase`}
-              autoFocus
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-widest text-[#6B7569] mb-2">
-              Aldersgruppe
-            </label>
-            <div className="grid grid-cols-4 gap-2">
-              {AGE_OPTIONS.map(age => (
-                <button
-                  key={age}
-                  type="button"
-                  onClick={() => setForm(f => ({ ...f, citizen_age_range: age }))}
-                  className={[
-                    'h-10 rounded-xl text-sm font-medium border transition-all',
-                    form.citizen_age_range === age
-                      ? 'bg-[#1C3829] text-white border-[#1C3829]'
-                      : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]',
-                  ].join(' ')}
-                >
-                  {age}
-                </button>
-              ))}
+          {/* ── Kommuneoplysninger ── */}
+          <FormSection title="Kommuneoplysninger">
+            <div>
+              <label className={labelClass}>Kommune</label>
+              <select value={form.municipality_id} onChange={field('municipality_id')} className={inputClass}>
+                <option value="">Vælg kommune...</option>
+                {municipalities.map(m => (
+                  <option key={m.id} value={m.id}>{m.name}</option>
+                ))}
+              </select>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-widest text-[#6B7569] mb-2">
-              Køn (valgfri)
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {GENDER_OPTIONS.map(g => (
-                <button
-                  key={g}
-                  type="button"
-                  onClick={() => setForm(f => ({ ...f, citizen_gender: f.citizen_gender === g ? '' : g }))}
-                  className={[
-                    'h-10 rounded-xl text-xs font-medium border transition-all',
-                    form.citizen_gender === g
-                      ? 'bg-[#1C3829] text-white border-[#1C3829]'
-                      : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]',
-                  ].join(' ')}
-                >
-                  {GENDER_LABEL[g]}
-                </button>
-              ))}
+            <div>
+              <label className={labelClass}>Kommunens sagsbehandler</label>
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={form.intake_contact_name}
+                  onChange={field('intake_contact_name')}
+                  placeholder="Fulde navn"
+                  className={inputClass}
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="email"
+                    value={form.intake_contact_email}
+                    onChange={field('intake_contact_email')}
+                    placeholder="E-mailadresse"
+                    className={inputClass}
+                  />
+                  <input
+                    type="tel"
+                    value={form.intake_contact_phone}
+                    onChange={field('intake_contact_phone')}
+                    placeholder="Telefon"
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+              <p className="text-[10px] text-[#6B7569] mt-1.5">Internt felt — vises kun i Kursskifte Administration</p>
             </div>
-          </div>
+          </FormSection>
 
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-widest text-[#6B7569] mb-2">
-              Kompleksitet
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              {COMPLEXITY_OPTIONS.map(c => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setForm(f => ({ ...f, complexity_level: c }))}
-                  className={[
-                    'h-10 rounded-xl text-sm font-medium border transition-all',
-                    form.complexity_level === c
-                      ? 'bg-[#1C3829] text-white border-[#1C3829]'
-                      : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]',
-                  ].join(' ')}
-                >
-                  {COMPLEXITY_LABEL[c]}
-                </button>
-              ))}
+          {/* ── Borger ── */}
+          <FormSection title="Borger">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={labelClass}>Initialer (2 bogstaver) *</label>
+                <input
+                  type="text"
+                  value={form.citizen_initials}
+                  onChange={field('citizen_initials')}
+                  maxLength={2}
+                  placeholder="f.eks. AB"
+                  className={`${inputClass} uppercase`}
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Fulde navn</label>
+                <input
+                  type="text"
+                  value={form.citizen_name}
+                  onChange={field('citizen_name')}
+                  placeholder="Borgerens fulde navn"
+                  className={inputClass}
+                />
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-widest text-[#6B7569] mb-2">
-              Ugentlige timer
-            </label>
-            <input
-              type="number"
-              min={0}
-              max={40}
-              value={form.weekly_hours}
-              onChange={field('weekly_hours')}
-              className={inputClass}
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-widest text-[#6B7569] mb-2">
-              Hastighed
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {([
-                { value: 'NORMAL', label: '⚪ Normal' },
-                { value: 'HURTIG', label: '🟡 Hurtig' },
-                { value: 'AKUT', label: '🔴 Akut' },
-              ] as const).map(opt => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setForm(f => ({ ...f, urgency: opt.value }))}
-                  className={[
-                    'h-10 rounded-xl text-xs font-semibold border transition-all',
-                    form.urgency === opt.value
-                      ? opt.value === 'AKUT'
-                        ? 'bg-red-700 text-white border-red-700'
-                        : opt.value === 'HURTIG'
-                          ? 'bg-amber-500 text-white border-amber-500'
-                          : 'bg-[#1C3829] text-white border-[#1C3829]'
-                      : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]',
-                  ].join(' ')}
-                >
-                  {opt.label}
-                </button>
-              ))}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={labelClass}>Fødselsdato</label>
+                <input
+                  type="date"
+                  value={form.citizen_dob}
+                  onChange={field('citizen_dob')}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Aldersgruppe</label>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {AGE_OPTIONS.map(age => (
+                    <button
+                      key={age}
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, citizen_age_range: age }))}
+                      className={[
+                        'h-10 rounded-xl text-sm font-medium border transition-all',
+                        form.citizen_age_range === age
+                          ? 'bg-[#1C3829] text-white border-[#1C3829]'
+                          : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]',
+                      ].join(' ')}
+                    >
+                      {age}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
-            {form.urgency === 'AKUT' && (
-              <p className="text-xs text-red-600 mt-1.5 font-medium">Akut sager sorteres øverst og markeres med rødt i sagslisten.</p>
-            )}
-          </div>
 
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-widest text-[#6B7569] mb-2">
-              Kommunens kontakt (sagsbehandler)
-            </label>
-            <div className="space-y-2">
-              <input
-                type="text"
-                value={form.intake_contact_name}
-                onChange={field('intake_contact_name')}
-                placeholder="Navn"
-                className={inputClass}
+            <div>
+              <label className={labelClass}>Lovgrundlag</label>
+              <div className="grid grid-cols-2 gap-2">
+                {LEGAL_BASIS_OPTIONS.map(opt => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, legal_basis: f.legal_basis === opt.value ? '' : opt.value }))}
+                    className={[
+                      'flex flex-col items-start px-3 py-2.5 rounded-xl border transition-all text-left',
+                      form.legal_basis === opt.value
+                        ? 'bg-[#1C3829] text-white border-[#1C3829]'
+                        : 'bg-white text-[#1A1F1C] border-[#E0DAD0] hover:border-[#1C3829]',
+                    ].join(' ')}
+                  >
+                    <span className="text-sm font-semibold">{opt.label}</span>
+                    <span className={`text-[10px] mt-0.5 ${form.legal_basis === opt.value ? 'text-white/70' : 'text-[#6B7569]'}`}>{opt.note}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className={labelClass}>Køn (valgfri)</label>
+              <div className="grid grid-cols-3 gap-2">
+                {GENDER_OPTIONS.map(g => (
+                  <button
+                    key={g}
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, citizen_gender: f.citizen_gender === g ? '' : g }))}
+                    className={[
+                      'h-10 rounded-xl text-xs font-medium border transition-all',
+                      form.citizen_gender === g
+                        ? 'bg-[#1C3829] text-white border-[#1C3829]'
+                        : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]',
+                    ].join(' ')}
+                  >
+                    {GENDER_LABEL[g]}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </FormSection>
+
+          {/* ── Sagsdetaljer ── */}
+          <FormSection title="Sagsdetaljer">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={labelClass}>Kompleksitet</label>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {COMPLEXITY_OPTIONS.map(c => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, complexity_level: c }))}
+                      className={[
+                        'h-10 rounded-xl text-xs font-medium border transition-all',
+                        form.complexity_level === c
+                          ? 'bg-[#1C3829] text-white border-[#1C3829]'
+                          : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]',
+                      ].join(' ')}
+                    >
+                      {COMPLEXITY_LABEL[c]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className={labelClass}>Ugentlige timer</label>
+                <input
+                  type="number"
+                  min={0}
+                  max={40}
+                  value={form.weekly_hours}
+                  onChange={field('weekly_hours')}
+                  className={inputClass}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className={labelClass}>Hastighed</label>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { value: 'NORMAL', label: '⚪ Normal' },
+                  { value: 'HURTIG', label: '🟡 Hurtig' },
+                  { value: 'AKUT', label: '🔴 Akut (24t)' },
+                ] as const).map(opt => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, urgency: opt.value }))}
+                    className={[
+                      'h-10 rounded-xl text-xs font-semibold border transition-all',
+                      form.urgency === opt.value
+                        ? opt.value === 'AKUT'
+                          ? 'bg-red-700 text-white border-red-700'
+                          : opt.value === 'HURTIG'
+                            ? 'bg-amber-500 text-white border-amber-500'
+                            : 'bg-[#1C3829] text-white border-[#1C3829]'
+                        : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]',
+                    ].join(' ')}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+              {form.urgency === 'AKUT' && (
+                <p className="text-xs text-red-600 mt-1.5 font-medium">Akut sager sorteres øverst og markeres med rødt i sagslisten.</p>
+              )}
+            </div>
+
+            <div>
+              <label className={labelClass}>Forventet varighed</label>
+              <div className="flex gap-2 flex-wrap">
+                {DURATION_OPTIONS.map(opt => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, expected_duration_months: f.expected_duration_months === opt.value ? '' : opt.value }))}
+                    className={[
+                      'px-3 h-9 rounded-xl text-xs font-medium border transition-all',
+                      form.expected_duration_months === opt.value
+                        ? 'bg-[#1C3829] text-white border-[#1C3829]'
+                        : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]',
+                    ].join(' ')}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </FormSection>
+
+          {/* ── Borgerens profil ── */}
+          <FormSection title="Borgerens profil">
+            <div>
+              <label className={labelClass}>Diagnoser / funktionsnedsættelse</label>
+              <textarea
+                value={form.diagnoses}
+                onChange={field('diagnoses')}
+                rows={2}
+                placeholder="f.eks. ADHD, autisme, hjerneskade, kognitive vanskeligheder..."
+                className={`${inputClass} resize-none`}
               />
-              <input
-                type="email"
-                value={form.intake_contact_email}
-                onChange={field('intake_contact_email')}
-                placeholder="E-mail"
-                className={inputClass}
+            </div>
+
+            <div>
+              <label className={labelClass}>Daglig funktion</label>
+              <textarea
+                value={form.daily_function}
+                onChange={field('daily_function')}
+                rows={2}
+                placeholder="Beskriv borgerens daglige funktionsniveau og støttebehov..."
+                className={`${inputClass} resize-none`}
               />
             </div>
-            <p className="text-[10px] text-[#6B7569] mt-1.5">Internt felt — vises kun i admin-portalen</p>
-          </div>
 
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-widest text-[#6B7569] mb-2">
-              Problemområder (valgfri)
-            </label>
-            <div className="flex flex-wrap gap-1.5">
-              {lookups.problemAreas.map(opt => {
-                const active = form.problem_area_codes.includes(opt.code)
-                return (
+            <div>
+              <label className={labelClass}>Interesser og ressourcer</label>
+              <textarea
+                value={form.citizen_interests}
+                onChange={field('citizen_interests')}
+                rows={2}
+                placeholder="Borgerens interesser, hobbyer og stærke sider..."
+                className={`${inputClass} resize-none`}
+              />
+            </div>
+
+            <div>
+              <label className={labelClass}>Problemområder (valgfri)</label>
+              <div className="flex flex-wrap gap-1.5">
+                {lookups.problemAreas.map(opt => {
+                  const active = form.problem_area_codes.includes(opt.code)
+                  return (
+                    <button
+                      key={opt.code}
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, problem_area_codes: toggleInArray(f.problem_area_codes, opt.code) }))}
+                      className={[
+                        'px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors',
+                        active
+                          ? 'bg-[#1C3829] text-white border-[#1C3829]'
+                          : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]',
+                      ].join(' ')}
+                    >
+                      {opt.label_da}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </FormSection>
+
+          {/* ── Ønsker til fagperson ── */}
+          <FormSection title="Ønsker til fagperson">
+            <div>
+              <label className={labelClass}>Mål for indsatsen (valgfri)</label>
+              <div className="flex flex-wrap gap-1.5">
+                {lookups.goals.map(opt => {
+                  const active = form.goal_codes.includes(opt.code)
+                  return (
+                    <button
+                      key={opt.code}
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, goal_codes: toggleInArray(f.goal_codes, opt.code) }))}
+                      className={[
+                        'px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors',
+                        active
+                          ? 'bg-[#1C3829] text-white border-[#1C3829]'
+                          : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]',
+                      ].join(' ')}
+                    >
+                      {opt.label_da}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div>
+              <label className={labelClass}>Særlige ønsker (valgfri)</label>
+              <div className="flex flex-wrap gap-1.5">
+                {lookups.specialWishes.map(opt => {
+                  const active = form.special_wish_codes.includes(opt.code)
+                  return (
+                    <button
+                      key={opt.code}
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, special_wish_codes: toggleInArray(f.special_wish_codes, opt.code) }))}
+                      className={[
+                        'px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors',
+                        active
+                          ? 'bg-[#1C3829] text-white border-[#1C3829]'
+                          : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]',
+                      ].join(' ')}
+                    >
+                      {opt.label_da}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div>
+              <label className={labelClass}>Foretrukket fagperson køn (hvis begrundet)</label>
+              <div className="grid grid-cols-3 gap-2">
+                {PROF_GENDER_OPTIONS.map(g => (
                   <button
-                    key={opt.code}
+                    key={g}
                     type="button"
-                    onClick={() => setForm(f => ({ ...f, problem_area_codes: toggleInArray(f.problem_area_codes, opt.code) }))}
+                    onClick={() => setForm(f => ({ ...f, preferred_prof_gender: f.preferred_prof_gender === g ? '' : g }))}
                     className={[
-                      'px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors',
-                      active
+                      'h-10 rounded-xl text-xs font-medium border transition-all',
+                      form.preferred_prof_gender === g
                         ? 'bg-[#1C3829] text-white border-[#1C3829]'
                         : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]',
                     ].join(' ')}
                   >
-                    {opt.label_da}
+                    {PROF_GENDER_LABEL[g]}
                   </button>
-                )
-              })}
+                ))}
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-widest text-[#6B7569] mb-2">
-              Mål (valgfri)
-            </label>
-            <div className="flex flex-wrap gap-1.5">
-              {lookups.goals.map(opt => {
-                const active = form.goal_codes.includes(opt.code)
-                return (
-                  <button
-                    key={opt.code}
-                    type="button"
-                    onClick={() => setForm(f => ({ ...f, goal_codes: toggleInArray(f.goal_codes, opt.code) }))}
-                    className={[
-                      'px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors',
-                      active
-                        ? 'bg-[#1C3829] text-white border-[#1C3829]'
-                        : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]',
-                    ].join(' ')}
-                  >
-                    {opt.label_da}
-                  </button>
-                )
-              })}
+            <div>
+              <label className={labelClass}>Sprogkrav (valgfri — vælg alle relevante)</label>
+              <div className="flex flex-wrap gap-1.5">
+                {LANGUAGE_OPTIONS.map(lang => {
+                  const active = form.required_languages.includes(lang)
+                  return (
+                    <button
+                      key={lang}
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, required_languages: toggleInArray(f.required_languages, lang) }))}
+                      className={[
+                        'px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors',
+                        active
+                          ? 'bg-[#1C3829] text-white border-[#1C3829]'
+                          : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]',
+                      ].join(' ')}
+                    >
+                      {lang}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-widest text-[#6B7569] mb-2">
-              Ønsker til kontaktperson (valgfri)
-            </label>
-            <div className="flex flex-wrap gap-1.5">
-              {lookups.specialWishes.map(opt => {
-                const active = form.special_wish_codes.includes(opt.code)
-                return (
-                  <button
-                    key={opt.code}
-                    type="button"
-                    onClick={() => setForm(f => ({ ...f, special_wish_codes: toggleInArray(f.special_wish_codes, opt.code) }))}
-                    className={[
-                      'px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors',
-                      active
-                        ? 'bg-[#1C3829] text-white border-[#1C3829]'
-                        : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]',
-                    ].join(' ')}
-                  >
-                    {opt.label_da}
-                  </button>
-                )
-              })}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={labelClass}>Transportbehov</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {TRANSPORT_OPTIONS.map(opt => (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, transport_needs: f.transport_needs === opt ? '' : opt }))}
+                      className={[
+                        'h-10 rounded-xl text-xs font-medium border transition-all',
+                        form.transport_needs === opt
+                          ? 'bg-[#1C3829] text-white border-[#1C3829]'
+                          : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]',
+                      ].join(' ')}
+                    >
+                      {opt === 'JA' ? 'Ja — kørsel' : 'Nej — lokal'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className={labelClass}>Geografisk område</label>
+                <input
+                  type="text"
+                  value={form.geographical_area}
+                  onChange={field('geographical_area')}
+                  placeholder="By / bydel / postnr."
+                  className={inputClass}
+                />
+              </div>
             </div>
-          </div>
+          </FormSection>
 
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-widest text-[#6B7569] mb-2">
-              Noter (valgfri)
-            </label>
-            <textarea
-              value={form.citizen_notes}
-              onChange={field('citizen_notes')}
-              rows={3}
-              placeholder="Tilføj relevante noter om borgerens situation..."
-              className={`${inputClass} resize-none`}
-            />
-          </div>
+          {/* ── Interne noter ── */}
+          <FormSection title="Interne noter">
+            <div>
+              <label className={labelClass}>Sagsnoter (valgfri)</label>
+              <textarea
+                value={form.citizen_notes}
+                onChange={field('citizen_notes')}
+                rows={4}
+                placeholder="Baggrundsinformation, særlige hensyn, kommunikation med kommunen, øvrige bemærkninger..."
+                className={`${inputClass} resize-none`}
+              />
+              <p className="text-[10px] text-[#6B7569] mt-1.5">Gemmes kun internt — deles aldrig med kommunen eller fagpersonen</p>
+            </div>
+          </FormSection>
 
           {error && (
             <div className="flex items-center gap-2 p-3 bg-[#FEE2E2] border border-[#FECACA] rounded-xl text-sm text-[#B91C1C]">
@@ -567,7 +818,7 @@ export function AdminCasesClient({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-[#E0DAD0] shrink-0 flex gap-3">
+        <div className="px-8 py-4 border-t border-[#E0DAD0] shrink-0 flex gap-3">
           <Button variant="secondary" className="flex-1" onClick={closeDrawer} disabled={saving}>
             Annuller
           </Button>

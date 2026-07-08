@@ -230,7 +230,7 @@ export function DashboardShell({ children, userName, role = 'admin' }: Dashboard
 
   const nav = role === 'professional' ? professionalNav : adminNav
   const isRootRoute = role === 'professional' ? '/dashboard' : '/admin'
-  const roleLabel = role === 'professional' ? 'Kontaktperson' : 'Administrator'
+  const roleLabel = role === 'professional' ? 'Kontaktperson' : 'Kursskifte Administration'
   const defaultInitial = role === 'professional' ? 'P' : 'A'
 
   // Close slide-over on navigation

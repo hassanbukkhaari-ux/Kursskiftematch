@@ -31,11 +31,11 @@ export default async function AdminNotificationsPage() {
   return (
     <div>
       <PageHeader
-        label="Administration"
+        label="Kursskifte Administration"
         title="Notifikationer"
         subtitle="Log over alle udsendte beskeder — genudsend fejlede direkte herfra"
         breadcrumb={[
-          { label: 'Administration', href: '/admin' },
+          { label: 'Kursskifte Administration', href: '/admin' },
           { label: 'Notifikationer' },
         ]}
       />

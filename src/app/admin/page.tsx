@@ -76,8 +76,8 @@ export default async function AdminPage() {
     <div>
       <PageHeader
         label="Dashboard"
-        title="Administration"
-        subtitle="Kursskiftematch — administrationsplatform"
+        title="Kursskifte Administration"
+        subtitle="Administrationsoverblik"
       />
       <ContentContainer>
         {/* Stats */}

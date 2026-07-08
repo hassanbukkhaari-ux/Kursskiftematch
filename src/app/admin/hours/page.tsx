@@ -49,10 +49,10 @@ export default async function AdminHoursPage() {
   return (
     <div>
       <PageHeader
-        label="Administration"
+        label="Kursskifte Administration"
         title="Timeregistreringer"
         subtitle={pendingCount > 0 ? `${pendingCount} afventer godkendelse` : 'Ingen afventer godkendelse'}
-        breadcrumb={[{ label: 'Administration', href: '/admin' }, { label: 'Timer' }]}
+        breadcrumb={[{ label: 'Kursskifte Administration', href: '/admin' }, { label: 'Timer' }]}
       />
       <ContentContainer>
         <AdminHoursClient initialHours={enriched} />

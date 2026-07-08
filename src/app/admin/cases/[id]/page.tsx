@@ -172,7 +172,7 @@ export default async function AdminCasePage({ params }: PageProps) {
         title={`Borger ${caseData.citizen_initials}`}
         subtitle={`${caseData.citizen_age_range} · ${muniRes.data?.name ?? 'Ukendt kommune'}`}
         breadcrumb={[
-          { label: 'Administration', href: '/admin' },
+          { label: 'Kursskifte Administration', href: '/admin' },
           { label: 'Sager', href: '/admin/cases' },
           { label: `Borger ${caseData.citizen_initials}` },
         ]}

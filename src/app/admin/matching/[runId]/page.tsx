@@ -60,7 +60,7 @@ export default async function MatchRunPage({ params }: PageProps) {
         title={caseData ? `Match for borger ${caseData.citizen_initials}` : 'Match-kandidater'}
         subtitle={`${candidateList.length} kandidater scoret · Algoritme v${run.algorithm_version}`}
         breadcrumb={[
-          { label: 'Administration', href: '/admin' },
+          { label: 'Kursskifte Administration', href: '/admin' },
           { label: 'Matching', href: '/admin/matching' },
           { label: caseData ? `Borger ${caseData.citizen_initials}` : runId.slice(0, 8) },
         ]}

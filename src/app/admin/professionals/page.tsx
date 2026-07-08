@@ -20,10 +20,10 @@ export default async function ProfessionalsPage() {
   return (
     <div>
       <PageHeader
-        label="Administration"
+        label="Kursskifte Administration"
         title="Fagpersoner"
         subtitle="Administrer profiler, status og dokumenter"
-        breadcrumb={[{ label: 'Administration', href: '/admin' }, { label: 'Fagpersoner' }]}
+        breadcrumb={[{ label: 'Kursskifte Administration', href: '/admin' }, { label: 'Fagpersoner' }]}
       />
       <ContentContainer>
         <ProfessionalsClient initialData={(professionals ?? []) as unknown as ProfessionalRow[]} />

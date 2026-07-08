@@ -21,10 +21,10 @@ export default async function InquiriesPage() {
   return (
     <div>
       <PageHeader
-        label="Administration"
+        label="Kursskifte Administration"
         title="Henvendelser"
         subtitle="Indkomne kommunehenvendelser og fagpersonansøgninger"
-        breadcrumb={[{ label: 'Administration', href: '/admin' }, { label: 'Henvendelser' }]}
+        breadcrumb={[{ label: 'Kursskifte Administration', href: '/admin' }, { label: 'Henvendelser' }]}
       />
       <ContentContainer>
         <InquiriesClient

@@ -13,10 +13,10 @@ export default async function MunicipalitiesPage() {
   return (
     <div>
       <PageHeader
-        label="Administration"
+        label="Kursskifte Administration"
         title="Kommuner"
         subtitle="Kommuneaftaler og kontaktpersoner"
-        breadcrumb={[{ label: 'Administration', href: '/admin' }, { label: 'Kommuner' }]}
+        breadcrumb={[{ label: 'Kursskifte Administration', href: '/admin' }, { label: 'Kommuner' }]}
       />
       <ContentContainer>
         <MunicipalitiesClient initialData={municipalities ?? []} />

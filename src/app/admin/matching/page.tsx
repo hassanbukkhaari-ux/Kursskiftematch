@@ -52,7 +52,7 @@ export default async function AdminMatchingPage() {
         label="Matching"
         title="Match-administration"
         subtitle="Tildel fagpersoner til sager baseret på algoritme-scoren"
-        breadcrumb={[{ label: 'Administration', href: '/admin' }, { label: 'Matching' }]}
+        breadcrumb={[{ label: 'Kursskifte Administration', href: '/admin' }, { label: 'Matching' }]}
       />
       <ContentContainer>
         {/* Stats */}

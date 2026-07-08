@@ -33,10 +33,10 @@ export default async function AdminCasesPage() {
   return (
     <div>
       <PageHeader
-        label="Administration"
+        label="Kursskifte Administration"
         title="Sager"
         subtitle="Oversigt over alle aktive og arkiverede sager"
-        breadcrumb={[{ label: 'Administration', href: '/admin' }, { label: 'Sager' }]}
+        breadcrumb={[{ label: 'Kursskifte Administration', href: '/admin' }, { label: 'Sager' }]}
       />
       <ContentContainer>
         <AdminCasesClient

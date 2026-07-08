@@ -112,7 +112,7 @@ export default async function ProfessionalDetailPage({
         title={profile.full_name || 'Profil'}
         subtitle={profile.email}
         breadcrumb={[
-          { label: 'Administration', href: '/admin' },
+          { label: 'Kursskifte Administration', href: '/admin' },
           { label: 'Fagpersoner', href: '/admin/professionals' },
           { label: profile.full_name || 'Detalje' },
         ]}

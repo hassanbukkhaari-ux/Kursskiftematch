@@ -1066,41 +1066,106 @@ table.data tr:hover td { background: var(--amber-soft); }
       name: "Opret sag",
       render: () => `
         <button class="btn btn-ghost btn-sm" data-action="goto" data-step="0">← Til overblik</button>
-        <div style="margin-bottom:18px;margin-top:12px"><h1>Opret sag</h1><p class="muted mb0">Admin opretter sagen manuelt — kommunen sender henvendelse pr. krypteret e-mail</p></div>
+        <div style="margin-bottom:18px;margin-top:12px">
+          <h1>Opret sag</h1>
+          <p class="muted mb0">Udfyld borger- og sagsoplysninger — kommunen sender henvendelse pr. krypteret e-mail</p>
+        </div>
         <div class="notif-banner">
           <span>📧</span>
-          <span><b>E-mail fra Aalborg Kommune · 5. jul 2026</b> — Ung på 15 år med behov for kontaktperson. Pris og opstart aftalt. Tilknyt til §32. 8 t/uge, høj kompleksitet.</span>
+          <span><b>E-mail fra Aalborg Kommune · 5. jul 2026</b> — Ung på 15 år med behov for kontaktperson. Pris og opstart aftalt. §32, 8 t/uge, høj kompleksitet. Lavaffektiv tilgang foretrækkes.</span>
         </div>
-        <div class="card" style="max-width:640px;padding:28px">
-          <h2 style="margin-bottom:4px">Sagsdetaljer</h2>
-          <p class="muted small">Alle personoplysninger om borgeren er kun synlige i det godkendte system — aldrig i mails eller offentlige sider.</p>
-          <hr class="divider">
+        <div class="card" style="max-width:780px;padding:28px 32px">
+          <h2 style="margin-bottom:2px">Ny sag</h2>
+          <p class="muted small">Alle personoplysninger er kun synlige for godkendte brugere — aldrig i e-mails eller offentlige sider.</p>
+
+          <!-- ── Kommuneoplysninger ── -->
+          <div style="display:flex;align-items:center;gap:10px;margin:22px 0 14px">
+            <span style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);white-space:nowrap">Kommuneoplysninger</span>
+            <div style="flex:1;height:1px;background:var(--border)"></div>
+          </div>
           <div class="form-grid">
             <div class="field">
               <label>Kommune</label>
               <select class="input"><option selected>Aalborg Kommune</option><option>Hjørring Kommune</option><option>Brønderslev Kommune</option><option>Frederikshavn Kommune</option></select>
             </div>
             <div class="field">
-              <label>Initialer (borger)</label>
-              <input class="input" value="TH" maxlength="2">
-              <div class="hint">Maks 2 bogstaver — ingen fulde navne her</div>
+              <label>Sagsbehandler — fulde navn</label>
+              <input class="input" value="Jette Andersen" placeholder="Kommunens kontaktperson">
             </div>
             <div class="field">
-              <label>Aldersgruppe &amp; lovgrundlag</label>
-              <select class="input">
-                <option>0–5 år · §32 barnets lov</option>
-                <option>6–12 år · §32 barnets lov</option>
-                <option selected>13–18 år · §32 barnets lov</option>
-                <option>18+ · §85 serviceloven</option>
-              </select>
+              <label>Sagsbehandler — e-mail</label>
+              <input class="input" type="email" value="jette.andersen@aalborg.dk">
             </div>
             <div class="field">
-              <label>Køn</label>
-              <select class="input"><option selected>Dreng / Mand</option><option>Pige / Kvinde</option><option>Andet / Ukendt</option></select>
+              <label>Sagsbehandler — telefon</label>
+              <input class="input" type="tel" value="98 12 34 56" placeholder="Direkte nummer">
             </div>
+          </div>
+          <p class="hint" style="margin-top:-6px">Internt felt — vises kun i Kursskifte Administration</p>
+
+          <!-- ── Borger ── -->
+          <div style="display:flex;align-items:center;gap:10px;margin:22px 0 14px">
+            <span style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);white-space:nowrap">Borger</span>
+            <div style="flex:1;height:1px;background:var(--border)"></div>
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Initialer (2 bogstaver) *</label>
+              <input class="input" value="TH" maxlength="2" style="text-transform:uppercase">
+              <div class="hint">Bruges på alle ikke-autentificerede sider</div>
+            </div>
+            <div class="field">
+              <label>Borgerens fulde navn</label>
+              <input class="input" value="Thomas Hedegaard" placeholder="Fulde navn">
+            </div>
+            <div class="field">
+              <label>Fødselsdato</label>
+              <input class="input" type="date" value="2011-03-14">
+            </div>
+            <div class="field">
+              <label>Aldersgruppe</label>
+              <div class="choice-row">
+                <button class="chip" data-action="chip">0–5</button>
+                <button class="chip" data-action="chip">6–12</button>
+                <button class="chip on" data-action="chip">13–18</button>
+                <button class="chip" data-action="chip">18+</button>
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Lovgrundlag</label>
+            <div class="choice-row">
+              <button class="chip on" data-action="chip" style="flex:1;justify-content:flex-start;padding:10px 14px">
+                <span><b>§32 barnets lov</b><br><span class="muted small" style="font-weight:500">Børn og unge 0–17 år</span></span>
+              </button>
+              <button class="chip" data-action="chip" style="flex:1;justify-content:flex-start;padding:10px 14px">
+                <span><b>§85 serviceloven</b><br><span class="muted small" style="font-weight:500">Voksne 18+</span></span>
+              </button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Køn</label>
+            <div class="choice-row">
+              <button class="chip on" data-action="chip">Dreng / mand</button>
+              <button class="chip" data-action="chip">Pige / kvinde</button>
+              <button class="chip" data-action="chip">Andet</button>
+            </div>
+          </div>
+
+          <!-- ── Sagsdetaljer ── -->
+          <div style="display:flex;align-items:center;gap:10px;margin:22px 0 14px">
+            <span style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);white-space:nowrap">Sagsdetaljer</span>
+            <div style="flex:1;height:1px;background:var(--border)"></div>
+          </div>
+          <div class="form-grid">
             <div class="field">
               <label>Kompleksitet</label>
-              <select class="input"><option>Lav</option><option>Middel</option><option selected>Høj</option><option>Kritisk</option></select>
+              <div class="choice-row">
+                <button class="chip" data-action="chip">Lav</button>
+                <button class="chip" data-action="chip">Mellem</button>
+                <button class="chip on" data-action="chip">Høj</button>
+                <button class="chip" data-action="chip">Kritisk</button>
+              </div>
             </div>
             <div class="field">
               <label>Timer pr. uge</label>
@@ -1119,6 +1184,34 @@ table.data tr:hover td { background: var(--amber-soft); }
             </div>
           </div>
           <div class="field">
+            <label>Forventet varighed</label>
+            <div class="choice-row">
+              <button class="chip" data-action="chip">3 mdr.</button>
+              <button class="chip on" data-action="chip">6 mdr.</button>
+              <button class="chip" data-action="chip">1 år</button>
+              <button class="chip" data-action="chip">2 år</button>
+              <button class="chip" data-action="chip">3+ år</button>
+            </div>
+          </div>
+
+          <!-- ── Borgerens profil ── -->
+          <div style="display:flex;align-items:center;gap:10px;margin:22px 0 14px">
+            <span style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);white-space:nowrap">Borgerens profil</span>
+            <div style="flex:1;height:1px;background:var(--border)"></div>
+          </div>
+          <div class="field">
+            <label>Diagnoser / funktionsnedsættelse</label>
+            <textarea class="input" style="min-height:60px">ADHD, vrede-/aggressionsproblematik, let kognitiv udfordring</textarea>
+          </div>
+          <div class="field">
+            <label>Daglig funktion</label>
+            <textarea class="input" style="min-height:60px">Svært ved at styre impulser og følelser i konfliktsituationer. Strukturbehov i hverdagen. Fungerer bedst i 1:1-relationer med tydelig voksen.</textarea>
+          </div>
+          <div class="field">
+            <label>Interesser og ressourcer</label>
+            <textarea class="input" style="min-height:54px">Fodbold, gaming, mekanik. God til at bygge ting med hænderne. Motiveres af ægte anerkendelse.</textarea>
+          </div>
+          <div class="field">
             <label>Problemområder</label>
             <div class="choice-row" style="flex-wrap:wrap">
               <button class="chip on" data-action="chip">Udadreagerende adfærd</button>
@@ -1126,20 +1219,70 @@ table.data tr:hover td { background: var(--amber-soft); }
               <button class="chip on" data-action="chip">Familiekonflikter</button>
               <button class="chip" data-action="chip">Skolevægring</button>
               <button class="chip" data-action="chip">Lavt selvværd</button>
+              <button class="chip" data-action="chip">Manglende struktur</button>
+            </div>
+          </div>
+
+          <!-- ── Ønsker til fagperson ── -->
+          <div style="display:flex;align-items:center;gap:10px;margin:22px 0 14px">
+            <span style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);white-space:nowrap">Ønsker til fagperson</span>
+            <div style="flex:1;height:1px;background:var(--border)"></div>
+          </div>
+          <div class="field">
+            <label>Mål for indsatsen</label>
+            <div class="choice-row" style="flex-wrap:wrap">
+              <button class="chip on" data-action="chip">Relationsdannelse</button>
+              <button class="chip on" data-action="chip">Konflikthåndtering</button>
+              <button class="chip" data-action="chip">Skole / uddannelse</button>
+              <button class="chip" data-action="chip">Struktur i hverdagen</button>
+              <button class="chip" data-action="chip">Netværk og socialt liv</button>
             </div>
           </div>
           <div class="field">
-            <label>Kommunens sagsbehandler (ekstern kontakt)</label>
-            <div class="form-grid" style="gap:8px">
-              <input class="input" placeholder="Navn" value="Jette Andersen">
-              <input class="input" type="email" placeholder="E-mail" value="jette.andersen@aalborg.dk">
+            <label>Foretrukket fagperson køn (hvis begrundet)</label>
+            <div class="choice-row">
+              <button class="chip on" data-action="chip">Mand</button>
+              <button class="chip" data-action="chip">Kvinde</button>
+              <button class="chip" data-action="chip">Ingen præference</button>
             </div>
+            <div class="hint">Kommunen ønsker mandlig fagperson — begrundet i borgerens relation til mandlige rollemodeller</div>
           </div>
           <div class="field">
-            <label>Interne noter</label>
-            <textarea class="input" style="min-height:72px">Ung med udadreagerende adfærd og familiekonflikter. Kommunen ønsker socialpædagog med erfaring i lavaffektiv tilgang. Opstart inden for 2 uger.</textarea>
+            <label>Sprogkrav</label>
+            <div class="choice-row" style="flex-wrap:wrap">
+              <button class="chip on" data-action="chip">Dansk</button>
+              <button class="chip" data-action="chip">Engelsk</button>
+              <button class="chip" data-action="chip">Arabisk</button>
+              <button class="chip" data-action="chip">Urdu</button>
+              <button class="chip" data-action="chip">Tyrkisk</button>
+            </div>
           </div>
-          <div class="btn-row" style="margin-top:4px">
+          <div class="form-grid">
+            <div class="field">
+              <label>Transportbehov</label>
+              <div class="choice-row">
+                <button class="chip" data-action="chip">Ja — kørsel</button>
+                <button class="chip on" data-action="chip">Nej — lokal</button>
+              </div>
+            </div>
+            <div class="field">
+              <label>Geografisk område</label>
+              <input class="input" value="Aalborg Øst / Nørresundby" placeholder="By / bydel / postnr.">
+            </div>
+          </div>
+
+          <!-- ── Interne noter ── -->
+          <div style="display:flex;align-items:center;gap:10px;margin:22px 0 14px">
+            <span style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);white-space:nowrap">Interne noter</span>
+            <div style="flex:1;height:1px;background:var(--border)"></div>
+          </div>
+          <div class="field">
+            <label>Sagsnoter</label>
+            <textarea class="input" style="min-height:80px">Dreng med udadreagerende adfærd og familiekonflikter. Kommunen ønsker socialpædagog med erfaring i lavaffektiv tilgang og kender-til-unge-mænd-tilgang. Prisen er aftalt. Opstart inden for 2 uger. Foretrukken fagperson: mand med erfaring i kriminalitetstruede unge.</textarea>
+            <div class="hint">Gemmes kun internt — deles aldrig med kommunen eller fagpersonen</div>
+          </div>
+
+          <div class="btn-row" style="margin-top:8px">
             <button class="btn btn-primary btn-lg" data-action="createCase">Opret sag</button>
             <button class="btn btn-ghost" data-action="goto" data-step="0">Annullér</button>
           </div>
@@ -1338,7 +1481,7 @@ table.data tr:hover td { background: var(--amber-soft); }
      Journey registry & rendering
      ================================================================ */
   const journeys = {
-    admin: { steps: adminSteps, indicator: () => "Kursskifte · Admin", avatar: "KA", showStepper: true, narrow: false, sidebar: true },
+    admin: { steps: adminSteps, indicator: () => "Kursskifte Administration", avatar: "KA", showStepper: true, narrow: false, sidebar: true },
     kontaktperson: { steps: kpSteps, indicator: () => (state.currentStep >= 4 ? "Sofie Holm · Kontaktperson" : "Fagpersoner"), avatar: "SH", showStepper: true, narrow: true },
     ledelse: { steps: ledelseSteps, indicator: () => "Kursskifte · Ledelse", avatar: "KL", showStepper: false, narrow: false }
   };

@@ -654,7 +654,7 @@ table.data tr:hover td { background: var(--amber-soft); }
   const state = {
     currentJourney: "admin",
     currentStep: 0,
-    steps: { kontaktperson: 0, admin: 0, ledelse: 0 },
+    steps: { kontaktperson: 0, admin: 4, ledelse: 0 },
     data: {
       kontaktperson: {
         navn: "Sofie Holm",
@@ -1065,8 +1065,8 @@ table.data tr:hover td { background: var(--amber-soft); }
     {
       name: "Opret sag",
       render: () => `
-        ${backBtn()}
-        <div style="margin-bottom:18px"><h1>Opret sag</h1><p class="muted mb0">Ny sag oprettes manuelt efter henvendelse fra kommunen</p></div>
+        <button class="btn btn-ghost btn-sm" data-action="goto" data-step="0">← Til overblik</button>
+        <div style="margin-bottom:18px;margin-top:12px"><h1>Opret sag</h1><p class="muted mb0">Admin opretter sagen manuelt — kommunen sender henvendelse pr. krypteret e-mail</p></div>
         <div class="notif-banner">
           <span>📧</span>
           <span><b>E-mail fra Aalborg Kommune · 5. jul 2026</b> — Ung på 15 år med behov for kontaktperson. Pris og opstart aftalt. Tilknyt til §32. 8 t/uge, høj kompleksitet.</span>

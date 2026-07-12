@@ -51,7 +51,7 @@ function Hero() {
         Kvalitetssikrede kontaktpersoner til kommunernes borgere
       </h1>
       <p className="text-[17px] text-[#6B7569] leading-relaxed max-w-lg mb-8">
-        Send os en henvendelse. Kursskifte varetager sagsvurdering, match og faglig anbefaling — struktureret og dokumenteret.
+        Vi leverer mentor-, støtte- og kontaktpersonforløb til kommuner og jobcentre i Nordjylland. Én henvendelse — Kursskifte varetager match, opstart og opfølgning.
       </p>
       <div className="flex flex-wrap gap-3">
         <Link
@@ -220,7 +220,54 @@ function TrustSection() {
   )
 }
 
-// ── Section 5: Convert ───────────────────────────────────────────
+// ── Section 5: Team ──────────────────────────────────────────────
+const TEAM = [
+  {
+    initials: 'AB',
+    name: 'Abdikarin',
+    role: 'Pædagog · Socialfaglig leder',
+    bio: 'Uddannet pædagog med knap 8 års erfaring i relationsbaseret og socialpædagogisk arbejde. Driver eget bosted og har daglig erfaring med koordinering, dokumentation og samarbejde med kommunale myndigheder.',
+  },
+  {
+    initials: 'HB',
+    name: 'Hassan',
+    role: 'Relations- og kommunikationsansvarlig',
+    bio: '7 års erfaring inden for salg og kommunikation kombineret med 3 år som pædagogmedhjælper. Stærke kompetencer i relationsopbygning, motivation og brobygning mellem borger og system. Studerer psykoterapi.',
+  },
+]
+
+function TeamSection() {
+  return (
+    <section className="bg-white border-y border-[#E0DAD0]">
+      <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-16">
+        <div className="flex items-center gap-2.5 mb-3">
+          <div className="w-5 h-px bg-[#C8993A]" />
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Teamet bag Kursskifte</span>
+        </div>
+        <h2 className="font-serif text-2xl sm:text-3xl text-[#1A1F1C] font-normal mb-2">
+          Mennesker du kan ringe til
+        </h2>
+        <p className="text-sm text-[#6B7569] mb-10 max-w-lg">
+          Kursskifte er ikke en anonym platform. Bag hvert forløb er der navngivne fagpersoner med bred socialfaglig erfaring.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-2xl">
+          {TEAM.map(person => (
+            <div key={person.name} className="bg-[#F6F3EE] border border-[#E0DAD0] rounded-2xl p-6">
+              <div className="w-12 h-12 rounded-xl bg-[#1C3829] flex items-center justify-center mb-4 shrink-0">
+                <span className="text-white font-serif font-semibold text-base">{person.initials}</span>
+              </div>
+              <div className="font-semibold text-[#1A1F1C] text-sm mb-0.5">{person.name}</div>
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-[#C8993A] mb-3">{person.role}</div>
+              <p className="text-xs text-[#6B7569] leading-relaxed">{person.bio}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// ── Section 6: Convert ───────────────────────────────────────────
 // Single primary action after full context is established. Professional
 // path acknowledged at low visual weight — municipality is the CTA.
 function CtaStrip() {
@@ -294,6 +341,7 @@ export default async function Home() {
         <AudiencePaths />
         <ProcessSection />
         <TrustSection />
+        <TeamSection />
         <CtaStrip />
       </main>
       <PublicFooter />

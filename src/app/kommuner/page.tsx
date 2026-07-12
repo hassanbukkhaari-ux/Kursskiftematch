@@ -4,14 +4,14 @@ import PublicNav from '@/components/public/PublicNav'
 import PublicFooter from '@/components/public/PublicFooter'
 
 export const metadata: Metadata = {
-  title: 'Til kommuner | Kontaktperson §32 og §85',
+  title: 'Til kommuner | Kontaktperson §32 og §85 — Kursskifte',
   description:
-    'Indsend en sag til Kursskifte og modtag et fagligt begrundet forslag med en kvalitetssikret kontaktperson. Vi hjælper kommuner i Nordjylland med §32 og §85-forløb, socialpædagogisk støtte og bostøtte til borgere i mistrivsel.',
+    'Kursskifte leverer mentor-, støtte- og kontaktpersonforløb til kommuner og jobcentre i Nordjylland. §32 barnets lov og §85 serviceloven. Tydelig proces, dokumentation og fast samarbejdspartner.',
   alternates: { canonical: '/kommuner' },
   openGraph: {
     title: 'Til kommuner | Kontaktperson §32 og §85 — Kursskifte',
     description:
-      'Kursskifte hjælper kommuner i Nordjylland — Aalborg, Hjørring, Brønderslev og Frederikshavn — med at finde kvalitetssikrede kontaktpersoner til §32 og §85-forløb.',
+      'Kursskifte hjælper kommuner i Nordjylland med kvalitetssikrede kontaktpersoner og mentorer til §32 og §85-forløb. Vi betjener Aalborg, Hjørring, Brønderslev og Frederikshavn.',
     url: '/kommuner',
   },
 }
@@ -32,29 +32,96 @@ function CheckIcon() {
   )
 }
 
+function CheckGreen() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1C3829" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  )
+}
+
+// Workflow steps — matches the business plan exactly
 const STEPS = [
-  { n: '01', title: 'I kontakter os', body: 'Send en krypteret e-mail til kommuner@kursskifte.dk med det I ved om borgeren, behovet og eventuelle særlige hensyn. Ingen åben database — direkte til os.' },
-  { n: '02', title: 'Vi vurderer behovet', body: 'Kursskifte gennemgår henvendelsen og vurderer kompleksitetsniveauet, aldersgruppe og kompetencebehov. Vi stiller opklarende spørgsmål hvis nødvendigt.' },
-  { n: '03', title: 'Matching og kvalitetssikring', body: 'Kursskifte scorer kvalificerede kontaktpersoner på kapacitet, erfaring, kompetencer og tilgængelighed. Vi verificerer dokumenter og certifikater.' },
-  { n: '04', title: 'I modtager et forslag', body: 'Et fagligt begrundet forslag med anbefalet kontaktperson sendes til jer. Inkluderer profil, begrundelse og estimeret opstart.' },
-  { n: '05', title: 'Godkendelse og opstart', body: 'I godkender forslaget. Kursskifte koordinerer opstarten og sikrer at dokumentation og takst er på plads.' },
-  { n: '06', title: 'Løbende opfølgning', body: 'Kursskifte følger op på forløbet og er fast koordinator under hele indsatsen. I kontaktes ved statusopdateringer og behov for ændringer.' },
+  {
+    n: '01',
+    title: 'Indledende dialog',
+    body: 'Send en e-mail til kommuner@kursskifte.dk. Vi afklarer behov, formål, målgruppe, timeantal og forventninger. Ingen åben database — direkte til os.',
+  },
+  {
+    n: '02',
+    title: 'Vi vurderer behovet',
+    body: 'Kursskifte gennemgår henvendelsen og vurderer kompleksitetsniveauet, aldersgruppe og kompetencebehov. Vi stiller opklarende spørgsmål hvis nødvendigt.',
+  },
+  {
+    n: '03',
+    title: 'Matching og kvalitetssikring',
+    body: 'Vi scorer egnede kontaktpersoner og mentorer på kompetencer, kapacitet, tilgængelighed og erfaring med målgruppen. Dokumenter og attester er verificerede.',
+  },
+  {
+    n: '04',
+    title: 'I modtager et forslag',
+    body: 'Et fagligt begrundet forslag med anbefalet kontaktperson sendes til jer — med profil, begrundelse og estimeret opstart.',
+  },
+  {
+    n: '05',
+    title: 'Opstart og aftaler',
+    body: 'I godkender forslaget. Vi afholder opstartsmøde med borger, bestiller og kontaktperson. Mål, kontaktform og fokusområder fastlægges.',
+  },
+  {
+    n: '06',
+    title: 'Løbende opfølgning',
+    body: 'Kursskifte er fast koordinator under hele forløbet. Statusnotater, fremmøde og progression dokumenteres og deles med jer efter aftale.',
+  },
+]
+
+// Services in social sector language
+const YDELSER = [
+  {
+    title: 'Mentorforløb',
+    desc: 'Individuelle forløb med fokus på motivation, struktur, fremmøde og progression mod uddannelse eller beskæftigelse.',
+    para: '§32 barnets lov / §85 SEL / beskæftigelsesrettet mentor',
+  },
+  {
+    title: 'Socialpædagogisk støtte',
+    desc: 'Relationsbaseret støtte til borgere med sociale, psykiske eller adfærdsmæssige udfordringer i hverdagen.',
+    para: '§85 serviceloven / §32 barnets lov',
+  },
+  {
+    title: 'Struktur- og motivationsstøtte',
+    desc: 'Hjælp til at skabe rutiner, overholde aftaler og opbygge stabilitet — særligt til borgere med lav motivation eller ustabilt fremmøde.',
+    para: '§85 SEL / beskæftigelsesrettet',
+  },
+  {
+    title: 'Mødeledsagelse og koordinering',
+    desc: 'Støtte til møder med kommune, jobcenter, uddannelsesinstitution eller praktiksted. Brobygning til relevante aktører.',
+    para: 'Tværfaglig koordinering',
+  },
+  {
+    title: 'Støtte til hverdagsmestring',
+    desc: 'Praktisk støtte til fremmøde, aftaler, daglig struktur og selvstændighed — for borgere der har brug for tæt opfølgning.',
+    para: '§85 SEL',
+  },
+  {
+    title: 'Overgangsforløb',
+    desc: 'Intensiv støtte i overgangen til uddannelse, beskæftigelse, praktik, egen bolig eller ny kommunal indsats.',
+    para: 'Unge 15–25 år / voksne',
+  },
 ]
 
 const serviceSchema = {
   '@context': 'https://schema.org',
   '@type': 'Service',
-  name: 'Kontaktpersonforløb til kommuner',
+  name: 'Kontaktpersonforløb og mentorforløb til kommuner',
   provider: { '@type': 'Organization', name: 'Kursskifte ApS', url: 'https://kursskifte.dk' },
   description:
-    'Kursskifte hjælper kommuner i Nordjylland med at finde og koordinere kvalitetssikrede kontaktpersoner til §32 og §85-forløb — socialpædagogisk støtte, bostøtte og relationsbaseret indsats til borgere i mistrivsel.',
+    'Kursskifte leverer mentor-, støtte- og kontaktpersonforløb til kommuner og jobcentre i Nordjylland — §32 barnets lov, §85 serviceloven og beskæftigelsesrettede mentorordninger.',
   areaServed: [
     { '@type': 'City', name: 'Aalborg' },
     { '@type': 'City', name: 'Hjørring' },
     { '@type': 'City', name: 'Brønderslev' },
     { '@type': 'City', name: 'Frederikshavn' },
   ],
-  serviceType: 'Socialpædagogisk kontaktpersonforløb',
+  serviceType: 'Socialpædagogisk kontaktpersonforløb og mentorforløb',
 }
 
 export default function KommunerPage() {
@@ -66,24 +133,33 @@ export default function KommunerPage() {
       />
       <PublicNav />
       <main>
+
         {/* Hero */}
         <section className="max-w-6xl mx-auto px-5 sm:px-8 pt-16 pb-12 sm:pt-20">
           <div className="flex items-center gap-2.5 mb-5">
             <div className="w-5 h-px bg-[#C8993A]" />
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Til kommuner</span>
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Til kommuner og jobcentre</span>
           </div>
           <h1 className="font-serif text-4xl sm:text-5xl text-[#1A1F1C] font-normal max-w-2xl mb-5 leading-tight tracking-tight">
             Én henvendelse. Et fagligt begrundet forslag.
           </h1>
           <p className="text-[17px] text-[#6B7569] leading-relaxed max-w-xl mb-8">
-            Vi hjælper kommuner i Nordjylland — herunder Aalborg, Hjørring, Brønderslev og Frederikshavn — med at finde kvalitetssikrede kontaktpersoner til §32 og §85-forløb. Indsend sagen, og Kursskifte sender et fagligt begrundet forslag.
+            Kursskifte leverer mentor-, støtte- og kontaktpersonforløb til kommuner og jobcentre i Nordjylland — herunder Aalborg, Hjørring, Brønderslev og Frederikshavn. Visitation og bevilling foretages af kommunen — vi leverer den konkrete indsats.
           </p>
-          <a
-            href="mailto:kommuner@kursskifte.dk"
-            className="h-12 px-6 bg-[#1C3829] text-white font-semibold text-sm rounded-xl hover:bg-[#2D5840] transition-colors inline-flex items-center gap-2"
-          >
-            Kontakt os <ArrowRight />
-          </a>
+          <div className="flex flex-wrap gap-3">
+            <a
+              href="mailto:kommuner@kursskifte.dk"
+              className="h-12 px-6 bg-[#1C3829] text-white font-semibold text-sm rounded-xl hover:bg-[#2D5840] transition-colors inline-flex items-center gap-2"
+            >
+              Kontakt os <ArrowRight />
+            </a>
+            <Link
+              href="/kontakt"
+              className="h-12 px-6 border border-[#C8DDD1] text-[#1C3829] font-semibold text-sm rounded-xl hover:bg-[#EEF4F0] transition-colors inline-flex items-center gap-2"
+            >
+              Se kontaktoplysninger
+            </Link>
+          </div>
         </section>
 
         {/* Core message */}
@@ -92,16 +168,16 @@ export default function KommunerPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               {[
                 {
-                  title: 'I indsender — vi finder',
-                  body: 'I behøver ikke at gennemse en åben database af fagpersoner. I indsender sagen til Kursskifte, og vi finder de rette kandidater.',
+                  title: 'I kontakter — vi finder',
+                  body: 'I behøver ikke gennemse en database af fagpersoner. Send os behovet, og vi finder de rette kandidater ud fra kompetencer, kapacitet og erfaring.',
                 },
                 {
-                  title: 'Kursskifte klarer papirarbejdet',
-                  body: 'Vi håndterer matchning, takst, aftaler og dokumentation. Kommunen modtager et klart forslag og kan koncentrere sig om borgeren.',
+                  title: 'Vi klarer koordineringen',
+                  body: 'Opstart, aftaler, statusnotater og løbende opfølgning håndteres af Kursskifte. Kommunen modtager et klart forslag og kan koncentrere sig om borgeren.',
                 },
                 {
                   title: 'Faglig kvalitetssikring',
-                  body: 'Alle kontaktpersoner er dokumenteret, verificeret og matched på relevante kompetencer — ikke tilfældighed.',
+                  body: 'Alle kontaktpersoner og mentorer er dokumenteret og verificeret — straffeattest, børneattest, CV og uddannelse kontrolleres inden aktivering.',
                 },
               ].map(c => (
                 <div key={c.title} className="bg-[#F6F3EE] rounded-2xl p-6">
@@ -118,10 +194,10 @@ export default function KommunerPage() {
           <div className="mb-10">
             <div className="flex items-center gap-2.5 mb-4">
               <div className="w-5 h-px bg-[#C8993A]" />
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Processen</span>
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Sådan arbejder vi</span>
             </div>
             <h2 className="font-serif text-3xl sm:text-4xl text-[#1A1F1C] font-normal">
-              Fra sag til forslag
+              Fra henvendelse til opstart
             </h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -135,50 +211,151 @@ export default function KommunerPage() {
           </div>
         </section>
 
-        {/* What you can request */}
+        {/* Ydelser */}
+        <section className="bg-white border-y border-[#E0DAD0]">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-16">
+            <div className="mb-10">
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="w-5 h-px bg-[#C8993A]" />
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Ydelser</span>
+              </div>
+              <h2 className="font-serif text-3xl sm:text-4xl text-[#1A1F1C] font-normal mb-3">
+                Hvad vi kan levere
+              </h2>
+              <p className="text-sm text-[#6B7569] max-w-lg">
+                Alle indsatser tilpasses individuelt og leveres efter konkret aftale med kommunen eller jobcentret. Visitation og myndighedsafgørelse foretages altid af bestiller.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {YDELSER.map(y => (
+                <div key={y.title} className="bg-[#F6F3EE] border border-[#E0DAD0] rounded-2xl p-6">
+                  <h3 className="font-semibold text-sm text-[#1A1F1C] mb-2">{y.title}</h3>
+                  <p className="text-xs text-[#6B7569] leading-relaxed mb-3">{y.desc}</p>
+                  <span className="inline-block text-[10px] font-semibold uppercase tracking-wider text-[#C8993A] bg-[#FBF3E1] px-2 py-1 rounded-md">{y.para}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Pricing */}
+        <section className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+            <div>
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="w-5 h-px bg-[#C8993A]" />
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Priser</span>
+              </div>
+              <h2 className="font-serif text-3xl text-[#1A1F1C] font-normal mb-4">Gennemsigtig prismodel</h2>
+              <p className="text-sm text-[#6B7569] leading-relaxed mb-6">
+                Kursskifte ønsker ikke at konkurrere på laveste pris — men på kvalitet, stabilitet og dokumenteret progression. Vores prismodel er transparent og dækker faglig indsats, dokumentation, koordinering og opfølgning.
+              </p>
+              <div className="space-y-3">
+                {[
+                  'Priser er ekskl. moms, såfremt ydelsen er momspligtig',
+                  'Momshåndtering vurderes konkret efter gældende regler',
+                  'Kørsel inden for 15 km er inkluderet',
+                  'Opstartspakke sikrer tydelige mål og fælles forventningsafstemning',
+                ].map(item => (
+                  <div key={item} className="flex items-start gap-2.5">
+                    <CheckIcon />
+                    <span className="text-sm text-[#1A1F1C]">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {/* Hourly rate */}
+              <div className="bg-[#1C3829] rounded-2xl p-6">
+                <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-4">Timepris</div>
+                <div className="space-y-0">
+                  {[
+                    { label: 'Hverdage kl. 08–16', value: '650 kr./time' },
+                    { label: 'Aften kl. 16–20', value: '750 kr./time' },
+                    { label: 'Weekend og helligdage', value: '950 kr./time' },
+                    { label: 'Akut opstart (inden 48 t)', value: '750 kr./time' },
+                  ].map(row => (
+                    <div key={row.label} className="flex justify-between gap-3 py-2.5 border-b border-white/10 last:border-0">
+                      <span className="text-xs text-white/60">{row.label}</span>
+                      <span className="text-xs font-semibold text-white tabular-nums">{row.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Packages */}
+              <div className="bg-[#F6F3EE] border border-[#E0DAD0] rounded-2xl p-6">
+                <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-4">Pakkeforløb pr. måned</div>
+                <div className="space-y-0">
+                  {[
+                    { label: 'Let støtteforløb (4 t/uge)', value: '11.250 kr.' },
+                    { label: 'Standard støtteforløb (8 t/uge)', value: '22.500 kr.' },
+                    { label: 'Udvidet støtteforløb (12 t/uge)', value: '33.750 kr.' },
+                    { label: 'Intensivt overgangsforløb (16 t/uge)', value: '45.000 kr.' },
+                    { label: 'Opstartspakke (inkl. mål og aftaler)', value: '3.900 kr.' },
+                  ].map(row => (
+                    <div key={row.label} className="flex justify-between gap-3 py-2.5 border-b border-[#E0DAD0] last:border-0">
+                      <span className="text-xs text-[#6B7569]">{row.label}</span>
+                      <span className="text-xs font-semibold text-[#1A1F1C] tabular-nums">{row.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Afgrænsning */}
         <section className="bg-white border-y border-[#E0DAD0]">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-16">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
               <div>
                 <div className="flex items-center gap-2.5 mb-4">
                   <div className="w-5 h-px bg-[#C8993A]" />
-                  <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Hvad vi kan hjælpe med</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Hvad vi håndterer</span>
                 </div>
-                <h2 className="font-serif text-3xl text-[#1A1F1C] font-normal mb-4">Kursskifte tager sager på tværs af kompleksitet</h2>
+                <h2 className="font-serif text-3xl text-[#1A1F1C] font-normal mb-4">Vores rolle i samarbejdet</h2>
                 <p className="text-sm text-[#6B7569] leading-relaxed mb-6">
-                  Vi modtager henvendelser om kontaktpersonbehov for børn, unge og voksne. Vi vurderer kompleksitetsniveauet og matcher derefter.
+                  Kursskifte leverer den konkrete støtte- og mentorindsats. Visitation, bevilling og myndighedsafgørelse foretages altid af kommunen eller det relevante jobcenter.
                 </p>
                 <div className="space-y-3">
                   {[
-                    'Kontaktpersonforløb §32 i barnets lov og §85 — socialpædagogisk støtte og bostøtte',
-                    'Lav til kritisk kompleksitet — vi vurderer',
-                    'Børn og unge (0–18) samt voksne (18+)',
-                    'Akutte behov kan håndteres ved særlig aftale',
-                    'Kommunen modtager forslag inden for aftalt svarfrist',
+                    'Matching og faglig anbefaling',
+                    'Opstartsmøde og målbeskrivelse',
+                    'Løbende dokumentation og statusnotater',
+                    'Koordinering med relevante aktører',
+                    'Fast opfølgning under hele forløbet',
+                    'Håndtering af bekymringer og forværring',
                   ].map(item => (
                     <div key={item} className="flex items-start gap-2.5">
-                      <CheckIcon />
+                      <CheckGreen />
                       <span className="text-sm text-[#1A1F1C]">{item}</span>
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="bg-[#F6F3EE] border border-[#E0DAD0] rounded-2xl p-7">
-                <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-5">Hvad vi håndterer for jer</div>
-                <div className="space-y-0">
+
+              <div className="bg-[#FEF3C7] border border-[#FDE68A] rounded-2xl p-6">
+                <div className="text-[10px] font-semibold uppercase tracking-widest text-[#92660A] mb-4">Kursskifte er ikke</div>
+                <div className="space-y-3">
                   {[
-                    { label: 'Matching', value: 'Algoritmebaseret, fagligt begrundet' },
-                    { label: 'Takst', value: 'Aftalt og administreret af Kursskifte' },
-                    { label: 'Dokumentation', value: 'Sessionslogs og timeregistrering' },
-                    { label: 'Opfølgning', value: 'Løbende under hele forløbet' },
-                    { label: 'Kvalitetssikring', value: 'Verifikation af alle fagpersoner' },
-                  ].map(row => (
-                    <div key={row.label} className="flex gap-3 py-2.5 border-b border-[#E0DAD0] last:border-0">
-                      <span className="text-xs font-semibold text-[#6B7569] w-28 shrink-0">{row.label}</span>
-                      <span className="text-xs text-[#1A1F1C]">{row.value}</span>
+                    'Behandlingstilbud eller psykiatrisk tilbud',
+                    'Botilbud eller døgntilbud',
+                    'Døgnberedskab eller akut krisetjeneste',
+                    'Myndighedsinstans — vi visiterer ikke',
+                  ].map(item => (
+                    <div key={item} className="flex items-start gap-2.5">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B45309" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5">
+                        <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                      <span className="text-sm text-[#92660A]">{item}</span>
                     </div>
                   ))}
                 </div>
+                <p className="text-xs text-[#B45309] mt-5 leading-relaxed">
+                  Ved behov for behandling, akut psykiatrisk hjælp eller myndighedsafgørelse henviser vi til relevante offentlige instanser.
+                </p>
               </div>
             </div>
           </div>
@@ -189,14 +366,19 @@ export default function KommunerPage() {
           <div className="bg-[#1C3829] rounded-2xl p-8 sm:p-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div>
               <h2 className="font-serif text-2xl sm:text-3xl text-white font-normal mb-2">Klar til at tage kontakt?</h2>
-              <p className="text-sm text-white/65">Send os en e-mail — vi vender typisk tilbage inden for én arbejdsdag.</p>
+              <p className="text-sm text-white/65">Send en e-mail — vi vender typisk tilbage inden for én arbejdsdag.</p>
             </div>
-            <a
-              href="mailto:kommuner@kursskifte.dk"
-              className="shrink-0 h-11 px-6 bg-[#C8993A] text-white text-sm font-semibold rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center gap-2"
-            >
-              kommuner@kursskifte.dk <ArrowRight />
-            </a>
+            <div className="flex flex-col gap-3 items-start shrink-0">
+              <a
+                href="mailto:kommuner@kursskifte.dk"
+                className="h-11 px-6 bg-[#C8993A] text-white text-sm font-semibold rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center gap-2"
+              >
+                kommuner@kursskifte.dk <ArrowRight />
+              </a>
+              <Link href="/kontakt" className="text-xs text-white/45 hover:text-white/75 transition-colors">
+                Se alle kontaktoplysninger →
+              </Link>
+            </div>
           </div>
         </section>
       </main>

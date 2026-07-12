@@ -33,12 +33,12 @@ function CheckIcon() {
 }
 
 const STEPS = [
-  { n: '01', title: 'I indsender sagen', body: 'Via Kursskiftes sikre platform. I beskriver borgeren, behovet og eventuelle særlige hensyn. Ingen offentlig database — direkte til os.' },
-  { n: '02', title: 'Vi vurderer behovet', body: 'Kursskifte gennemgår sagen og vurderer kompleksitetsniveauet, aldersgruppe og kompetencebehov. Vi stiller opklarende spørgsmål hvis nødvendigt.' },
-  { n: '03', title: 'Matching og kvalitetssikring', body: 'Platformen scorer kvalificerede kontaktpersoner på kapacitet, erfaring, kompetencer og tilgængelighed. Vi verificerer dokumenter og certifikater.' },
+  { n: '01', title: 'I kontakter os', body: 'Send en krypteret e-mail til kommuner@kursskifte.dk med det I ved om borgeren, behovet og eventuelle særlige hensyn. Ingen åben database — direkte til os.' },
+  { n: '02', title: 'Vi vurderer behovet', body: 'Kursskifte gennemgår henvendelsen og vurderer kompleksitetsniveauet, aldersgruppe og kompetencebehov. Vi stiller opklarende spørgsmål hvis nødvendigt.' },
+  { n: '03', title: 'Matching og kvalitetssikring', body: 'Kursskifte scorer kvalificerede kontaktpersoner på kapacitet, erfaring, kompetencer og tilgængelighed. Vi verificerer dokumenter og certifikater.' },
   { n: '04', title: 'I modtager et forslag', body: 'Et fagligt begrundet forslag med anbefalet kontaktperson sendes til jer. Inkluderer profil, begrundelse og estimeret opstart.' },
   { n: '05', title: 'Godkendelse og opstart', body: 'I godkender forslaget. Kursskifte koordinerer opstarten og sikrer at dokumentation og takst er på plads.' },
-  { n: '06', title: 'Løbende opfølgning', body: 'Kursskifte følger op på forløbet. Al dokumentation, sessionslogs og timeregistrering håndteres i platformen.' },
+  { n: '06', title: 'Løbende opfølgning', body: 'Kursskifte følger op på forløbet og er fast koordinator under hele indsatsen. I kontaktes ved statusopdateringer og behov for ændringer.' },
 ]
 
 const serviceSchema = {
@@ -78,12 +78,12 @@ export default function KommunerPage() {
           <p className="text-[17px] text-[#6B7569] leading-relaxed max-w-xl mb-8">
             Vi hjælper kommuner i Nordjylland — herunder Aalborg, Hjørring, Brønderslev og Frederikshavn — med at finde kvalitetssikrede kontaktpersoner til §32 og §85-forløb. Indsend sagen, og Kursskifte sender et fagligt begrundet forslag.
           </p>
-          <Link
-            href="/kontakt"
+          <a
+            href="mailto:kommuner@kursskifte.dk"
             className="h-12 px-6 bg-[#1C3829] text-white font-semibold text-sm rounded-xl hover:bg-[#2D5840] transition-colors inline-flex items-center gap-2"
           >
-            Indsend sag nu <ArrowRight />
-          </Link>
+            Kontakt os <ArrowRight />
+          </a>
         </section>
 
         {/* Core message */}
@@ -142,11 +142,11 @@ export default function KommunerPage() {
               <div>
                 <div className="flex items-center gap-2.5 mb-4">
                   <div className="w-5 h-px bg-[#C8993A]" />
-                  <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Hvad I kan indsende</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Hvad vi kan hjælpe med</span>
                 </div>
                 <h2 className="font-serif text-3xl text-[#1A1F1C] font-normal mb-4">Kursskifte tager sager på tværs af kompleksitet</h2>
                 <p className="text-sm text-[#6B7569] leading-relaxed mb-6">
-                  Vi modtager sager med kontaktpersonbehov for børn, unge og voksne. Vi vurderer kompleksitetsniveauet og matcher derefter.
+                  Vi modtager henvendelser om kontaktpersonbehov for børn, unge og voksne. Vi vurderer kompleksitetsniveauet og matcher derefter.
                 </p>
                 <div className="space-y-3">
                   {[
@@ -154,7 +154,7 @@ export default function KommunerPage() {
                     'Lav til kritisk kompleksitet — vi vurderer',
                     'Børn og unge (0–18) samt voksne (18+)',
                     'Akutte behov kan håndteres ved særlig aftale',
-                    'Kommunen modtager forslag inden for aftalt tid',
+                    'Kommunen modtager forslag inden for aftalt svarfrist',
                   ].map(item => (
                     <div key={item} className="flex items-start gap-2.5">
                       <CheckIcon />
@@ -188,15 +188,15 @@ export default function KommunerPage() {
         <section className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-16">
           <div className="bg-[#1C3829] rounded-2xl p-8 sm:p-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div>
-              <h2 className="font-serif text-2xl sm:text-3xl text-white font-normal mb-2">Klar til at indsende en sag?</h2>
-              <p className="text-sm text-white/65">Det tager få minutter. Vi vender tilbage hurtigt.</p>
+              <h2 className="font-serif text-2xl sm:text-3xl text-white font-normal mb-2">Klar til at tage kontakt?</h2>
+              <p className="text-sm text-white/65">Send os en e-mail — vi vender typisk tilbage inden for én arbejdsdag.</p>
             </div>
-            <Link
-              href="/kontakt"
+            <a
+              href="mailto:kommuner@kursskifte.dk"
               className="shrink-0 h-11 px-6 bg-[#C8993A] text-white text-sm font-semibold rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center gap-2"
             >
-              Indsend sag <ArrowRight />
-            </Link>
+              kommuner@kursskifte.dk <ArrowRight />
+            </a>
           </div>
         </section>
       </main>

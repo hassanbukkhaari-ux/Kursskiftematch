@@ -51,14 +51,14 @@ function Hero() {
         Kvalitetssikrede kontaktpersoner til kommunernes borgere
       </h1>
       <p className="text-[17px] text-[#6B7569] leading-relaxed max-w-lg mb-8">
-        Indsend en sag. Kursskifte varetager sagsvurdering, match og faglig anbefaling — struktureret og dokumenteret.
+        Send os en henvendelse. Kursskifte varetager sagsvurdering, match og faglig anbefaling — struktureret og dokumenteret.
       </p>
       <div className="flex flex-wrap gap-3">
         <Link
           href="/kontakt"
           className="h-12 px-6 bg-[#1C3829] text-white font-semibold text-sm rounded-xl hover:bg-[#2D5840] transition-colors inline-flex items-center gap-2"
         >
-          Indsend sag <ArrowRight />
+          Kontakt os <ArrowRight />
         </Link>
         <Link
           href="/kontaktpersoner"
@@ -83,7 +83,7 @@ function AudiencePaths() {
           <div>
             <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-5">Til kommuner</div>
             <h2 className="font-serif text-2xl sm:text-3xl text-white font-normal leading-snug mb-4 max-w-xs">
-              Send én sag.<br />Få et fagligt begrundet forslag.
+              Én henvendelse.<br />Et fagligt begrundet forslag.
             </h2>
             <p className="text-sm text-white/60 leading-relaxed max-w-sm">
               Kursskifte varetager match, verifikation og faglig anbefaling til §32 og §85-forløb — sikkert og dokumenteret. Vi betjener kommuner i Nordjylland.
@@ -94,7 +94,7 @@ function AudiencePaths() {
               href="/kontakt"
               className="h-10 px-5 bg-[#C8993A] text-white text-sm font-semibold rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center gap-2"
             >
-              Indsend sag <ArrowRight />
+              Tag kontakt <ArrowRight />
             </Link>
             <Link href="/kommuner" className="text-sm text-white/50 hover:text-white/80 transition-colors">
               Se hele processen →
@@ -134,7 +134,7 @@ function AudiencePaths() {
 // they commit. 5-step summary answers that question without the full
 // detail that lives on /kommuner. No CTA here — purely informational.
 const STEPS = [
-  { n: '01', title: 'I indsender sagen', body: 'Sikkert via platformen — ingen åben database at gennemse.' },
+  { n: '01', title: 'I kontakter os', body: 'Via krypteret e-mail til kommuner@kursskifte.dk — ingen åben database at gennemse.' },
   { n: '02', title: 'Kursskifte vurderer', body: 'Vi gennemgår kompleksitet, aldersgruppe og kompetencebehov.' },
   { n: '03', title: 'Kursskifte udvælger', body: 'Egnede fagpersoner identificeres og vurderes på kompetencer, kapacitet og tilgængelighed.' },
   { n: '04', title: 'I modtager forslag', body: 'Et dokumenteret forslag med anbefalet kontaktperson og faglig begrundelse.' },
@@ -230,7 +230,7 @@ function CtaStrip() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8">
           <div>
             <h2 className="font-serif text-2xl sm:text-3xl text-white font-normal mb-2">
-              Klar til at indsende en sag?
+              Klar til at tage kontakt?
             </h2>
             <p className="text-sm text-white/55">Vi bekræfter modtagelse og vender typisk tilbage inden for én arbejdsdag.</p>
           </div>
@@ -239,7 +239,7 @@ function CtaStrip() {
               href="/kontakt"
               className="h-11 px-6 bg-[#C8993A] text-white text-sm font-semibold rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center gap-2"
             >
-              Indsend sag <ArrowRight />
+              Kontakt os <ArrowRight />
             </Link>
             <Link href="/kontaktpersoner" className="text-xs text-white/40 hover:text-white/70 transition-colors">
               Er du fagperson? Bliv kontaktperson →

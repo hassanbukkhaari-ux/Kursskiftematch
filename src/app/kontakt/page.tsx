@@ -82,7 +82,7 @@ export default function KontaktPage() {
                 <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-3">For kommuner</div>
                 <h2 className="font-serif text-2xl text-white font-normal mb-3">Har du en sag eller et spørgsmål?</h2>
                 <p className="text-sm text-white/65 leading-relaxed">
-                  Den hurtigste vej til os er via sagsindsendelse på platformen. Har du generelle spørgsmål, er du velkommen til at kontakte os direkte.
+                  Send os en krypteret e-mail med det I ved om borgeren og behovet. Kursskifte varetager resten — match, dokumentation og opfølgning.
                 </p>
               </div>
               <div className="space-y-0">
@@ -95,12 +95,12 @@ export default function KontaktPage() {
                   <span className="text-sm text-white/80">Typisk inden for 1 arbejdsdag</span>
                 </div>
               </div>
-              <Link
-                href="/kontakt"
+              <a
+                href="mailto:kommuner@kursskifte.dk"
                 className="mt-auto h-10 px-5 bg-[#C8993A] text-white text-sm font-semibold rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center gap-2 self-start"
               >
-                Indsend sag direkte <ArrowRight />
-              </Link>
+                Send e-mail <ArrowRight />
+              </a>
             </div>
 
             {/* For fagpersoner */}

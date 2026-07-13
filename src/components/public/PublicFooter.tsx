@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { CompassMark } from '@/components/brand/compass'
 
 export default function PublicFooter() {
   return (
@@ -8,12 +9,7 @@ export default function PublicFooter() {
           {/* Brand */}
           <div className="lg:col-span-1">
             <div className="flex items-center gap-2.5 mb-3">
-              <div className="w-7 h-7 rounded-lg bg-[#C8993A] flex items-center justify-center shrink-0">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                  <path d="M3 13L8 3L13 13" stroke="white" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M5 9.5h6" stroke="white" strokeWidth="1.75" strokeLinecap="round" />
-                </svg>
-              </div>
+              <CompassMark size={28} />
               <span className="font-serif font-semibold text-[#1C3829] text-sm">Kursskifte</span>
             </div>
             <p className="text-xs text-[#6B7569] leading-relaxed">

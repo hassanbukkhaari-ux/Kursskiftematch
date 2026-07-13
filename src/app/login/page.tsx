@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Suspense } from 'react'
+import { CompassMark } from '@/components/brand/compass'
 
 function LoginForm() {
   const [email, setEmail] = useState('')
@@ -46,12 +47,7 @@ function LoginForm() {
 
         {/* Logo */}
         <div className="flex items-center gap-2.5 mb-8">
-          <div className="w-8 h-8 rounded-xl bg-[#C8993A] flex items-center justify-center shrink-0">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M3 13L8 3L13 13" stroke="white" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M5 9.5h6" stroke="white" strokeWidth="1.75" strokeLinecap="round" />
-            </svg>
-          </div>
+          <CompassMark size={32} />
           <div>
             <div className="font-serif font-semibold text-[#1C3829] text-[15px] leading-none">Kursskifte</div>
             <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mt-0.5">Match</div>

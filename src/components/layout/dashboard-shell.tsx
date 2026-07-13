@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { CompassMark } from '@/components/brand/compass'
 
 interface NavItem {
   href: string
@@ -154,16 +155,7 @@ const adminNav: NavItem[] = [
 // ── Sub-components (no hooks — safe to define at module scope) ──────────
 
 function LogoMark({ size = 'md' }: { size?: 'sm' | 'md' }) {
-  const dim = size === 'sm' ? 'w-6 h-6 rounded-md' : 'w-7 h-7 rounded-lg'
-  const iconSize = size === 'sm' ? 12 : 14
-  return (
-    <div className={`${dim} bg-[#C8993A] flex items-center justify-center shrink-0`}>
-      <svg width={iconSize} height={iconSize} viewBox="0 0 16 16" fill="none">
-        <path d="M3 13L8 3L13 13" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M5.5 9.5h5" stroke="white" strokeWidth="2" strokeLinecap="round" />
-      </svg>
-    </div>
-  )
+  return <CompassMark size={size === 'sm' ? 24 : 28} dark />
 }
 
 function SidebarNav({

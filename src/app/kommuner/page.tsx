@@ -24,14 +24,6 @@ function ArrowRight() {
   )
 }
 
-function CheckIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C8993A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5">
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  )
-}
-
 function CheckGreen() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1C3829" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5">
@@ -234,74 +226,6 @@ export default function KommunerPage() {
                   <span className="inline-block text-[10px] font-semibold uppercase tracking-wider text-[#C8993A] bg-[#FBF3E1] px-2 py-1 rounded-md">{y.para}</span>
                 </div>
               ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Pricing */}
-        <section className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-16">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
-            <div>
-              <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-5 h-px bg-[#C8993A]" />
-                <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Priser</span>
-              </div>
-              <h2 className="font-serif text-3xl text-[#1A1F1C] font-normal mb-4">Gennemsigtig prismodel</h2>
-              <p className="text-sm text-[#6B7569] leading-relaxed mb-6">
-                Kursskifte ønsker ikke at konkurrere på laveste pris — men på kvalitet, stabilitet og dokumenteret progression. Vores prismodel er transparent og dækker faglig indsats, dokumentation, koordinering og opfølgning.
-              </p>
-              <div className="space-y-3">
-                {[
-                  'Priser er ekskl. moms, såfremt ydelsen er momspligtig',
-                  'Momshåndtering vurderes konkret efter gældende regler',
-                  'Kørsel inden for 15 km er inkluderet',
-                  'Opstartspakke sikrer tydelige mål og fælles forventningsafstemning',
-                ].map(item => (
-                  <div key={item} className="flex items-start gap-2.5">
-                    <CheckIcon />
-                    <span className="text-sm text-[#1A1F1C]">{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              {/* Hourly rate */}
-              <div className="bg-[#1C3829] rounded-2xl p-6">
-                <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-4">Timepris</div>
-                <div className="space-y-0">
-                  {[
-                    { label: 'Hverdage kl. 08–16', value: '650 kr./time' },
-                    { label: 'Aften kl. 16–20', value: '750 kr./time' },
-                    { label: 'Weekend og helligdage', value: '950 kr./time' },
-                    { label: 'Akut opstart (inden 48 t)', value: '750 kr./time' },
-                  ].map(row => (
-                    <div key={row.label} className="flex justify-between gap-3 py-2.5 border-b border-white/10 last:border-0">
-                      <span className="text-xs text-white/60">{row.label}</span>
-                      <span className="text-xs font-semibold text-white tabular-nums">{row.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Packages */}
-              <div className="bg-[#F6F3EE] border border-[#E0DAD0] rounded-2xl p-6">
-                <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-4">Pakkeforløb pr. måned</div>
-                <div className="space-y-0">
-                  {[
-                    { label: 'Let støtteforløb (4 t/uge)', value: '11.250 kr.' },
-                    { label: 'Standard støtteforløb (8 t/uge)', value: '22.500 kr.' },
-                    { label: 'Udvidet støtteforløb (12 t/uge)', value: '33.750 kr.' },
-                    { label: 'Intensivt overgangsforløb (16 t/uge)', value: '45.000 kr.' },
-                    { label: 'Opstartspakke (inkl. mål og aftaler)', value: '3.900 kr.' },
-                  ].map(row => (
-                    <div key={row.label} className="flex justify-between gap-3 py-2.5 border-b border-[#E0DAD0] last:border-0">
-                      <span className="text-xs text-[#6B7569]">{row.label}</span>
-                      <span className="text-xs font-semibold text-[#1A1F1C] tabular-nums">{row.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         </section>

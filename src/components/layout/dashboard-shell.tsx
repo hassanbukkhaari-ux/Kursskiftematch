@@ -257,10 +257,7 @@ export function DashboardShell({ children, userName, role = 'admin' }: Dashboard
         <div className="px-5 py-6 border-b border-white/10 shrink-0">
           <Link href={isRootRoute} className="flex items-center gap-2.5">
             <LogoMark />
-            <div>
-              <div className="text-white font-serif font-semibold text-sm leading-none">Kursskifte</div>
-              <div className="text-white/50 text-[10px] tracking-widest uppercase mt-0.5">Match</div>
-            </div>
+            <div className="text-white font-serif font-semibold text-sm leading-none">Kursskifte</div>
           </Link>
         </div>
         <SidebarNav nav={nav} pathname={pathname} isRootRoute={isRootRoute} />
@@ -272,7 +269,6 @@ export function DashboardShell({ children, userName, role = 'admin' }: Dashboard
         <Link href={isRootRoute} className="flex items-center gap-2.5">
           <LogoMark size="sm" />
           <span className="text-white font-serif font-semibold text-sm leading-none">Kursskifte</span>
-          <span className="text-white/50 text-[10px] tracking-widest uppercase hidden sm:inline">Match</span>
         </Link>
 
         <button
@@ -332,10 +328,7 @@ export function DashboardShell({ children, userName, role = 'admin' }: Dashboard
         <div className="px-5 py-6 border-b border-white/10 shrink-0">
           <div className="flex items-center gap-2.5">
             <LogoMark />
-            <div>
-              <div className="text-white font-serif font-semibold text-sm leading-none">Kursskifte</div>
-              <div className="text-white/50 text-[10px] tracking-widest uppercase mt-0.5">Match</div>
-            </div>
+            <div className="text-white font-serif font-semibold text-sm leading-none">Kursskifte</div>
           </div>
         </div>
 

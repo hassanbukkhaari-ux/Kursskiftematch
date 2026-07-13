@@ -56,7 +56,7 @@ export default async function DashboardPage() {
         <PageHeader
           label="Mit overblik"
           title={`Hej, ${profile?.full_name?.split(' ')[0] ?? 'konsulent'}`}
-          subtitle="Kursskifte Match — din platform"
+          subtitle="Kursskifte — din platform"
         />
         <ContentContainer>
           {/* Stats */}

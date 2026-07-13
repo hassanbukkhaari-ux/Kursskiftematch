@@ -8,10 +8,7 @@ function LogoMark() {
   return (
     <div className="flex items-center gap-2.5">
       <CompassMark size={32} />
-      <div>
-        <div className="font-serif font-semibold text-[#1C3829] text-[15px] leading-none">Kursskifte</div>
-        <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mt-0.5">Match</div>
-      </div>
+      <div className="font-serif font-semibold text-[#1C3829] text-[15px] leading-none">Kursskifte</div>
     </div>
   )
 }

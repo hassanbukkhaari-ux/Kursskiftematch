@@ -45,7 +45,7 @@ function Hero() {
     <section className="max-w-6xl mx-auto px-5 sm:px-8 pt-16 pb-12 sm:pt-24 sm:pb-16">
       <div className="flex items-center gap-2.5 mb-5">
         <div className="w-5 h-px bg-[#C8993A]" />
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Kursskifte Match</span>
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Kursskifte</span>
       </div>
       <h1 className="font-serif text-4xl sm:text-5xl lg:text-[56px] leading-[1.08] text-[#1A1F1C] font-normal max-w-2xl mb-5 tracking-tight">
         Kvalitetssikrede kontaktpersoner til kommunernes borgere

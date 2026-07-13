@@ -68,7 +68,7 @@ export function AdminHoursClient({ initialHours }: { initialHours: AdminHoursRow
   return (
     <>
       <div className="flex items-center mb-4 gap-4 flex-wrap">
-        <div className="flex gap-1 bg-white border border-[#E0DAD0] rounded-xl p-1 flex-wrap">
+        <div className="flex gap-1 bg-white border border-[#E0DAD0] rounded-xl p-1 overflow-x-auto scrollbar-none">
           {TABS.map(t => (
             <button
               key={t.value}

@@ -182,7 +182,7 @@ export function InquiriesClient({
       />
 
       {/* Filter tabs */}
-      <div className="flex gap-1 mb-5 bg-[#F6F3EE] rounded-xl p-1 w-fit flex-wrap">
+      <div className="flex gap-1 mb-5 bg-[#F6F3EE] rounded-xl p-1 overflow-x-auto scrollbar-none">
         {tabs.map(tab => (
           <button
             key={tab.key}

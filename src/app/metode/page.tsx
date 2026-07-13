@@ -134,7 +134,7 @@ export default function MetodePage() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
               <div>
                 <h2 className="font-serif text-2xl text-[#1A1F1C] font-normal mb-1">Klar til at bruge platformen?</h2>
-                <p className="text-sm text-[#6B7569]">Indsend en sag eller log ind på Kursskifte Match.</p>
+                <p className="text-sm text-[#6B7569]">Indsend en sag eller log ind på Kursskifte.</p>
               </div>
               <div className="flex flex-wrap gap-3">
                 <Link href="/kontakt" className="h-10 px-5 bg-[#1C3829] text-white text-sm font-semibold rounded-xl hover:bg-[#2D5840] transition-colors inline-flex items-center gap-2">

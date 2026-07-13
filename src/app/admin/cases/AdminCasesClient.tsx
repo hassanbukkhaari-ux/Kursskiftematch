@@ -240,7 +240,7 @@ export function AdminCasesClient({
       />
 
       {/* Filter tabs */}
-      <div className="flex gap-1 mb-5 bg-[#F6F3EE] rounded-xl p-1 w-fit flex-wrap">
+      <div className="flex gap-1 mb-5 bg-[#F6F3EE] rounded-xl p-1 overflow-x-auto scrollbar-none">
         {tabs.map(tab => (
           <button
             key={tab.key}
@@ -344,7 +344,7 @@ export function AdminCasesClient({
         ].join(' ')}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-8 py-5 border-b border-[#E0DAD0] shrink-0">
+        <div className="flex items-center justify-between px-4 py-4 sm:px-8 sm:py-5 border-b border-[#E0DAD0] shrink-0">
           <div>
             <h2 className="font-serif text-xl font-semibold text-[#1A1F1C]">Opret ny sag</h2>
             <p className="text-xs text-[#6B7569] mt-0.5">Udfyld borger- og sagsoplysninger</p>
@@ -363,7 +363,7 @@ export function AdminCasesClient({
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto px-8 py-7 space-y-8">
+        <div className="flex-1 overflow-y-auto px-4 py-5 sm:px-8 sm:py-7 space-y-8">
 
           {/* ── Kommuneoplysninger ── */}
           <FormSection title="Kommuneoplysninger">
@@ -387,7 +387,7 @@ export function AdminCasesClient({
                   placeholder="Fulde navn"
                   className={inputClass}
                 />
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <input
                     type="email"
                     value={form.intake_contact_email}
@@ -410,7 +410,7 @@ export function AdminCasesClient({
 
           {/* ── Borger ── */}
           <FormSection title="Borger">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className={labelClass}>Initialer (2 bogstaver) *</label>
                 <input
@@ -435,7 +435,7 @@ export function AdminCasesClient({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className={labelClass}>Fødselsdato</label>
                 <input
@@ -513,7 +513,7 @@ export function AdminCasesClient({
 
           {/* ── Sagsdetaljer ── */}
           <FormSection title="Sagsdetaljer">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className={labelClass}>Kompleksitet</label>
                 <div className="grid grid-cols-2 gap-1.5">
@@ -756,7 +756,7 @@ export function AdminCasesClient({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className={labelClass}>Transportbehov</label>
                 <div className="grid grid-cols-2 gap-2">
@@ -818,7 +818,7 @@ export function AdminCasesClient({
         </div>
 
         {/* Footer */}
-        <div className="px-8 py-4 border-t border-[#E0DAD0] shrink-0 flex gap-3">
+        <div className="px-4 py-4 sm:px-8 border-t border-[#E0DAD0] shrink-0 flex gap-3">
           <Button variant="secondary" className="flex-1" onClick={closeDrawer} disabled={saving}>
             Annuller
           </Button>

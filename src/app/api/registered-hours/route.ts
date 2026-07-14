@@ -2,7 +2,6 @@ import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { ok, created, badRequest, forbidden, serverError, withAuth } from '@/lib/api-response'
 import { logAuditEvent } from '@/lib/audit'
-import { sendNotification, adminEmailBody } from '@/lib/notifications/service'
 
 const CreateHoursSchema = z.object({
   case_id: z.string().uuid(),
@@ -93,17 +92,6 @@ export async function POST(request: NextRequest) {
       resource_type: 'registered_hours',
       resource_id: data.id,
       metadata: { case_id: parsed.data.case_id, hours: parsed.data.hours, work_type: parsed.data.work_type },
-    })
-
-    const { subject, body: emailBody } = adminEmailBody('HOURS_SUBMITTED', data.id)
-    await sendNotification({
-      db,
-      notification_type: 'HOURS_SUBMITTED',
-      related_entity_type: 'registered_hours',
-      related_entity_id: data.id,
-      recipient_email: process.env.SYSTEM_ADMIN_EMAIL,
-      subject,
-      body: emailBody,
     })
 
     return created(data)

@@ -1,6 +1,4 @@
-import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { DashboardShell } from '@/components/layout/dashboard-shell'
 import { PageHeader, ContentContainer, StatCard, SectionHeader } from '@/components/layout/page-header'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -10,29 +8,27 @@ export default async function DashboardPage() {
   const db = await createClient()
   const { data: { user } } = await db.auth.getUser()
 
-  if (!user) redirect('/login')
-
+  // Layout handles auth + role redirect — user is guaranteed professional here
   const { data: profile } = await db
     .from('profiles')
     .select('full_name, role')
-    .eq('id', user.id)
+    .eq('id', user!.id)
     .single()
 
-  if (profile?.role === 'admin') redirect('/admin')
-  if (profile?.role !== 'professional') redirect('/login')
+  const userId = user!.id
 
   const [casesRes, logsRes, proRes] = await Promise.all([
     db.from('v_cases_with_professional')
       .select('id, citizen_initials, status, weekly_hours', { count: 'exact' })
-      .eq('professional_id', user.id)
+      .eq('professional_id', userId)
       .neq('status', 'ARCHIVED')
       .limit(3),
     db.from('session_logs')
       .select('id', { count: 'exact', head: true })
-      .eq('professional_id', user.id),
+      .eq('professional_id', userId),
     db.from('professionals')
       .select('status')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single(),
   ])
 
@@ -51,8 +47,7 @@ export default async function DashboardPage() {
   const proStatusColorValue = proStatusColor[proStatusRaw] ?? 'green'
 
   return (
-    <DashboardShell userName={profile?.full_name} role="professional">
-      <div>
+    <div>
         <PageHeader
           label="Mit overblik"
           title={`Hej, ${profile?.full_name?.split(' ')[0] ?? 'konsulent'}`}
@@ -153,7 +148,6 @@ export default async function DashboardPage() {
             </Link>
           </div>
         </ContentContainer>
-      </div>
-    </DashboardShell>
+    </div>
   )
 }

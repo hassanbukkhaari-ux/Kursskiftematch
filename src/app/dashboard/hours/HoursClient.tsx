@@ -59,6 +59,7 @@ export function HoursClient({ initialHours, cases, defaultCaseId }: Props) {
   const [form, setForm] = useState<FormData>({ ...EMPTY_FORM, case_id: defaultCaseId ?? '' })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [submittingId, setSubmittingId] = useState<string | null>(null)
 
   const filtered = filter === 'ALL' ? initialHours : initialHours.filter(h => h.status === filter)
 
@@ -109,6 +110,27 @@ export function HoursClient({ initialHours, cases, defaultCaseId }: Props) {
       setError('Netværksfejl — prøv igen')
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function handleSubmit(id: string) {
+    setSubmittingId(id)
+    try {
+      const res = await fetch(`/api/registered-hours/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'SUBMIT' }),
+      })
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}))
+        alert(json.error ?? 'Noget gik galt')
+        return
+      }
+      startTransition(() => { router.refresh() })
+    } catch {
+      alert('Netværksfejl — prøv igen')
+    } finally {
+      setSubmittingId(null)
     }
   }
 
@@ -205,9 +227,20 @@ export function HoursClient({ initialHours, cases, defaultCaseId }: Props) {
                   </div>
                 </div>
               </div>
-              <Badge variant={STATUS_BADGE[h.status] ?? 'default'}>
-                {STATUS_LABEL[h.status] ?? h.status}
-              </Badge>
+              <div className="flex items-center gap-2 shrink-0">
+                {h.status === 'PENDING' && (
+                  <button
+                    onClick={() => handleSubmit(h.id)}
+                    disabled={submittingId === h.id}
+                    className="h-7 px-3 rounded-lg bg-[#1C3829] text-white text-xs font-semibold hover:bg-[#2D5840] transition-colors disabled:opacity-50"
+                  >
+                    {submittingId === h.id ? 'Indsender…' : 'Indsend'}
+                  </button>
+                )}
+                <Badge variant={STATUS_BADGE[h.status] ?? 'default'}>
+                  {STATUS_LABEL[h.status] ?? h.status}
+                </Badge>
+              </div>
             </Card>
           ))}
         </div>

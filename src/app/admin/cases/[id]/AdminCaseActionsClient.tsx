@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 
-type GrantStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'EXPIRED'
+type GrantStatus = 'PENDING' | 'ACTIVE' | 'ARCHIVED' | 'REVOKED'
 
 export interface Grant {
   id: string
@@ -13,7 +13,7 @@ export interface Grant {
   period_start: string
   period_end: string
   status: GrantStatus
-  approved_at: string | null
+  activated_at: string | null
 }
 
 export interface AvailableProfessional {
@@ -33,16 +33,16 @@ const HANDOVER_REASONS: { value: string; label: string }[] = [
 
 const GRANT_STATUS_LABEL: Record<GrantStatus, string> = {
   PENDING: 'Afventer',
-  APPROVED: 'Godkendt',
-  REJECTED: 'Afvist',
-  EXPIRED: 'Udløbet',
+  ACTIVE: 'Aktiv',
+  ARCHIVED: 'Arkiveret',
+  REVOKED: 'Tilbagekaldt',
 }
 
 const GRANT_STATUS_COLOR: Record<GrantStatus, string> = {
   PENDING: 'text-[#92660A] bg-[#FEF2E2] border-[#F5DDB0]',
-  APPROVED: 'text-[#1C3829] bg-[#EEF4F0] border-[#D1E7D8]',
-  REJECTED: 'text-red-700 bg-red-50 border-red-200',
-  EXPIRED: 'text-[#6B7569] bg-[#F6F3EE] border-[#E0DAD0]',
+  ACTIVE: 'text-[#1C3829] bg-[#EEF4F0] border-[#D1E7D8]',
+  ARCHIVED: 'text-[#6B7569] bg-[#F6F3EE] border-[#E0DAD0]',
+  REVOKED: 'text-red-700 bg-red-50 border-red-200',
 }
 
 function formatDate(iso: string) {

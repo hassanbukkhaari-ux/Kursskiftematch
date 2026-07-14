@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { created, badRequest, serverError } from '@/lib/api-response'
 import { rateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit'
+import { sendNotification, adminEmailBody } from '@/lib/notifications/service'
 
 const RegisterSchema = z.object({
   email: z.string().email(),
@@ -68,6 +69,17 @@ export async function POST(request: NextRequest) {
     await db.auth.admin.deleteUser(userId)
     return serverError(proError?.message)
   }
+
+  const { subject, body: emailBody } = adminEmailBody('PROFESSIONAL_APPLICATION_RECEIVED', userId)
+  await sendNotification({
+    db,
+    notification_type: 'PROFESSIONAL_APPLICATION_RECEIVED',
+    related_entity_type: 'professionals',
+    related_entity_id: userId,
+    recipient_email: process.env.SYSTEM_ADMIN_EMAIL,
+    subject,
+    body: emailBody,
+  })
 
   return created({
     id: userId,

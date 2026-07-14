@@ -95,7 +95,7 @@ export default async function AdminCasePage({ params }: PageProps) {
     db.from('problem_areas').select('code, label_da'),
     db.from('goals_lookup').select('code, label_da'),
     db.from('special_wishes_lookup').select('code, label_da'),
-    dba.from('case_grants').select('id, granted_hours, period_start, period_end, status, approved_at').eq('case_id', id).order('period_start', { ascending: false }),
+    dba.from('case_grants').select('id, granted_hours, period_start, period_end, status, activated_at').eq('case_id', id).order('period_start', { ascending: false }),
     dba.from('professionals').select('id, profiles!inner(full_name)').eq('status', 'ACTIVE'),
     dba.from('case_handovers').select('id, reason, status, handover_note, is_urgent, session_logs_transferred, created_at, completed_at, outgoing_professional_id, incoming_professional_id, created_by').eq('case_id', id).order('created_at', { ascending: false }),
   ])
@@ -127,7 +127,7 @@ export default async function AdminCasePage({ params }: PageProps) {
     period_start: g.period_start,
     period_end: g.period_end,
     status: g.status,
-    approved_at: g.approved_at,
+    activated_at: g.activated_at ?? null,
   }))
 
   const availableProfessionals: AvailableProfessional[] = (prosRes.data ?? [])

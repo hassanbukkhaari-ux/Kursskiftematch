@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { ok, notFound, badRequest, forbidden, serverError, withAuth, withAdminAuth } from '@/lib/api-response'
 import { logAuditEvent } from '@/lib/audit'
+import { sendNotification, adminEmailBody } from '@/lib/notifications/service'
 import type { Database } from '@/types/database'
 
 const SubmitSchema = z.object({
@@ -85,6 +86,19 @@ export async function PATCH(
       resource_id: id,
       metadata: { action, review_note: parsed.data.review_note },
     })
+
+    if (action === 'SUBMIT') {
+      const { subject, body: emailBody } = adminEmailBody('HOURS_SUBMITTED', id)
+      await sendNotification({
+        db,
+        notification_type: 'HOURS_SUBMITTED',
+        related_entity_type: 'registered_hours',
+        related_entity_id: id,
+        recipient_email: process.env.SYSTEM_ADMIN_EMAIL,
+        subject,
+        body: emailBody,
+      })
+    }
 
     return ok(data)
   })

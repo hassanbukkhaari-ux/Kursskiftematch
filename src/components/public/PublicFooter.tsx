@@ -22,7 +22,7 @@ export default function PublicFooter() {
             <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-3">Kommuner</div>
             <div className="space-y-2">
               <Link href="/kommuner" className="block text-sm text-[#6B7569] hover:text-[#1C3829] transition-colors">Sådan virker det</Link>
-              <Link href="/kontakt" className="block text-sm text-[#6B7569] hover:text-[#1C3829] transition-colors">Kontakt os</Link>
+              <Link href="/indsigt" className="block text-sm text-[#6B7569] hover:text-[#1C3829] transition-colors">Indsigt & viden</Link>
               <Link href="/kontakt" className="block text-sm text-[#6B7569] hover:text-[#1C3829] transition-colors">Kontakt os</Link>
             </div>
           </div>

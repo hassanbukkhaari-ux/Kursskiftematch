@@ -17,10 +17,22 @@ const CreateCaseSchema = z.object({
   urgency: z.enum(['NORMAL', 'HURTIG', 'AKUT']).default('NORMAL'),
   intake_contact_name: z.string().optional(),
   intake_contact_email: z.string().email().optional().or(z.literal('')),
+  intake_contact_phone: z.string().optional(),
   inquiry_id: z.string().uuid().optional(),
   problem_area_codes: z.array(z.string()).optional(),
   goal_codes: z.array(z.string()).optional(),
   special_wish_codes: z.array(z.string()).optional(),
+  citizen_name: z.string().optional(),
+  citizen_dob: z.string().optional(),
+  legal_basis: z.enum(['BARNETS_LOV_32', 'SEL_76', 'SEL_85', 'SEL_99']).optional(),
+  expected_duration_months: z.number().int().min(1).optional(),
+  diagnoses: z.string().optional(),
+  daily_function: z.string().optional(),
+  citizen_interests: z.string().optional(),
+  preferred_prof_gender: z.enum(['MALE', 'FEMALE', 'NO_PREF']).optional(),
+  required_languages: z.array(z.string()).optional(),
+  transport_needs: z.enum(['JA', 'NEJ']).optional(),
+  geographical_area: z.string().optional(),
 })
 
 // GET /api/cases — admin sees all, professionals see assigned

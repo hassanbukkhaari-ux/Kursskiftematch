@@ -35,7 +35,9 @@ const PROF_GENDER_LABEL: Record<string, string> = { MALE: 'Mand', FEMALE: 'Kvind
 const TRANSPORT_OPTIONS = ['JA', 'NEJ'] as const
 const LEGAL_BASIS_OPTIONS = [
   { value: 'BARNETS_LOV_32', label: '§32 barnets lov', note: 'Børn 0–17 år' },
+  { value: 'SEL_76', label: '§76 serviceloven', note: 'Unge 18–22 år (efterværn)' },
   { value: 'SEL_85', label: '§85 serviceloven', note: 'Voksne 18+' },
+  { value: 'SEL_99', label: '§99 serviceloven', note: 'Sociale mødesteder' },
 ] as const
 const LANGUAGE_OPTIONS = ['Dansk', 'Engelsk', 'Arabisk', 'Tyrkisk', 'Urdu', 'Somalisk', 'Dari/Pashto', 'Bosnisk/Serbisk', 'Polsk', 'Rumænsk'] as const
 const DURATION_OPTIONS = [
@@ -53,31 +55,31 @@ type NewCaseForm = {
   municipality_id: string
   intake_contact_name: string
   intake_contact_email: string
-  intake_contact_phone: string        // TODO(migration): cases.intake_contact_phone
+  intake_contact_phone: string
   // Borger
   citizen_initials: string
-  citizen_name: string                // TODO(migration): cases.citizen_name
-  citizen_dob: string                 // TODO(migration): cases.citizen_dob
+  citizen_name: string
+  citizen_dob: string
   citizen_age_range: string
-  legal_basis: string                 // TODO(migration): cases.legal_basis
+  legal_basis: string
   citizen_gender: string
   // Sagen
   complexity_level: string
   weekly_hours: string
   urgency: string
-  expected_duration_months: string    // TODO(migration): cases.expected_duration_months
+  expected_duration_months: string
   // Borgerens profil
-  diagnoses: string                   // TODO(migration): cases.diagnoses
-  daily_function: string              // TODO(migration): cases.daily_function
-  citizen_interests: string           // TODO(migration): cases.citizen_interests
+  diagnoses: string
+  daily_function: string
+  citizen_interests: string
   problem_area_codes: string[]
   // Ønsker til fagperson
   goal_codes: string[]
   special_wish_codes: string[]
-  preferred_prof_gender: string       // TODO(migration): cases.preferred_prof_gender
-  required_languages: string[]        // TODO(migration): cases.required_languages
-  transport_needs: string             // TODO(migration): cases.transport_needs
-  geographical_area: string           // TODO(migration): cases.geographical_area
+  preferred_prof_gender: string
+  required_languages: string[]
+  transport_needs: string
+  geographical_area: string
   // Interne noter
   citizen_notes: string
 }
@@ -202,11 +204,18 @@ export function AdminCasesClient({
           problem_area_codes: form.problem_area_codes,
           goal_codes: form.goal_codes,
           special_wish_codes: form.special_wish_codes,
-          // TODO(migration): include when DB columns are added:
-          // citizen_name, citizen_dob, legal_basis, intake_contact_phone,
-          // expected_duration_months, diagnoses, daily_function,
-          // citizen_interests, preferred_prof_gender, required_languages,
-          // transport_needs, geographical_area
+          intake_contact_phone: form.intake_contact_phone || undefined,
+          citizen_name: form.citizen_name || undefined,
+          citizen_dob: form.citizen_dob || undefined,
+          legal_basis: form.legal_basis || undefined,
+          expected_duration_months: form.expected_duration_months ? Number(form.expected_duration_months) : undefined,
+          diagnoses: form.diagnoses || undefined,
+          daily_function: form.daily_function || undefined,
+          citizen_interests: form.citizen_interests || undefined,
+          preferred_prof_gender: form.preferred_prof_gender || undefined,
+          required_languages: form.required_languages.length > 0 ? form.required_languages : undefined,
+          transport_needs: form.transport_needs || undefined,
+          geographical_area: form.geographical_area || undefined,
         }),
       })
       if (!res.ok) {

@@ -290,6 +290,18 @@ export type Database = {
           intake_token: string | null
           intake_contact_name: string | null
           intake_contact_email: string | null
+          intake_contact_phone: string | null
+          citizen_name: string | null
+          citizen_dob: string | null
+          legal_basis: 'BARNETS_LOV_32' | 'SEL_76' | 'SEL_85' | 'SEL_99' | null
+          expected_duration_months: number | null
+          diagnoses: string | null
+          daily_function: string | null
+          citizen_interests: string | null
+          preferred_prof_gender: 'MALE' | 'FEMALE' | 'NO_PREF' | null
+          required_languages: string[] | null
+          transport_needs: 'JA' | 'NEJ' | null
+          geographical_area: string | null
           created_at: string
           updated_at: string
           archived_at: string | null
@@ -310,6 +322,18 @@ export type Database = {
           intake_token?: string | null
           intake_contact_name?: string | null
           intake_contact_email?: string | null
+          intake_contact_phone?: string | null
+          citizen_name?: string | null
+          citizen_dob?: string | null
+          legal_basis?: 'BARNETS_LOV_32' | 'SEL_76' | 'SEL_85' | 'SEL_99' | null
+          expected_duration_months?: number | null
+          diagnoses?: string | null
+          daily_function?: string | null
+          citizen_interests?: string | null
+          preferred_prof_gender?: 'MALE' | 'FEMALE' | 'NO_PREF' | null
+          required_languages?: string[] | null
+          transport_needs?: 'JA' | 'NEJ' | null
+          geographical_area?: string | null
           created_at?: string
           updated_at?: string
           archived_at?: string | null
@@ -329,6 +353,18 @@ export type Database = {
           intake_token?: string | null
           intake_contact_name?: string | null
           intake_contact_email?: string | null
+          intake_contact_phone?: string | null
+          citizen_name?: string | null
+          citizen_dob?: string | null
+          legal_basis?: 'BARNETS_LOV_32' | 'SEL_76' | 'SEL_85' | 'SEL_99' | null
+          expected_duration_months?: number | null
+          diagnoses?: string | null
+          daily_function?: string | null
+          citizen_interests?: string | null
+          preferred_prof_gender?: 'MALE' | 'FEMALE' | 'NO_PREF' | null
+          required_languages?: string[] | null
+          transport_needs?: 'JA' | 'NEJ' | null
+          geographical_area?: string | null
           updated_at?: string
           archived_at?: string | null
           data_retention_expires_at?: string | null

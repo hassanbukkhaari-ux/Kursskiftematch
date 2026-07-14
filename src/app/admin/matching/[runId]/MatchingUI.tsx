@@ -214,7 +214,16 @@ export function MatchingUI({ candidates, runId, caseId, runStatus, caseData }: M
           </div>
         )}
 
-        {filtered.length === 0 ? (
+        {candidates.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#FEF3C7] border border-[#F5DDB0] mb-4">
+              <span className="w-2 h-2 rounded-full bg-[#C8993A] shrink-0" />
+              <span className="text-sm font-semibold text-[#92660A]">Aktiv søgning</span>
+            </div>
+            <h3 className="font-serif text-lg font-semibold text-[#1A1F1C] mb-2">Kursskifte arbejder aktivt på sagen</h3>
+            <p className="text-sm text-[#6B7569] max-w-sm">Der er endnu ingen scorede kandidater til denne sag. Kør en ny match-kørsel når der er egnede fagpersoner tilgængelige.</p>
+          </div>
+        ) : filtered.length === 0 ? (
           <EmptyState
             title="Ingen resultater matcher de valgte filtre"
             description="Prøv at justere filtrene for at se flere resultater"

@@ -17,7 +17,15 @@ export default async function DashboardPage() {
 
   const userId = user!.id
 
-  const [casesRes, logsRes, proRes] = await Promise.all([
+  const now = new Date()
+  const dayOfWeek = now.getDay()
+  const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1
+  const monday = new Date(now)
+  monday.setDate(now.getDate() - daysToMonday)
+  const mondayStr = monday.toISOString().slice(0, 10)
+  const sundayStr = new Date(monday.getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+
+  const [casesRes, logsRes, proRes, weeklyHoursRes] = await Promise.all([
     db.from('v_cases_with_professional')
       .select('id, citizen_initials, status, weekly_hours', { count: 'exact' })
       .eq('professional_id', userId)
@@ -30,11 +38,17 @@ export default async function DashboardPage() {
       .select('status')
       .eq('id', userId)
       .single(),
+    db.from('registered_hours')
+      .select('hours')
+      .eq('professional_id', userId)
+      .gte('work_date', mondayStr)
+      .lte('work_date', sundayStr),
   ])
 
   const activeCases = casesRes.data ?? []
   const totalCases = casesRes.count ?? 0
   const totalLogs = logsRes.count ?? 0
+  const weeklyHours = (weeklyHoursRes.data ?? []).reduce((sum, r) => sum + (r.hours ?? 0), 0)
 
   const proStatusRaw = (proRes.data?.status as string | undefined) ?? 'ACTIVE'
   const proStatusLabel: Record<string, string> = {
@@ -58,7 +72,7 @@ export default async function DashboardPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
             <StatCard label="Aktive sager" value={totalCases} color="brand" />
             <StatCard label="Sessionslogs" value={totalLogs} color="green" />
-            <StatCard label="Timer denne uge" value="—" color="gold" sublabel="ikke implementeret endnu" />
+            <StatCard label="Timer denne uge" value={weeklyHours > 0 ? `${weeklyHours} t` : '0 t'} color="gold" />
             <StatCard label="Konsulentstatus" value={proStatusDisplay} color={proStatusColorValue} />
           </div>
 

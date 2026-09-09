@@ -214,7 +214,7 @@ ALTER TABLE public.professionals
   ADD COLUMN IF NOT EXISTS profile_image_url   text,
   ADD COLUMN IF NOT EXISTS profession_type_id  uuid REFERENCES public.profession_types(id),
   ADD COLUMN IF NOT EXISTS specialization      text,
-  ADD COLUMN IF NOT EXISTS authorization       text,
+  ADD COLUMN IF NOT EXISTS authorization_note  text,
   ADD COLUMN IF NOT EXISTS bio                 text,
   ADD COLUMN IF NOT EXISTS max_hours_per_week  int,
   ADD COLUMN IF NOT EXISTS available_now       boolean NOT NULL DEFAULT false,

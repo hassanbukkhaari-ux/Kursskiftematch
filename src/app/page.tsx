@@ -154,7 +154,7 @@ function ProcessSection() {
   return (
     <section className="bg-white border-y border-[#E0DAD0]">
       <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-16">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
           <div>
             <div className="flex items-center gap-2.5 mb-3">
               <div className="w-5 h-px bg-[#C8993A]" />
@@ -171,14 +171,30 @@ function ProcessSection() {
             Se hele processen <ArrowRight />
           </Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-6 sm:gap-8">
-          {STEPS.map(step => (
-            <div key={step.n}>
-              <div className="font-serif text-xl text-[#C8993A] mb-3">{step.n}</div>
-              <h3 className="font-semibold text-sm text-[#1A1F1C] mb-2 leading-snug">{step.title}</h3>
-              <p className="text-xs text-[#6B7569] leading-relaxed">{step.body}</p>
-            </div>
-          ))}
+
+        {/* Step rows — top 3, bottom 2 centred */}
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {STEPS.slice(0, 3).map((step, i) => (
+              <div key={step.n} className="relative bg-[#F6F3EE] rounded-2xl p-6">
+                {i < 2 && (
+                  <div className="hidden sm:block absolute top-8 -right-2 w-4 h-px bg-[#C8993A]/40 z-10" />
+                )}
+                <div className="font-serif text-3xl text-[#C8993A] mb-3 leading-none">{step.n}</div>
+                <h3 className="font-semibold text-[15px] text-[#1A1F1C] mb-2 leading-snug">{step.title}</h3>
+                <p className="text-sm text-[#6B7569] leading-relaxed">{step.body}</p>
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:max-w-[66%]">
+            {STEPS.slice(3).map((step) => (
+              <div key={step.n} className="bg-[#F6F3EE] rounded-2xl p-6">
+                <div className="font-serif text-3xl text-[#C8993A] mb-3 leading-none">{step.n}</div>
+                <h3 className="font-semibold text-[15px] text-[#1A1F1C] mb-2 leading-snug">{step.title}</h3>
+                <p className="text-sm text-[#6B7569] leading-relaxed">{step.body}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

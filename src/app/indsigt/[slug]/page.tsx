@@ -6,7 +6,7 @@ import PublicFooter from '@/components/public/PublicFooter'
 import { MarkdownContent } from '@/components/public/MarkdownContent'
 import { createAnonClient } from '@/lib/supabase/server'
 
-export const revalidate = 3600
+export const revalidate = 60
 
 type Article = {
   slug: string

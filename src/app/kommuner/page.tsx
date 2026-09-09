@@ -127,30 +127,49 @@ export default function KommunerPage() {
       <main>
 
         {/* Hero */}
-        <section className="max-w-6xl mx-auto px-5 sm:px-8 pt-16 pb-12 sm:pt-20">
-          <div className="flex items-center gap-2.5 mb-5">
-            <div className="w-5 h-px bg-[#C8993A]" />
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Til kommuner og jobcentre</span>
-          </div>
-          <h1 className="font-serif text-4xl sm:text-5xl text-[#1A1F1C] font-normal max-w-2xl mb-5 leading-tight tracking-tight">
-            Én henvendelse. Et fagligt begrundet forslag.
-          </h1>
-          <p className="text-[17px] text-[#6B7569] leading-relaxed max-w-xl mb-8">
-            Kursskifte leverer mentor-, støtte- og kontaktpersonforløb til kommuner og jobcentre i Nordjylland — herunder Aalborg, Hjørring, Brønderslev og Frederikshavn. Visitation og bevilling foretages af kommunen — vi leverer den konkrete indsats.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <a
-              href="mailto:info@kursskifte.dk"
-              className="h-12 px-6 bg-[#1C3829] text-white font-semibold text-sm rounded-xl hover:bg-[#2D5840] transition-colors inline-flex items-center gap-2"
-            >
-              Kontakt os <ArrowRight />
-            </a>
-            <Link
-              href="/kontakt"
-              className="h-12 px-6 border border-[#C8DDD1] text-[#1C3829] font-semibold text-sm rounded-xl hover:bg-[#EEF4F0] transition-colors inline-flex items-center gap-2"
-            >
-              Se kontaktoplysninger
-            </Link>
+        <section className="max-w-6xl mx-auto px-5 sm:px-8 pt-12 pb-12 sm:pt-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            {/* Text */}
+            <div>
+              <div className="flex items-center gap-2.5 mb-5">
+                <div className="w-5 h-px bg-[#C8993A]" />
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Til kommuner og jobcentre</span>
+              </div>
+              <h1 className="font-serif text-4xl sm:text-5xl text-[#1A1F1C] font-normal mb-5 leading-tight tracking-tight">
+                Én henvendelse. Et fagligt begrundet forslag.
+              </h1>
+              <p className="text-[17px] text-[#6B7569] leading-relaxed mb-8">
+                Kursskifte leverer mentor-, støtte- og kontaktpersonforløb til kommuner og jobcentre i Nordjylland. Visitation og bevilling foretages af kommunen — vi leverer den konkrete indsats.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <a
+                  href="mailto:info@kursskifte.dk"
+                  className="h-12 px-6 bg-[#1C3829] text-white font-semibold text-sm rounded-xl hover:bg-[#2D5840] transition-colors inline-flex items-center gap-2"
+                >
+                  Kontakt os <ArrowRight />
+                </a>
+                <Link
+                  href="/kontakt"
+                  className="h-12 px-6 border border-[#C8DDD1] text-[#1C3829] font-semibold text-sm rounded-xl hover:bg-[#EEF4F0] transition-colors inline-flex items-center gap-2"
+                >
+                  Se kontaktoplysninger
+                </Link>
+              </div>
+            </div>
+
+            {/* Image panel */}
+            <div className="relative h-72 sm:h-96 lg:h-[480px] rounded-3xl overflow-hidden bg-[#1C3829]">
+              {/* Decorative pattern — replaced by photo when hero-kommuner.webp is placed in /public/images/ */}
+              <div className="absolute inset-0 opacity-20" style={{
+                backgroundImage: 'radial-gradient(circle at 30% 50%, #C8993A 0%, transparent 60%), radial-gradient(circle at 80% 20%, #EEF4F0 0%, transparent 50%)',
+              }} />
+              <div className="absolute bottom-8 left-8 right-8">
+                <p className="font-serif text-2xl text-white/90 leading-snug">
+                  &ldquo;Én henvendelse.<br />Vi finder den rette fagperson.&rdquo;
+                </p>
+                <p className="text-xs text-white/50 mt-3 uppercase tracking-widest">Kursskifte — Nordjylland</p>
+              </div>
+            </div>
           </div>
         </section>
 

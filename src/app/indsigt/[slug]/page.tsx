@@ -4,7 +4,7 @@ import Link from 'next/link'
 import PublicNav from '@/components/public/PublicNav'
 import PublicFooter from '@/components/public/PublicFooter'
 import { MarkdownContent } from '@/components/public/MarkdownContent'
-import { createServiceClient } from '@/lib/supabase/server'
+import { createAnonClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,7 +27,7 @@ type CategoryInfo = {
 }
 
 async function getArticle(slug: string): Promise<Article | null> {
-  const db = createServiceClient()
+  const db = createAnonClient()
   const { data } = await db
     .from('cms_articles' as never)
     .select('slug, title, excerpt, content, category, tags, published_at, reading_time_minutes, meta_title, meta_description')
@@ -38,7 +38,7 @@ async function getArticle(slug: string): Promise<Article | null> {
 }
 
 async function getRelated(category: string, currentSlug: string): Promise<Article[]> {
-  const db = createServiceClient()
+  const db = createAnonClient()
   const { data } = await db
     .from('cms_articles' as never)
     .select('slug, title, excerpt, category, tags, published_at, reading_time_minutes, meta_title, meta_description, content')
@@ -50,7 +50,7 @@ async function getRelated(category: string, currentSlug: string): Promise<Articl
 }
 
 async function getCategory(slug: string): Promise<CategoryInfo | null> {
-  const db = createServiceClient()
+  const db = createAnonClient()
   const { data } = await db
     .from('cms_categories' as never)
     .select('slug, name')

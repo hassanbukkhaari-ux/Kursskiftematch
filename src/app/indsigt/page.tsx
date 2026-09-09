@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import PublicNav from '@/components/public/PublicNav'
 import PublicFooter from '@/components/public/PublicFooter'
-import { createServiceClient } from '@/lib/supabase/server'
+import { createAnonClient } from '@/lib/supabase/server'
 
 export const revalidate = 3600
 
@@ -58,7 +58,7 @@ export default async function IndsightPage({
   searchParams: Promise<{ kategori?: string }>
 }) {
   const { kategori } = await searchParams
-  const db = createServiceClient()
+  const db = createAnonClient()
 
   const [articlesResult, categoriesResult] = await Promise.all([
     db

@@ -13,7 +13,6 @@ const PUBLIC_PATHS = [
   '/om-kursskifte',
   '/kontakt',
   '/privatlivspolitik',
-  '/api/debug-cms',
 ]
 
 export async function middleware(request: NextRequest) {

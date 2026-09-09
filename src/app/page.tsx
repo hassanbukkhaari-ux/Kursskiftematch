@@ -39,7 +39,7 @@ function Hero() {
   return (
     <section className="relative min-h-[620px] sm:min-h-[680px] lg:min-h-[740px] flex items-center overflow-hidden">
       <Image
-        src="/images/hero-home.jpg"
+        src="/images/hero-home.jpg.jpg"
         alt="To unge mennesker i samtale ved en sø i solnedgang"
         fill
         className="object-cover object-center"

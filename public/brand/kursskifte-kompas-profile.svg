@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+
+  <!-- Background -->
+  <rect width="800" height="800" fill="#F6F3EE"/>
+
+  <!-- N — top -->
+  <text x="400" y="148" text-anchor="middle"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="96" font-weight="400" fill="#C8993A">N</text>
+  <text x="400" y="180" text-anchor="middle"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="18" font-weight="300" letter-spacing="8" fill="#1C3829">U</text>
+
+  <!-- S — bottom -->
+  <text x="400" y="660" text-anchor="middle"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="96" font-weight="400" fill="#C8993A">S</text>
+  <text x="400" y="692" text-anchor="middle"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="18" font-weight="300" letter-spacing="8" fill="#1C3829">TYRKE</text>
+
+  <!-- V — left -->
+  <text x="136" y="422" text-anchor="middle"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="96" font-weight="400" fill="#C8993A">V</text>
+  <text x="136" y="454" text-anchor="middle"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="18" font-weight="300" letter-spacing="8" fill="#1C3829">EJ</text>
+
+  <!-- Ø — right -->
+  <text x="664" y="422" text-anchor="middle"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="96" font-weight="400" fill="#C8993A">Ø</text>
+  <text x="664" y="454" text-anchor="middle"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="18" font-weight="300" letter-spacing="8" fill="#1C3829">NSKE</text>
+
+  <!-- Compass mark, centered at 400,400 -->
+  <g transform="translate(400,400)">
+    <!-- Outer ring -->
+    <circle r="100" fill="none" stroke="#1C3829" stroke-width="2.8"/>
+
+    <!-- Cardinal ticks -->
+    <line x1="0"    y1="-100" x2="0"    y2="-86" stroke="#1C3829" stroke-width="2.8"/>
+    <line x1="100"  y1="0"    x2="86"   y2="0"   stroke="#1C3829" stroke-width="2.8"/>
+    <line x1="0"    y1="100"  x2="0"    y2="86"  stroke="#1C3829" stroke-width="2.8"/>
+    <line x1="-100" y1="0"    x2="-86"  y2="0"   stroke="#1C3829" stroke-width="2.8"/>
+
+    <!-- Needle — 35° off north -->
+    <g transform="rotate(35)">
+      <polygon points="0,-76 15,0 -15,0" fill="#C8993A"/>
+      <polygon points="0,66 15,0 -15,0" fill="#1C3829" opacity="0.18"/>
+    </g>
+
+    <!-- Pivot -->
+    <circle r="8"   fill="#1C3829"/>
+    <circle r="3.5" fill="#F6F3EE"/>
+  </g>
+
+</svg>

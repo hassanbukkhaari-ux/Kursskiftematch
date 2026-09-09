@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import PublicNav from '@/components/public/PublicNav'
 import PublicFooter from '@/components/public/PublicFooter'
@@ -34,36 +35,46 @@ function CheckBadge() {
   )
 }
 
-// ── Section 1: Orient ────────────────────────────────────────────
-// Single headline, one-sentence subtitle. Both audiences get proper
-// buttons — municipality is primary through button hierarchy (filled
-// vs. outlined), not by hiding the professional path.
 function Hero() {
   return (
-    <section className="max-w-6xl mx-auto px-5 sm:px-8 pt-16 pb-12 sm:pt-24 sm:pb-16">
-      <div className="flex items-center gap-2.5 mb-5">
-        <div className="w-5 h-px bg-[#C8993A]" />
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Kursskifte</span>
-      </div>
-      <h1 className="font-serif text-4xl sm:text-5xl lg:text-[56px] leading-[1.08] text-[#1A1F1C] font-normal max-w-2xl mb-5 tracking-tight">
-        Kvalitetssikrede kontaktpersoner til kommunernes borgere
-      </h1>
-      <p className="text-[17px] text-[#6B7569] leading-relaxed max-w-lg mb-8">
-        Vi leverer mentor-, støtte- og kontaktpersonforløb til kommuner og jobcentre i Nordjylland. Én henvendelse — Kursskifte varetager match, opstart og opfølgning.
-      </p>
-      <div className="flex flex-wrap gap-3">
-        <Link
-          href="/kontakt"
-          className="h-12 px-6 bg-[#1C3829] text-white font-semibold text-sm rounded-xl hover:bg-[#2D5840] transition-colors inline-flex items-center gap-2"
-        >
-          Kontakt os <ArrowRight />
-        </Link>
-        <Link
-          href="/kontaktpersoner"
-          className="h-12 px-6 border border-[#C8DDD1] text-[#1C3829] font-semibold text-sm rounded-xl hover:bg-[#EEF4F0] hover:border-[#A8CBBB] transition-colors inline-flex items-center gap-2"
-        >
-          Bliv kontaktperson
-        </Link>
+    <section className="relative min-h-[620px] sm:min-h-[680px] lg:min-h-[740px] flex items-center overflow-hidden">
+      <Image
+        src="/images/hero-home.jpg"
+        alt="To unge mennesker i samtale ved en sø i solnedgang"
+        fill
+        className="object-cover object-center"
+        priority
+        sizes="100vw"
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-[#0F2218]/85 via-[#1C3829]/55 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#0F2218]/40 via-transparent to-transparent" />
+      <div className="relative max-w-6xl mx-auto px-5 sm:px-8 py-24 sm:py-32 w-full">
+        <div className="max-w-xl">
+          <div className="flex items-center gap-2.5 mb-5">
+            <div className="w-5 h-px bg-[#C8993A]" />
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Kursskifte</span>
+          </div>
+          <h1 className="font-serif text-4xl sm:text-5xl lg:text-[56px] leading-[1.08] text-white font-normal max-w-2xl mb-5 tracking-tight">
+            Kvalitetssikrede kontaktpersoner til kommunernes borgere
+          </h1>
+          <p className="text-[17px] text-white/75 leading-relaxed max-w-lg mb-8">
+            Vi leverer mentor-, støtte- og kontaktpersonforløb til kommuner og jobcentre i Nordjylland. Én henvendelse — Kursskifte varetager match, opstart og opfølgning.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/kontakt"
+              className="h-12 px-6 bg-[#C8993A] text-white font-semibold text-sm rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center gap-2"
+            >
+              Kontakt os <ArrowRight />
+            </Link>
+            <Link
+              href="/kontaktpersoner"
+              className="h-12 px-6 border border-white/30 text-white font-semibold text-sm rounded-xl hover:bg-white/10 hover:border-white/50 transition-colors inline-flex items-center gap-2"
+            >
+              Bliv kontaktperson
+            </Link>
+          </div>
+        </div>
       </div>
     </section>
   )

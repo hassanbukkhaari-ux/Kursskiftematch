@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import PublicNav from '@/components/public/PublicNav'
 import PublicFooter from '@/components/public/PublicFooter'
@@ -127,20 +126,8 @@ export default function KommunerPage() {
       <PublicNav />
       <main>
 
-        {/* Hero — full bleed baggrundsbillede */}
-        <section className="relative min-h-[580px] sm:min-h-[640px] lg:min-h-[700px] flex items-center overflow-hidden">
-          {/* Baggrundsbillede */}
-          <Image
-            src="/images/hero-kommuner.png"
-            alt="To personer i samtale ved en sø i solnedgang"
-            fill
-            className="object-cover object-[center_28%]"
-            priority
-            sizes="100vw"
-          />
-          {/* Gradient-overlay: mørk grøn venstre → transparent højre, + mørkere bund */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0F2218]/90 via-[#1C3829]/60 to-[#1C3829]/10" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0F2218]/50 via-transparent to-transparent" />
+        {/* Hero */}
+        <section className="relative min-h-[580px] sm:min-h-[640px] lg:min-h-[700px] flex items-center overflow-hidden bg-gradient-to-br from-[#0F2218] via-[#1C3829] to-[#2D5840]">
 
           {/* Tekst */}
           <div className="relative max-w-6xl mx-auto px-5 sm:px-8 py-20 sm:py-28 w-full">

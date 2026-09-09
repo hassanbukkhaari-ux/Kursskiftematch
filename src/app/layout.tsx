@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import CookieBanner from '@/components/public/CookieBanner'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://kursskifte.dk'),
@@ -58,6 +59,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
         />
         {children}
+        <CookieBanner />
       </body>
     </html>
   )

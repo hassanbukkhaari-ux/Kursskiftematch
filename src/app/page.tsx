@@ -254,7 +254,70 @@ function TrustSection() {
   )
 }
 
-// ── Section 5: Convert ───────────────────────────────────────────
+// ── Section 5: FAQ ───────────────────────────────────────────────
+const FAQ = [
+  {
+    q: 'Hvilke kommuner betjener I?',
+    a: 'Vi betjener primært kommuner i Nordjylland — herunder Aalborg, Hjørring, Brønderslev og Frederikshavn. Er du usikker på om din kommune er dækket, er du altid velkommen til at kontakte os.',
+  },
+  {
+    q: 'Hvad sker der, når vi sender en henvendelse?',
+    a: 'Vi gennemgår jeres sag og vurderer kompleksitet, aldersgruppe og kompetencebehov. Herefter vender vi tilbage med en faglig begrundet anbefaling og et forslag til kontaktperson. Én henvendelse er alt der kræves — ingen åben database at gennemse.',
+  },
+  {
+    q: 'Hvad koster det at bruge Kursskifte?',
+    a: 'Honorar aftales ud fra opgavens karakter, omfang og varighed. Kontakt os direkte — vi giver dig et klart og konkret overblik tilpasset jeres situation.',
+  },
+  {
+    q: 'Hvordan verificerer I fagpersonernes kvalifikationer?',
+    a: 'Straffeattest og børneattest indhentes og verificeres af Kursskifte. Derudover kontrollerer vi CV, uddannelsesdokumentation og faglig erfaring individuelt. Ingen fagperson aktiveres uden forudgående godkendelse.',
+  },
+  {
+    q: 'Hvad er Kursskiftes rolle under et forløb?',
+    a: 'Kursskifte er fast koordinator fra match til afslutning — ikke blot formidler. Vi følger op på forløbet og er ansvarlig samarbejdspartner for både kommunen og fagpersonen under hele perioden.',
+  },
+  {
+    q: 'Jeg er fagperson — hvordan tilknytter jeg mig?',
+    a: 'Send en e-mail til info@kursskifte.dk med din faglige baggrund og erfaring. Vi gennemgår din profil og vender hurtigt tilbage. Er der et match, aftaler vi et indledende møde.',
+  },
+]
+
+function FaqSection() {
+  return (
+    <section className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-16">
+      <div className="flex items-center gap-2.5 mb-3">
+        <div className="w-5 h-px bg-[#C8993A]" />
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Spørgsmål og svar</span>
+      </div>
+      <h2 className="font-serif text-2xl sm:text-3xl text-[#1A1F1C] font-normal mb-10">Ofte stillede spørgsmål</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        {FAQ.map((item) => (
+          <details
+            key={item.q}
+            className="group bg-white border border-[#E0DAD0] rounded-xl overflow-hidden"
+          >
+            <summary className="flex items-center justify-between gap-4 px-6 py-5 cursor-pointer list-none select-none hover:bg-[#F9F7F4] transition-colors">
+              <span className="font-semibold text-sm text-[#1A1F1C] leading-snug">{item.q}</span>
+              <svg
+                className="shrink-0 text-[#C8993A] transition-transform duration-200 group-open:rotate-45"
+                width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"
+              >
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </summary>
+            <div className="px-6 pb-5">
+              <p className="text-sm text-[#6B7569] leading-relaxed">{item.a}</p>
+            </div>
+          </details>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+// ── Section 6: Convert ───────────────────────────────────────────
 // Single primary action after full context is established. Professional
 // path acknowledged at low visual weight — municipality is the CTA.
 function CtaStrip() {
@@ -266,7 +329,7 @@ function CtaStrip() {
             <h2 className="font-serif text-2xl sm:text-3xl text-white font-normal mb-2">
               Klar til at tage kontakt?
             </h2>
-            <p className="text-sm text-white/55 mb-2">Send en e-mail — vi vender typisk tilbage inden for én arbejdsdag.</p>
+            <p className="text-sm text-white/55 mb-2">Send en e-mail — vi vender tilbage hurtigst muligt.</p>
             <div className="flex flex-wrap gap-4">
               <a href="mailto:info@kursskifte.dk" className="text-sm text-white/70 hover:text-white transition-colors">info@kursskifte.dk</a>
               <a href="tel:+4571420376" className="text-sm text-white/70 hover:text-white transition-colors">71 42 03 76</a>
@@ -325,6 +388,7 @@ export default function Home() {
         <AudiencePaths />
         <ProcessSection />
         <TrustSection />
+        <FaqSection />
         <CtaStrip />
       </main>
       <PublicFooter />

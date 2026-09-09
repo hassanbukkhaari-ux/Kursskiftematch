@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <!-- White background -->
+  <rect width="400" height="400" fill="#F6F3EE"/>
+  <!-- Compass mark centered -->
+  <g transform="translate(200,200)">
+    <circle r="120" fill="none" stroke="#1C3829" stroke-width="3.8"/>
+    <line x1="0" y1="-120" x2="0" y2="-103" stroke="#1C3829" stroke-width="3.8"/>
+    <line x1="120" y1="0" x2="103" y2="0" stroke="#1C3829" stroke-width="3.8"/>
+    <line x1="0" y1="120" x2="0" y2="103" stroke="#1C3829" stroke-width="3.8"/>
+    <line x1="-120" y1="0" x2="-103" y2="0" stroke="#1C3829" stroke-width="3.8"/>
+    <g transform="rotate(35)">
+      <polygon points="0,-90 18,0 -18,0" fill="#C8993A"/>
+      <polygon points="0,78 18,0 -18,0" fill="#1C3829" opacity="0.2"/>
+    </g>
+    <circle r="7.8" fill="#1C3829"/>
+  </g>
+</svg>

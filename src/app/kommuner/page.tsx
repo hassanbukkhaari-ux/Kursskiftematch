@@ -236,6 +236,53 @@ export default function KommunerPage() {
           </div>
         </section>
 
+        {/* Typiske forløb */}
+        <section className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-16">
+          <div className="mb-10">
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="w-5 h-px bg-[#C8993A]" />
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Typiske forløb</span>
+            </div>
+            <h2 className="font-serif text-3xl sm:text-4xl text-[#1A1F1C] font-normal mb-3">
+              Hvem hjælper vi?
+            </h2>
+            <p className="text-sm text-[#6B7569] max-w-lg">
+              Eksempler på borgerprofiler vi typisk arbejder med. Har din sag et lignende udgangspunkt, er du velkommen til at kontakte os.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {[
+              {
+                para: '§32 barnets lov',
+                title: 'Ung med skolevægring og social isolation',
+                body: 'Teenager der er faldet ud af skolen, har svært ved at fastholde relationer og har brug for en stabil voksen med udgangspunkt i hverdagen. Kontaktpersonen mødes 2–4 gange ugentlig.',
+              },
+              {
+                para: '§85 serviceloven',
+                title: 'Voksen med psykiske udfordringer og behov for daglig struktur',
+                body: 'Borger med angst eller depression der har svært ved at overholde aftaler, passe bolig og klare hverdagens krav. Støtten er praktisk og relationsbaseret — ikke behandling.',
+              },
+              {
+                para: '§32 barnets lov / beskæftigelsesrettet',
+                title: 'Ung i overgang til uddannelse eller praktik',
+                body: 'Ung voksen (17–25 år) der har brug for en mentor til at navigere overgangen fra anbringelse, støttet botilbud eller grundskole til uddannelse, praktik eller job.',
+              },
+              {
+                para: '§85 SEL / beskæftigelsesrettet',
+                title: 'Borger med ADHD og ustabilt fremmøde',
+                body: 'Voksen med opmærksomhedsvanskeligheder der gentagne gange mister fodfæstet på uddannelse eller arbejdsmarkedet. Mentor hjælper med struktur, motivation og opfølgning.',
+              },
+            ].map(c => (
+              <div key={c.title} className="bg-white border border-[#E0DAD0] rounded-2xl p-6 flex flex-col gap-3">
+                <span className="inline-block text-[10px] font-semibold uppercase tracking-wider text-[#C8993A] bg-[#FBF3E1] px-2 py-1 rounded-md self-start">{c.para}</span>
+                <h3 className="font-semibold text-sm text-[#1A1F1C] leading-snug">{c.title}</h3>
+                <p className="text-xs text-[#6B7569] leading-relaxed">{c.body}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-[#9B9590] mt-6">Alle profiler er generiske og anonymiserede — de illustrerer typiske behovsbilleder, ikke konkrete sager.</p>
+        </section>
+
         {/* Afgrænsning */}
         <section className="bg-white border-y border-[#E0DAD0]">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-16">

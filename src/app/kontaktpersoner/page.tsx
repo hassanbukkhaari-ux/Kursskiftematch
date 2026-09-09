@@ -33,7 +33,7 @@ function CheckIcon() {
 }
 
 const PROFILE_STEPS = [
-  { n: '01', title: 'Tag kontakt', body: 'Send en e-mail til fagpersoner@kursskifte.dk med din baggrund og interesse i at blive kontaktperson.' },
+  { n: '01', title: 'Tag kontakt', body: 'Send en e-mail til info@kursskifte.dk med din baggrund og interesse i at blive kontaktperson.' },
   { n: '02', title: 'Gennemgang', body: 'Kursskifte gennemgår din ansøgning og verificerer dokumenter og attester. Vi vender typisk tilbage inden for 3–5 arbejdsdage.' },
   { n: '03', title: 'Profiloprettelse', body: 'Du modtager et link til at oprette og udfylde din profil med kompetencer, kapacitet og tilgængelighed.' },
   { n: '04', title: 'Matching', body: 'Kursskiftes platform matcher dig med relevante sager baseret på dine kompetencer og kapacitet.' },

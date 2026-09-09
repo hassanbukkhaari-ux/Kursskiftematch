@@ -79,8 +79,8 @@ export default function KontaktpersonerPage() {
                 </p>
                 <div className="space-y-3">
                   {[
-                    'Socialrådgiver, pædagog, lærer eller beslægtet baggrund — eller studerende på tilsvarende uddannelse',
-                    'Erfaring med målgruppen (minimum 1 år)',
+                    'Uddannet fagperson (socialrådgiver, pædagog, lærer el. lign.) eller studerende på relevant uddannelse',
+                    'Ufaglærte: minimum 1 års dokumenteret erfaring med målgruppen',
                     'Straffeattest indhentes og vurderes af Kursskiftes team',
                     'Evne til at dokumentere og registrere tid',
                     'Fleksibel tilgængelighed til forløb',

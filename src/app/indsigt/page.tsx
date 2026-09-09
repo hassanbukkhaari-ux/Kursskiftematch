@@ -4,7 +4,7 @@ import PublicNav from '@/components/public/PublicNav'
 import PublicFooter from '@/components/public/PublicFooter'
 import { createAnonClient } from '@/lib/supabase/server'
 
-export const revalidate = 3600
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Viden om kontaktpersonforløb | Kursskifte Indsigt',

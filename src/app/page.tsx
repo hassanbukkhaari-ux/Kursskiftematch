@@ -37,43 +37,46 @@ function CheckBadge() {
 
 function Hero() {
   return (
-    <section className="relative min-h-[620px] sm:min-h-[680px] lg:min-h-[740px] flex items-center overflow-hidden">
+    <section className="relative min-h-[560px] sm:min-h-[680px] lg:min-h-[740px] flex items-end sm:items-center overflow-hidden">
       <Image
         src="/images/hero-home.jpg.jpg"
         alt="To unge mennesker i samtale ved en sø i solnedgang"
         fill
-        className="object-cover object-[60%_center]"
+        className="object-cover object-[50%_35%] sm:object-[60%_center]"
         priority
         sizes="100vw"
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-[#0F2218]/80 via-[#1C3829]/30 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#0F2218]/30 via-transparent to-transparent" />
-      <div className="relative max-w-6xl mx-auto px-5 sm:px-8 py-24 sm:py-32 w-full">
-        <div className="max-w-xl">
-          <div className="flex items-center gap-2.5 mb-5">
-            <div className="w-5 h-px bg-[#C8993A]" />
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Kursskifte</span>
-          </div>
-          <h1 className="font-serif text-4xl sm:text-5xl lg:text-[56px] leading-[1.08] text-white font-normal max-w-2xl mb-5 tracking-tight">
-            Kvalitetssikrede kontaktpersoner til kommunernes borgere
-          </h1>
-          <p className="text-[17px] text-white/75 leading-relaxed max-w-lg mb-8">
-            Vi leverer mentor-, støtte- og kontaktpersonforløb til kommuner og jobcentre i Nordjylland. Én henvendelse — Kursskifte varetager match, opstart og opfølgning.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/kontakt"
-              className="h-12 px-6 bg-[#C8993A] text-white font-semibold text-sm rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center gap-2"
-            >
-              Kontakt os <ArrowRight />
-            </Link>
-            <Link
-              href="/kontaktpersoner"
-              className="h-12 px-6 border border-white/30 text-white font-semibold text-sm rounded-xl hover:bg-white/10 hover:border-white/50 transition-colors inline-flex items-center gap-2"
-            >
-              Bliv kontaktperson
-            </Link>
-          </div>
+      {/* Mobil: ensartet mørk overlay så tekst er læsbar */}
+      <div className="absolute inset-0 bg-[#0F2218]/65 sm:hidden" />
+      {/* Desktop: gradient venstre → transparent */}
+      <div className="absolute inset-0 hidden sm:block bg-gradient-to-r from-[#0F2218]/80 via-[#1C3829]/30 to-transparent" />
+      {/* Fælles bund-gradient */}
+      <div className="absolute inset-0 bg-gradient-to-t from-[#0F2218]/60 via-transparent to-transparent" />
+
+      <div className="relative max-w-6xl mx-auto px-5 sm:px-8 pt-20 pb-10 sm:py-32 w-full">
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className="w-5 h-px bg-[#C8993A]" />
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Kursskifte</span>
+        </div>
+        <h1 className="font-serif text-[2rem] sm:text-5xl lg:text-[56px] leading-[1.1] text-white font-normal max-w-xl mb-4 sm:mb-5 tracking-tight">
+          Kvalitetssikrede kontaktpersoner til kommunernes borgere
+        </h1>
+        <p className="text-[15px] sm:text-[17px] text-white/80 leading-relaxed max-w-lg mb-7 sm:mb-8">
+          Vi leverer mentor-, støtte- og kontaktpersonforløb til kommuner og jobcentre i Nordjylland. Én henvendelse — Kursskifte varetager match, opstart og opfølgning.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Link
+            href="/kontakt"
+            className="h-12 px-6 bg-[#C8993A] text-white font-semibold text-sm rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center justify-center gap-2"
+          >
+            Kontakt os <ArrowRight />
+          </Link>
+          <Link
+            href="/kontaktpersoner"
+            className="h-12 px-6 border border-white/40 text-white font-semibold text-sm rounded-xl hover:bg-white/10 transition-colors inline-flex items-center justify-center gap-2"
+          >
+            Bliv kontaktperson
+          </Link>
         </div>
       </div>
     </section>
@@ -86,23 +89,20 @@ function Hero() {
 // want depth before committing. No bullet lists; this is navigation.
 function AudiencePaths() {
   return (
-    <section className="max-w-6xl mx-auto px-5 sm:px-8 pb-16">
+    <section className="max-w-6xl mx-auto px-5 sm:px-8 py-6 sm:py-10 pb-10 sm:pb-16">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-[#1C3829] rounded-2xl p-8 sm:p-10 lg:p-12 flex flex-col justify-between gap-10">
+        <div className="bg-[#1C3829] rounded-2xl p-6 sm:p-10 lg:p-12 flex flex-col gap-6 sm:gap-10">
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-5">Til kommuner</div>
-            <h2 className="font-serif text-2xl sm:text-3xl text-white font-normal leading-snug mb-4 max-w-xs">
+            <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-4">Til kommuner</div>
+            <h2 className="font-serif text-2xl sm:text-3xl text-white font-normal leading-snug mb-3">
               Én henvendelse.<br />Et fagligt begrundet forslag.
             </h2>
-            <p className="text-sm text-white/60 leading-relaxed max-w-sm">
+            <p className="text-sm text-white/65 leading-relaxed">
               Kursskifte varetager match, verifikation og faglig anbefaling til §32 og §85-forløb — sikkert og dokumenteret. Vi betjener kommuner i Nordjylland.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-4">
-            <Link
-              href="/kontakt"
-              className="h-10 px-5 bg-[#C8993A] text-white text-sm font-semibold rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center gap-2"
-            >
+            <Link href="/kontakt" className="h-11 px-5 bg-[#C8993A] text-white text-sm font-semibold rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center gap-2">
               Tag kontakt <ArrowRight />
             </Link>
             <Link href="/kommuner" className="text-sm text-white/50 hover:text-white/80 transition-colors">
@@ -111,21 +111,18 @@ function AudiencePaths() {
           </div>
         </div>
 
-        <div className="bg-white border border-[#E0DAD0] rounded-2xl p-8 sm:p-10 lg:p-12 flex flex-col justify-between gap-10">
+        <div className="bg-white border border-[#E0DAD0] rounded-2xl p-6 sm:p-10 lg:p-12 flex flex-col gap-6 sm:gap-10">
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-5">Til kontaktpersoner</div>
-            <h2 className="font-serif text-2xl sm:text-3xl text-[#1A1F1C] font-normal leading-snug mb-4 max-w-xs">
+            <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-4">Til kontaktpersoner</div>
+            <h2 className="font-serif text-2xl sm:text-3xl text-[#1A1F1C] font-normal leading-snug mb-3">
               Bliv tilknyttet forløb der svarer til dine kompetencer.
             </h2>
-            <p className="text-sm text-[#6B7569] leading-relaxed max-w-sm">
-              Opret profil, angiv kapacitet — vi kobler dig med sager der svarer til din faglige baggrund og erfaring.
+            <p className="text-sm text-[#6B7569] leading-relaxed">
+              Send en e-mail med din baggrund — vi kobler dig med sager der matcher din faglige profil.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-4">
-            <Link
-              href="/kontaktpersoner"
-              className="h-10 px-5 bg-[#1C3829] text-white text-sm font-semibold rounded-xl hover:bg-[#2D5840] transition-colors inline-flex items-center gap-2"
-            >
+            <Link href="/kontaktpersoner" className="h-11 px-5 bg-[#1C3829] text-white text-sm font-semibold rounded-xl hover:bg-[#2D5840] transition-colors inline-flex items-center gap-2">
               Bliv kontaktperson <ArrowRight />
             </Link>
             <Link href="/kontaktpersoner" className="text-sm text-[#6B7569] hover:text-[#1C3829] transition-colors">
@@ -192,8 +189,8 @@ function ProcessSection() {
                 <p className="text-sm text-[#3A3F3C] leading-relaxed">{step.body}</p>
               </div>
             ))}
-            {/* CTA-kort fylder det ledige hjørne */}
-            <div className="bg-[#1C3829] rounded-2xl p-6 flex flex-col justify-between gap-6">
+            {/* CTA-kort fylder det ledige hjørne — skjult på mobil */}
+            <div className="hidden sm:flex bg-[#1C3829] rounded-2xl p-6 flex-col justify-between gap-6">
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-3">Klar til at starte?</p>
                 <p className="text-white font-serif text-lg leading-snug">Én e-mail er alt der skal til.</p>
@@ -249,7 +246,7 @@ function TrustSection() {
           <div key={item.label} className="bg-white border border-[#E0DAD0] rounded-xl p-5">
             <CheckBadge />
             <h3 className="font-semibold text-sm text-[#1A1F1C] mt-3 mb-1.5">{item.label}</h3>
-            <p className="text-xs text-[#6B7569] leading-relaxed">{item.desc}</p>
+            <p className="text-sm text-[#6B7569] leading-relaxed">{item.desc}</p>
           </div>
         ))}
       </div>

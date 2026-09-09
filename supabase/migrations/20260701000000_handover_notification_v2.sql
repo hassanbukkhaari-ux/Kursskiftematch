@@ -11,8 +11,12 @@ ALTER TABLE notification_log
   ADD COLUMN IF NOT EXISTS subject   TEXT,
   ADD COLUMN IF NOT EXISTS body_text TEXT;
 
--- HANDOVER_INITIATED notification type (goes to incoming professional)
-DO $$ BEGIN
-  ALTER TYPE notification_type ADD VALUE IF NOT EXISTS 'HANDOVER_INITIATED';
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+-- Update notification_type CHECK constraint to include HANDOVER_INITIATED
+ALTER TABLE public.notification_log
+  DROP CONSTRAINT IF EXISTS valid_notification_type;
+ALTER TABLE public.notification_log
+  ADD CONSTRAINT valid_notification_type CHECK (notification_type IN (
+    'INQUIRY_RECEIVED', 'PROFESSIONAL_APPLICATION_RECEIVED', 'CASE_CREATED',
+    'SAFEGUARDING_FLAGGED', 'HOURS_SUBMITTED', 'DOCUMENT_ACTION_REQUIRED',
+    'CASE_CLOSED', 'HANDOVER_INITIATED', 'PROPOSAL_DECLINED'
+  ));

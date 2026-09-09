@@ -7,7 +7,7 @@ import { CompassMark } from '@/components/brand/compass'
 function LogoMark() {
   return (
     <div className="flex items-center gap-2.5">
-      <CompassMark size={32} />
+      <CompassMark size={40} />
       <div className="font-serif font-semibold text-[#1C3829] text-[15px] leading-none">Kursskifte</div>
     </div>
   )

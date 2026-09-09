@@ -23,26 +23,20 @@ const orgContactSchema = {
   url: 'https://kursskifte.dk',
   email: 'info@kursskifte.dk',
   telephone: '+4571420376',
+  taxID: '46470974',
   areaServed: [
     { '@type': 'City', name: 'Aalborg' },
     { '@type': 'City', name: 'Hjørring' },
     { '@type': 'City', name: 'Brønderslev' },
     { '@type': 'City', name: 'Frederikshavn' },
   ],
-  contactPoint: [
-    {
-      '@type': 'ContactPoint',
-      email: 'kommuner@kursskifte.dk',
-      contactType: 'customer service',
-      availableLanguage: 'Danish',
-    },
-    {
-      '@type': 'ContactPoint',
-      email: 'fagpersoner@kursskifte.dk',
-      contactType: 'technical support',
-      availableLanguage: 'Danish',
-    },
-  ],
+  contactPoint: {
+    '@type': 'ContactPoint',
+    email: 'info@kursskifte.dk',
+    telephone: '+4571420376',
+    contactType: 'customer service',
+    availableLanguage: 'Danish',
+  },
 }
 
 function ArrowRight() {
@@ -83,13 +77,17 @@ export default function KontaktPage() {
                 <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-3">For kommuner</div>
                 <h2 className="font-serif text-2xl text-white font-normal mb-3">Har du en sag eller et spørgsmål?</h2>
                 <p className="text-sm text-white/65 leading-relaxed">
-                  Send os en krypteret e-mail med det I ved om borgeren og behovet. Kursskifte varetager resten — match, dokumentation og opfølgning.
+                  Send en e-mail til info@kursskifte.dk. Vi afklarer behov, formål, målgruppe, timeantal og forventninger. Ingen åben database — direkte til os.
                 </p>
               </div>
               <div className="space-y-0">
                 <div className="py-2.5 border-b border-white/10">
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-white/40 mb-0.5">E-mail</div>
-                  <a href="mailto:kommuner@kursskifte.dk" className="text-sm text-white hover:text-[#C8993A] transition-colors">kommuner@kursskifte.dk</a>
+                  <a href="mailto:info@kursskifte.dk" className="text-sm text-white hover:text-[#C8993A] transition-colors">info@kursskifte.dk</a>
+                </div>
+                <div className="py-2.5 border-b border-white/10">
+                  <div className="text-[10px] font-semibold uppercase tracking-widest text-white/40 mb-0.5">Telefon</div>
+                  <a href="tel:+4571420376" className="text-sm text-white hover:text-[#C8993A] transition-colors">71 42 03 76</a>
                 </div>
                 <div className="py-2.5">
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-white/40 mb-0.5">Responstid</div>
@@ -97,7 +95,7 @@ export default function KontaktPage() {
                 </div>
               </div>
               <a
-                href="mailto:kommuner@kursskifte.dk"
+                href="mailto:info@kursskifte.dk"
                 className="mt-auto h-10 px-5 bg-[#C8993A] text-white text-sm font-semibold rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center gap-2 self-start"
               >
                 Send e-mail <ArrowRight />
@@ -133,10 +131,10 @@ export default function KontaktPage() {
 
             {/* General */}
             <div className="lg:col-span-2 bg-[#F6F3EE] border border-[#E0DAD0] rounded-2xl p-7">
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
                 <div>
-                  <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-2">Virksomhed</div>
-                  <p className="text-sm text-[#1A1F1C] font-semibold">Kursskifte ApS</p>
+                  <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-2">Kursskifte ApS</div>
+                  <p className="text-sm text-[#1A1F1C]">CVR: 46470974</p>
                   <p className="text-xs text-[#6B7569] mt-1">Nordjylland, Danmark</p>
                 </div>
                 <div>
@@ -148,13 +146,8 @@ export default function KontaktPage() {
                   <a href="mailto:info@kursskifte.dk" className="text-sm text-[#1A1F1C] hover:text-[#1C3829] transition-colors">info@kursskifte.dk</a>
                 </div>
                 <div>
-                  <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-2">Platform</div>
-                  <a href="https://kursskifte.dk" className="text-sm text-[#1A1F1C] hover:text-[#1C3829] transition-colors">kursskifte.dk</a>
-                </div>
-                <div>
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-2">Område</div>
-                  <p className="text-sm text-[#1A1F1C]">Nordjylland, Danmark</p>
-                  <p className="text-xs text-[#6B7569] mt-1">Aalborg · Hjørring · Brønderslev · Frederikshavn</p>
+                  <p className="text-xs text-[#6B7569] leading-relaxed">Aalborg · Hjørring · Brønderslev · Frederikshavn</p>
                 </div>
               </div>
             </div>

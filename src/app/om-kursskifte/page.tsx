@@ -93,7 +93,7 @@ export default function OmKursskiftePage() {
             {[
               { label: 'Relationsbaseret', body: 'Vi tror på at den rigtige relation er afgørende. Matching er ikke tilfældig — det er fagligt begrundet.' },
               { label: 'Fagligt funderet', body: 'Alle beslutninger i platformen er baseret på kompetencer, kapacitet og dokumenteret erfaring.' },
-              { label: 'Trygt og sikkert', body: 'GDPR-compliant. Al persondata behandles sikkert. Kommunikation foregår via platformen.' },
+              { label: 'Trygt og sikkert', body: 'GDPR-compliant. Al persondata behandles sikkert og fortroligt i overensstemmelse med dansk og europæisk lovgivning.' },
             ].map(v => (
               <div key={v.label} className="bg-white border border-[#E0DAD0] rounded-2xl p-6">
                 <div className="w-6 h-6 rounded-md bg-[#EEF4F0] flex items-center justify-center mb-3">

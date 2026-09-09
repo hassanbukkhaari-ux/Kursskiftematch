@@ -62,7 +62,7 @@ export default function MetodePage() {
                 Fire dimensioner — én samlet score
               </h2>
               <p className="text-sm text-[#6B7569] leading-relaxed max-w-xl">
-                Platformen scorer alle kvalificerede fagpersoner på fire dimensioner. Den samlede score bestemmer rangeringen. Fagpersoner på ferie, pause eller uden kapacitet filtreres fra inden scoringen begynder.
+                Vi gennemgår alle egnede fagpersoner ud fra fire kriterier og anbefaler den der matcher bedst. Kun tilgængelige og verificerede fagpersoner indgår i vurderingen.
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

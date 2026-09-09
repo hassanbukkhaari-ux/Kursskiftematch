@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import PublicNav from '@/components/public/PublicNav'
 import PublicFooter from '@/components/public/PublicFooter'
@@ -159,16 +160,15 @@ export default function KommunerPage() {
 
             {/* Image panel */}
             <div className="relative h-72 sm:h-96 lg:h-[480px] rounded-3xl overflow-hidden bg-[#1C3829]">
-              {/* Decorative pattern — replaced by photo when hero-kommuner.webp is placed in /public/images/ */}
-              <div className="absolute inset-0 opacity-20" style={{
-                backgroundImage: 'radial-gradient(circle at 30% 50%, #C8993A 0%, transparent 60%), radial-gradient(circle at 80% 20%, #EEF4F0 0%, transparent 50%)',
-              }} />
-              <div className="absolute bottom-8 left-8 right-8">
-                <p className="font-serif text-2xl text-white/90 leading-snug">
-                  &ldquo;Én henvendelse.<br />Vi finder den rette fagperson.&rdquo;
-                </p>
-                <p className="text-xs text-white/50 mt-3 uppercase tracking-widest">Kursskifte — Nordjylland</p>
-              </div>
+              <Image
+                src="/images/hero-kommuner.png"
+                alt="To personer i samtale ved en sø i solnedgang — menneskelig kontakt og støtte"
+                fill
+                className="object-cover object-[center_30%]"
+                priority
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#1C3829]/40 via-transparent to-transparent" />
             </div>
           </div>
         </section>

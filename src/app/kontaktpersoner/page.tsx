@@ -6,7 +6,7 @@ import PublicFooter from '@/components/public/PublicFooter'
 export const metadata: Metadata = {
   title: 'Bliv kontaktperson | Socialpædagogisk indsats i Nordjylland',
   description:
-    'Er du socialrådgiver, pædagog eller har du erfaring med udsatte unge og voksne? Bliv støttekontaktperson eller kontaktperson via Kursskiftes faglige netværk i Nordjylland. Opret profil og bliv matchet med relevante forløb.',
+    'Er du socialrådgiver, pædagog, studerende på relevant uddannelse eller har du erfaring med udsatte unge og voksne? Bliv kontaktperson via Kursskiftes faglige netværk i Nordjylland. Minimum 1 års erfaring kræves.',
   alternates: { canonical: '/kontaktpersoner' },
   openGraph: {
     title: 'Bliv kontaktperson | Kursskifte',
@@ -73,14 +73,14 @@ export default function KontaktpersonerPage() {
                   <div className="w-5 h-px bg-[#C8993A]" />
                   <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Hvem kan søge</span>
                 </div>
-                <h2 className="font-serif text-3xl text-[#1A1F1C] font-normal mb-4">Fagpersoner med relevant erfaring</h2>
+                <h2 className="font-serif text-3xl text-[#1A1F1C] font-normal mb-4">Fagpersoner og studerende med relevant baggrund</h2>
                 <p className="text-sm text-[#6B7569] leading-relaxed mb-6">
-                  Vi søger uddannede fagpersoner med erfaring i arbejdet med udsatte unge, børn og voksne i sårbare livssituationer. Det afgørende er din faglige baggrund, dine dokumenterede kompetencer og din kapacitet.
+                  Vi søger fagpersoner og studerende på relevante uddannelser med erfaring i arbejdet med udsatte unge, børn og voksne i sårbare livssituationer. Det afgørende er din faglige baggrund, dine dokumenterede kompetencer og din kapacitet.
                 </p>
                 <div className="space-y-3">
                   {[
-                    'Socialrådgiver, pædagog, lærer eller beslægtet baggrund',
-                    'Erfaring med målgruppen (minimum 2 år anbefales)',
+                    'Socialrådgiver, pædagog, lærer eller beslægtet baggrund — eller studerende på tilsvarende uddannelse',
+                    'Erfaring med målgruppen (minimum 1 år)',
                     'Straffeattest indhentes og vurderes af Kursskiftes team',
                     'Evne til at dokumentere og registrere tid',
                     'Fleksibel tilgængelighed til forløb',

@@ -1,6 +1,4 @@
 import type { Metadata } from 'next'
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import PublicNav from '@/components/public/PublicNav'
 import PublicFooter from '@/components/public/PublicFooter'
@@ -251,19 +249,7 @@ function CtaStrip() {
   )
 }
 
-export default async function Home() {
-  try {
-    const db = await createClient()
-    const { data: { user } } = await db.auth.getUser()
-    if (user) {
-      const { data: profile } = await db.from('profiles').select('role').eq('id', user.id).single()
-      if (profile?.role === 'admin') redirect('/admin')
-      if (profile?.role === 'professional') redirect('/dashboard')
-      // Unknown role — fall through and show landing page
-    }
-  } catch {
-    // Auth unavailable — show landing page
-  }
+export default function Home() {
 
   const orgSchema = {
     '@context': 'https://schema.org',

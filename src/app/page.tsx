@@ -252,12 +252,17 @@ function CtaStrip() {
 }
 
 export default async function Home() {
-  const db = await createClient()
-  const { data: { user } } = await db.auth.getUser()
-  if (user) {
-    const { data: profile } = await db.from('profiles').select('role').eq('id', user.id).single()
-    if (profile?.role === 'admin') redirect('/admin')
-    redirect('/dashboard')
+  try {
+    const db = await createClient()
+    const { data: { user } } = await db.auth.getUser()
+    if (user) {
+      const { data: profile } = await db.from('profiles').select('role').eq('id', user.id).single()
+      if (profile?.role === 'admin') redirect('/admin')
+      if (profile?.role === 'professional') redirect('/dashboard')
+      // Unknown role — fall through and show landing page
+    }
+  } catch {
+    // Auth unavailable — show landing page
   }
 
   const orgSchema = {

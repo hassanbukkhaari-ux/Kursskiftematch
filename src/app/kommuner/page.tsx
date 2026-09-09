@@ -127,48 +127,48 @@ export default function KommunerPage() {
       <PublicNav />
       <main>
 
-        {/* Hero */}
-        <section className="max-w-6xl mx-auto px-5 sm:px-8 pt-12 pb-12 sm:pt-16">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            {/* Text */}
-            <div>
+        {/* Hero — full bleed baggrundsbillede */}
+        <section className="relative min-h-[580px] sm:min-h-[640px] lg:min-h-[700px] flex items-center overflow-hidden">
+          {/* Baggrundsbillede */}
+          <Image
+            src="/images/hero-kommuner.png"
+            alt="To personer i samtale ved en sø i solnedgang"
+            fill
+            className="object-cover object-[center_28%]"
+            priority
+            sizes="100vw"
+          />
+          {/* Gradient-overlay: mørk grøn venstre → transparent højre, + mørkere bund */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0F2218]/90 via-[#1C3829]/60 to-[#1C3829]/10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0F2218]/50 via-transparent to-transparent" />
+
+          {/* Tekst */}
+          <div className="relative max-w-6xl mx-auto px-5 sm:px-8 py-20 sm:py-28 w-full">
+            <div className="max-w-xl">
               <div className="flex items-center gap-2.5 mb-5">
                 <div className="w-5 h-px bg-[#C8993A]" />
                 <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Til kommuner og jobcentre</span>
               </div>
-              <h1 className="font-serif text-4xl sm:text-5xl text-[#1A1F1C] font-normal mb-5 leading-tight tracking-tight">
-                Én henvendelse. Et fagligt begrundet forslag.
+              <h1 className="font-serif text-4xl sm:text-5xl lg:text-[56px] text-white font-normal mb-5 leading-[1.08] tracking-tight">
+                Én henvendelse.<br />Et fagligt begrundet forslag.
               </h1>
-              <p className="text-[17px] text-[#6B7569] leading-relaxed mb-8">
+              <p className="text-[17px] text-white/75 leading-relaxed mb-8 max-w-lg">
                 Kursskifte leverer mentor-, støtte- og kontaktpersonforløb til kommuner og jobcentre i Nordjylland. Visitation og bevilling foretages af kommunen — vi leverer den konkrete indsats.
               </p>
               <div className="flex flex-wrap gap-3">
                 <a
                   href="mailto:info@kursskifte.dk"
-                  className="h-12 px-6 bg-[#1C3829] text-white font-semibold text-sm rounded-xl hover:bg-[#2D5840] transition-colors inline-flex items-center gap-2"
+                  className="h-12 px-6 bg-[#C8993A] text-white font-semibold text-sm rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center gap-2"
                 >
                   Kontakt os <ArrowRight />
                 </a>
                 <Link
                   href="/kontakt"
-                  className="h-12 px-6 border border-[#C8DDD1] text-[#1C3829] font-semibold text-sm rounded-xl hover:bg-[#EEF4F0] transition-colors inline-flex items-center gap-2"
+                  className="h-12 px-6 border border-white/30 text-white font-semibold text-sm rounded-xl hover:bg-white/10 hover:border-white/50 transition-colors inline-flex items-center gap-2"
                 >
                   Se kontaktoplysninger
                 </Link>
               </div>
-            </div>
-
-            {/* Image panel */}
-            <div className="relative h-72 sm:h-96 lg:h-[480px] rounded-3xl overflow-hidden bg-[#1C3829]">
-              <Image
-                src="/images/hero-kommuner.png"
-                alt="To personer i samtale ved en sø i solnedgang — menneskelig kontakt og støtte"
-                fill
-                className="object-cover object-[center_30%]"
-                priority
-                sizes="(max-width: 1024px) 100vw, 50vw"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#1C3829]/40 via-transparent to-transparent" />
             </div>
           </div>
         </section>

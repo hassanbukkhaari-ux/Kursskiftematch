@@ -48,8 +48,15 @@ CREATE INDEX IF NOT EXISTS idx_case_proposals_case_id
 ALTER TABLE public.case_proposals ENABLE ROW LEVEL SECURITY;
 
 -- Admin has full access; no municipality-facing RLS needed (they use public token endpoints)
-CREATE POLICY "case_proposals_admin_all" ON public.case_proposals
-  FOR ALL USING (is_admin()) WITH CHECK (is_admin());
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE tablename = 'case_proposals' AND policyname = 'case_proposals_admin_all'
+  ) THEN
+    CREATE POLICY "case_proposals_admin_all" ON public.case_proposals
+      FOR ALL USING (is_admin()) WITH CHECK (is_admin());
+  END IF;
+END $$;
 
 -- ── 5. Extend notification_type CHECK constraint ─────────────────────────────
 ALTER TABLE public.notification_log DROP CONSTRAINT IF EXISTS valid_notification_type;

@@ -42,12 +42,12 @@ function Hero() {
         src="/images/hero-home.jpg.jpg"
         alt="To unge mennesker i samtale ved en sø i solnedgang"
         fill
-        className="object-cover object-center"
+        className="object-cover object-[60%_center]"
         priority
         sizes="100vw"
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-[#0F2218]/85 via-[#1C3829]/55 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#0F2218]/40 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-[#0F2218]/80 via-[#1C3829]/30 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#0F2218]/30 via-transparent to-transparent" />
       <div className="relative max-w-6xl mx-auto px-5 sm:px-8 py-24 sm:py-32 w-full">
         <div className="max-w-xl">
           <div className="flex items-center gap-2.5 mb-5">

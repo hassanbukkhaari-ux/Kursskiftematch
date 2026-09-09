@@ -33,9 +33,9 @@ function CheckIcon() {
 }
 
 const PROFILE_STEPS = [
-  { n: '01', title: 'Opret profil', body: 'Udfyld profil med baggrund, uddannelse, erfaring og kompetencer. Upload dokumentation.' },
-  { n: '02', title: 'Kvalitetssikring', body: 'Kursskifte gennemgår din profil og verificerer dokumenter, certifikater og straffeattest.' },
-  { n: '03', title: 'Angiv kapacitet', body: 'Du angiver din tilgængelighed, timer pr. uge og de aldersgrupper du arbejder med.' },
+  { n: '01', title: 'Tag kontakt', body: 'Send en e-mail til fagpersoner@kursskifte.dk med din baggrund og interesse i at blive kontaktperson.' },
+  { n: '02', title: 'Gennemgang', body: 'Kursskifte gennemgår din ansøgning og verificerer dokumenter og attester. Vi vender typisk tilbage inden for 3–5 arbejdsdage.' },
+  { n: '03', title: 'Profiloprettelse', body: 'Du modtager et link til at oprette og udfylde din profil med kompetencer, kapacitet og tilgængelighed.' },
   { n: '04', title: 'Matching', body: 'Kursskiftes platform matcher dig med relevante sager baseret på dine kompetencer og kapacitet.' },
 ]
 
@@ -56,12 +56,12 @@ export default function KontaktpersonerPage() {
           <p className="text-[17px] text-[#6B7569] leading-relaxed max-w-xl mb-8">
             Vi søger uddannede fagpersoner til kontaktpersonforløb, støttekontaktpersonordninger og socialpædagogiske indsatser. Din profil verificeres og du tilknyttes relevante forløb i Nordjylland — herunder Aalborg, Hjørring, Brønderslev og Frederikshavn.
           </p>
-          <Link
-            href="/login"
+          <a
+            href="mailto:fagpersoner@kursskifte.dk"
             className="h-12 px-6 bg-[#1C3829] text-white font-semibold text-sm rounded-xl hover:bg-[#2D5840] transition-colors inline-flex items-center gap-2"
           >
-            Opret profil <ArrowRight />
-          </Link>
+            Send ansøgning <ArrowRight />
+          </a>
         </section>
 
         {/* Who can apply */}
@@ -102,6 +102,7 @@ export default function KontaktpersonerPage() {
                       { label: 'Kapacitet', value: 'Du angiver timer og max antal sager' },
                       { label: 'Geografi', value: 'Kommuner og områder du dækker' },
                       { label: 'Specialer', value: 'Fx vold, misbrug, kriminalitet, psykiatri' },
+                      { label: 'Honorar', value: 'Oplyses under godkendelsesprocessen' },
                     ].map(row => (
                       <div key={row.label} className="flex gap-3 py-2.5 border-b border-white/10 last:border-0">
                         <span className="text-xs font-semibold text-white/50 w-24 shrink-0">{row.label}</span>
@@ -159,15 +160,15 @@ export default function KontaktpersonerPage() {
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-16">
             <div className="bg-[#1C3829] rounded-2xl p-8 sm:p-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
               <div>
-                <h2 className="font-serif text-2xl sm:text-3xl text-white font-normal mb-2">Klar til at oprette profil?</h2>
-                <p className="text-sm text-white/65">Log ind og opret din profil — vi gennemgår den og vender tilbage.</p>
+                <h2 className="font-serif text-2xl sm:text-3xl text-white font-normal mb-2">Klar til at sende en ansøgning?</h2>
+                <p className="text-sm text-white/65">Send os en e-mail — vi gennemgår din ansøgning og vender typisk tilbage inden for 3–5 arbejdsdage.</p>
               </div>
-              <Link
-                href="/login"
+              <a
+                href="mailto:fagpersoner@kursskifte.dk"
                 className="shrink-0 h-11 px-6 bg-[#C8993A] text-white text-sm font-semibold rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center gap-2"
               >
-                Opret profil <ArrowRight />
-              </Link>
+                Send ansøgning <ArrowRight />
+              </a>
             </div>
           </div>
         </section>

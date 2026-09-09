@@ -23,10 +23,41 @@ export const metadata: Metadata = {
   },
 }
 
+const localBusinessSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'LocalBusiness',
+  name: 'Kursskifte ApS',
+  url: 'https://kursskifte.dk',
+  email: 'info@kursskifte.dk',
+  description:
+    'Kursskifte forbinder kommuner i Nordjylland med kvalitetssikrede kontaktpersoner til §32 og §85-forløb — socialpædagogisk støtte, bostøtte og relationsbaseret indsats.',
+  areaServed: [
+    { '@type': 'City', name: 'Aalborg' },
+    { '@type': 'City', name: 'Hjørring' },
+    { '@type': 'City', name: 'Brønderslev' },
+    { '@type': 'City', name: 'Frederikshavn' },
+  ],
+  address: {
+    '@type': 'PostalAddress',
+    addressRegion: 'Nordjylland',
+    addressCountry: 'DK',
+  },
+  serviceArea: {
+    '@type': 'AdministrativeArea',
+    name: 'Nordjylland',
+  },
+}
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="da">
-      <body>{children}</body>
+      <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+        />
+        {children}
+      </body>
     </html>
   )
 }

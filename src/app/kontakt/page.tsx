@@ -4,7 +4,7 @@ import PublicNav from '@/components/public/PublicNav'
 import PublicFooter from '@/components/public/PublicFooter'
 
 export const metadata: Metadata = {
-  title: 'Kontakt | Kursskifte',
+  title: 'Kontakt Kursskifte | §32 og §85-forløb i Nordjylland',
   description:
     'Kontakt Kursskifte om kontaktpersonforløb, sagsindsendelse eller spørgsmål. Vi betjener kommuner i Nordjylland — Aalborg, Hjørring, Brønderslev og Frederikshavn. Svar inden for 1 arbejdsdag.',
   alternates: { canonical: '/kontakt' },
@@ -136,7 +136,7 @@ export default function KontaktPage() {
                 <div>
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-2">Virksomhed</div>
                   <p className="text-sm text-[#1A1F1C] font-semibold">Kursskifte ApS</p>
-                  <p className="text-xs text-[#6B7569] mt-1">CVR: —</p>
+                  <p className="text-xs text-[#6B7569] mt-1">Nordjylland, Danmark</p>
                 </div>
                 <div>
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-2">Generel henvendelse</div>

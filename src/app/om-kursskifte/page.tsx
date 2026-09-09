@@ -6,7 +6,7 @@ import PublicFooter from '@/components/public/PublicFooter'
 export const metadata: Metadata = {
   title: 'Om Kursskifte | Kontaktpersonforløb i Nordjylland',
   description:
-    'Kursskifte er en nordjysk platform der forbinder kommuner med kvalitetssikrede fagpersoner til kontaktpersonforløb og socialfaglige indsatser. Vi varetager matching, dokumentation og opfølgning — so kommunen kan fokusere på borgeren.',
+    'Kursskifte er en nordjysk platform der forbinder kommuner med kvalitetssikrede fagpersoner til kontaktpersonforløb og socialfaglige indsatser. Vi varetager matching, dokumentation og opfølgning — så kommunen kan fokusere på borgeren.',
   alternates: { canonical: '/om-kursskifte' },
   openGraph: {
     title: 'Om Kursskifte | Kontaktpersonforløb i Nordjylland',
@@ -106,20 +106,56 @@ export default function OmKursskiftePage() {
           </div>
         </section>
 
+        {/* Who we are */}
+        <section className="bg-white border-y border-[#E0DAD0]">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-16">
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="w-5 h-px bg-[#C8993A]" />
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Hvem er vi</span>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+              <div>
+                <h2 className="font-serif text-3xl text-[#1A1F1C] font-normal mb-4">
+                  Grundlagt i Nordjylland — tæt på de kommuner vi betjener
+                </h2>
+                <p className="text-sm text-[#6B7569] leading-relaxed mb-4">
+                  Kursskifte er grundlagt af fagfolk med baggrund i det sociale område. Vi ved hvad der kræves for at finde de rette kontaktpersoner til borgere i mistrivsel — og vi har bygget en platform der gør processen enkel, dokumenteret og fagligt forsvarlig.
+                </p>
+                <p className="text-sm text-[#6B7569] leading-relaxed">
+                  Vi arbejder tæt med kommunale sagsbehandlere og fagpersoner i Nordjylland for at sikre at hvert match er begrundet — ikke tilfældigt.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { label: 'Nordjylland', desc: 'Vi betjener kommuner i Nordjylland — Aalborg, Hjørring, Brønderslev og Frederikshavn.' },
+                  { label: '§32 og §85', desc: 'Vi er specialiserede i kontaktpersonforløb under barnets lov og serviceloven.' },
+                  { label: 'Invite-only netværk', desc: 'Alle fagpersoner i vores netværk er manuelt gennemgået og godkendt af Kursskifte.' },
+                  { label: 'Én samlet løsning', desc: 'Fra første henvendelse til forløbets afslutning — vi varetager koordinationen.' },
+                ].map(item => (
+                  <div key={item.label} className="bg-[#F6F3EE] rounded-2xl p-5">
+                    <h3 className="font-semibold text-sm text-[#1A1F1C] mb-1.5">{item.label}</h3>
+                    <p className="text-xs text-[#6B7569] leading-relaxed">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* CTA */}
         <section className="bg-[#EDE9E1] border-t border-[#E0DAD0]">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-12">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
               <div>
                 <h2 className="font-serif text-2xl text-[#1A1F1C] font-normal mb-1">Kom i kontakt med os</h2>
-                <p className="text-sm text-[#6B7569]">Vi besvarer henvendelser hurtigt og fagligt.</p>
+                <p className="text-sm text-[#6B7569]">Vi besvarer henvendelser fra kommuner og fagpersoner hurtigt og fagligt.</p>
               </div>
               <div className="flex flex-wrap gap-3">
                 <Link href="/kontakt" className="h-10 px-5 bg-[#1C3829] text-white text-sm font-semibold rounded-xl hover:bg-[#2D5840] transition-colors inline-flex items-center gap-2">
                   Kontakt os <ArrowRight />
                 </Link>
-                <Link href="/kontakt" className="h-10 px-5 border border-[#1C3829] text-[#1C3829] text-sm font-semibold rounded-xl hover:bg-[#EEF4F0] transition-colors inline-flex items-center gap-2">
-                  Indsend sag
+                <Link href="/kommuner" className="h-10 px-5 border border-[#1C3829] text-[#1C3829] text-sm font-semibold rounded-xl hover:bg-[#EEF4F0] transition-colors inline-flex items-center gap-2">
+                  Se processen <ArrowRight />
                 </Link>
               </div>
             </div>

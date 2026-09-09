@@ -183,8 +183,8 @@ export default async function IndsightPage({
                 <Link href="/kontakt" className="h-10 px-5 bg-[#1C3829] text-white text-sm font-semibold rounded-xl hover:bg-[#2D5840] transition-colors inline-flex items-center gap-2">
                   Indsend sag <ArrowRight />
                 </Link>
-                <Link href="/kontakt" className="h-10 px-5 border border-[#1C3829] text-[#1C3829] text-sm font-semibold rounded-xl hover:bg-[#EEF4F0] transition-colors inline-flex items-center">
-                  Kontakt os
+                <Link href="/kommuner" className="h-10 px-5 border border-[#1C3829] text-[#1C3829] text-sm font-semibold rounded-xl hover:bg-[#EEF4F0] transition-colors inline-flex items-center gap-2">
+                  Se processen <ArrowRight />
                 </Link>
               </div>
             </div>

@@ -112,10 +112,10 @@ function AudiencePaths() {
           </div>
           <div className="flex flex-wrap items-center gap-4">
             <Link
-              href="/login"
+              href="/kontaktpersoner"
               className="h-10 px-5 bg-[#1C3829] text-white text-sm font-semibold rounded-xl hover:bg-[#2D5840] transition-colors inline-flex items-center gap-2"
             >
-              Opret profil <ArrowRight />
+              Bliv kontaktperson <ArrowRight />
             </Link>
             <Link href="/kontaktpersoner" className="text-sm text-[#6B7569] hover:text-[#1C3829] transition-colors">
               Læs om processen →

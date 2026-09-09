@@ -57,7 +57,7 @@ export default function KontaktpersonerPage() {
             Vi søger uddannede fagpersoner til kontaktpersonforløb, støttekontaktpersonordninger og socialpædagogiske indsatser. Din profil verificeres og du tilknyttes relevante forløb i Nordjylland — herunder Aalborg, Hjørring, Brønderslev og Frederikshavn.
           </p>
           <a
-            href="mailto:fagpersoner@kursskifte.dk"
+            href="mailto:info@kursskifte.dk"
             className="h-12 px-6 bg-[#1C3829] text-white font-semibold text-sm rounded-xl hover:bg-[#2D5840] transition-colors inline-flex items-center gap-2"
           >
             Send ansøgning <ArrowRight />
@@ -164,7 +164,7 @@ export default function KontaktpersonerPage() {
                 <p className="text-sm text-white/65">Send os en e-mail — vi gennemgår din ansøgning og vender typisk tilbage inden for 3–5 arbejdsdage.</p>
               </div>
               <a
-                href="mailto:fagpersoner@kursskifte.dk"
+                href="mailto:info@kursskifte.dk"
                 className="shrink-0 h-11 px-6 bg-[#C8993A] text-white text-sm font-semibold rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center gap-2"
               >
                 Send ansøgning <ArrowRight />

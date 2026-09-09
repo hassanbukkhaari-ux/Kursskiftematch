@@ -22,6 +22,7 @@ const orgContactSchema = {
   name: 'Kursskifte ApS',
   url: 'https://kursskifte.dk',
   email: 'info@kursskifte.dk',
+  telephone: '+4571420376',
   areaServed: [
     { '@type': 'City', name: 'Aalborg' },
     { '@type': 'City', name: 'Hjørring' },
@@ -115,7 +116,7 @@ export default function KontaktPage() {
               <div className="space-y-0">
                 <div className="py-2.5 border-b border-[#E0DAD0]">
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-0.5">E-mail</div>
-                  <a href="mailto:fagpersoner@kursskifte.dk" className="text-sm text-[#1A1F1C] hover:text-[#1C3829] transition-colors">fagpersoner@kursskifte.dk</a>
+                  <a href="mailto:info@kursskifte.dk" className="text-sm text-[#1A1F1C] hover:text-[#1C3829] transition-colors">info@kursskifte.dk</a>
                 </div>
                 <div className="py-2.5">
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-0.5">Responstid</div>
@@ -139,7 +140,11 @@ export default function KontaktPage() {
                   <p className="text-xs text-[#6B7569] mt-1">Nordjylland, Danmark</p>
                 </div>
                 <div>
-                  <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-2">Generel henvendelse</div>
+                  <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-2">Telefon</div>
+                  <a href="tel:+4571420376" className="text-sm text-[#1A1F1C] hover:text-[#1C3829] transition-colors">71 42 03 76</a>
+                </div>
+                <div>
+                  <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-2">E-mail</div>
                   <a href="mailto:info@kursskifte.dk" className="text-sm text-[#1A1F1C] hover:text-[#1C3829] transition-colors">info@kursskifte.dk</a>
                 </div>
                 <div>

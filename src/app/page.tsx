@@ -172,28 +172,40 @@ function ProcessSection() {
           </Link>
         </div>
 
-        {/* Step rows — top 3, bottom 2 centred */}
         <div className="space-y-4">
+          {/* Række 1: trin 1–3 */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {STEPS.slice(0, 3).map((step, i) => (
-              <div key={step.n} className="relative bg-[#F6F3EE] rounded-2xl p-6">
-                {i < 2 && (
-                  <div className="hidden sm:block absolute top-8 -right-2 w-4 h-px bg-[#C8993A]/40 z-10" />
-                )}
-                <div className="font-serif text-3xl text-[#C8993A] mb-3 leading-none">{step.n}</div>
-                <h3 className="font-semibold text-[15px] text-[#1A1F1C] mb-2 leading-snug">{step.title}</h3>
-                <p className="text-sm text-[#6B7569] leading-relaxed">{step.body}</p>
+            {STEPS.slice(0, 3).map(step => (
+              <div key={step.n} className="bg-[#F6F3EE] rounded-2xl p-6 flex flex-col gap-3">
+                <div className="font-serif text-3xl text-[#C8993A] leading-none">{step.n}</div>
+                <h3 className="font-semibold text-base text-[#1A1F1C] leading-snug">{step.title}</h3>
+                <p className="text-sm text-[#3A3F3C] leading-relaxed">{step.body}</p>
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:max-w-[66%]">
-            {STEPS.slice(3).map((step) => (
-              <div key={step.n} className="bg-[#F6F3EE] rounded-2xl p-6">
-                <div className="font-serif text-3xl text-[#C8993A] mb-3 leading-none">{step.n}</div>
-                <h3 className="font-semibold text-[15px] text-[#1A1F1C] mb-2 leading-snug">{step.title}</h3>
-                <p className="text-sm text-[#6B7569] leading-relaxed">{step.body}</p>
+          {/* Række 2: trin 4–5 + CTA-kort */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {STEPS.slice(3).map(step => (
+              <div key={step.n} className="bg-[#F6F3EE] rounded-2xl p-6 flex flex-col gap-3">
+                <div className="font-serif text-3xl text-[#C8993A] leading-none">{step.n}</div>
+                <h3 className="font-semibold text-base text-[#1A1F1C] leading-snug">{step.title}</h3>
+                <p className="text-sm text-[#3A3F3C] leading-relaxed">{step.body}</p>
               </div>
             ))}
+            {/* CTA-kort fylder det ledige hjørne */}
+            <div className="bg-[#1C3829] rounded-2xl p-6 flex flex-col justify-between gap-6">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-3">Klar til at starte?</p>
+                <p className="text-white font-serif text-lg leading-snug">Én e-mail er alt der skal til.</p>
+              </div>
+              <div className="flex flex-col gap-2">
+                <a href="mailto:info@kursskifte.dk" className="text-sm text-white/70 hover:text-white transition-colors">info@kursskifte.dk</a>
+                <a href="tel:+4571420376" className="text-sm text-white/70 hover:text-white transition-colors">71 42 03 76</a>
+                <Link href="/kontakt" className="mt-2 h-9 px-4 bg-[#C8993A] text-white text-sm font-semibold rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center gap-1.5 self-start">
+                  Kontakt os <ArrowRight />
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </div>

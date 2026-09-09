@@ -95,11 +95,9 @@ function ArrowRight() {
 
 export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const [article, category] = await Promise.all([
-    getArticle(slug),
-    getArticle(slug).then(a => a ? getCategory(a.category) : null),
-  ])
+  const article = await getArticle(slug)
   if (!article) notFound()
+  const category = await getCategory(article.category)
 
   const related = await getRelated(article.category, slug)
 

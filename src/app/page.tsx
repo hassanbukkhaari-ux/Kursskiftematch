@@ -59,7 +59,7 @@ function Hero() {
           <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Kursskifte</span>
         </div>
         <h1 className="font-serif text-[2rem] sm:text-5xl lg:text-[56px] leading-[1.1] text-white font-normal max-w-xl mb-4 sm:mb-5 tracking-tight">
-          Kvalitetssikrede kontaktpersoner til kommunernes borgere
+          Kvalitetssikrede kontaktpersoner til udsatte borgere
         </h1>
         <p className="text-[15px] sm:text-[17px] text-white/80 leading-relaxed max-w-lg mb-7 sm:mb-8">
           Vi leverer mentor-, støtte- og kontaktpersonforløb til kommuner og jobcentre i Nordjylland. Én henvendelse — Kursskifte varetager match, opstart og opfølgning.

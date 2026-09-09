@@ -75,7 +75,8 @@ END $$;
 
 -- 3. Update v_professionals_available:
 --    Exclude professionals currently in vacation/pause AND with future available_from_date
-CREATE OR REPLACE VIEW public.v_professionals_available AS
+DROP VIEW IF EXISTS public.v_professionals_available CASCADE;
+CREATE VIEW public.v_professionals_available AS
 SELECT
   p.id,
   p.profession,

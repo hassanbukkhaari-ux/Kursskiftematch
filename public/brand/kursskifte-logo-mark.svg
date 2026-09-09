@@ -1,17 +1,80 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
-  <!-- White background -->
+  <defs>
+    <path id="n" d="M 42,200 A 158,158 0 0 0 358,200"/>
+  </defs>
+
   <rect width="400" height="400" fill="#F6F3EE"/>
-  <!-- Compass mark centered -->
-  <g transform="translate(200,200)">
-    <circle r="120" fill="none" stroke="#1C3829" stroke-width="3.8"/>
-    <line x1="0" y1="-120" x2="0" y2="-103" stroke="#1C3829" stroke-width="3.8"/>
-    <line x1="120" y1="0" x2="103" y2="0" stroke="#1C3829" stroke-width="3.8"/>
-    <line x1="0" y1="120" x2="0" y2="103" stroke="#1C3829" stroke-width="3.8"/>
-    <line x1="-120" y1="0" x2="-103" y2="0" stroke="#1C3829" stroke-width="3.8"/>
-    <g transform="rotate(35)">
-      <polygon points="0,-90 18,0 -18,0" fill="#C8993A"/>
-      <polygon points="0,78 18,0 -18,0" fill="#1C3829" opacity="0.2"/>
-    </g>
-    <circle r="7.8" fill="#1C3829"/>
+
+  <!-- Outer ring -->
+  <circle cx="200" cy="200" r="175" fill="none" stroke="#1C3829" stroke-width="1.6"/>
+
+  <!-- Tick marks every 10° — cardinals, mediums, minors -->
+  <line x1="200" y1="25" x2="200" y2="33" stroke="#1C3829" stroke-width="2.0"/>
+  <line x1="200" y1="25" x2="200" y2="28" stroke="#6B7569" stroke-width="0.7" transform="rotate(10 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="28" stroke="#6B7569" stroke-width="0.7" transform="rotate(20 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="30" stroke="#1C3829" stroke-width="1.0" transform="rotate(30 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="28" stroke="#6B7569" stroke-width="0.7" transform="rotate(40 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="28" stroke="#6B7569" stroke-width="0.7" transform="rotate(50 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="30" stroke="#1C3829" stroke-width="1.0" transform="rotate(60 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="28" stroke="#6B7569" stroke-width="0.7" transform="rotate(70 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="28" stroke="#6B7569" stroke-width="0.7" transform="rotate(80 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="33" stroke="#1C3829" stroke-width="2.0" transform="rotate(90 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="28" stroke="#6B7569" stroke-width="0.7" transform="rotate(100 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="28" stroke="#6B7569" stroke-width="0.7" transform="rotate(110 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="30" stroke="#1C3829" stroke-width="1.0" transform="rotate(120 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="28" stroke="#6B7569" stroke-width="0.7" transform="rotate(130 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="28" stroke="#6B7569" stroke-width="0.7" transform="rotate(140 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="30" stroke="#1C3829" stroke-width="1.0" transform="rotate(150 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="28" stroke="#6B7569" stroke-width="0.7" transform="rotate(160 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="28" stroke="#6B7569" stroke-width="0.7" transform="rotate(170 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="33" stroke="#1C3829" stroke-width="2.0" transform="rotate(180 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="28" stroke="#6B7569" stroke-width="0.7" transform="rotate(190 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="28" stroke="#6B7569" stroke-width="0.7" transform="rotate(200 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="30" stroke="#1C3829" stroke-width="1.0" transform="rotate(210 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="28" stroke="#6B7569" stroke-width="0.7" transform="rotate(220 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="28" stroke="#6B7569" stroke-width="0.7" transform="rotate(230 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="30" stroke="#1C3829" stroke-width="1.0" transform="rotate(240 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="28" stroke="#6B7569" stroke-width="0.7" transform="rotate(250 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="28" stroke="#6B7569" stroke-width="0.7" transform="rotate(260 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="33" stroke="#1C3829" stroke-width="2.0" transform="rotate(270 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="28" stroke="#6B7569" stroke-width="0.7" transform="rotate(280 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="28" stroke="#6B7569" stroke-width="0.7" transform="rotate(290 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="30" stroke="#1C3829" stroke-width="1.0" transform="rotate(300 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="28" stroke="#6B7569" stroke-width="0.7" transform="rotate(310 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="28" stroke="#6B7569" stroke-width="0.7" transform="rotate(320 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="30" stroke="#1C3829" stroke-width="1.0" transform="rotate(330 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="28" stroke="#6B7569" stroke-width="0.7" transform="rotate(340 200 200)"/>
+  <line x1="200" y1="25" x2="200" y2="28" stroke="#6B7569" stroke-width="0.7" transform="rotate(350 200 200)"/>
+
+  <!-- "KURSSKIFTE" arcing along the top inside the outer ring -->
+  <text font-family="Georgia, 'Times New Roman', serif" font-size="13" fill="#1C3829" letter-spacing="8">
+    <textPath href="#n" startOffset="50%" text-anchor="middle">KURSSKIFTE</textPath>
+  </text>
+
+  <!-- Inner ring -->
+  <circle cx="200" cy="200" r="140" fill="none" stroke="#E0DAD0" stroke-width="0.8"/>
+
+  <!-- Cardinal letters -->
+  <text x="200" y="92" text-anchor="middle" dominant-baseline="middle"
+    font-family="Georgia, serif" font-size="13" fill="#C8993A">N</text>
+  <text x="200" y="308" text-anchor="middle" dominant-baseline="middle"
+    font-family="Georgia, serif" font-size="11" fill="#6B7569">S</text>
+  <text x="309" y="200" text-anchor="middle" dominant-baseline="middle"
+    font-family="Georgia, serif" font-size="11" fill="#6B7569">E</text>
+  <text x="91" y="200" text-anchor="middle" dominant-baseline="middle"
+    font-family="Georgia, serif" font-size="11" fill="#6B7569">V</text>
+
+  <!-- Bearing — the course being taken -->
+  <text x="200" y="248" text-anchor="middle" dominant-baseline="middle"
+    font-family="'Courier New', monospace" font-size="9" fill="#6B7569" letter-spacing="1.5">035°</text>
+
+  <!-- Compass needle — 35° off north -->
+  <g transform="rotate(35 200 200)">
+    <polygon points="200,112 212,200 188,200" fill="#C8993A"/>
+    <polygon points="200,284 212,200 188,200" fill="#1C3829" opacity="0.18"/>
   </g>
+
+  <!-- Pivot -->
+  <circle cx="200" cy="200" r="8" fill="#1C3829"/>
+  <circle cx="200" cy="200" r="3.5" fill="#F6F3EE"/>
 </svg>

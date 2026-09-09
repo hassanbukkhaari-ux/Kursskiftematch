@@ -51,15 +51,13 @@ ALTER TABLE public.case_proposals ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "case_proposals_admin_all" ON public.case_proposals
   FOR ALL USING (is_admin()) WITH CHECK (is_admin());
 
--- ── 5. New notification types ────────────────────────────────────────────────
-DO $$ BEGIN
-  ALTER TYPE public.notification_type ADD VALUE IF NOT EXISTS 'PROPOSAL_SENT';
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  ALTER TYPE public.notification_type ADD VALUE IF NOT EXISTS 'PROPOSAL_ACCEPTED';
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+-- ── 5. Extend notification_type CHECK constraint ─────────────────────────────
+ALTER TABLE public.notification_log DROP CONSTRAINT IF EXISTS valid_notification_type;
+ALTER TABLE public.notification_log ADD CONSTRAINT valid_notification_type CHECK (notification_type IN (
+  'INQUIRY_RECEIVED', 'PROFESSIONAL_APPLICATION_RECEIVED', 'CASE_CREATED',
+  'SAFEGUARDING_FLAGGED', 'HOURS_SUBMITTED', 'DOCUMENT_ACTION_REQUIRED',
+  'CASE_CLOSED', 'HANDOVER_INITIATED', 'PROPOSAL_DECLINED',
+  'PROPOSAL_SENT', 'PROPOSAL_ACCEPTED'
+));
 
 COMMIT;

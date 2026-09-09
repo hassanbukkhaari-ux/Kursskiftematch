@@ -249,6 +249,12 @@ export default function KommunerPage() {
                 <p className="text-sm text-[#6B7569] leading-relaxed mb-6">
                   Kursskifte leverer den konkrete støtte- og mentorindsats. Visitation, bevilling og myndighedsafgørelse foretages altid af kommunen eller det relevante jobcenter.
                 </p>
+                <div className="bg-[#EEF4F0] border border-[#C8DDD1] rounded-xl p-4 mb-6">
+                  <p className="text-xs text-[#1C3829] font-semibold mb-1">Databehandleraftale (DPA)</p>
+                  <p className="text-xs text-[#3A4F40] leading-relaxed">
+                    Kursskifte behandler personoplysninger som databehandler på vegne af kommunen. En standard databehandleraftale er klar og kan rekvireres ved første henvendelse.
+                  </p>
+                </div>
                 <div className="space-y-3">
                   {[
                     'Matching og faglig anbefaling',
@@ -296,7 +302,7 @@ export default function KommunerPage() {
           <div className="bg-[#1C3829] rounded-2xl p-8 sm:p-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div>
               <h2 className="font-serif text-2xl sm:text-3xl text-white font-normal mb-2">Klar til at tage kontakt?</h2>
-              <p className="text-sm text-white/65">Send en e-mail — vi vender typisk tilbage inden for én arbejdsdag.</p>
+              <p className="text-sm text-white/65">Send en e-mail — vi vender hurtigt tilbage.</p>
             </div>
             <div className="flex flex-col gap-3 items-start shrink-0">
               <a

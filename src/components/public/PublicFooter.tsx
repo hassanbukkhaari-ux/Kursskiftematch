@@ -49,7 +49,7 @@ export default function PublicFooter() {
         </div>
 
         <div className="border-t border-[#E0DAD0] pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <p className="text-xs text-[#6B7569]">© 2025 Kursskifte ApS · CVR: — · kursskifte.dk</p>
+          <p className="text-xs text-[#6B7569]">© 2025 Kursskifte ApS · CVR 46470974 · kursskifte.dk</p>
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-[#15803D]" />
             <span className="text-xs text-[#6B7569]">GDPR-compliant · Data behandles sikkert i Danmark</span>

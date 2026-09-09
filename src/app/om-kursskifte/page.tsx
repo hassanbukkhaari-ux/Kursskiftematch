@@ -119,7 +119,7 @@ export default function OmKursskiftePage() {
                   Grundlagt i Nordjylland — tæt på de kommuner vi betjener
                 </h2>
                 <p className="text-sm text-[#6B7569] leading-relaxed mb-4">
-                  Kursskifte er grundlagt af fagfolk med baggrund i det sociale område. Vi ved hvad der kræves for at finde de rette kontaktpersoner til borgere i mistrivsel — og vi har bygget en platform der gør processen enkel, dokumenteret og fagligt forsvarlig.
+                  Kursskifte er grundlagt af fagfolk med over 10 års samlet erfaring i det sociale arbejde. Vi ved hvad der kræves for at finde de rette kontaktpersoner til borgere i mistrivsel — og vi har bygget en platform der gør processen enkel, dokumenteret og fagligt forsvarlig.
                 </p>
                 <p className="text-sm text-[#6B7569] leading-relaxed">
                   Vi arbejder tæt med kommunale sagsbehandlere og fagpersoner i Nordjylland for at sikre at hvert match er begrundet — ikke tilfældigt.
@@ -127,10 +127,10 @@ export default function OmKursskiftePage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 {[
-                  { label: 'Nordjylland', desc: 'Vi betjener kommuner i Nordjylland — Aalborg, Hjørring, Brønderslev og Frederikshavn.' },
+                  { label: '10+ år', desc: 'Samlet erfaring i det sociale arbejde bag Kursskiftes grundlæggere.' },
                   { label: '§32 og §85', desc: 'Vi er specialiserede i kontaktpersonforløb under barnets lov og serviceloven.' },
                   { label: 'Invite-only netværk', desc: 'Alle fagpersoner i vores netværk er manuelt gennemgået og godkendt af Kursskifte.' },
-                  { label: 'Én samlet løsning', desc: 'Fra første henvendelse til forløbets afslutning — vi varetager koordinationen.' },
+                  { label: 'Nordjylland', desc: 'Vi betjener kommuner i Nordjylland — Aalborg, Hjørring, Brønderslev og Frederikshavn.' },
                 ].map(item => (
                   <div key={item.label} className="bg-[#F6F3EE] rounded-2xl p-5">
                     <h3 className="font-semibold text-sm text-[#1A1F1C] mb-1.5">{item.label}</h3>

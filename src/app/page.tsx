@@ -354,6 +354,16 @@ function CtaStrip() {
 
 export default function Home() {
 
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: FAQ.map(item => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: { '@type': 'Answer', text: item.a },
+    })),
+  }
+
   const orgSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
@@ -378,10 +388,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#F6F3EE]">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <PublicNav />
       <main>
         <Hero />

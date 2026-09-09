@@ -256,24 +256,34 @@ export default function KommunerPage() {
                 para: '§32 barnets lov',
                 title: 'Ung med skolevægring og social isolation',
                 body: 'Teenager der er faldet ud af skolen, har svært ved at fastholde relationer og har brug for en stabil voksen med udgangspunkt i hverdagen. Kontaktpersonen mødes 2–4 gange ugentlig.',
+                wide: false,
               },
               {
                 para: '§85 serviceloven',
                 title: 'Voksen med psykiske udfordringer og behov for daglig struktur',
                 body: 'Borger med angst eller depression der har svært ved at overholde aftaler, passe bolig og klare hverdagens krav. Støtten er praktisk og relationsbaseret — ikke behandling.',
+                wide: false,
               },
               {
                 para: '§32 barnets lov / beskæftigelsesrettet',
                 title: 'Ung i overgang til uddannelse eller praktik',
                 body: 'Ung voksen (17–25 år) der har brug for en mentor til at navigere overgangen fra anbringelse, støttet botilbud eller grundskole til uddannelse, praktik eller job.',
+                wide: false,
               },
               {
                 para: '§85 SEL / beskæftigelsesrettet',
                 title: 'Borger med ADHD og ustabilt fremmøde',
                 body: 'Voksen med opmærksomhedsvanskeligheder der gentagne gange mister fodfæstet på uddannelse eller arbejdsmarkedet. Mentor hjælper med struktur, motivation og opfølgning.',
+                wide: false,
+              },
+              {
+                para: '§32 barnets lov / §85 serviceloven',
+                title: 'Kriminalitetstruet ung eller person der ønsker exit fra bandemiljø',
+                body: 'Ung eller voksen der befinder sig i eller tæt på et kriminelt miljø og har brug for en stabil, troværdig relation uden for det. Kontaktpersonen fungerer som alternativ tilknytning i en sårbar overgangsperiode — koordineret tæt med kommunen og SSP.',
+                wide: true,
               },
             ].map(c => (
-              <div key={c.title} className="bg-white border border-[#E0DAD0] rounded-2xl p-6 flex flex-col gap-3">
+              <div key={c.title} className={`bg-white border border-[#E0DAD0] rounded-2xl p-6 flex flex-col gap-3${c.wide ? ' sm:col-span-2' : ''}`}>
                 <span className="inline-block text-[10px] font-semibold uppercase tracking-wider text-[#C8993A] bg-[#FBF3E1] px-2 py-1 rounded-md self-start">{c.para}</span>
                 <h3 className="font-semibold text-sm text-[#1A1F1C] leading-snug">{c.title}</h3>
                 <p className="text-xs text-[#6B7569] leading-relaxed">{c.body}</p>

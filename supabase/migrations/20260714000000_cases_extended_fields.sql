@@ -15,6 +15,3 @@ ALTER TABLE cases
   ADD COLUMN IF NOT EXISTS transport_needs           TEXT CHECK (transport_needs IN ('JA', 'NEJ')),
   ADD COLUMN IF NOT EXISTS geographical_area         TEXT;
 
-COMMENT ON COLUMN cases.citizen_name IS 'Full name — only visible in authenticated admin/professional portal. Never exposed on public or token pages (GDPR).';
-COMMENT ON COLUMN cases.citizen_dob IS 'Date of birth — authenticated portal only (GDPR).';
-COMMENT ON COLUMN cases.legal_basis IS 'Legal basis: BARNETS_LOV_32 (children 0-17), SEL_76 (youth 18-22 efterværn), SEL_85 (adults 18+), SEL_99 (sociale mødesteder).';

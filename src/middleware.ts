@@ -12,6 +12,7 @@ const PUBLIC_PATHS = [
   '/metode',
   '/om-kursskifte',
   '/kontakt',
+  '/privatlivspolitik',
 ]
 
 export async function middleware(request: NextRequest) {

@@ -19,8 +19,16 @@ export function CompassMark({ size = 32, dark = false }: CompassMarkProps) {
       <line x1="20" y1="37" x2="20" y2="34.4" stroke={stroke} strokeWidth="1.4"/>
       <line x1="3"  y1="20" x2="5.6" y2="20"  stroke={stroke} strokeWidth="1.4"/>
 
-      {/* Needle — 35° off north: the course change */}
-      <g transform="rotate(35, 20, 20)">
+      {/* Needle — rotates continuously, starting at 35° off north */}
+      <g>
+        <animateTransform
+          attributeName="transform"
+          type="rotate"
+          from="35 20 20"
+          to="395 20 20"
+          dur="10s"
+          repeatCount="indefinite"
+        />
         <polygon points="20,7 22.4,20 17.6,20" fill="#C8993A"/>
         <polygon points="20,31 22.4,20 17.6,20" fill={tailFill} opacity="0.2"/>
       </g>

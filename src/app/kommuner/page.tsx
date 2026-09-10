@@ -258,6 +258,11 @@ export default function KommunerPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
               {
+                para: '§32 barnets lov / §85 serviceloven',
+                title: 'Kriminalitetstruet ung eller person der ønsker exit fra bandemiljø',
+                body: 'Ung eller voksen der befinder sig i eller tæt på et kriminelt miljø og har brug for en stabil, troværdig relation uden for det. Kontaktpersonen fungerer som alternativ tilknytning i en sårbar overgangsperiode — koordineret tæt med kommunen og SSP.',
+              },
+              {
                 para: '§32 barnets lov',
                 title: 'Ung med skolevægring og social isolation',
                 body: 'Teenager der er faldet ud af skolen, har svært ved at fastholde relationer og har brug for en stabil voksen med udgangspunkt i hverdagen. Kontaktpersonen mødes 2–4 gange ugentlig.',
@@ -281,11 +286,6 @@ export default function KommunerPage() {
                 para: '§32 barnets lov / §85 serviceloven',
                 title: 'Tosproget borger eller borger med anden etnisk baggrund',
                 body: 'Borger hvor tillid, kommunikation og kulturel forståelse er afgørende for forløbet. Vi matcher på sprogkompetencer og kulturel indsigt — ikke kun faglig profil.',
-              },
-              {
-                para: '§32 barnets lov / §85 serviceloven',
-                title: 'Kriminalitetstruet ung eller person der ønsker exit fra bandemiljø',
-                body: 'Ung eller voksen der befinder sig i eller tæt på et kriminelt miljø og har brug for en stabil, troværdig relation uden for det. Kontaktpersonen fungerer som alternativ tilknytning i en sårbar overgangsperiode — koordineret tæt med kommunen og SSP.',
               },
             ].map(c => (
               <div key={c.title} className="bg-white border border-[#E0DAD0] rounded-2xl p-6 flex flex-col gap-3">

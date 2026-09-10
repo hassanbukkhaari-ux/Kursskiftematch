@@ -6,7 +6,7 @@ import PublicFooter from '@/components/public/PublicFooter'
 export const metadata: Metadata = {
   title: 'Mit kursskifte | Foredrag af Hassan Bukkhaari',
   description:
-    'Hassan Bukkhaari holder foredrag til skoler og SSP om sit eget kursskifte — og om unge han har set stå ved det samme valg. Ærligt. Personligt. Gratis.',
+    'Hassan Bukkhaari holder foredrag til skoler og SSP om sit eget kursskifte — og om unge han har set stå ved det samme valg. Ærligt. Personligt. Kontakt os for pris og tilgængelighed.',
   alternates: { canonical: '/foredrag' },
   openGraph: {
     title: 'Mit kursskifte | Foredrag af Hassan Bukkhaari',
@@ -26,12 +26,12 @@ function ArrowRight() {
 
 const THEMES = [
   {
-    heading: 'Jeg nåede det',
-    body: 'Jeg taler ærligt om hvad jeg har set og levet — miljøer, fællesskaber og det øjeblik hvor det kunne gå begge veje. Ikke fordi det var nemt. Men fordi det er det der betyder noget for unge der sidder og lytter.',
+    heading: 'Vi nåede det',
+    body: 'Vi taler ærligt om hvad vi har set og levet — miljøer, fællesskaber og det øjeblik hvor det kunne gå begge veje. Ikke fordi det var nemt. Men fordi det er det der betyder noget for unge der sidder og lytter.',
   },
   {
     heading: 'Andre nåede det ikke',
-    body: 'Jeg har set det på tæt hold. Folk jeg kendte. Dem der ikke nåede at skifte kurs i tide. Jeg taler om dem med respekt — og om hvad der var anderledes for dem der gjorde.',
+    body: 'Vi har set det på tæt hold. Folk vi kendte. Dem der ikke nåede at skifte kurs i tide. Vi taler om dem med respekt — og om hvad der var anderledes for dem der gjorde.',
   },
   {
     heading: 'Det forkerte fællesskab',
@@ -62,10 +62,10 @@ export default function ForedragPage() {
                 Mit kursskifte.
               </h1>
               <p className="text-[18px] text-[#6B7569] leading-relaxed mb-4 max-w-lg">
-                Det er ikke et firmanavn jeg fandt på. Det er noget jeg har levet. Og noget jeg har set andre leve — og set andre ikke nå.
+                Det er ikke et firmanavn vi fandt på. Det er noget vi har levet. Og noget vi har set andre leve — og set andre ikke nå.
               </p>
               <p className="text-[18px] text-[#6B7569] leading-relaxed mb-10 max-w-lg">
-                Jeg holder foredrag til skoler, gymnasier og SSP om vendepunktet. Ærligt. Fra eget liv.
+                Vi holder foredrag til skoler, gymnasier og SSP om vendepunktet. Ærligt. Fra eget liv.
               </p>
               <Link
                 href="mailto:info@kursskifte.dk?subject=Foredrag – kontakt fra skole/SSP"
@@ -105,7 +105,7 @@ export default function ForedragPage() {
                   </div>
                 </div>
                 <div className="mt-5 pt-5 border-t border-[#E0DAD0]">
-                  <span className="text-xs font-semibold text-[#1C3829] uppercase tracking-wider">Gratis · Ingen forberedelse kræves</span>
+                  <span className="text-xs font-semibold text-[#1C3829] uppercase tracking-wider">Kontakt os for pris og tilgængelighed</span>
                 </div>
               </div>
             </div>
@@ -116,7 +116,7 @@ export default function ForedragPage() {
         <section className="bg-[#1C3829]">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16">
             <blockquote className="font-serif text-2xl sm:text-3xl text-white font-normal leading-snug max-w-2xl">
-              "Jeg er ikke her for at skræmme nogen. Jeg er her fordi jeg har stået der selv — og ved at det gør en forskel at høre det fra én der har."
+              "Vi er ikke her for at skræmme nogen. Vi er her fordi vi har stået der selv — og ved at det gør en forskel at høre det fra nogen der har."
             </blockquote>
             <p className="text-sm text-white/40 mt-5">— Hassan Bukkhaari</p>
           </div>
@@ -153,7 +153,7 @@ export default function ForedragPage() {
                 <p className="text-sm text-[#6B7569] leading-relaxed">
                   Send en mail til{' '}
                   <a href="mailto:info@kursskifte.dk" className="text-[#1C3829] underline underline-offset-2">info@kursskifte.dk</a>{' '}
-                  med skolens eller organisationens navn og et ønsket tidspunkt. Foredraget tilpasses jeres målgruppe og er gratis.
+                  med skolens eller organisationens navn og et ønsket tidspunkt. Vi tilpasser foredraget til jeres målgruppe og vender tilbage med pris og tilgængelighed.
                 </p>
               </div>
               <Link

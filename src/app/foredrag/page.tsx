@@ -106,7 +106,7 @@ export default function ForedragPage() {
             <blockquote className="font-serif text-2xl sm:text-3xl text-white font-normal leading-snug max-w-2xl">
               "Vi er ikke her for at skræmme nogen. Vi er her fordi vi har stået der selv — og ved at det gør en forskel at høre det fra nogen der har."
             </blockquote>
-            <p className="text-sm text-white/40 mt-5">— Hassan Bukkhaari, Kursskifte</p>
+            <p className="text-sm text-white/40 mt-5">— Grundlægger, Kursskifte</p>
           </div>
         </section>
 

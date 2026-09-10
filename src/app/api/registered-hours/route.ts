@@ -3,6 +3,8 @@ import { z } from 'zod'
 import { ok, created, badRequest, forbidden, serverError, withAuth } from '@/lib/api-response'
 import { logAuditEvent } from '@/lib/audit'
 
+const GRACE_PERIOD_DAYS = 7
+
 const CreateHoursSchema = z.object({
   case_id: z.string().uuid(),
   work_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'work_date must be YYYY-MM-DD'),
@@ -54,6 +56,21 @@ export async function POST(request: NextRequest) {
     const { createClient } = await import('@/lib/supabase/server')
     const db = await createClient()
 
+    // 7-day grace period — professionals can only register within the last 7 days
+    if (role !== 'admin') {
+      const workDate = new Date(parsed.data.work_date)
+      const cutoff = new Date()
+      cutoff.setDate(cutoff.getDate() - GRACE_PERIOD_DAYS)
+      if (workDate < cutoff) {
+        return badRequest(`Timer kan kun registreres inden for de seneste ${GRACE_PERIOD_DAYS} dage. Kontakt Kursskifte hvis du har brug for at registrere ældre timer.`)
+      }
+    }
+
+    // DIRECT_SESSION must be linked to a session log
+    if (parsed.data.work_type === 'DIRECT_SESSION' && !parsed.data.session_log_id) {
+      return badRequest('En direkte session skal være knyttet til en sessionslog. Opret logbogen først.')
+    }
+
     // Verify professional is assigned to this case
     if (role !== 'admin') {
       const { data: assignment } = await db
@@ -66,6 +83,19 @@ export async function POST(request: NextRequest) {
 
       if (!assignment) return forbidden()
     }
+
+    // Soft duplicate check — warn if same type on same date for same case already exists
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: existing } = await (db as any)
+      .from('registered_hours')
+      .select('id')
+      .eq('case_id', parsed.data.case_id)
+      .eq('professional_id', userId)
+      .eq('work_date', parsed.data.work_date)
+      .eq('work_type', parsed.data.work_type)
+      .is('archived_at', null)
+      .limit(1)
+    const duplicateWarning = existing && existing.length > 0
 
     const { data, error } = await db
       .from('registered_hours')
@@ -94,6 +124,6 @@ export async function POST(request: NextRequest) {
       metadata: { case_id: parsed.data.case_id, hours: parsed.data.hours, work_type: parsed.data.work_type },
     })
 
-    return created(data)
+    return created({ ...data, warning: duplicateWarning ? 'duplicate_possible' : null })
   })
 }

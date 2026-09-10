@@ -210,8 +210,8 @@ function SidebarNav({
 }
 
 function SidebarUser({
-  userName, roleLabel, defaultInitial,
-}: { userName?: string | null; roleLabel: string; defaultInitial: string }) {
+  userName, roleLabel, defaultInitial, profileImageUrl,
+}: { userName?: string | null; roleLabel: string; defaultInitial: string; profileImageUrl?: string | null }) {
   const router = useRouter()
 
   async function handleLogOut() {
@@ -223,8 +223,11 @@ function SidebarUser({
   return (
     <div className="px-4 py-4 border-t border-white/10 shrink-0 space-y-3">
       <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-full bg-[#2D5840] flex items-center justify-center text-white text-xs font-semibold shrink-0">
-          {userName ? userName.charAt(0).toUpperCase() : defaultInitial}
+        <div className="w-8 h-8 rounded-full bg-[#2D5840] flex items-center justify-center text-white text-xs font-semibold shrink-0 overflow-hidden">
+          {profileImageUrl
+            ? <img src={profileImageUrl} alt="" className="w-full h-full object-cover" />
+            : (userName ? userName.charAt(0).toUpperCase() : defaultInitial)
+          }
         </div>
         <div className="min-w-0">
           <div className="text-white text-sm font-medium truncate">{userName || roleLabel}</div>
@@ -252,11 +255,12 @@ interface DashboardShellProps {
   children: React.ReactNode
   userName?: string | null
   role?: 'admin' | 'professional'
+  profileImageUrl?: string | null
 }
 
 // ── Main component ──────────────────────────────────────────────────────
 
-export function DashboardShell({ children, userName, role = 'admin' }: DashboardShellProps) {
+export function DashboardShell({ children, userName, role = 'admin', profileImageUrl }: DashboardShellProps) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -301,7 +305,7 @@ export function DashboardShell({ children, userName, role = 'admin' }: Dashboard
           </Link>
         </div>
         <SidebarNav nav={nav} pathname={pathname} isRootRoute={isRootRoute} />
-        <SidebarUser userName={userName} roleLabel={roleLabel} defaultInitial={defaultInitial} />
+        <SidebarUser userName={userName} roleLabel={roleLabel} defaultInitial={defaultInitial} profileImageUrl={profileImageUrl} />
       </aside>
 
       {/* ── Mobile / Tablet top bar · < lg ── */}
@@ -373,7 +377,7 @@ export function DashboardShell({ children, userName, role = 'admin' }: Dashboard
         </div>
 
         <SidebarNav nav={nav} pathname={pathname} isRootRoute={isRootRoute} />
-        <SidebarUser userName={userName} roleLabel={roleLabel} defaultInitial={defaultInitial} />
+        <SidebarUser userName={userName} roleLabel={roleLabel} defaultInitial={defaultInitial} profileImageUrl={profileImageUrl} />
       </aside>
 
       {/* ── Main content ── */}

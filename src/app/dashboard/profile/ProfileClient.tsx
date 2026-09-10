@@ -230,6 +230,74 @@ function ChipGrid({
 
 // ── Section: Personlig information ───────────────────────────────────────
 
+function ProfilePhotoUpload({ currentUrl }: { currentUrl?: string | null }) {
+  const router = useRouter()
+  const [, startT] = useTransition()
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [localUrl, setLocalUrl] = useState(currentUrl ?? null)
+  const inputRef = React.useRef<HTMLInputElement>(null)
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true); setError(null)
+    try {
+      const urlRes = await fetch('/api/profile/upload-url', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ document_type: 'PROFILE_IMAGE', file_name: file.name }),
+      })
+      if (!urlRes.ok) { setError('Upload fejlede'); return }
+      const { signed_url, public_url } = await urlRes.json()
+
+      const up = await fetch(signed_url, {
+        method: 'PUT', body: file,
+        headers: { 'Content-Type': file.type || 'image/jpeg' },
+      })
+      if (!up.ok) { setError('Upload fejlede — prøv igen'); return }
+
+      await fetch('/api/profile', {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profile_image_url: public_url }),
+      })
+      setLocalUrl(public_url)
+      startT(() => router.refresh())
+    } catch { setError('Netværksfejl') }
+    finally { setUploading(false); if (inputRef.current) inputRef.current.value = '' }
+  }
+
+  return (
+    <div className="flex flex-col items-center gap-2 py-2">
+      <div className="relative">
+        <div className="w-20 h-20 rounded-full overflow-hidden bg-[#2D5840] flex items-center justify-center">
+          {localUrl
+            ? <img src={localUrl} alt="Profilbillede" className="w-full h-full object-cover" />
+            : <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+          }
+        </div>
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={uploading}
+          className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#1C3829] border-2 border-white flex items-center justify-center hover:bg-[#2D5840] transition-colors disabled:opacity-50"
+          title={uploading ? 'Uploader…' : 'Skift foto'}
+        >
+          {uploading
+            ? <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="animate-spin"><circle cx="8" cy="8" r="6" stroke="white" strokeWidth="2" strokeOpacity="0.3" /><path d="M14 8a6 6 0 0 0-6-6" stroke="white" strokeWidth="2" strokeLinecap="round" /></svg>
+            : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+          }
+        </button>
+      </div>
+      <input ref={inputRef} type="file" className="hidden" accept="image/jpeg,image/png,image/webp" onChange={handleFile} />
+      <p className="text-[10px] text-[#6B7569]">{uploading ? 'Uploader…' : 'Profilbillede'}</p>
+      {error && <p className="text-xs text-red-600">{error}</p>}
+    </div>
+  )
+}
+
 function S1Personal({ pro, profileName, profileEmail }: { pro: Pro | null; profileName: string; profileEmail: string }) {
   const { busy, error, saved, save } = useSave()
   const [f, setF] = useState({
@@ -246,6 +314,7 @@ function S1Personal({ pro, profileName, profileEmail }: { pro: Pro | null; profi
 
   return (
     <div className="space-y-4 mt-4">
+      <ProfilePhotoUpload currentUrl={pro?.profile_image_url} />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Field label="Fulde navn"><Input value={profileName} disabled /></Field>
         <Field label="E-mail"><Input value={profileEmail} disabled /></Field>

@@ -140,7 +140,7 @@ function AudiencePaths() {
 // they commit. 5-step summary answers that question without the full
 // detail that lives on /kommuner. No CTA here — purely informational.
 const STEPS = [
-  { n: '01', title: 'I kontakter os', body: 'Send en e-mail til info@kursskifte.dk eller ring på 71 42 03 76 — ingen åben database at gennemse.' },
+  { n: '01', title: 'I kontakter os', body: 'Send en e-mail til kontakt@kursskifte.dk eller ring på 71 42 03 76 — ingen åben database at gennemse.' },
   { n: '02', title: 'Kursskifte vurderer', body: 'Vi gennemgår kompleksitet, aldersgruppe og kompetencebehov.' },
   { n: '03', title: 'Kursskifte udvælger', body: 'Egnede fagpersoner identificeres og vurderes på kompetencer, kapacitet og tilgængelighed.' },
   { n: '04', title: 'I modtager forslag', body: 'Et dokumenteret forslag med anbefalet kontaktperson og faglig begrundelse.' },
@@ -196,7 +196,7 @@ function ProcessSection() {
                 <p className="text-white font-serif text-lg leading-snug">Én e-mail er alt der skal til.</p>
               </div>
               <div className="flex flex-col gap-2">
-                <a href="mailto:info@kursskifte.dk" className="text-sm text-white/70 hover:text-white transition-colors">info@kursskifte.dk</a>
+                <a href="mailto:kontakt@kursskifte.dk" className="text-sm text-white/70 hover:text-white transition-colors">kontakt@kursskifte.dk</a>
                 <a href="tel:+4571420376" className="text-sm text-white/70 hover:text-white transition-colors">71 42 03 76</a>
                 <Link href="/kontakt" className="mt-2 h-9 px-4 bg-[#C8993A] text-white text-sm font-semibold rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center gap-1.5 self-start">
                   Kontakt os <ArrowRight />
@@ -278,7 +278,7 @@ const FAQ = [
   },
   {
     q: 'Jeg er fagperson — hvordan tilknytter jeg mig?',
-    a: 'Send en e-mail til info@kursskifte.dk med din faglige baggrund og erfaring. Vi gennemgår din profil og vender hurtigt tilbage. Er der et match, aftaler vi et indledende møde.',
+    a: 'Send en e-mail til kontakt@kursskifte.dk med din faglige baggrund og erfaring. Vi gennemgår din profil og vender hurtigt tilbage. Er der et match, aftaler vi et indledende møde.',
   },
 ]
 
@@ -331,7 +331,7 @@ function CtaStrip() {
             </h2>
             <p className="text-sm text-white/55 mb-2">Send en e-mail — vi vender tilbage hurtigst muligt.</p>
             <div className="flex flex-wrap gap-4">
-              <a href="mailto:info@kursskifte.dk" className="text-sm text-white/70 hover:text-white transition-colors">info@kursskifte.dk</a>
+              <a href="mailto:kontakt@kursskifte.dk" className="text-sm text-white/70 hover:text-white transition-colors">kontakt@kursskifte.dk</a>
               <a href="tel:+4571420376" className="text-sm text-white/70 hover:text-white transition-colors">71 42 03 76</a>
             </div>
           </div>
@@ -371,7 +371,7 @@ export default function Home() {
     url: 'https://kursskifte.dk',
     description:
       'Kursskifte forbinder kommuner med kvalitetssikrede kontaktpersoner til §32 og §85-forløb — socialpædagogisk støtte, bostøtte og relationsbaseret indsats til borgere i mistrivsel i Nordjylland.',
-    email: 'info@kursskifte.dk',
+    email: 'kontakt@kursskifte.dk',
     areaServed: [
       { '@type': 'City', name: 'Aalborg' },
       { '@type': 'City', name: 'Hjørring' },

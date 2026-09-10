@@ -21,7 +21,7 @@ const orgContactSchema = {
   '@type': 'Organization',
   name: 'Kursskifte ApS',
   url: 'https://kursskifte.dk',
-  email: 'info@kursskifte.dk',
+  email: 'kontakt@kursskifte.dk',
   telephone: '+4571420376',
   taxID: '46470974',
   areaServed: [
@@ -32,7 +32,7 @@ const orgContactSchema = {
   ],
   contactPoint: {
     '@type': 'ContactPoint',
-    email: 'info@kursskifte.dk',
+    email: 'kontakt@kursskifte.dk',
     telephone: '+4571420376',
     contactType: 'customer service',
     availableLanguage: 'Danish',
@@ -77,13 +77,13 @@ export default function KontaktPage() {
                 <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-3">For kommuner</div>
                 <h2 className="font-serif text-2xl text-white font-normal mb-3">Har du en sag eller et spørgsmål?</h2>
                 <p className="text-sm text-white/65 leading-relaxed">
-                  Send en e-mail til info@kursskifte.dk. Vi afklarer behov, formål, målgruppe, timeantal og forventninger. Ingen åben database — direkte til os.
+                  Send en e-mail til kontakt@kursskifte.dk. Vi afklarer behov, formål, målgruppe, timeantal og forventninger. Ingen åben database — direkte til os.
                 </p>
               </div>
               <div className="space-y-0">
                 <div className="py-2.5 border-b border-white/10">
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-white/40 mb-0.5">E-mail</div>
-                  <a href="mailto:info@kursskifte.dk" className="text-sm text-white hover:text-[#C8993A] transition-colors">info@kursskifte.dk</a>
+                  <a href="mailto:kontakt@kursskifte.dk" className="text-sm text-white hover:text-[#C8993A] transition-colors">kontakt@kursskifte.dk</a>
                 </div>
                 <div className="py-2.5 border-b border-white/10">
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-white/40 mb-0.5">Telefon</div>
@@ -91,7 +91,7 @@ export default function KontaktPage() {
                 </div>
               </div>
               <a
-                href="mailto:info@kursskifte.dk"
+                href="mailto:kontakt@kursskifte.dk"
                 className="mt-auto h-10 px-5 bg-[#C8993A] text-white text-sm font-semibold rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center gap-2 self-start"
               >
                 Send e-mail <ArrowRight />
@@ -110,7 +110,7 @@ export default function KontaktPage() {
               <div className="space-y-0">
                 <div className="py-2.5 border-b border-[#E0DAD0]">
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-0.5">E-mail</div>
-                  <a href="mailto:info@kursskifte.dk" className="text-sm text-[#1A1F1C] hover:text-[#1C3829] transition-colors">info@kursskifte.dk</a>
+                  <a href="mailto:kontakt@kursskifte.dk" className="text-sm text-[#1A1F1C] hover:text-[#1C3829] transition-colors">kontakt@kursskifte.dk</a>
                 </div>
               </div>
               <Link
@@ -135,7 +135,7 @@ export default function KontaktPage() {
                 </div>
                 <div>
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-2">E-mail</div>
-                  <a href="mailto:info@kursskifte.dk" className="text-sm text-[#1A1F1C] hover:text-[#1C3829] transition-colors">info@kursskifte.dk</a>
+                  <a href="mailto:kontakt@kursskifte.dk" className="text-sm text-[#1A1F1C] hover:text-[#1C3829] transition-colors">kontakt@kursskifte.dk</a>
                 </div>
                 <div>
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-2">Område</div>

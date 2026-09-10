@@ -33,7 +33,7 @@ function CheckIcon() {
 }
 
 const PROFILE_STEPS = [
-  { n: '01', title: 'Tag kontakt', body: 'Send en e-mail til info@kursskifte.dk med din baggrund og interesse i at blive kontaktperson.' },
+  { n: '01', title: 'Tag kontakt', body: 'Send en e-mail til kontakt@kursskifte.dk med din baggrund og interesse i at blive kontaktperson.' },
   { n: '02', title: 'Gennemgang', body: 'Kursskifte gennemgår din ansøgning og verificerer dokumenter og attester. Vi vender typisk tilbage inden for 3–5 arbejdsdage.' },
   { n: '03', title: 'Profiloprettelse', body: 'Du modtager et link til at oprette og udfylde din profil med kompetencer, kapacitet og tilgængelighed.' },
   { n: '04', title: 'Matching', body: 'Kursskiftes platform matcher dig med relevante sager baseret på dine kompetencer og kapacitet.' },
@@ -57,7 +57,7 @@ export default function KontaktpersonerPage() {
             Vi søger fagpersoner, studerende på relevante uddannelser og ufaglærte med dokumenteret erfaring til kontaktpersonforløb, støttekontaktpersonordninger og socialpædagogiske indsatser. Din profil verificeres og du tilknyttes relevante forløb i Nordjylland — herunder Aalborg, Hjørring, Brønderslev og Frederikshavn.
           </p>
           <a
-            href="mailto:info@kursskifte.dk"
+            href="mailto:kontakt@kursskifte.dk"
             className="h-12 px-6 bg-[#1C3829] text-white font-semibold text-sm rounded-xl hover:bg-[#2D5840] transition-colors inline-flex items-center gap-2"
           >
             Send ansøgning <ArrowRight />
@@ -164,7 +164,7 @@ export default function KontaktpersonerPage() {
                 <p className="text-sm text-white/65">Send os en e-mail — vi gennemgår din ansøgning og vender typisk tilbage inden for 3–5 arbejdsdage.</p>
               </div>
               <a
-                href="mailto:info@kursskifte.dk"
+                href="mailto:kontakt@kursskifte.dk"
                 className="shrink-0 h-11 px-6 bg-[#C8993A] text-white text-sm font-semibold rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center gap-2"
               >
                 Send ansøgning <ArrowRight />

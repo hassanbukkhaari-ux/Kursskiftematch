@@ -54,7 +54,7 @@ export async function sendNotification(params: SendNotificationParams): Promise<
   try {
     const resend = new Resend(process.env.RESEND_API_KEY)
     await resend.emails.send({
-      from: 'Kursskiftematch <noreply@kursskiftematch.dk>',
+      from: 'Kursskifte <noreply@kursskifte.dk>',
       to: email,
       subject,
       text: body,

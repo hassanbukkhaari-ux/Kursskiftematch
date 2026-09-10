@@ -27,19 +27,19 @@ function ArrowRight() {
 const THEMES = [
   {
     heading: 'Vi nåede det',
-    body: 'Vi taler ærligt om hvad vi har set og levet — miljøer, fællesskaber og det øjeblik hvor det kunne gå begge veje. Ikke fordi det var nemt. Men fordi det er det der betyder noget for unge der sidder og lytter.',
+    body: 'Vi taler ærligt om hvad vi har set og levet — det øjeblik hvor det kunne gå begge veje. Ikke fordi det var nemt, men fordi det er det der rammer.',
   },
   {
     heading: 'Andre nåede det ikke',
-    body: 'Vi har set det på tæt hold. Folk vi kendte. Dem der ikke nåede at skifte kurs i tide. Vi taler om dem med respekt — og om hvad der var anderledes for dem der gjorde.',
+    body: 'Vi har set det på tæt hold. Folk vi kendte. Vi taler om dem med respekt — og om hvad der var anderledes for dem der nåede det.',
   },
   {
     heading: 'Det forkerte fællesskab',
-    body: 'Man ender der ikke fordi man er dum eller ond. Man ender der fordi det er det fællesskab der er tilgængeligt. Det er vigtigt at forstå — og vigtigt at sige højt.',
+    body: 'Man ender der ikke fordi man er dum. Man ender der fordi det er det fællesskab der er tilgængeligt. Det er vigtigt at sige højt.',
   },
   {
     heading: 'Inden det er for sent',
-    body: 'Det er det sværeste at sige til én der tror han har tid. Foredraget slutter ikke med en liste over konsekvenser. Det slutter med at det faktisk er muligt — og at nogen tror på det.',
+    body: 'Det er det sværeste at sige til én der tror der er tid. Foredraget slutter ikke med konsekvenser. Det slutter med muligheder.',
   },
 ]
 
@@ -87,25 +87,13 @@ export default function ForedragPage() {
                     <div className="text-xs text-[#C8993A] font-medium uppercase tracking-wide mt-0.5">Grundlægger · Kursskifte</div>
                   </div>
                 </div>
-                <p className="text-sm text-[#6B7569] leading-relaxed mb-6">
-                  Kursskifte kom til som en forlængelse af det vi selv oplevede — og det vi har set i andres liv. I dag arbejder vi med at give unge og voksne i mistrivsel den støtte der kan gøre en forskel.
+                <p className="text-sm text-[#6B7569] leading-relaxed">
+                  Kursskifte kom til som en forlængelse af det vi selv oplevede — og det vi har set i andres liv. Vi holder foredrag til folkeskoler, gymnasier, SSP og kommunale forebyggelsesindsatser.
                 </p>
-                <div className="space-y-2 text-sm text-[#6B7569]">
-                  <div className="flex items-center gap-2">
-                    <div className="w-1 h-1 rounded-full bg-[#C8993A] flex-shrink-0" />
-                    Folkeskoler og gymnasier
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-1 h-1 rounded-full bg-[#C8993A] flex-shrink-0" />
-                    SSP-samarbejder
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-1 h-1 rounded-full bg-[#C8993A] flex-shrink-0" />
-                    Kommunale forebyggelsesindsatser
-                  </div>
-                </div>
                 <div className="mt-5 pt-5 border-t border-[#E0DAD0]">
-                  <span className="text-xs font-semibold text-[#1C3829] uppercase tracking-wider">Kontakt os for pris og tilgængelighed</span>
+                  <a href="mailto:info@kursskifte.dk?subject=Foredrag – kontakt fra skole/SSP" className="text-sm text-[#6B7569] hover:text-[#1C3829] transition-colors">
+                    Skriv til os for pris og tilgængelighed →
+                  </a>
                 </div>
               </div>
             </div>

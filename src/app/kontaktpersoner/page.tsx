@@ -98,7 +98,7 @@ export default function KontaktpersonerPage() {
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-3">Hvad du kan tilbyde</div>
                   <div className="space-y-0">
                     {[
-                      { label: 'Målgrupper', value: 'Børn/unge (0–18) eller voksne (18+)' },
+                      { label: 'Målgrupper', value: 'Børn/unge (6–18) eller voksne (18+)' },
                       { label: 'Kapacitet', value: 'Du angiver timer og max antal sager' },
                       { label: 'Geografi', value: 'Kommuner og områder du dækker' },
                       { label: 'Specialer', value: 'Fx vold, misbrug, kriminalitet, psykiatri' },

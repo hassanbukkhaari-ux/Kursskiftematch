@@ -100,6 +100,34 @@ export async function PATCH(
       })
     }
 
+    if (action === 'APPROVE' || action === 'REJECT') {
+      const { data: profile } = await db
+        .from('profiles')
+        .select('email')
+        .eq('id', data.professional_id)
+        .single()
+
+      if (profile?.email) {
+        const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://kursskifte.dk'
+        const label = action === 'APPROVE' ? 'godkendt' : 'afvist'
+        const subject = action === 'APPROVE'
+          ? 'Dine timer er godkendt — Kursskifte'
+          : 'Dine timer er afvist — Kursskifte'
+        const noteText = parsed.data.review_note ? `\n\nBemærkning fra administrator:\n${parsed.data.review_note}` : ''
+        const body = `Dine registrerede timer er blevet ${label}.${noteText}\n\nSe dine timer:\n${base}/dashboard/hours`
+        await sendNotification({
+          db,
+          notification_type: action === 'APPROVE' ? 'HOURS_SUBMITTED' : 'HOURS_SUBMITTED',
+          related_entity_type: 'registered_hours',
+          related_entity_id: id,
+          recipient_profile_id: data.professional_id,
+          recipient_email: profile.email,
+          subject,
+          body,
+        })
+      }
+    }
+
     return ok(data)
   })
 }

@@ -100,7 +100,7 @@ export function adminEmailBody(type: NotificationType, entityId: string): { subj
     },
     SAFEGUARDING_FLAGGED: {
       subject: 'VIGTIGT: Bekymring om borgerens sikkerhed — Kursskifte',
-      body: `En sessionlog har udløst en sikkerhedsflag.\n\nSessionlog-ID: ${entityId}\n\nHandl straks:\n${base}/admin/indsigt/${entityId}`,
+      body: `En sessionlog har udløst en sikkerhedsflag.\n\nSessionlog-ID: ${entityId}\n\nHandl straks:\n${base}/admin/session-logs/${entityId}`,
     },
     HOURS_SUBMITTED: {
       subject: 'Timer indsendt til godkendelse — Kursskifte',

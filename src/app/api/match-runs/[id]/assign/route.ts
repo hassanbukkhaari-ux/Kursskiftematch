@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { ok, badRequest, notFound, serverError, withAdminAuth } from '@/lib/api-response'
 import { logAuditEvent } from '@/lib/audit'
+import { sendNotification } from '@/lib/notifications/service'
 
 const AssignSchema = z.object({
   professional_id: z.string().uuid(),
@@ -100,6 +101,26 @@ export async function POST(
         match_score: candidate.overall_score,
       },
     })
+
+    const { data: profile } = await db
+      .from('profiles')
+      .select('email')
+      .eq('id', parsed.data.professional_id)
+      .single()
+
+    if (profile?.email) {
+      const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://kursskifte.dk'
+      await sendNotification({
+        db,
+        notification_type: 'CASE_CREATED',
+        related_entity_type: 'case_assignments',
+        related_entity_id: assignment.id,
+        recipient_profile_id: parsed.data.professional_id,
+        recipient_email: profile.email,
+        subject: 'Du er tildelt en ny sag — Kursskifte',
+        body: `Du er blevet tildelt en ny sag.\n\nSe sagen og tilhørende dokumentation:\n${base}/dashboard/cases/${run.case_id}`,
+      })
+    }
 
     return ok(assignment)
   })

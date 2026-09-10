@@ -27,7 +27,7 @@ function ArrowRight() {
 const THEMES = [
   {
     heading: 'Vi nåede det',
-    body: 'Vi taler ærligt om hvad vi har set og levet — det øjeblik hvor det kunne gå begge veje. Ikke fordi det var nemt, men fordi det er det der rammer.',
+    body: 'Vi taler ud fra eget liv. Om de øjeblikke der kunne have ført os et helt andet sted hen — og hvad der gjorde forskellen.',
   },
   {
     heading: 'Andre nåede det ikke',

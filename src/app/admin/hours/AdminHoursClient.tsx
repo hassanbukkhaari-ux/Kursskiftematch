@@ -30,17 +30,19 @@ export function AdminHoursClient({ initialHours }: { initialHours: AdminHoursRow
   const [filter, setFilter] = useState<FilterStatus>('SUBMITTED')
   const [actioning, setActioning] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [rejectTarget, setRejectTarget] = useState<string | null>(null)
+  const [rejectNote, setRejectNote] = useState('')
 
   const filtered = filter === 'ALL' ? initialHours : initialHours.filter(h => h.status === filter)
 
-  async function handleAction(id: string, action: 'APPROVE' | 'REJECT') {
+  async function handleAction(id: string, action: 'APPROVE' | 'REJECT', review_note?: string) {
     setError(null)
     setActioning(id + action)
     try {
       const res = await fetch(`/api/registered-hours/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action }),
+        body: JSON.stringify({ action, review_note: review_note || undefined }),
       })
       if (!res.ok) {
         const json = await res.json().catch(() => ({}))
@@ -53,6 +55,22 @@ export function AdminHoursClient({ initialHours }: { initialHours: AdminHoursRow
     } finally {
       setActioning(null)
     }
+  }
+
+  function openReject(id: string) {
+    setRejectTarget(id)
+    setRejectNote('')
+  }
+
+  function closeReject() {
+    setRejectTarget(null)
+    setRejectNote('')
+  }
+
+  async function confirmReject() {
+    if (!rejectTarget) return
+    await handleAction(rejectTarget, 'REJECT', rejectNote)
+    closeReject()
   }
 
   const countOf = (s: FilterStatus) =>
@@ -148,17 +166,49 @@ export function AdminHoursClient({ initialHours }: { initialHours: AdminHoursRow
                       {actioning === h.id + 'APPROVE' ? '…' : 'Godkend'}
                     </button>
                     <button
-                      onClick={() => handleAction(h.id, 'REJECT')}
+                      onClick={() => openReject(h.id)}
                       disabled={!!actioning || isPending}
                       className="h-8 px-3 rounded-lg border border-[#E0DAD0] text-[#1A1F1C] text-xs font-semibold hover:bg-[#F6F3EE] transition-colors disabled:opacity-50"
                     >
-                      {actioning === h.id + 'REJECT' ? '…' : 'Afvis'}
+                      Afvis
                     </button>
                   </>
                 )}
               </div>
             </Card>
           ))}
+        </div>
+      )}
+
+      {rejectTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-[#1A1F1C]/50" onClick={closeReject} aria-hidden="true" />
+          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 z-10">
+            <div className="font-serif text-lg text-[#1A1F1C] mb-1">Afvis timeregistrering</div>
+            <p className="text-xs text-[#6B7569] mb-4">Skriv en begrundelse — den sendes til fagpersonen.</p>
+            <textarea
+              value={rejectNote}
+              onChange={e => setRejectNote(e.target.value)}
+              placeholder="F.eks. mangler sessionslog, timer overstiger grant-rammen..."
+              rows={3}
+              className="w-full px-3 py-2 rounded-xl border border-[#E0DAD0] text-sm focus:outline-none focus:border-[#1C3829] resize-none mb-4"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={confirmReject}
+                disabled={!!actioning}
+                className="flex-1 h-9 bg-red-600 text-white text-sm font-semibold rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {actioning ? '…' : 'Afvis'}
+              </button>
+              <button
+                onClick={closeReject}
+                className="h-9 px-4 border border-[#E0DAD0] text-[#1A1F1C] text-sm font-semibold rounded-xl hover:bg-[#F6F3EE] transition-colors"
+              >
+                Annuller
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </>

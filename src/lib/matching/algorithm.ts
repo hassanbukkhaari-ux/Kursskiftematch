@@ -246,11 +246,11 @@ export function calculateComplexityLevel(factors: {
 }
 
 export function getScoreLabel(score: number): string {
-  if (score >= 80) return 'Excellent'
-  if (score >= 60) return 'Good'
-  if (score >= 40) return 'Acceptable'
-  if (score >= 20) return 'Poor'
-  return 'Not suitable'
+  if (score >= 80) return 'Fremragende'
+  if (score >= 60) return 'God'
+  if (score >= 40) return 'Acceptabel'
+  if (score >= 20) return 'Svag'
+  return 'Ikke egnet'
 }
 
 export function getScoreColor(score: number): 'green' | 'yellow' | 'red' {

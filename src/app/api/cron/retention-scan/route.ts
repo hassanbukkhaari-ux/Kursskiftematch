@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 
 // GET /api/cron/retention-scan — called by Vercel Cron, scans for expired retention dates (WF-013)
 export async function GET(request: NextRequest) {
+  if (!process.env.CRON_SECRET) {
+    return NextResponse.json({ error: 'Cron secret not configured' }, { status: 500 })
+  }
   const authHeader = request.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -16,7 +19,7 @@ export async function GET(request: NextRequest) {
     .from('cases')
     .select('id, data_retention_expires_at')
     .lt('data_retention_expires_at', now)
-    .eq('status', 'COMPLETED')
+    .in('status', ['COMPLETED', 'ARCHIVED'])
 
   if (caseError) {
     return NextResponse.json({ error: 'Failed to scan cases' }, { status: 500 })

@@ -6,7 +6,7 @@ import PublicFooter from '@/components/public/PublicFooter'
 export const metadata: Metadata = {
   title: 'Kontakt Kursskifte | §32 og §85-forløb i Nordjylland',
   description:
-    'Kontakt Kursskifte om kontaktpersonforløb, sagsindsendelse eller spørgsmål. Vi betjener kommuner i Nordjylland — Aalborg, Hjørring, Brønderslev og Frederikshavn. Svar inden for 1 arbejdsdag.',
+    'Kontakt Kursskifte om kontaktpersonforløb, sagsindsendelse eller spørgsmål. Vi betjener kommuner i Nordjylland — Aalborg, Hjørring, Brønderslev og Frederikshavn.',
   alternates: { canonical: '/kontakt' },
   openGraph: {
     title: 'Kontakt Kursskifte',
@@ -89,10 +89,6 @@ export default function KontaktPage() {
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-white/40 mb-0.5">Telefon</div>
                   <a href="tel:+4571420376" className="text-sm text-white hover:text-[#C8993A] transition-colors">71 42 03 76</a>
                 </div>
-                <div className="py-2.5">
-                  <div className="text-[10px] font-semibold uppercase tracking-widest text-white/40 mb-0.5">Responstid</div>
-                  <span className="text-sm text-white/80">Typisk inden for 1 arbejdsdag</span>
-                </div>
               </div>
               <a
                 href="mailto:info@kursskifte.dk"
@@ -115,10 +111,6 @@ export default function KontaktPage() {
                 <div className="py-2.5 border-b border-[#E0DAD0]">
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-0.5">E-mail</div>
                   <a href="mailto:info@kursskifte.dk" className="text-sm text-[#1A1F1C] hover:text-[#1C3829] transition-colors">info@kursskifte.dk</a>
-                </div>
-                <div className="py-2.5">
-                  <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-0.5">Responstid</div>
-                  <span className="text-sm text-[#1A1F1C]">Typisk inden for 1–2 arbejdsdage</span>
                 </div>
               </div>
               <Link

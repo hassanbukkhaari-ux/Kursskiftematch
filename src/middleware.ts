@@ -9,6 +9,7 @@ const PUBLIC_PATHS = [
   '/indsigt',
   '/kommuner',
   '/kontaktpersoner',
+  '/foredrag',
   '/metode',
   '/om-kursskifte',
   '/kontakt',

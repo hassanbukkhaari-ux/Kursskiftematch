@@ -22,8 +22,8 @@ export default function PrivatlivspolitikPage() {
           databeskyttelsesforordningen (GDPR) og dansk databeskyttelseslovgivning.
           Den fulde privatlivspolitik offentliggøres her. Har du spørgsmål til
           vores behandling af personoplysninger, kan du kontakte os på{' '}
-          <a href="mailto:info@kursskifte.dk" className="text-[#1C3829] underline">
-            info@kursskifte.dk
+          <a href="mailto:kontakt@kursskifte.dk" className="text-[#1C3829] underline">
+            kontakt@kursskifte.dk
           </a>
           .
         </p>

@@ -37,7 +37,7 @@ const localBusinessSchema = {
   '@type': 'LocalBusiness',
   name: 'Kursskifte ApS',
   url: 'https://kursskifte.dk',
-  email: 'info@kursskifte.dk',
+  email: 'kontakt@kursskifte.dk',
   telephone: '+4571420376',
   description:
     'Kursskifte forbinder kommuner i Nordjylland med kvalitetssikrede kontaktpersoner til §32 og §85-forløb — socialpædagogisk støtte, bostøtte og relationsbaseret indsats.',

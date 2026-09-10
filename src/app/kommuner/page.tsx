@@ -37,7 +37,7 @@ const STEPS = [
   {
     n: '01',
     title: 'Indledende dialog',
-    body: 'Send en e-mail til info@kursskifte.dk eller ring på 71 42 03 76. Vi afklarer behov, formål, målgruppe, timeantal og forventninger — direkte til os.',
+    body: 'Send en e-mail til kontakt@kursskifte.dk eller ring på 71 42 03 76. Vi afklarer behov, formål, målgruppe, timeantal og forventninger — direkte til os.',
   },
   {
     n: '02',
@@ -149,7 +149,7 @@ export default function KommunerPage() {
               </p>
               <div className="flex flex-wrap gap-3">
                 <a
-                  href="mailto:info@kursskifte.dk"
+                  href="mailto:kontakt@kursskifte.dk"
                   className="h-12 px-6 bg-[#C8993A] text-white font-semibold text-sm rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center gap-2"
                 >
                   Kontakt os <ArrowRight />
@@ -367,13 +367,13 @@ export default function KommunerPage() {
             </div>
             <div className="flex flex-col gap-3 items-start shrink-0">
               <a
-                href="mailto:info@kursskifte.dk"
+                href="mailto:kontakt@kursskifte.dk"
                 className="h-11 px-6 bg-[#C8993A] text-white text-sm font-semibold rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center gap-2"
               >
                 Send e-mail <ArrowRight />
               </a>
               <div className="flex flex-col gap-1.5">
-                <a href="mailto:info@kursskifte.dk" className="text-xs text-white/60 hover:text-white/90 transition-colors">info@kursskifte.dk</a>
+                <a href="mailto:kontakt@kursskifte.dk" className="text-xs text-white/60 hover:text-white/90 transition-colors">kontakt@kursskifte.dk</a>
                 <a href="tel:+4571420376" className="text-xs text-white/60 hover:text-white/90 transition-colors">71 42 03 76</a>
               </div>
             </div>

@@ -68,7 +68,7 @@ export default function ForedragPage() {
                 Vi holder foredrag til skoler, gymnasier og SSP om vendepunktet. Ærligt. Fra eget liv.
               </p>
               <Link
-                href="mailto:info@kursskifte.dk?subject=Foredrag – kontakt fra skole/SSP"
+                href="mailto:kontakt@kursskifte.dk?subject=Foredrag – kontakt fra skole/SSP"
                 className="inline-flex items-center gap-2 h-11 px-6 bg-[#1C3829] text-white text-sm font-semibold rounded-xl hover:bg-[#2D5840] transition-colors"
               >
                 Book et foredrag <ArrowRight />
@@ -91,7 +91,7 @@ export default function ForedragPage() {
                   Kursskifte kom til som en forlængelse af det vi selv oplevede — og det vi har set i andres liv. Vi holder foredrag til folkeskoler, gymnasier, SSP og kommunale forebyggelsesindsatser.
                 </p>
                 <div className="mt-5 pt-5 border-t border-[#E0DAD0]">
-                  <a href="mailto:info@kursskifte.dk?subject=Foredrag – kontakt fra skole/SSP" className="text-sm text-[#6B7569] hover:text-[#1C3829] transition-colors">
+                  <a href="mailto:kontakt@kursskifte.dk?subject=Foredrag – kontakt fra skole/SSP" className="text-sm text-[#6B7569] hover:text-[#1C3829] transition-colors">
                     Skriv til os for pris og tilgængelighed →
                   </a>
                 </div>
@@ -140,12 +140,12 @@ export default function ForedragPage() {
                 </h2>
                 <p className="text-sm text-[#6B7569] leading-relaxed">
                   Send en mail til{' '}
-                  <a href="mailto:info@kursskifte.dk" className="text-[#1C3829] underline underline-offset-2">info@kursskifte.dk</a>{' '}
+                  <a href="mailto:kontakt@kursskifte.dk" className="text-[#1C3829] underline underline-offset-2">kontakt@kursskifte.dk</a>{' '}
                   med skolens eller organisationens navn og hvornår I ønsker det. Vi tilpasser og vender tilbage med pris og dato.
                 </p>
               </div>
               <Link
-                href="mailto:info@kursskifte.dk?subject=Foredrag – kontakt fra skole/SSP"
+                href="mailto:kontakt@kursskifte.dk?subject=Foredrag – kontakt fra skole/SSP"
                 className="h-11 px-6 bg-[#1C3829] text-white text-sm font-semibold rounded-xl hover:bg-[#2D5840] transition-colors inline-flex items-center gap-2 flex-shrink-0"
               >
                 Skriv til os <ArrowRight />

@@ -16,9 +16,6 @@ function LogoMark() {
 const NAV_LINKS = [
   { href: '/kommuner', label: 'Kommuner' },
   { href: '/kontaktpersoner', label: 'Kontaktpersoner' },
-  { href: '/foredrag', label: 'Foredrag' },
-  { href: '/metode', label: 'Metode' },
-  { href: '/om-kursskifte', label: 'Om Kursskifte' },
   { href: '/kontakt', label: 'Kontakt' },
 ]
 

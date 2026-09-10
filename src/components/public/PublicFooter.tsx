@@ -42,6 +42,8 @@ export default function PublicFooter() {
             <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-3">Om Kursskifte</div>
             <div className="space-y-2">
               <Link href="/om-kursskifte" className="block text-sm text-[#6B7569] hover:text-[#1C3829] transition-colors">Om os</Link>
+              <Link href="/metode" className="block text-sm text-[#6B7569] hover:text-[#1C3829] transition-colors">Vores metode</Link>
+              <Link href="/foredrag" className="block text-sm text-[#6B7569] hover:text-[#1C3829] transition-colors">Foredrag</Link>
               <Link href="/kontakt" className="block text-sm text-[#6B7569] hover:text-[#1C3829] transition-colors">Kontakt</Link>
               <Link href="/privatlivspolitik" className="block text-sm text-[#6B7569] hover:text-[#1C3829] transition-colors">Privatlivspolitik</Link>
             </div>

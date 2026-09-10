@@ -69,7 +69,7 @@ function Hero() {
             href="/kontakt"
             className="h-12 px-6 bg-[#C8993A] text-white font-semibold text-sm rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center justify-center gap-2"
           >
-            Kontakt os <ArrowRight />
+            Send en sag <ArrowRight />
           </Link>
           <Link
             href="/kontaktpersoner"

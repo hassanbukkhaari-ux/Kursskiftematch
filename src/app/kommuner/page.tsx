@@ -237,7 +237,7 @@ export default function KommunerPage() {
         </section>
 
         {/* Typiske forløb */}
-        <section className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-16">
+        <section id="hvem-hjaelper-vi" className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-16">
           <div className="mb-10">
             <div className="flex items-center gap-2.5 mb-4">
               <div className="w-5 h-px bg-[#C8993A]" />

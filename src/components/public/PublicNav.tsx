@@ -18,6 +18,7 @@ const NAV_ITEMS = [
     label: 'Kommuner',
     href: '/kommuner',
     children: [
+      { label: 'Hvem hjælper vi', href: '/kommuner#hvem-hjaelper-vi' },
       { label: 'Ydelser', href: '/kommuner#ydelser' },
       { label: 'Sådan arbejder vi', href: '/kommuner#proces' },
     ],
@@ -39,7 +40,6 @@ const NAV_ITEMS = [
 
 export default function PublicNav() {
   const [open, setOpen] = useState(false)
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null)
 
   return (
     <header className="sticky top-0 z-50 bg-[#F6F3EE]/90 backdrop-blur-md border-b border-[#E0DAD0]">
@@ -51,32 +51,38 @@ export default function PublicNav() {
         {/* Desktop links */}
         <div className="hidden lg:flex items-center gap-1">
           {NAV_ITEMS.map(item => (
-            <div
-              key={item.href}
-              className="relative"
-              onMouseEnter={() => item.children.length > 0 && setOpenDropdown(item.href)}
-              onMouseLeave={() => setOpenDropdown(null)}
-            >
+            <div key={item.href} className="relative group">
               <Link
                 href={item.href}
                 className="flex items-center gap-1 px-3 py-1.5 text-sm text-[#6B7569] hover:text-[#1C3829] hover:bg-[#EEF4F0] rounded-lg transition-colors"
               >
                 {item.label}
                 {item.children.length > 0 && (
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <svg
+                    className="transition-transform duration-200 group-hover:rotate-180"
+                    width="10" height="10" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"
+                  >
                     <polyline points="6 9 12 15 18 9" />
                   </svg>
                 )}
               </Link>
 
-              {/* Dropdown */}
-              {item.children.length > 0 && openDropdown === item.href && (
-                <div className="absolute top-full left-0 mt-1 bg-white border border-[#E0DAD0] rounded-xl shadow-sm py-1.5 min-w-[200px] z-50">
+              {/* Dropdown — animates in/out via CSS */}
+              {item.children.length > 0 && (
+                <div
+                  className="
+                    absolute top-full left-0 mt-1.5 min-w-[200px] z-50
+                    bg-white border border-[#E0DAD0] rounded-xl shadow-sm py-1.5
+                    opacity-0 -translate-y-1 pointer-events-none
+                    group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto
+                    transition-all duration-150 ease-out
+                  "
+                >
                   {item.children.map(child => (
                     <Link
                       key={child.href}
                       href={child.href}
-                      onClick={() => setOpenDropdown(null)}
                       className="block px-4 py-2 text-sm text-[#6B7569] hover:text-[#1C3829] hover:bg-[#F6F3EE] transition-colors"
                     >
                       {child.label}

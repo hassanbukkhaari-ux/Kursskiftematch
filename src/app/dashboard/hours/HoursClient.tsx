@@ -30,7 +30,7 @@ const WORK_TYPES = Object.entries(WORK_TYPE_LABEL)
 type FormData = {
   case_id: string
   work_date: string
-  work_type: string
+  work_types: string[]
   hours: string
   description: string
 }
@@ -38,7 +38,7 @@ type FormData = {
 const EMPTY_FORM: FormData = {
   case_id: '',
   work_date: new Date().toISOString().slice(0, 10),
-  work_type: 'DIRECT_SESSION',
+  work_types: [],
   hours: '',
   description: '',
 }
@@ -80,6 +80,7 @@ export function HoursClient({ initialHours, cases, defaultCaseId }: Props) {
     setError(null)
     if (!form.case_id) { setError('Vælg en sag'); return }
     if (!form.work_date) { setError('Angiv dato'); return }
+    if (form.work_types.length === 0) { setError('Vælg mindst én arbejdstype'); return }
     const hours = parseFloat(form.hours)
     if (!form.hours || isNaN(hours) || hours < 0.25 || hours > 8) {
       setError('Timer skal være mellem 0,25 og 8')
@@ -94,7 +95,7 @@ export function HoursClient({ initialHours, cases, defaultCaseId }: Props) {
         body: JSON.stringify({
           case_id: form.case_id,
           work_date: form.work_date,
-          work_type: form.work_type,
+          work_type: form.work_types,
           hours,
           description: form.description || undefined,
         }),
@@ -221,7 +222,7 @@ export function HoursClient({ initialHours, cases, defaultCaseId }: Props) {
                     <span className="text-[#6B7569] font-normal"> · {h.hours} t</span>
                   </div>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-xs text-[#6B7569]">{WORK_TYPE_LABEL[h.work_type] ?? h.work_type}</span>
+                    <span className="text-xs text-[#6B7569]">{h.work_type.split(',').map(t => WORK_TYPE_LABEL[t] ?? t).join(' · ')}</span>
                     <span className="text-[#C8C0B0] text-xs">·</span>
                     <span className="text-xs text-[#6B7569] truncate">{caseLabel(h.case_id)}</span>
                   </div>
@@ -327,10 +328,15 @@ export function HoursClient({ initialHours, cases, defaultCaseId }: Props) {
                 <button
                   key={value}
                   type="button"
-                  onClick={() => setForm(f => ({ ...f, work_type: value }))}
+                  onClick={() => setForm(f => ({
+                    ...f,
+                    work_types: f.work_types.includes(value)
+                      ? f.work_types.filter(t => t !== value)
+                      : [...f.work_types, value],
+                  }))}
                   className={[
                     'h-10 px-3 rounded-xl text-sm font-medium transition-all border text-left',
-                    form.work_type === value
+                    form.work_types.includes(value)
                       ? 'bg-[#1C3829] text-white border-[#1C3829]'
                       : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829] hover:text-[#1C3829]',
                   ].join(' ')}

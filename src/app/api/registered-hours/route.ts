@@ -8,7 +8,10 @@ const GRACE_PERIOD_DAYS = 7
 const CreateHoursSchema = z.object({
   case_id: z.string().uuid(),
   work_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'work_date must be YYYY-MM-DD'),
-  work_type: z.enum(['DIRECT_SESSION', 'TRANSPORT', 'DOCUMENTATION', 'COORDINATION', 'CRISIS_RESPONSE', 'TRAINING', 'OTHER']),
+  work_type: z.union([
+    z.enum(['DIRECT_SESSION', 'TRANSPORT', 'DOCUMENTATION', 'COORDINATION', 'CRISIS_RESPONSE', 'TRAINING', 'OTHER']),
+    z.array(z.enum(['DIRECT_SESSION', 'TRANSPORT', 'DOCUMENTATION', 'COORDINATION', 'CRISIS_RESPONSE', 'TRAINING', 'OTHER'])).min(1),
+  ]).transform(v => (Array.isArray(v) ? v.join(',') : v)),
   hours: z.number().min(0.25).max(8),
   session_log_id: z.string().uuid().optional(),
   grant_period_id: z.string().uuid().optional(),
@@ -67,7 +70,7 @@ export async function POST(request: NextRequest) {
     }
 
     // DIRECT_SESSION must be linked to a session log
-    if (parsed.data.work_type === 'DIRECT_SESSION' && !parsed.data.session_log_id) {
+    if (parsed.data.work_type.includes('DIRECT_SESSION') && !parsed.data.session_log_id) {
       return badRequest('En direkte session skal være knyttet til en sessionslog. Opret logbogen først.')
     }
 
@@ -103,7 +106,8 @@ export async function POST(request: NextRequest) {
         case_id: parsed.data.case_id,
         professional_id: userId,
         work_date: parsed.data.work_date,
-        work_type: parsed.data.work_type,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        work_type: parsed.data.work_type as any,
         hours: parsed.data.hours,
         session_log_id: parsed.data.session_log_id || null,
         grant_period_id: parsed.data.grant_period_id || null,

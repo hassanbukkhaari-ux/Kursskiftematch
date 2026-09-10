@@ -124,7 +124,7 @@ export function AdminHoursClient({ initialHours }: { initialHours: AdminHoursRow
                     <span className="text-[#C8C0B0] text-xs">·</span>
                     <span className="text-xs text-[#6B7569]">{h.hours} t</span>
                     <span className="text-[#C8C0B0] text-xs">·</span>
-                    <span className="text-xs text-[#6B7569]">{WORK_TYPE_LABEL[h.work_type] ?? h.work_type}</span>
+                    <span className="text-xs text-[#6B7569]">{h.work_type.split(',').map((t: string) => WORK_TYPE_LABEL[t] ?? t).join(' · ')}</span>
                   </div>
                   {h.description && (
                     <div className="mt-0.5 text-xs text-[#6B7569] truncate max-w-sm">{h.description}</div>

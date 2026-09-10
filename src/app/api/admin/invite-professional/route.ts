@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     const { email, name } = parsed.data
     const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://kursskifte.dk'
-    const registerUrl = `${base}/login`
+    const registerUrl = `${base}/signup?email=${encodeURIComponent(email)}`
 
     const resendKey = process.env.RESEND_API_KEY
     if (!resendKey) return serverError('Email service not configured')
@@ -34,10 +34,10 @@ export async function POST(request: NextRequest) {
 
 Du er blevet inviteret til at blive kontaktperson hos Kursskifte.
 
-Opret en konto og log ind her:
+Opret din konto her:
 ${registerUrl}
 
-Vælg "Opret konto" og registrer dig med denne e-mailadresse. Herefter kan du udfylde din profil.
+Linket åbner en oprettelsesside med din e-mailadresse udfyldt. Vælg en personlig adgangskode og klik "Opret konto". Herefter kan du logge ind og udfylde din profil.
 
 Med venlig hilsen
 Kursskifte-teamet

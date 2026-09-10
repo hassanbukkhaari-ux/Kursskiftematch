@@ -18,24 +18,35 @@ export async function PATCH(request: NextRequest) {
     let body: Record<string, unknown>
     try { body = await request.json() } catch { return badRequest('Invalid JSON') }
 
+    const { full_name, ...rest } = body as Record<string, unknown>
+
     const patch: Record<string, unknown> = {}
-    for (const [k, v] of Object.entries(body)) {
+    for (const [k, v] of Object.entries(rest)) {
       if (ALLOWED_FIELDS.has(k)) patch[k] = v
     }
-
-    if (Object.keys(patch).length === 0) return badRequest('No valid fields provided')
 
     const db = await createClient()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dba = db as any
 
-    // Upsert so the professional can edit even before admin creates their row
-    const { error } = await dba.from('professionals').upsert(
-      { id: userId, profession: 'OTHER', ...patch },
-      { onConflict: 'id' }
-    )
+    if (full_name !== undefined) {
+      const name = typeof full_name === 'string' ? full_name.trim() : ''
+      if (!name) return badRequest('Navn må ikke være tomt')
+      const { error: profileError } = await dba.from('profiles').update({ full_name: name }).eq('id', userId)
+      if (profileError) return serverError(profileError.message)
+    }
 
-    if (error) return serverError(error.message)
+    if (Object.keys(patch).length === 0 && full_name === undefined) return badRequest('No valid fields provided')
+
+    if (Object.keys(patch).length > 0) {
+      // Upsert so the professional can edit even before admin creates their row
+      const { error } = await dba.from('professionals').upsert(
+        { id: userId, profession: 'OTHER', ...patch },
+        { onConflict: 'id' }
+      )
+      if (error) return serverError(error.message)
+    }
+
     return ok({ ok: true })
   })
 }

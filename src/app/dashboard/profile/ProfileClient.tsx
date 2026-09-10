@@ -233,6 +233,7 @@ function ChipGrid({
 function S1Personal({ pro, profileName, profileEmail }: { pro: Pro | null; profileName: string; profileEmail: string }) {
   const { busy, error, saved, save } = useSave()
   const [f, setF] = useState({
+    full_name: profileName,
     job_title: pro?.job_title ?? '',
     phone: pro?.phone ?? '',
     address: pro?.address ?? '',
@@ -247,7 +248,7 @@ function S1Personal({ pro, profileName, profileEmail }: { pro: Pro | null; profi
   return (
     <div className="space-y-4 mt-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Field label="Fulde navn"><Input value={profileName} disabled /></Field>
+        <Field label="Fulde navn"><Input value={f.full_name} onChange={set('full_name')} placeholder="Dit fulde navn" /></Field>
         <Field label="E-mail"><Input value={profileEmail} disabled /></Field>
         <Field label="Jobtitel"><Input value={f.job_title} onChange={set('job_title')} placeholder="F.eks. Kontaktperson" /></Field>
         <Field label="Telefon"><Input value={f.phone} onChange={set('phone')} placeholder="+45 12 34 56 78" type="tel" /></Field>

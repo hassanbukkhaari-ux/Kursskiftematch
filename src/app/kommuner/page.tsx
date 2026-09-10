@@ -172,7 +172,7 @@ export default function KommunerPage() {
               {[
                 {
                   title: 'I kontakter — vi finder',
-                  body: 'I behøver ikke gennemse en database af fagpersoner. Send os behovet, og vi finder de rette kandidater ud fra kompetencer, kapacitet og erfaring.',
+                  body: 'Send os behovet, og vi finder de rette kandidater ud fra kompetencer, kapacitet og erfaring.',
                 },
                 {
                   title: 'Vi klarer koordineringen',

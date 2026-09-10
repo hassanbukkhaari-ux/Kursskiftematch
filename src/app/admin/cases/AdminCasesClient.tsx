@@ -35,9 +35,8 @@ const PROF_GENDER_LABEL: Record<string, string> = { MALE: 'Mand', FEMALE: 'Kvind
 const TRANSPORT_OPTIONS = ['JA', 'NEJ'] as const
 const LEGAL_BASIS_OPTIONS = [
   { value: 'BARNETS_LOV_32', label: '§32 barnets lov', note: 'Børn 0–17 år' },
-  { value: 'SEL_76', label: '§76 serviceloven', note: 'Unge 18–22 år (efterværn)' },
   { value: 'SEL_85', label: '§85 serviceloven', note: 'Voksne 18+' },
-  { value: 'SEL_99', label: '§99 serviceloven', note: 'Sociale mødesteder' },
+  { value: 'SEL_76', label: '§76 serviceloven', note: 'Unge 18–22 år (efterværn)' },
 ] as const
 const LANGUAGE_OPTIONS = ['Dansk', 'Engelsk', 'Arabisk', 'Tyrkisk', 'Urdu', 'Somalisk', 'Dari/Pashto', 'Bosnisk/Serbisk', 'Polsk', 'Rumænsk'] as const
 const DURATION_OPTIONS = [

@@ -92,6 +92,43 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
   const [error, setError] = useState<string | null>(null)
   const [editingProfile, setEditingProfile] = useState(false)
   const [profileForm, setProfileForm] = useState<ProfileForm | null>(null)
+  const [inviteOpen, setInviteOpen] = useState(false)
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteName, setInviteName] = useState('')
+  const [inviting, setInviting] = useState(false)
+  const [inviteError, setInviteError] = useState<string | null>(null)
+  const [inviteSent, setInviteSent] = useState(false)
+
+  async function sendInvite(e: React.FormEvent) {
+    e.preventDefault()
+    setInviteError(null)
+    setInviting(true)
+    try {
+      const res = await fetch('/api/admin/invite-professional', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: inviteEmail, name: inviteName || undefined }),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setInviteError((json as { error?: string }).error ?? 'Noget gik galt')
+        return
+      }
+      setInviteSent(true)
+    } catch {
+      setInviteError('Netværksfejl — prøv igen')
+    } finally {
+      setInviting(false)
+    }
+  }
+
+  function closeInvite() {
+    setInviteOpen(false)
+    setInviteEmail('')
+    setInviteName('')
+    setInviteError(null)
+    setInviteSent(false)
+  }
 
   const counts = useMemo(() => ({
     all: initialData.length,
@@ -178,7 +215,108 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
       <SectionHeader
         title={`${counts.ACTIVE} aktive fagpersoner`}
         description={counts.REGISTERED > 0 ? `${counts.REGISTERED} afventer aktivering` : undefined}
+        actions={
+          <button
+            type="button"
+            onClick={() => setInviteOpen(true)}
+            className="h-9 px-4 bg-[#1C3829] text-white text-xs font-semibold rounded-xl hover:bg-[#2D5840] transition-colors flex items-center gap-1.5"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Inviter fagperson
+          </button>
+        }
       />
+
+      {/* Invite modal */}
+      {inviteOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-[#1A1F1C]/50"
+            onClick={closeInvite}
+            aria-hidden="true"
+          />
+          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 z-10">
+            {inviteSent ? (
+              <div className="text-center py-4">
+                <div className="w-12 h-12 rounded-full bg-[#EEF4F0] flex items-center justify-center mx-auto mb-4">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1C3829" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </div>
+                <div className="font-serif text-lg text-[#1A1F1C] mb-1">Invitation sendt</div>
+                <p className="text-sm text-[#6B7569] mb-5">En invitation er sendt til <strong>{inviteEmail}</strong> med link til registrering.</p>
+                <button
+                  type="button"
+                  onClick={closeInvite}
+                  className="h-9 px-5 bg-[#1C3829] text-white text-sm font-semibold rounded-xl hover:bg-[#2D5840] transition-colors"
+                >
+                  Luk
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={sendInvite} noValidate>
+                <div className="flex items-center justify-between mb-5">
+                  <div className="font-serif text-lg text-[#1A1F1C]">Inviter fagperson</div>
+                  <button type="button" onClick={closeInvite} className="w-7 h-7 rounded-full bg-[#F6F3EE] hover:bg-[#EEF4F0] flex items-center justify-center text-[#6B7569] transition-colors">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
+                <p className="text-xs text-[#6B7569] mb-4">Fagpersonen modtager et link til at oprette sin profil selv.</p>
+                <div className="space-y-3 mb-5">
+                  <div>
+                    <label htmlFor="invite-email" className="text-xs font-medium text-[#6B7569] block mb-1">E-mailadresse <span className="text-red-500">*</span></label>
+                    <input
+                      id="invite-email"
+                      type="email"
+                      required
+                      value={inviteEmail}
+                      onChange={e => setInviteEmail(e.target.value)}
+                      placeholder="navn@eksempel.dk"
+                      className="w-full px-3 py-2 rounded-xl border border-[#E0DAD0] text-sm focus:outline-none focus:border-[#1C3829]"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="invite-name" className="text-xs font-medium text-[#6B7569] block mb-1">Navn (valgfrit)</label>
+                    <input
+                      id="invite-name"
+                      type="text"
+                      value={inviteName}
+                      onChange={e => setInviteName(e.target.value)}
+                      placeholder="Fornavn Efternavn"
+                      className="w-full px-3 py-2 rounded-xl border border-[#E0DAD0] text-sm focus:outline-none focus:border-[#1C3829]"
+                    />
+                  </div>
+                </div>
+                {inviteError && (
+                  <p className="mb-4 text-xs text-red-600 bg-red-50 rounded-xl px-3 py-2">{inviteError}</p>
+                )}
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    disabled={inviting || !inviteEmail}
+                    className="flex-1 h-9 bg-[#1C3829] text-white text-sm font-semibold rounded-xl hover:bg-[#2D5840] transition-colors disabled:opacity-50"
+                  >
+                    {inviting ? 'Sender…' : 'Send invitation'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={closeInvite}
+                    className="h-9 px-4 border border-[#E0DAD0] text-[#1A1F1C] text-sm font-semibold rounded-xl hover:bg-[#F6F3EE] transition-colors"
+                  >
+                    Annuller
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Filter tabs */}
       <div className="flex gap-1 mb-5 bg-[#F6F3EE] rounded-xl p-1 overflow-x-auto scrollbar-none">

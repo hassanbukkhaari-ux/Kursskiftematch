@@ -77,7 +77,7 @@ export default function KontaktPage() {
                 <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-3">For kommuner</div>
                 <h2 className="font-serif text-2xl text-white font-normal mb-3">Har du en sag eller et spørgsmål?</h2>
                 <p className="text-sm text-white/65 leading-relaxed">
-                  Send en e-mail til kontakt@kursskifte.dk. Vi afklarer behov, formål, målgruppe, timeantal og forventninger. Ingen åben database — direkte til os.
+                  Send en e-mail til kontakt@kursskifte.dk. Vi afklarer behov, formål, målgruppe, timeantal og forventninger — og finder den rette kontaktperson til sagen.
                 </p>
               </div>
               <div className="space-y-0">

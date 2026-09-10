@@ -22,8 +22,11 @@ export async function POST(request: NextRequest) {
 
     const db = await createClient()
 
-    // Ensure professionals record exists
-    await db.from('professionals').upsert(
+    // Ensure professionals record exists — INSERT policy restricts to admin,
+    // so use service client for this upsert only.
+    const { createServiceClient } = await import('@/lib/supabase/server')
+    const svc = createServiceClient()
+    await svc.from('professionals').upsert(
       { id: userId, profession: 'OTHER' },
       { onConflict: 'id', ignoreDuplicates: true }
     )

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import React, { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
@@ -233,7 +233,6 @@ function ChipGrid({
 function S1Personal({ pro, profileName, profileEmail }: { pro: Pro | null; profileName: string; profileEmail: string }) {
   const { busy, error, saved, save } = useSave()
   const [f, setF] = useState({
-    full_name: profileName,
     job_title: pro?.job_title ?? '',
     phone: pro?.phone ?? '',
     address: pro?.address ?? '',
@@ -248,7 +247,7 @@ function S1Personal({ pro, profileName, profileEmail }: { pro: Pro | null; profi
   return (
     <div className="space-y-4 mt-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Field label="Fulde navn"><Input value={f.full_name} onChange={set('full_name')} placeholder="Dit fulde navn" /></Field>
+        <Field label="Fulde navn"><Input value={profileName} disabled /></Field>
         <Field label="E-mail"><Input value={profileEmail} disabled /></Field>
         <Field label="Jobtitel"><Input value={f.job_title} onChange={set('job_title')} placeholder="F.eks. Kontaktperson" /></Field>
         <Field label="Telefon"><Input value={f.phone} onChange={set('phone')} placeholder="+45 12 34 56 78" type="tel" /></Field>
@@ -489,12 +488,12 @@ function S8Certificates({ certs, certTypes }: { certs: CertificateRow[]; certTyp
 // ── Section: Dokumenter ──────────────────────────────────────────────────
 
 const DOC_TYPES = [
-  { type: 'CRIMINAL_RECORD', label: 'Straffeattest', required: true },
-  { type: 'CHILD_RECORD', label: 'Børneattest', required: true },
-  { type: 'CV', label: 'CV', required: true },
-  { type: 'EDUCATION', label: 'Uddannelsesbeviser', required: false },
-  { type: 'DRIVING_LICENSE', label: 'Kørekort', required: false },
-  { type: 'AUTHORIZATION', label: 'Autorisation', required: false },
+  { type: 'CRIMINAL_RECORD',  label: 'Straffeattest',       required: true,  managed: true  },
+  { type: 'CHILD_PROTECTION', label: 'Børneattest',          required: true,  managed: true  },
+  { type: 'CV',               label: 'CV',                   required: true,  managed: false },
+  { type: 'QUALIFICATION',    label: 'Uddannelsesbeviser',   required: false, managed: false },
+  { type: 'DRIVING_LICENSE',  label: 'Kørekort',             required: false, managed: false },
+  { type: 'OTHER',            label: 'Autorisation / andet', required: false, managed: false },
 ]
 
 const DOC_STATUS_LABEL: Record<string, string> = {
@@ -508,42 +507,101 @@ const DOC_STATUS_BADGE: Record<string, 'default' | 'amber' | 'green' | 'red'> = 
   REJECTED: 'red', EXPIRING_SOON: 'amber', ARCHIVED: 'default',
 }
 
+function DocUploadRow({ dt, doc }: { dt: typeof DOC_TYPES[0]; doc: DocumentRow | undefined }) {
+  const router = useRouter()
+  const [, startT] = useTransition()
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const inputRef = React.useRef<HTMLInputElement>(null)
+  const status = doc?.status ?? 'MISSING'
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true); setError(null)
+    try {
+      // 1. Get signed upload URL
+      const urlRes = await fetch('/api/profile/upload-url', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ document_type: dt.type, file_name: file.name }),
+      })
+      if (!urlRes.ok) { setError('Kunne ikke oprette upload-URL'); return }
+      const { signed_url, path } = await urlRes.json()
+
+      // 2. Upload file directly to Supabase Storage
+      const uploadRes = await fetch(signed_url, {
+        method: 'PUT', body: file,
+        headers: { 'Content-Type': file.type || 'application/octet-stream' },
+      })
+      if (!uploadRes.ok) { setError('Upload mislykkedes — prøv igen'); return }
+
+      // 3. Record document in DB
+      const docRes = await fetch('/api/profile/documents', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ document_type: dt.type, file_path: path, file_name: file.name }),
+      })
+      if (!docRes.ok) { setError('Dokumentet blev uploadet, men kunne ikke registreres'); return }
+
+      startT(() => router.refresh())
+    } catch { setError('Netværksfejl — prøv igen') }
+    finally { setUploading(false); if (inputRef.current) inputRef.current.value = '' }
+  }
+
+  return (
+    <div className="py-3 border-b border-[#F0EBE3] last:border-0">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-sm text-[#1A1F1C] truncate">{dt.label}</span>
+          {dt.required && <span className="text-xs text-[#C8C0B0] shrink-0">krævet</span>}
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <Badge variant={DOC_STATUS_BADGE[status] ?? 'default'}>
+            {DOC_STATUS_LABEL[status] ?? status}
+          </Badge>
+          {!dt.managed && (
+            <>
+              <input ref={inputRef} type="file" className="hidden" onChange={handleFile}
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" />
+              <button
+                onClick={() => inputRef.current?.click()}
+                disabled={uploading}
+                className="text-xs font-semibold text-[#1C3829] hover:underline disabled:opacity-50"
+              >
+                {uploading ? 'Uploader…' : doc ? 'Opdater' : 'Upload'}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+      {doc?.file_name && (
+        <p className="text-xs text-[#6B7569] mt-0.5 truncate">{doc.file_name}</p>
+      )}
+      {error && <p className="text-xs text-red-600 mt-0.5">{error}</p>}
+    </div>
+  )
+}
+
 function S9Documents({ docs }: { docs: DocumentRow[] }) {
   const docMap = Object.fromEntries(docs.map(d => [d.document_type, d]))
 
   return (
-    <div className="space-y-3 mt-4">
-      {/* Coordinator upload notice */}
-      <div className="flex gap-3 p-3 rounded-xl bg-[#FBF3E1] border border-[#E8C97A]">
+    <div className="space-y-1 mt-4">
+      <div className="flex gap-3 p-3 rounded-xl bg-[#FBF3E1] border border-[#E8C97A] mb-3">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 shrink-0">
           <circle cx="12" cy="12" r="10" />
           <line x1="12" y1="8" x2="12" y2="12" />
           <line x1="12" y1="16" x2="12.01" y2="16" />
         </svg>
         <div>
-          <p className="text-xs font-semibold text-[#92400E] mb-0.5">Dokumenter uploades via koordinator</p>
+          <p className="text-xs font-semibold text-[#92400E] mb-0.5">Straffeattest og børneattest indhentes af Kursskifte</p>
           <p className="text-xs text-[#B45309] leading-relaxed">
-            Send dine dokumenter direkte til din Kursskifte-koordinator. Koordinatoren uploader og godkender dem herinde. Du kan følge status nedenfor.
+            Kursskifte indhenter og verificerer disse attester for dig. Du uploader selv CV, uddannelsesbeviser, kørekort og eventuel autorisation.
           </p>
         </div>
       </div>
-
-      {/* Status list */}
-      {DOC_TYPES.map(dt => {
-        const doc = docMap[dt.type]
-        const status = doc?.status ?? 'MISSING'
-        return (
-          <div key={dt.type} className="flex items-center justify-between py-3 border-b border-[#F0EBE3] last:border-0">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-[#1A1F1C]">{dt.label}</span>
-              {dt.required && <span className="text-xs text-[#C8C0B0]">krævet</span>}
-            </div>
-            <Badge variant={DOC_STATUS_BADGE[status] ?? 'default'}>
-              {DOC_STATUS_LABEL[status] ?? status}
-            </Badge>
-          </div>
-        )
-      })}
+      {DOC_TYPES.map(dt => (
+        <DocUploadRow key={dt.type} dt={dt} doc={docMap[dt.type]} />
+      ))}
     </div>
   )
 }
@@ -723,9 +781,27 @@ function S14Consents({ initialConsents }: { initialConsents: string[] }) {
 
   const allAccepted = CONSENT_ITEMS.every(c => accepted.has(c.type))
 
+  async function acceptAll() {
+    const pending = CONSENT_ITEMS.filter(c => !accepted.has(c.type))
+    for (const c of pending) {
+      await toggle(c.type, c.version)
+    }
+  }
+
   return (
     <div className="space-y-3 mt-4">
-      <p className="text-xs text-[#6B7569]">Alle samtykker skal accepteres aktivt. Dato og tidspunkt logges.</p>
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-[#6B7569]">Alle samtykker skal accepteres aktivt. Dato og tidspunkt logges.</p>
+        {!allAccepted && (
+          <button
+            onClick={acceptAll}
+            disabled={!!saving}
+            className="text-xs font-semibold text-[#1C3829] hover:underline disabled:opacity-50 shrink-0 ml-3"
+          >
+            Acceptér alle
+          </button>
+        )}
+      </div>
       {CONSENT_ITEMS.map(c => (
         <label key={c.type} className="flex items-start gap-3 cursor-pointer">
           <input

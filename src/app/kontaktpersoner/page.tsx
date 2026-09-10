@@ -54,7 +54,7 @@ export default function KontaktpersonerPage() {
             Bliv kontaktperson — socialpædagogisk støtte til borgere i mistrivsel
           </h1>
           <p className="text-[17px] text-[#6B7569] leading-relaxed max-w-xl mb-8">
-            Vi søger uddannede fagpersoner til kontaktpersonforløb, støttekontaktpersonordninger og socialpædagogiske indsatser. Din profil verificeres og du tilknyttes relevante forløb i Nordjylland — herunder Aalborg, Hjørring, Brønderslev og Frederikshavn.
+            Vi søger fagpersoner, studerende på relevante uddannelser og ufaglærte med dokumenteret erfaring til kontaktpersonforløb, støttekontaktpersonordninger og socialpædagogiske indsatser. Din profil verificeres og du tilknyttes relevante forløb i Nordjylland — herunder Aalborg, Hjørring, Brønderslev og Frederikshavn.
           </p>
           <a
             href="mailto:info@kursskifte.dk"

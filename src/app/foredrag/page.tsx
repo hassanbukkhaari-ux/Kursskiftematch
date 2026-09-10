@@ -4,12 +4,12 @@ import PublicNav from '@/components/public/PublicNav'
 import PublicFooter from '@/components/public/PublicFooter'
 
 export const metadata: Metadata = {
-  title: 'Mit kursskifte | Foredrag af Hassan Bukkhaari',
+  title: 'Mit kursskifte | Foredrag af Kursskifte',
   description:
-    'Hassan Bukkhaari holder foredrag til skoler og SSP om sit eget kursskifte — og om unge han har set stå ved det samme valg. Ærligt. Personligt. Kontakt os for pris og tilgængelighed.',
+    'Kursskifte holder foredrag til skoler og SSP om eget kursskifte — og om unge vi har set stå ved det samme valg. Ærligt. Personligt. Kontakt os for pris og tilgængelighed.',
   alternates: { canonical: '/foredrag' },
   openGraph: {
-    title: 'Mit kursskifte | Foredrag af Hassan Bukkhaari',
+    title: 'Mit kursskifte | Foredrag af Kursskifte',
     description:
       'Et personligt foredrag om vendepunktet — af én der selv nåede at skifte kurs. Til skoler, gymnasier og SSP.',
     url: '/foredrag',
@@ -78,17 +78,19 @@ export default function ForedragPage() {
             {/* Speaker identity */}
             <div className="lg:col-span-2">
               <div className="bg-white border border-[#E0DAD0] rounded-2xl p-7">
-                <div className="flex items-center gap-4 mb-5">
-                  <div className="w-14 h-14 rounded-full bg-[#1C3829] flex items-center justify-center flex-shrink-0">
-                    <span className="font-serif text-xl text-[#F6F3EE]">H</span>
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-10 h-10 rounded-full bg-[#1C3829] flex items-center justify-center flex-shrink-0">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F6F3EE" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                    </svg>
                   </div>
                   <div>
-                    <div className="font-serif text-lg text-[#1A1F1C] leading-tight">Hassan Bukkhaari</div>
-                    <div className="text-xs text-[#C8993A] font-medium uppercase tracking-wide mt-0.5">Grundlægger · Kursskifte</div>
+                    <div className="font-serif text-lg text-[#1A1F1C] leading-tight">Kursskifte</div>
+                    <div className="text-xs text-[#C8993A] font-medium uppercase tracking-wide mt-0.5">Foredragsholdere</div>
                   </div>
                 </div>
                 <p className="text-sm text-[#6B7569] leading-relaxed mb-6">
-                  Kursskifte kom til som en forlængelse af det Hassan selv oplevede — og det han har set i andres liv. I dag arbejder han med at give unge og voksne i mistrivsel den støtte der kan gøre en forskel.
+                  Kursskifte kom til som en forlængelse af det vi selv oplevede — og det vi har set i andres liv. I dag arbejder vi med at give unge og voksne i mistrivsel den støtte der kan gøre en forskel.
                 </p>
                 <div className="space-y-2 text-sm text-[#6B7569]">
                   <div className="flex items-center gap-2">
@@ -118,7 +120,7 @@ export default function ForedragPage() {
             <blockquote className="font-serif text-2xl sm:text-3xl text-white font-normal leading-snug max-w-2xl">
               "Vi er ikke her for at skræmme nogen. Vi er her fordi vi har stået der selv — og ved at det gør en forskel at høre det fra nogen der har."
             </blockquote>
-            <p className="text-sm text-white/40 mt-5">— Hassan Bukkhaari</p>
+            <p className="text-sm text-white/40 mt-5">— Kursskifte</p>
           </div>
         </section>
 

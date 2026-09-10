@@ -89,7 +89,7 @@ function Hero() {
 // want depth before committing. No bullet lists; this is navigation.
 function AudiencePaths() {
   return (
-    <section className="max-w-6xl mx-auto px-5 sm:px-8 py-6 sm:py-10 pb-10 sm:pb-16">
+    <section id="kommuner" className="max-w-6xl mx-auto px-5 sm:px-8 py-6 sm:py-10 pb-10 sm:pb-16">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="bg-[#1C3829] rounded-2xl p-6 sm:p-10 lg:p-12 flex flex-col gap-6 sm:gap-10">
           <div>
@@ -111,7 +111,7 @@ function AudiencePaths() {
           </div>
         </div>
 
-        <div className="bg-white border border-[#E0DAD0] rounded-2xl p-6 sm:p-10 lg:p-12 flex flex-col gap-6 sm:gap-10">
+        <div id="kontaktpersoner" className="bg-white border border-[#E0DAD0] rounded-2xl p-6 sm:p-10 lg:p-12 flex flex-col gap-6 sm:gap-10">
           <div>
             <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-4">Til kontaktpersoner</div>
             <h2 className="font-serif text-2xl sm:text-3xl text-[#1A1F1C] font-normal leading-snug mb-3">
@@ -149,7 +149,7 @@ const STEPS = [
 
 function ProcessSection() {
   return (
-    <section className="bg-white border-y border-[#E0DAD0]">
+    <section id="proces" className="bg-white border-y border-[#E0DAD0]">
       <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-16">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
           <div>

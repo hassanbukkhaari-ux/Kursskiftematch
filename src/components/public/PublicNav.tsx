@@ -14,8 +14,8 @@ function LogoMark() {
 }
 
 const NAV_LINKS = [
-  { href: '/kommuner', label: 'Kommuner' },
-  { href: '/kontaktpersoner', label: 'Kontaktpersoner' },
+  { href: '/#kommuner', label: 'Kommuner' },
+  { href: '/#kontaktpersoner', label: 'Kontaktpersoner' },
   { href: '/kontakt', label: 'Kontakt' },
 ]
 

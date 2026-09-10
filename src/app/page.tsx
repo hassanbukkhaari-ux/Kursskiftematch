@@ -7,12 +7,12 @@ import PublicFooter from '@/components/public/PublicFooter'
 export const metadata: Metadata = {
   title: 'Kursskifte | Kvalitetssikrede kontaktpersoner til kommuner',
   description:
-    'Kursskifte matcher kommuner med kvalitetssikrede kontaktpersoner til §32 og §85-forløb. Vi varetager sagsvurdering, match og faglig anbefaling — struktureret og dokumenteret. Vi betjener kommuner i Nordjylland.',
+    'Mangler I en kontaktperson til en §85- eller §32-sag? Kursskifte finder og kvalitetssikrer fagpersoner til kommuner i Nordjylland. Straffeattest, børneattest og dokumentation — vi klarer det.',
   alternates: { canonical: '/' },
   openGraph: {
     title: 'Kursskifte | Kvalitetssikrede kontaktpersoner til kommuner',
     description:
-      'Kursskifte matcher kommuner med kvalitetssikrede kontaktpersoner til §32 og §85-forløb. Vi betjener kommuner i Nordjylland — Aalborg, Hjørring, Brønderslev og Frederikshavn.',
+      'Mangler I en kontaktperson til en §85- eller §32-sag? Kursskifte finder og kvalitetssikrer fagpersoner til kommuner i Nordjylland.',
     url: '/',
   },
 }

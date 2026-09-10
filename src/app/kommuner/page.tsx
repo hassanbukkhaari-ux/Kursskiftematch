@@ -98,6 +98,11 @@ const YDELSER = [
     desc: 'Intensiv støtte i overgangen til uddannelse, beskæftigelse, praktik, egen bolig eller ny kommunal indsats.',
     para: 'Unge 15–25 år / voksne',
   },
+  {
+    title: 'Støtte til kriminalitetstruede unge',
+    desc: 'Vi forstår kompleksiteten i de fællesskaber, der kan være svære at forlade. Med en stabil og troværdig relation udenfor miljøet arbejder vi målrettet med den unge mod en normal hverdag — i tæt samarbejde med SSP og kommunen.',
+    para: '§32 barnets lov / SSP-samarbejde',
+  },
 ]
 
 const serviceSchema = {

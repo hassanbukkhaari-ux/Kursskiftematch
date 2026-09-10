@@ -295,7 +295,6 @@ export default function KommunerPage() {
               </div>
             ))}
           </div>
-          <p className="text-xs text-[#9B9590] mt-6">Alle profiler er generiske og anonymiserede — de illustrerer typiske behovsbilleder, ikke konkrete sager.</p>
         </section>
 
         {/* Afgrænsning */}

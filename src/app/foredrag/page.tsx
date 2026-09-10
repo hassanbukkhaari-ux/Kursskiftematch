@@ -4,14 +4,14 @@ import PublicNav from '@/components/public/PublicNav'
 import PublicFooter from '@/components/public/PublicFooter'
 
 export const metadata: Metadata = {
-  title: 'Foredrag til skoler | Kursskifte',
+  title: 'Foredrag til skoler og SSP | Kursskifte',
   description:
-    'Kursskifte tilbyder gratis foredrag til folkeskoler og gymnasier om at skifte kurs — om at søge hjælp, finde retningen og hvad sociale støtteordninger kan gøre for unge i mistrivsel.',
+    'Kursskifte holder foredrag til folkeskoler, gymnasier og SSP-samarbejder om unge i kriminalitetstruede miljøer — om at stå ved et vendepunkt og skifte kurs mens det er muligt. Ærlige historier. Gratis.',
   alternates: { canonical: '/foredrag' },
   openGraph: {
-    title: 'Foredrag til skoler | Kursskifte',
+    title: 'Foredrag til skoler og SSP | Kursskifte',
     description:
-      'Gratis foredrag til folkeskoler og gymnasier om trivsel, hjælp og at skifte kurs. Book via info@kursskifte.dk.',
+      'Gratis foredrag til skoler og SSP om unge ved et vendepunkt — kriminalitet, fællesskab og hvad det kræver at skifte kurs. Book via info@kursskifte.dk.',
     url: '/foredrag',
   },
 }
@@ -24,35 +24,50 @@ function ArrowRight() {
   )
 }
 
-const FORMATS = [
+const AUDIENCES = [
   {
-    target: 'Folkeskole',
-    grade: '8.–10. klasse',
-    duration: '45 min',
-    focus: 'Det er okay at have det svært — og hvad du kan gøre ved det',
-    points: [
-      'Hvad er en kontaktperson og hvornår kan man få hjælp',
-      'Rigtige historier om unge der skiftede kurs',
-      'Hvad gør man hvis man ikke ved hvem man skal snakke med',
-    ],
+    who: 'Skoler',
+    sub: 'Folkeskole & gymnasium',
+    description: 'Et foredrag der ikke moraliserer — men som viser virkelige situationer unge kender igen. Hvornår begynder det at gå galt, og hvad skal der til for at vende den.',
+    fit: 'Trivselsuger, klassens time, SSP-dage',
   },
   {
-    target: 'Gymnasium',
-    grade: 'Alle årgange',
-    duration: '45–60 min',
-    focus: 'Presset om at have styr på fremtiden — og hvad det koster ikke at søge hjælp',
-    points: [
-      'Systemet bag: hvad kommunen kan tilbyde',
-      'Karrierevej som kontaktperson eller fagperson',
-      'Hvordan man genkender mistrivsel hos sig selv og andre',
-    ],
+    who: 'SSP',
+    sub: 'Skole · Socialforvaltning · Politi',
+    description: 'Kursskifte arbejder med unge der allerede er i udkanten. Vi kan bidrage i SSP-samarbejdet med et ærligt perspektiv fra fagpersoner der kender miljøerne.',
+    fit: 'Temadage, forældrearrangementer, netværksmøder',
+  },
+  {
+    who: 'Kommuner',
+    sub: 'Forebyggelsesindsatser',
+    description: 'Et supplement til eksisterende forebyggelsesindsatser. Vi taler om hvad tidlig hjælp faktisk gør — og hvad det koster ikke at handle mens det stadig er muligt.',
+    fit: 'Ungdomskriminalitetsnævn, UU-vejledning, §52-møder',
+  },
+]
+
+const WHAT_WE_TALK_ABOUT = [
+  {
+    heading: 'Det forkerte fællesskab',
+    body: 'Mange unge ender ikke i kriminalitet fordi de vil — men fordi det er det fællesskab der er tilgængeligt. Vi taler om hvordan det sker, og hvad der kan trække i en anden retning.',
+  },
+  {
+    heading: 'Vendepunktet',
+    body: 'Der er altid et øjeblik hvor det kan gå begge veje. Vi bruger rigtige historier — anonymiserede — om unge der stod der, og hvad der fik dem til at skifte kurs.',
+  },
+  {
+    heading: 'Hvad systemet kan',
+    body: 'Kontaktpersoner, støtte, rådgivning — det eksisterer. Men mange unge ved det ikke, eller tror det ikke er for dem. Vi fortæller hvad det rent faktisk er, uden at gøre det til en salgstale.',
+  },
+  {
+    heading: 'Det er ikke for sent',
+    body: 'Foredraget slutter ikke med en liste over konsekvenser. Det slutter med muligheder — og med at skifte retning er muligt, uanset hvad der er sket.',
   },
 ]
 
 const STEPS = [
-  { n: '01', title: 'Send en mail', body: 'Skriv til info@kursskifte.dk med skolens navn og ønskede tidspunkt. Vi vender tilbage inden for 2 arbejdsdage.' },
-  { n: '02', title: 'Vi tilpasser', body: 'Foredraget tilpasses jeres klassetrin og aktuelle fokus — trivselsindsats, karrieredag eller klassens time.' },
-  { n: '03', title: 'Vi møder op', body: 'Kursskifte varetager alt. I skal ikke forberede noget. Foredraget er gratis.' },
+  { n: '01', title: 'Skriv til os', body: 'Send en mail til info@kursskifte.dk med skolens eller organisationens navn og et ønsket tidspunkt. Vi vender tilbage inden for 2 arbejdsdage.' },
+  { n: '02', title: 'Vi tilpasser', body: 'Foredraget tilpasses jeres målgruppe — om det er 8. klasse, gymnasieelever eller et SSP-møde med fagpersoner. Fokus og tone tilpasses.' },
+  { n: '03', title: 'Vi møder op', body: 'Kursskifte klarer alt. Ingen forberedelse kræves. Foredraget er gratis.' },
 ]
 
 export default function ForedragPage() {
@@ -62,68 +77,79 @@ export default function ForedragPage() {
       <main>
 
         {/* Hero */}
-        <section className="max-w-6xl mx-auto px-5 sm:px-8 pt-16 pb-12 sm:pt-20">
+        <section className="max-w-6xl mx-auto px-5 sm:px-8 pt-16 pb-14 sm:pt-20">
           <div className="flex items-center gap-2.5 mb-5">
             <div className="w-5 h-px bg-[#C8993A]" />
             <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Foredrag</span>
           </div>
           <h1 className="font-serif text-4xl sm:text-5xl text-[#1A1F1C] font-normal max-w-2xl mb-5 leading-tight tracking-tight">
-            Det er okay at skifte kurs
+            Skifte kurs mens det er muligt
           </h1>
+          <p className="text-[17px] text-[#6B7569] leading-relaxed max-w-xl mb-3">
+            Kursskifte holder foredrag til skoler, gymnasier og SSP-samarbejder om unge i kriminalitetstruede miljøer — om vendepunktet, om det forkerte fællesskab, og om hvad det faktisk kræver at gå en anden vej.
+          </p>
           <p className="text-[17px] text-[#6B7569] leading-relaxed max-w-xl mb-8">
-            Kursskifte tilbyder gratis foredrag til folkeskoler og gymnasier — om trivsel, om at søge hjælp og om hvad det vil sige at skifte retning. Foredraget passer ind i trivselsuger, karrieredage og klassens time.
+            Ingen moralisering. Rigtige historier. Gratis.
           </p>
           <Link
-            href="/kontakt"
+            href="mailto:info@kursskifte.dk?subject=Foredrag til vores skole/SSP"
             className="inline-flex items-center gap-2 h-11 px-6 bg-[#1C3829] text-white text-sm font-semibold rounded-xl hover:bg-[#2D5840] transition-colors"
           >
             Book et foredrag <ArrowRight />
           </Link>
         </section>
 
-        {/* Formats */}
+        {/* Who it's for */}
         <section className="bg-white border-y border-[#E0DAD0]">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-16">
             <div className="flex items-center gap-2.5 mb-10">
               <div className="w-5 h-px bg-[#C8993A]" />
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">To formater</span>
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Hvem er det til</span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {FORMATS.map(f => (
-                <div key={f.target} className="bg-[#F6F3EE] border border-[#E0DAD0] rounded-2xl p-8">
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="font-serif text-2xl text-[#1A1F1C]">{f.target}</span>
-                    <span className="text-xs text-[#6B7569] border border-[#E0DAD0] rounded-full px-2.5 py-0.5">{f.grade}</span>
-                    <span className="text-xs text-[#6B7569] border border-[#E0DAD0] rounded-full px-2.5 py-0.5">{f.duration}</span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {AUDIENCES.map(a => (
+                <div key={a.who} className="bg-[#F6F3EE] border border-[#E0DAD0] rounded-2xl p-7 flex flex-col gap-4">
+                  <div>
+                    <span className="font-serif text-2xl text-[#1A1F1C] block mb-0.5">{a.who}</span>
+                    <span className="text-xs text-[#C8993A] font-medium uppercase tracking-wider">{a.sub}</span>
                   </div>
-                  <p className="text-sm font-medium text-[#1C3829] mb-4 leading-snug">{f.focus}</p>
-                  <ul className="space-y-2">
-                    {f.points.map(p => (
-                      <li key={p} className="flex items-start gap-2.5 text-sm text-[#6B7569]">
-                        <div className="w-1 h-1 rounded-full bg-[#C8993A] mt-2 flex-shrink-0" />
-                        {p}
-                      </li>
-                    ))}
-                  </ul>
+                  <p className="text-sm text-[#6B7569] leading-relaxed flex-1">{a.description}</p>
+                  <div className="border-t border-[#E0DAD0] pt-3">
+                    <span className="text-xs text-[#6B7569]">Passer til: <span className="text-[#1A1F1C]">{a.fit}</span></span>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Compass quote */}
+        {/* What we talk about */}
         <section className="max-w-6xl mx-auto px-5 sm:px-8 py-16">
-          <div className="max-w-2xl">
-            <div className="flex items-center gap-2.5 mb-6">
-              <div className="w-5 h-px bg-[#C8993A]" />
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Budskabet</span>
+          <div className="flex items-center gap-2.5 mb-10">
+            <div className="w-5 h-px bg-[#C8993A]" />
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Hvad vi taler om</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-10">
+            {WHAT_WE_TALK_ABOUT.map(item => (
+              <div key={item.heading}>
+                <h3 className="font-serif text-xl text-[#1A1F1C] font-normal mb-3">{item.heading}</h3>
+                <p className="text-sm text-[#6B7569] leading-relaxed">{item.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Quote */}
+        <section className="bg-[#1C3829]">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16">
+            <div className="max-w-2xl">
+              <blockquote className="font-serif text-2xl sm:text-3xl text-white font-normal leading-snug mb-6">
+                "De fleste unge ved godt at det er den forkerte vej. De mangler bare en der tror på at de kan gå en anden."
+              </blockquote>
+              <p className="text-sm text-white/60 leading-relaxed">
+                Foredraget er ikke en advarsel mod konsekvenser. Det er en samtale om hvad der faktisk trækker unge i den forkerte retning — og hvad der kan trækkes i den rigtige. Vi bruger rigtige historier fra det arbejde Kursskifte gør med kommuner og kontaktpersoner i Nordjylland.
+              </p>
             </div>
-            <blockquote className="font-serif text-2xl sm:text-3xl text-[#1A1F1C] font-normal leading-snug mb-6">
-              "Alle mister retningen engang imellem. Det handler ikke om at vide svaret — det handler om at turde spørge om hjælp."
-            </blockquote>
-            <p className="text-sm text-[#6B7569] leading-relaxed">
-              Foredraget er ikke en salgstale. Det er en samtale med unge om noget de allerede kender — presset, usikkerheden og spørgsmålet om hvad der sker hvis man ikke har styr på fremtiden. Kursskifte nævnes kort til sidst som en del af det system der findes til at hjælpe.
-            </p>
           </div>
         </section>
 
@@ -147,20 +173,18 @@ export default function ForedragPage() {
         </section>
 
         {/* CTA */}
-        <section className="bg-[#1C3829]">
-          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-              <div>
-                <h2 className="font-serif text-2xl text-white font-normal mb-1">Book et gratis foredrag</h2>
-                <p className="text-sm text-white/60">Vi tilpasser, møder op og tager os af det hele. Ingen forberedelse kræves af skolen.</p>
-              </div>
-              <Link
-                href="mailto:info@kursskifte.dk?subject=Foredrag til vores skole"
-                className="h-10 px-5 bg-[#C8993A] text-white text-sm font-semibold rounded-xl hover:bg-[#b8872e] transition-colors inline-flex items-center gap-2 flex-shrink-0"
-              >
-                Skriv til os <ArrowRight />
-              </Link>
+        <section className="max-w-6xl mx-auto px-5 sm:px-8 py-14">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+            <div>
+              <h2 className="font-serif text-2xl text-[#1A1F1C] font-normal mb-1">Book et gratis foredrag</h2>
+              <p className="text-sm text-[#6B7569]">Til jeres skole, SSP-netværk eller kommunale forebyggelsesindsats. Vi tilpasser og møder op.</p>
             </div>
+            <Link
+              href="mailto:info@kursskifte.dk?subject=Foredrag til vores skole/SSP"
+              className="h-10 px-5 bg-[#1C3829] text-white text-sm font-semibold rounded-xl hover:bg-[#2D5840] transition-colors inline-flex items-center gap-2 flex-shrink-0"
+            >
+              Skriv til os <ArrowRight />
+            </Link>
           </div>
         </section>
 

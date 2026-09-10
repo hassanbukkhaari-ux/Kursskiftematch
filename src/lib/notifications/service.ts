@@ -84,50 +84,51 @@ export async function sendNotification(params: SendNotificationParams): Promise<
 
 // Email templates — one function per audience (admin vs professional)
 export function adminEmailBody(type: NotificationType, entityId: string): { subject: string; body: string } {
+  const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://kursskifte.dk'
   const map: Record<NotificationType, { subject: string; body: string }> = {
     INQUIRY_RECEIVED: {
-      subject: 'Ny henvendelse modtaget — Kursskiftematch',
-      body: `En ny henvendelse er modtaget og afventer behandling.\n\nHenvendelses-ID: ${entityId}\n\nLog ind for at behandle henvendelsen.`,
+      subject: 'Ny henvendelse modtaget — Kursskifte',
+      body: `En ny henvendelse er modtaget og afventer behandling.\n\nHenvendelses-ID: ${entityId}\n\nSe henvendelsen her:\n${base}/admin/inquiries`,
     },
     PROFESSIONAL_APPLICATION_RECEIVED: {
-      subject: 'Ny fagperson-ansøgning — Kursskiftematch',
-      body: `En ny fagperson-ansøgning er modtaget og afventer godkendelse.\n\nHenvendelses-ID: ${entityId}\n\nLog ind for at behandle ansøgningen.`,
+      subject: 'Ny fagperson-ansøgning — Kursskifte',
+      body: `En ny fagperson-ansøgning er modtaget og afventer godkendelse.\n\nHenvendelses-ID: ${entityId}\n\nSe ansøgningen her:\n${base}/admin/inquiries`,
     },
     CASE_CREATED: {
-      subject: 'Ny sag oprettet — Kursskiftematch',
-      body: `En ny sag er oprettet og afventer tildeling af fagperson.\n\nSags-ID: ${entityId}\n\nLog ind for at starte matching-processen.`,
+      subject: 'Ny sag oprettet — Kursskifte',
+      body: `En ny sag er oprettet og afventer tildeling af fagperson.\n\nSags-ID: ${entityId}\n\nÅbn sagen:\n${base}/admin/cases/${entityId}`,
     },
     SAFEGUARDING_FLAGGED: {
-      subject: 'VIGTIGT: Bekymring om borgerens sikkerhed — Kursskiftematch',
-      body: `En sessionlog har udløst en sikkerhedsflag.\n\nSessionlog-ID: ${entityId}\n\nLog ind straks for at håndtere bekymringen.`,
+      subject: 'VIGTIGT: Bekymring om borgerens sikkerhed — Kursskifte',
+      body: `En sessionlog har udløst en sikkerhedsflag.\n\nSessionlog-ID: ${entityId}\n\nHandl straks:\n${base}/admin/indsigt/${entityId}`,
     },
     HOURS_SUBMITTED: {
-      subject: 'Timer indsendt til godkendelse — Kursskiftematch',
-      body: `Registrerede timer er indsendt til din godkendelse.\n\nTime-ID: ${entityId}\n\nLog ind for at godkende eller afvise.`,
+      subject: 'Timer indsendt til godkendelse — Kursskifte',
+      body: `Registrerede timer er indsendt til din godkendelse.\n\nTime-ID: ${entityId}\n\nGodkend eller afvis:\n${base}/admin/hours`,
     },
     DOCUMENT_ACTION_REQUIRED: {
-      subject: 'Handling påkrævet: Dokument skal genindsendes — Kursskiftematch',
-      body: `Et af dine dokumenter kræver handling. Venligst indsend dokumentet igen.\n\nDokument-ID: ${entityId}\n\nLog ind for at se detaljerne.`,
+      subject: 'Handling påkrævet: Dokument skal genindsendes — Kursskifte',
+      body: `Et dokument kræver handling — kontaktpersonen skal genindsende det.\n\nDokument-ID: ${entityId}\n\nSe fagpersonens profil:\n${base}/admin/professionals`,
     },
     CASE_CLOSED: {
-      subject: 'Sag afsluttet — Kursskiftematch',
-      body: `En sag du var tilknyttet er nu afsluttet.\n\nSags-ID: ${entityId}\n\nLog ind for at se de afsluttende detaljer.`,
+      subject: 'Sag afsluttet — Kursskifte',
+      body: `En sag er nu afsluttet.\n\nSags-ID: ${entityId}\n\nSe sagen:\n${base}/admin/cases/${entityId}`,
     },
     HANDOVER_INITIATED: {
-      subject: 'Du er blevet tildelt en ny sag — Kursskiftematch',
-      body: `En sag er ved at blive overdraget til dig.\n\nSags-ID: ${entityId}\n\nLog ind for at se sagen og forberede overdragelsen.`,
+      subject: 'Overdragelse igangsat — Kursskifte',
+      body: `En sag er ved at blive overdraget til en ny kontaktperson.\n\nSags-ID: ${entityId}\n\nFølg op på sagen:\n${base}/admin/cases/${entityId}`,
     },
     PROPOSAL_SENT: {
-      subject: 'Forslag sendt til kommunen — Kursskiftematch',
-      body: `Et forslag er sendt til kommunen for sag ${entityId}.\n\nAfvent kommunens svar.`,
+      subject: 'Forslag sendt til kommunen — Kursskifte',
+      body: `Et forslag er sendt til kommunen for sag ${entityId}.\n\nAfvent kommunens svar:\n${base}/admin/cases/${entityId}`,
     },
     PROPOSAL_ACCEPTED: {
-      subject: 'Kommunen har accepteret forslaget — Kursskiftematch',
-      body: `Kommunen har accepteret forslaget for sag ${entityId}.\n\nLog ind for at aktivere sagen og dele kontaktoplysninger med fagpersonen.`,
+      subject: 'Kommunen har accepteret forslaget — Kursskifte',
+      body: `Kommunen har accepteret forslaget for sag ${entityId}.\n\nAktivér sagen og del kontaktoplysninger:\n${base}/admin/cases/${entityId}`,
     },
     PROPOSAL_DECLINED: {
-      subject: 'Kommunen har afvist forslaget — Kursskiftematch',
-      body: `Kommunen har afvist forslaget for sag ${entityId}.\n\nLog ind for at gennemgå og sende et nyt forslag.`,
+      subject: 'Kommunen har afvist forslaget — Kursskifte',
+      body: `Kommunen har afvist forslaget for sag ${entityId}.\n\nGennemgå og send et nyt forslag:\n${base}/admin/cases/${entityId}`,
     },
   }
   return map[type]

@@ -39,7 +39,7 @@ const THEMES = [
   },
   {
     heading: 'Inden det er for sent',
-    body: 'Det er det sværeste at sige til én der tror der er tid. Foredraget slutter ikke med konsekvenser. Det slutter med muligheder.',
+    body: 'Det er det sværeste at sige til én der tror de har god tid. Foredraget slutter ikke med konsekvenser. Det slutter med muligheder.',
   },
 ]
 
@@ -141,7 +141,7 @@ export default function ForedragPage() {
                 <p className="text-sm text-[#6B7569] leading-relaxed">
                   Send en mail til{' '}
                   <a href="mailto:info@kursskifte.dk" className="text-[#1C3829] underline underline-offset-2">info@kursskifte.dk</a>{' '}
-                  med skolens eller organisationens navn og et ønsket tidspunkt. Vi tilpasser foredraget til jeres målgruppe og vender tilbage med pris og tilgængelighed.
+                  med skolens eller organisationens navn og hvornår I ønsker det. Vi tilpasser og vender tilbage med pris og dato.
                 </p>
               </div>
               <Link

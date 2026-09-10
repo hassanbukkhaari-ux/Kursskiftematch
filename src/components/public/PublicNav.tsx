@@ -13,14 +13,33 @@ function LogoMark() {
   )
 }
 
-const NAV_LINKS = [
-  { href: '/#kommuner', label: 'Kommuner' },
-  { href: '/#kontaktpersoner', label: 'Kontaktpersoner' },
-  { href: '/kontakt', label: 'Kontakt' },
+const NAV_ITEMS = [
+  {
+    label: 'Kommuner',
+    href: '/kommuner',
+    children: [
+      { label: 'Ydelser', href: '/kommuner#ydelser' },
+      { label: 'Sådan arbejder vi', href: '/kommuner#proces' },
+    ],
+  },
+  {
+    label: 'Kontaktpersoner',
+    href: '/kontaktpersoner',
+    children: [
+      { label: 'Hvem kan søge', href: '/kontaktpersoner#hvem-kan-soege' },
+      { label: 'Sådan kommer du i gang', href: '/kontaktpersoner#proces' },
+    ],
+  },
+  {
+    label: 'Kontakt',
+    href: '/kontakt',
+    children: [],
+  },
 ]
 
 export default function PublicNav() {
   const [open, setOpen] = useState(false)
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null)
 
   return (
     <header className="sticky top-0 z-50 bg-[#F6F3EE]/90 backdrop-blur-md border-b border-[#E0DAD0]">
@@ -31,14 +50,41 @@ export default function PublicNav() {
 
         {/* Desktop links */}
         <div className="hidden lg:flex items-center gap-1">
-          {NAV_LINKS.map(l => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="px-3 py-1.5 text-sm text-[#6B7569] hover:text-[#1C3829] hover:bg-[#EEF4F0] rounded-lg transition-colors"
+          {NAV_ITEMS.map(item => (
+            <div
+              key={item.href}
+              className="relative"
+              onMouseEnter={() => item.children.length > 0 && setOpenDropdown(item.href)}
+              onMouseLeave={() => setOpenDropdown(null)}
             >
-              {l.label}
-            </Link>
+              <Link
+                href={item.href}
+                className="flex items-center gap-1 px-3 py-1.5 text-sm text-[#6B7569] hover:text-[#1C3829] hover:bg-[#EEF4F0] rounded-lg transition-colors"
+              >
+                {item.label}
+                {item.children.length > 0 && (
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                )}
+              </Link>
+
+              {/* Dropdown */}
+              {item.children.length > 0 && openDropdown === item.href && (
+                <div className="absolute top-full left-0 mt-1 bg-white border border-[#E0DAD0] rounded-xl shadow-sm py-1.5 min-w-[200px] z-50">
+                  {item.children.map(child => (
+                    <Link
+                      key={child.href}
+                      href={child.href}
+                      onClick={() => setOpenDropdown(null)}
+                      className="block px-4 py-2 text-sm text-[#6B7569] hover:text-[#1C3829] hover:bg-[#F6F3EE] transition-colors"
+                    >
+                      {child.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
           <Link
             href="/login"
@@ -90,15 +136,26 @@ export default function PublicNav() {
       {/* Mobile drawer */}
       {open && (
         <div className="lg:hidden border-t border-[#E0DAD0] bg-[#F6F3EE] px-5 py-4 space-y-1">
-          {NAV_LINKS.map(l => (
-            <Link
-              key={l.href}
-              href={l.href}
-              onClick={() => setOpen(false)}
-              className="block px-3 py-2.5 text-sm text-[#1A1F1C] hover:bg-[#EEF4F0] rounded-lg transition-colors"
-            >
-              {l.label}
-            </Link>
+          {NAV_ITEMS.map(item => (
+            <div key={item.href}>
+              <Link
+                href={item.href}
+                onClick={() => setOpen(false)}
+                className="block px-3 py-2.5 text-sm font-medium text-[#1A1F1C] hover:bg-[#EEF4F0] rounded-lg transition-colors"
+              >
+                {item.label}
+              </Link>
+              {item.children.map(child => (
+                <Link
+                  key={child.href}
+                  href={child.href}
+                  onClick={() => setOpen(false)}
+                  className="block pl-7 pr-3 py-2 text-sm text-[#6B7569] hover:text-[#1C3829] hover:bg-[#EEF4F0] rounded-lg transition-colors"
+                >
+                  {child.label}
+                </Link>
+              ))}
+            </div>
           ))}
           <div className="border-t border-[#E0DAD0] mt-2 pt-2">
             <Link

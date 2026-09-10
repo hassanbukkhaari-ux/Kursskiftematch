@@ -65,7 +65,7 @@ export default function KontaktpersonerPage() {
         </section>
 
         {/* Who can apply */}
-        <section className="bg-white border-y border-[#E0DAD0]">
+        <section id="hvem-kan-soege" className="bg-white border-y border-[#E0DAD0]">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-16">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
               <div>
@@ -134,7 +134,7 @@ export default function KontaktpersonerPage() {
         </section>
 
         {/* Process */}
-        <section className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-16">
+        <section id="proces" className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-16">
           <div className="mb-10">
             <div className="flex items-center gap-2.5 mb-4">
               <div className="w-5 h-px bg-[#C8993A]" />

@@ -188,7 +188,7 @@ export default function KommunerPage() {
         </section>
 
         {/* Process */}
-        <section className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-16">
+        <section id="proces" className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-16">
           <div className="mb-10">
             <div className="flex items-center gap-2.5 mb-4">
               <div className="w-5 h-px bg-[#C8993A]" />
@@ -210,7 +210,7 @@ export default function KommunerPage() {
         </section>
 
         {/* Ydelser */}
-        <section className="bg-white border-y border-[#E0DAD0]">
+        <section id="ydelser" className="bg-white border-y border-[#E0DAD0]">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-16">
             <div className="mb-10">
               <div className="flex items-center gap-2.5 mb-4">

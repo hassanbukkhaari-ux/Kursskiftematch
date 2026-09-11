@@ -16,6 +16,9 @@ interface Props {
   urgency: Urgency
   weeklyHours: number
   citizenNotes: string | null
+  intakeContactName: string | null
+  intakeContactEmail: string | null
+  intakeContactPhone: string | null
 }
 
 const STATUS_OPTIONS: { value: Status; label: string }[] = [
@@ -39,7 +42,7 @@ const URGENCY_OPTIONS: { value: Urgency; label: string; color: string }[] = [
 
 const selectClass = 'w-full border border-[#E0DAD0] rounded-xl px-3 py-2 text-sm text-[#1A1F1C] focus:outline-none focus:ring-2 focus:ring-[#1C3829]/20 bg-white'
 
-export default function AdminCaseEditClient({ caseId, status, complexityLevel, urgency, weeklyHours, citizenNotes }: Props) {
+export default function AdminCaseEditClient({ caseId, status, complexityLevel, urgency, weeklyHours, citizenNotes, intakeContactName, intakeContactEmail, intakeContactPhone }: Props) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [saving, startSave] = useTransition()
@@ -52,6 +55,9 @@ export default function AdminCaseEditClient({ caseId, status, complexityLevel, u
     urgency,
     weekly_hours: weeklyHours,
     citizen_notes: citizenNotes ?? '',
+    intake_contact_name: intakeContactName ?? '',
+    intake_contact_email: intakeContactEmail ?? '',
+    intake_contact_phone: intakeContactPhone ?? '',
   })
 
   function handleSave() {
@@ -66,6 +72,9 @@ export default function AdminCaseEditClient({ caseId, status, complexityLevel, u
           complexity_level: form.complexity_level,
           weekly_hours: Number(form.weekly_hours),
           citizen_notes: form.citizen_notes || undefined,
+          intake_contact_name: form.intake_contact_name || null,
+          intake_contact_email: form.intake_contact_email || null,
+          intake_contact_phone: form.intake_contact_phone || null,
         }),
       })
       if (!res.ok) {
@@ -104,6 +113,9 @@ export default function AdminCaseEditClient({ caseId, status, complexityLevel, u
           <div><span className="font-medium text-[#1A1F1C]">Kompleksitet:</span> {COMPLEXITY_OPTIONS.find(c => c.value === form.complexity_level)?.label}</div>
           <div><span className="font-medium text-[#1A1F1C]">Hastighed:</span> {URGENCY_OPTIONS.find(u => u.value === form.urgency)?.label}</div>
           <div><span className="font-medium text-[#1A1F1C]">Timer/uge:</span> {form.weekly_hours}</div>
+          {form.intake_contact_name && (
+            <div><span className="font-medium text-[#1A1F1C]">Sagsbehandler:</span> {form.intake_contact_name}</div>
+          )}
         </div>
       )}
 
@@ -169,6 +181,33 @@ export default function AdminCaseEditClient({ caseId, status, complexityLevel, u
               className="w-full border border-[#E0DAD0] rounded-xl px-3 py-2 text-sm text-[#1A1F1C] focus:outline-none focus:ring-2 focus:ring-[#1C3829]/20 resize-none"
               placeholder="Interne noter om sagen..."
             />
+          </div>
+
+          <div className="pt-1 border-t border-[#E0DAD0]">
+            <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-2">Sagsbehandler</div>
+            <div className="space-y-2">
+              <input
+                type="text"
+                value={form.intake_contact_name}
+                onChange={e => setForm(f => ({ ...f, intake_contact_name: e.target.value }))}
+                placeholder="Fuldt navn"
+                className={selectClass}
+              />
+              <input
+                type="email"
+                value={form.intake_contact_email}
+                onChange={e => setForm(f => ({ ...f, intake_contact_email: e.target.value }))}
+                placeholder="E-mailadresse"
+                className={selectClass}
+              />
+              <input
+                type="tel"
+                value={form.intake_contact_phone}
+                onChange={e => setForm(f => ({ ...f, intake_contact_phone: e.target.value }))}
+                placeholder="Telefonnummer"
+                className={selectClass}
+              />
+            </div>
           </div>
 
           <div className="flex gap-2">

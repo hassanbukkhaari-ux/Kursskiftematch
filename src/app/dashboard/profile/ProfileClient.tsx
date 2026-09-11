@@ -351,18 +351,27 @@ function S1Personal({ pro, profileName, profileEmail }: { pro: Pro | null; profi
           </select>
         </Field>
       </div>
-      <Field label="Daglig beskæftigelse">
-        <select
-          value={f.daily_occupation}
-          onChange={e => setF(p => ({ ...p, daily_occupation: e.target.value }))}
-          className="w-full h-10 px-3 bg-[#F6F3EE] rounded-xl text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829]"
-        >
-          <option value="">Vælg status…</option>
-          <option value="Ledig">Ledig</option>
-          <option value="I arbejde">I arbejde</option>
-          <option value="Skole/Studie">Skole/Studie</option>
-        </select>
-      </Field>
+      <div>
+        <label className="block text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">
+          Daglig beskæftigelse
+        </label>
+        <div className="flex gap-2 flex-wrap">
+          {(['Ledig', 'I arbejde', 'Skole/Studie'] as const).map(opt => (
+            <button
+              key={opt}
+              type="button"
+              onClick={() => setF(p => ({ ...p, daily_occupation: p.daily_occupation === opt ? '' : opt }))}
+              className={`px-4 py-2 rounded-xl text-sm font-medium border transition-all ${
+                f.daily_occupation === opt
+                  ? 'bg-[#1C3829] text-white border-[#1C3829]'
+                  : 'bg-[#F6F3EE] text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829] hover:text-[#1C3829]'
+              }`}
+            >
+              {opt}
+            </button>
+          ))}
+        </div>
+      </div>
       <SaveBar busy={busy} error={error} saved={saved} onSave={handleSave} />
     </div>
   )

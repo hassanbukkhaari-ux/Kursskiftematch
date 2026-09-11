@@ -1241,6 +1241,9 @@ export type NotificationType =
   | 'PROPOSAL_ACCEPTED'
   | 'PROPOSAL_DECLINED'
   | 'FOLLOW_UP_NEEDED'
+  | 'STATUS_REPORT_REQUESTED'
+  | 'STATUS_REPORT_REMINDER'
+  | 'STATUS_REPORT_SUBMITTED'
 
 // ================================================================
 // Convenience row types

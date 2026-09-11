@@ -134,6 +134,18 @@ export function adminEmailBody(type: NotificationType, entityId: string): { subj
       subject: 'Opfølgning påkrævet — Kursskifte',
       body: `Der er markeret behov for opfølgning i en sessionslog.\n\nLog-ID: ${entityId}\n\nSe dine sager:\n${base}/dashboard/session-logs`,
     },
+    STATUS_REPORT_REQUESTED: {
+      subject: 'Ny anmodning om statusrapport — Kursskifte',
+      body: `Admin har anmodet om en statusrapport.\n\nAnmodnings-ID: ${entityId}\n\nSe anmodningen:\n${base}/admin/status-reports/${entityId}`,
+    },
+    STATUS_REPORT_REMINDER: {
+      subject: 'Påmindelse om statusrapport — Kursskifte',
+      body: `En statusrapport nærmer sig fristen.\n\nAnmodnings-ID: ${entityId}\n\nSe anmodningen:\n${base}/admin/status-reports/${entityId}`,
+    },
+    STATUS_REPORT_SUBMITTED: {
+      subject: 'Statusrapport indsendt — Kursskifte',
+      body: `En kontaktperson har indsendt en statusrapport.\n\nAnmodnings-ID: ${entityId}\n\nGennemse rapporten:\n${base}/admin/status-reports/${entityId}`,
+    },
   }
   return map[type]
 }

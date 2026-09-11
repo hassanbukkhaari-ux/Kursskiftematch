@@ -122,9 +122,9 @@ function Field({ label, required, children }: { label: string; required?: boolea
   )
 }
 
-function Input({ value, onChange, placeholder, type = 'text', disabled }: {
+function Input({ value, onChange, placeholder, type = 'text', disabled, min }: {
   value: string; onChange?: (v: string) => void; placeholder?: string
-  type?: string; disabled?: boolean
+  type?: string; disabled?: boolean; min?: number
 }) {
   return (
     <input
@@ -133,6 +133,7 @@ function Input({ value, onChange, placeholder, type = 'text', disabled }: {
       onChange={e => onChange?.(e.target.value)}
       placeholder={placeholder}
       disabled={disabled}
+      min={min}
       className="w-full h-10 px-3 bg-[#F6F3EE] rounded-xl text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829] disabled:opacity-60"
     />
   )
@@ -408,7 +409,7 @@ function S2Profession({ pro, professionTypes }: { pro: Pro | null; professionTyp
           </select>
         </Field>
         <Field label="Antal års erfaring" required>
-          <Input value={f.experience_years} onChange={set('experience_years')} type="number" placeholder="5" />
+          <Input value={f.experience_years} onChange={set('experience_years')} type="number" placeholder="5" min={1} />
         </Field>
         {isOther && (
           <Field label="Titel (specificér)" required>
@@ -470,7 +471,8 @@ function S2Profession({ pro, professionTypes }: { pro: Pro | null; professionTyp
       <SaveBar busy={busy} error={error} saved={saved} onSave={() => {
         const missing: string[] = []
         if (!f.profession_type_id) missing.push('profession')
-        if (!f.experience_years.trim()) missing.push('antal års erfaring')
+        const expYears = parseInt(f.experience_years)
+        if (!f.experience_years.trim() || isNaN(expYears) || expYears < 1) missing.push('antal års erfaring (mindst 1)')
         if (isOther && !otherLabel.trim()) missing.push('titel (specificér)')
         if (!isOther && educations.every(e => !e.trim())) missing.push('uddannelse')
         if (missing.length > 0) { setError(`Udfyld venligst: ${missing.join(', ')}`); return }

@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useTransition, useMemo } from 'react'
+import { useState, useTransition, useMemo, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -102,6 +103,20 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
   const [inviting, setInviting] = useState(false)
   const [inviteError, setInviteError] = useState<string | null>(null)
   const [inviteSent, setInviteSent] = useState(false)
+
+  // Realtime: refresh when professionals table changes (daily_occupation, status, etc.)
+  const refresh = useCallback(() => {
+    startUpdate(() => router.refresh())
+  }, [router])
+
+  useEffect(() => {
+    const db = createClient()
+    const channel = db
+      .channel('admin-professionals-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'professionals' }, refresh)
+      .subscribe()
+    return () => { db.removeChannel(channel) }
+  }, [refresh])
 
   async function sendInvite(e: React.FormEvent) {
     e.preventDefault()

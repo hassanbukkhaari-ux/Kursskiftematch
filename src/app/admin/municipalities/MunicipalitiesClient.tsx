@@ -26,6 +26,24 @@ type FormData = {
   sagsbehandler_phone: string
 }
 
+type CaseEntry = {
+  id: string
+  citizen_initials: string
+  citizen_age_range: string
+  status: string
+  case_number: string | null
+}
+
+const STATUS_LABEL: Record<string, string> = {
+  OPEN: 'Åben', MATCHED: 'Matchet', PROPOSED: 'Foreslået',
+  ACTIVE: 'Aktiv', COMPLETED: 'Afsluttet', ARCHIVED: 'Arkiveret',
+}
+
+const STATUS_VARIANT: Record<string, 'green' | 'amber' | 'default'> = {
+  OPEN: 'amber', MATCHED: 'amber', PROPOSED: 'amber',
+  ACTIVE: 'green', COMPLETED: 'default', ARCHIVED: 'default',
+}
+
 const EMPTY_FORM: FormData = {
   name: '',
   status: 'ACTIVE',
@@ -49,6 +67,11 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
   const [deleting, startDelete] = useTransition()
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [sortKey, setSortKey] = useState<SortKey>('volume')
+  const [municipalityCases, setMunicipalityCases] = useState<CaseEntry[]>([])
+  const [casesLoading, setCasesLoading] = useState(false)
+  const [reassigningId, setReassigningId] = useState<string | null>(null)
+  const [reassignTarget, setReassignTarget] = useState('')
+  const [reassigning, startReassign] = useTransition()
 
   const statsById = new Map(caseStats.map(s => [s.municipality_id, s]))
   const getStats = (id: string) => statsById.get(id) ?? { active: 0, completed_90d: 0, municipality_id: id }
@@ -76,7 +99,16 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
       sagsbehandler_phone: m.sagsbehandler_phone ?? '',
     })
     setError(null)
+    setMunicipalityCases([])
+    setReassigningId(null)
+    setReassignTarget('')
     setDrawerOpen(true)
+    setCasesLoading(true)
+    fetch(`/api/cases?municipality_id=${m.id}&limit=100`)
+      .then(r => r.json())
+      .then((d: { data?: CaseEntry[] }) => setMunicipalityCases(d.data ?? []))
+      .catch(() => setMunicipalityCases([]))
+      .finally(() => setCasesLoading(false))
   }
 
   function closeDrawer() {
@@ -84,6 +116,26 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
     setEditingId(null)
     setError(null)
     setDeleteConfirm(false)
+    setMunicipalityCases([])
+    setReassigningId(null)
+    setReassignTarget('')
+  }
+
+  function handleReassign(caseId: string) {
+    if (!reassignTarget) return
+    startReassign(async () => {
+      const res = await fetch(`/api/cases/${caseId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ municipality_id: reassignTarget }),
+      })
+      if (res.ok) {
+        setMunicipalityCases(prev => prev.filter(c => c.id !== caseId))
+        setReassigningId(null)
+        setReassignTarget('')
+        router.refresh()
+      }
+    })
   }
 
   function handleDelete() {
@@ -332,6 +384,76 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
               <input type="tel" value={form.sagsbehandler_phone} onChange={field('sagsbehandler_phone')} placeholder="Telefonnummer" className={inputClass} />
             </div>
           </div>
+
+          {/* Linked cases — only when editing */}
+          {editingId && (
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-3">
+                Tilknyttede sager
+              </div>
+              {casesLoading ? (
+                <p className="text-xs text-[#6B7569]">Henter sager…</p>
+              ) : municipalityCases.length === 0 ? (
+                <p className="text-xs text-[#C8C0B0]">Ingen sager tilknyttet denne kommune</p>
+              ) : (
+                <div className="space-y-2">
+                  {municipalityCases.map(c => (
+                    <div key={c.id} className="rounded-xl border border-[#E0DAD0] p-3 bg-[#FAFAF8]">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <span className="text-sm font-medium text-[#1A1F1C]">{c.citizen_initials}</span>
+                          <span className="text-xs text-[#6B7569] ml-2">{c.citizen_age_range} år</span>
+                          {c.case_number && (
+                            <div className="text-[10px] text-[#C8C0B0] mt-0.5">{c.case_number}</div>
+                          )}
+                        </div>
+                        <Badge variant={STATUS_VARIANT[c.status] ?? 'default'}>
+                          {STATUS_LABEL[c.status] ?? c.status}
+                        </Badge>
+                      </div>
+
+                      {reassigningId === c.id ? (
+                        <div className="mt-2 flex gap-2">
+                          <select
+                            value={reassignTarget}
+                            onChange={e => setReassignTarget(e.target.value)}
+                            className="flex-1 border border-[#E0DAD0] rounded-lg px-2 py-1.5 text-xs text-[#1A1F1C] bg-white focus:outline-none focus:border-[#1C3829]"
+                          >
+                            <option value="">Vælg kommune…</option>
+                            {initialData
+                              .filter(m => m.id !== editingId && m.status === 'ACTIVE')
+                              .map(m => (
+                                <option key={m.id} value={m.id}>{m.name}</option>
+                              ))}
+                          </select>
+                          <button
+                            onClick={() => handleReassign(c.id)}
+                            disabled={!reassignTarget || reassigning}
+                            className="px-2.5 py-1.5 text-xs font-medium text-white bg-[#1C3829] rounded-lg hover:bg-[#16302d] transition-colors disabled:opacity-40"
+                          >
+                            Flyt
+                          </button>
+                          <button
+                            onClick={() => { setReassigningId(null); setReassignTarget('') }}
+                            className="px-2.5 py-1.5 text-xs text-[#6B7569] border border-[#E0DAD0] rounded-lg hover:bg-[#F6F3EE] transition-colors"
+                          >
+                            Annuller
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => { setReassigningId(c.id); setReassignTarget('') }}
+                          className="mt-1.5 text-[10px] text-[#1C3829] hover:text-[#16302d] transition-colors"
+                        >
+                          Skift kommune →
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {error && (
             <div className="flex items-center gap-2 p-3 bg-[#FEE2E2] border border-[#FECACA] rounded-xl text-sm text-[#B91C1C]">

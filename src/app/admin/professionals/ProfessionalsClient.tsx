@@ -353,13 +353,17 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
             <button key={pro.id} onClick={() => openDrawer(pro)} className="w-full text-left block">
               <Card hover className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-full bg-[#EEF4F0] flex items-center justify-center text-sm font-semibold text-[#1C3829] shrink-0">
-                    {pro.profiles.full_name.charAt(0).toUpperCase()}
-                  </div>
+                  {(pro as any).profile_image_url ? (
+                    <img src={(pro as any).profile_image_url} alt={pro.profiles.full_name} className="w-9 h-9 rounded-full object-cover shrink-0 border border-[#E0DAD0]" />
+                  ) : (
+                    <div className="w-9 h-9 rounded-full bg-[#EEF4F0] flex items-center justify-center text-sm font-semibold text-[#1C3829] shrink-0">
+                      {pro.profiles.full_name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
                   <div className="min-w-0">
                     <div className="font-medium text-[#1A1F1C] text-sm">{pro.profiles.full_name}</div>
                     <div className="text-xs text-[#6B7569]">
-                      {PROFESSION_LABEL[pro.profession] ?? pro.profession}
+                      {(pro as any).profession_types?.name ?? PROFESSION_LABEL[pro.profession] ?? pro.profession}
                       {pro.experience_years > 0 && ` · ${pro.experience_years} år erfaring`}
                     </div>
                   </div>
@@ -404,9 +408,13 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
             {/* Drawer header */}
             <div className="flex items-center justify-between px-6 py-5 border-b border-[#E0DAD0] shrink-0">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-full bg-[#EEF4F0] flex items-center justify-center text-base font-semibold text-[#1C3829] shrink-0">
-                  {selected.profiles.full_name.charAt(0).toUpperCase()}
-                </div>
+                {(selected as any).profile_image_url ? (
+                  <img src={(selected as any).profile_image_url} alt={selected.profiles.full_name} className="w-10 h-10 rounded-full object-cover shrink-0 border border-[#E0DAD0]" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-[#EEF4F0] flex items-center justify-center text-base font-semibold text-[#1C3829] shrink-0">
+                    {selected.profiles.full_name.charAt(0).toUpperCase()}
+                  </div>
+                )}
                 <div className="min-w-0">
                   <div className="font-serif font-semibold text-[#1A1F1C] truncate">{selected.profiles.full_name}</div>
                   <div className="text-xs text-[#6B7569] truncate">{selected.profiles.email}</div>
@@ -469,7 +477,8 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
 
               {/* Profile details */}
               <div className="grid grid-cols-2 gap-3">
-                <InfoBlock label="Fag" value={PROFESSION_LABEL[selected.profession] ?? selected.profession} />
+                <InfoBlock label="Profession" value={(selected as any).profession_types?.name ?? PROFESSION_LABEL[selected.profession] ?? selected.profession} />
+                <InfoBlock label="Daglig beskæftigelse" value={selected.daily_occupation || '—'} />
                 <InfoBlock label="Erfaring" value={`${selected.experience_years} år`} />
                 <InfoBlock label="Maks. kompleksitet" value={COMPLEXITY_LABEL[selected.max_complexity_level] ?? selected.max_complexity_level} />
                 <InfoBlock label="Kapacitet" value={`${selected.capacity_hours_week} t/uge · maks. ${selected.max_concurrent_cases} sager`} />

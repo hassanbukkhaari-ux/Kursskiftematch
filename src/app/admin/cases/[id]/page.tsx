@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import AdminCaseActionsClient, { type Grant, type AvailableProfessional } from './AdminCaseActionsClient'
+import AdminCaseEditClient from './AdminCaseEditClient'
 import CaseDocumentsClient from './CaseDocumentsClient'
 import { CaseSessionLogsClient, type CaseSessionLog } from './CaseSessionLogsClient'
 import type { HandoverReason, HandoverStatus } from '@/types/database'
@@ -18,6 +19,15 @@ const STATUS_BADGE: Record<string, 'amber' | 'brand' | 'green' | 'default'> = {
 
 const COMPLEXITY_LABEL: Record<string, string> = {
   LOW: 'Lav', MEDIUM: 'Mellem', HIGH: 'Høj', CRITICAL: 'Kritisk',
+}
+const LEGAL_BASIS_LABEL: Record<string, string> = {
+  BARNETS_LOV_32: 'Barnets lov §32',
+  SEL_76: 'SEL §76',
+  SEL_85: 'SEL §85',
+  SEL_99: 'SEL §99',
+}
+const PREF_GENDER_LABEL: Record<string, string> = {
+  MALE: 'Mand foretrækkes', FEMALE: 'Kvinde foretrækkes', NO_PREF: 'Ingen præference',
 }
 const COMPLEXITY_BADGE: Record<string, 'green' | 'amber' | 'red'> = {
   LOW: 'green', MEDIUM: 'amber', HIGH: 'red', CRITICAL: 'red',
@@ -92,7 +102,7 @@ export default async function AdminCasePage({ params }: PageProps) {
   ] = await Promise.all([
     db.from('municipalities').select('name, sagsbehandler_name, sagsbehandler_email').eq('id', caseData.municipality_id).single(),
     createServiceClient().from('session_logs' as any).select('id, session_date, duration_minutes, observations, citizen_mood_tone, follow_up_needed, follow_up_reason, status, professional_id', { count: 'exact' }).eq('case_id', id).order('session_date', { ascending: false }).limit(20),
-    dba.from('cases').select('citizen_gender, citizen_notes, intake_contact_name, intake_contact_email').eq('id', id).single(),
+    dba.from('cases').select('citizen_gender, citizen_notes, intake_contact_name, intake_contact_email, legal_basis, diagnoses, daily_function, citizen_interests, expected_duration_months, preferred_prof_gender, transport_needs, created_at').eq('id', id).single(),
     db.from('v_case_tags').select('problem_area_codes, goal_codes, special_wish_codes').eq('case_id', id).single(),
     db.from('problem_areas').select('code, label_da'),
     db.from('goals_lookup').select('code, label_da'),
@@ -181,8 +191,8 @@ export default async function AdminCasePage({ params }: PageProps) {
     <div>
       <PageHeader
         label="Sag"
-        title={`Borger ${caseData.citizen_initials}`}
-        subtitle={`${caseData.citizen_age_range} · ${muniRes.data?.name ?? 'Ukendt kommune'}`}
+        title={caseData.case_number ?? `Borger ${caseData.citizen_initials}`}
+        subtitle={`${caseData.citizen_initials} · ${caseData.citizen_age_range} · ${muniRes.data?.name ?? 'Ukendt kommune'}${caseDetailRes.data?.created_at ? ` · Oprettet ${fmt(caseDetailRes.data.created_at)}` : ''}`}
         breadcrumb={[
           { label: 'Kursskifte Administration', href: '/admin' },
           { label: 'Sager', href: '/admin/cases' },
@@ -238,6 +248,16 @@ export default async function AdminCasePage({ params }: PageProps) {
                     <span className="font-semibold text-[#1A1F1C]">{caseData.approved_hours_used} t</span>
                   </InfoBlock>
                 )}
+                {caseDetailRes.data?.legal_basis && (
+                  <InfoBlock label="Retsgrundlag">
+                    <span className="font-semibold text-[#1A1F1C] text-xs">{LEGAL_BASIS_LABEL[caseDetailRes.data.legal_basis] ?? caseDetailRes.data.legal_basis}</span>
+                  </InfoBlock>
+                )}
+                {caseDetailRes.data?.expected_duration_months && (
+                  <InfoBlock label="Forventet varighed">
+                    <span className="font-semibold text-[#1A1F1C]">{caseDetailRes.data.expected_duration_months} mdr.</span>
+                  </InfoBlock>
+                )}
               </div>
               {caseDetailRes.data?.citizen_notes && (
                 <div className="mt-4 pt-4 border-t border-[#E0DAD0]">
@@ -289,6 +309,45 @@ export default async function AdminCasePage({ params }: PageProps) {
                       </div>
                     </div>
                   )}
+                </div>
+              </Card>
+            )}
+
+            {/* Citizen profile */}
+            {(caseDetailRes.data?.diagnoses || caseDetailRes.data?.daily_function || caseDetailRes.data?.citizen_interests || caseDetailRes.data?.preferred_prof_gender || caseDetailRes.data?.transport_needs) && (
+              <Card>
+                <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-4">Borgerprofil</div>
+                <div className="space-y-3">
+                  {caseDetailRes.data?.diagnoses && (
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8C0B0] mb-1">Diagnoser</div>
+                      <p className="text-sm text-[#1A1F1C] whitespace-pre-wrap">{caseDetailRes.data.diagnoses}</p>
+                    </div>
+                  )}
+                  {caseDetailRes.data?.daily_function && (
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8C0B0] mb-1">Daglig funktion</div>
+                      <p className="text-sm text-[#1A1F1C] whitespace-pre-wrap">{caseDetailRes.data.daily_function}</p>
+                    </div>
+                  )}
+                  {caseDetailRes.data?.citizen_interests && (
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8C0B0] mb-1">Interesser</div>
+                      <p className="text-sm text-[#1A1F1C] whitespace-pre-wrap">{caseDetailRes.data.citizen_interests}</p>
+                    </div>
+                  )}
+                  <div className="flex gap-3 flex-wrap">
+                    {caseDetailRes.data?.preferred_prof_gender && caseDetailRes.data.preferred_prof_gender !== 'NO_PREF' && (
+                      <span className="text-xs bg-[#F6F3EE] border border-[#E0DAD0] rounded-lg px-2 py-1 text-[#6B7569]">
+                        {PREF_GENDER_LABEL[caseDetailRes.data.preferred_prof_gender] ?? caseDetailRes.data.preferred_prof_gender}
+                      </span>
+                    )}
+                    {caseDetailRes.data?.transport_needs === 'JA' && (
+                      <span className="text-xs bg-[#FEF2E2] border border-[#F5DDB0] rounded-lg px-2 py-1 text-[#92660A]">
+                        Transport nødvendig
+                      </span>
+                    )}
+                  </div>
                 </div>
               </Card>
             )}
@@ -440,6 +499,16 @@ export default async function AdminCasePage({ params }: PageProps) {
               <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-3">Sagsdokumenter</div>
               <CaseDocumentsClient caseId={id} />
             </Card>
+
+            {/* Inline edit */}
+            <AdminCaseEditClient
+              caseId={id}
+              status={caseData.status as 'OPEN' | 'MATCHED' | 'ACTIVE' | 'COMPLETED' | 'ARCHIVED'}
+              complexityLevel={caseData.complexity_level as 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'}
+              urgency={caseData.urgency as 'NORMAL' | 'HURTIG' | 'AKUT'}
+              weeklyHours={caseData.weekly_hours}
+              citizenNotes={caseDetailRes.data?.citizen_notes ?? null}
+            />
 
             {/* Dynamic admin actions */}
             <AdminCaseActionsClient

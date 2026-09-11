@@ -52,6 +52,14 @@ export async function POST(request: NextRequest) {
     const { createClient } = await import('@/lib/supabase/server')
     const db = await createClient()
 
+    // Unique name check
+    const { data: existing } = await db
+      .from('municipalities')
+      .select('id')
+      .ilike('name', parsed.data.name.trim())
+      .limit(1)
+    if (existing?.length) return badRequest('En kommune med dette navn findes allerede.')
+
     const { data, error } = await db
       .from('municipalities')
       .insert(parsed.data)

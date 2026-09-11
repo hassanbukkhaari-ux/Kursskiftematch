@@ -22,7 +22,7 @@ export default function ForgotPasswordPage() {
 
     setLoading(false)
     if (error) {
-      setError('Noget gik galt. Prøv igen eller kontakt support.')
+      setError(`Fejl: ${error.message}`)
       return
     }
     setSent(true)

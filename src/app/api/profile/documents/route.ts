@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       uploaded_by: userId,
     }).select('id').single()
 
-    if (error) return serverError(error.message)
+    if (error) { console.error('[documents POST]', error); return serverError(error.message) }
     return created({ id: data.id })
   })
 }

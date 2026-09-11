@@ -1,11 +1,11 @@
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 import { PageHeader, ContentContainer } from '@/components/layout/page-header'
 import { ProfessionalsClient } from './ProfessionalsClient'
 
 export default async function ProfessionalsPage() {
-  const db = await createClient()
+  const db = createServiceClient()
 
-  const { data: professionals } = await db
+  const { data: professionals } = await (db as any)
     .from('professionals')
     .select(`
       id, profession, experience_years, max_complexity_level,

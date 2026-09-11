@@ -740,6 +740,15 @@ export function ProfessionalDetailClient({
       {/* Profil */}
       <Card className="!p-5">
         <SectionTitle>Profil</SectionTitle>
+        {pro.profile_image_url && (
+          <div className="mb-4">
+            <img
+              src={pro.profile_image_url}
+              alt={profile.full_name}
+              className="w-20 h-20 rounded-full object-cover border-2 border-[#E0DAD0]"
+            />
+          </div>
+        )}
         <dl className="space-y-0">
           <InfoRow label="Navn" value={profile.full_name} />
           <InfoRow label="E-mail" value={profile.email} />
@@ -747,10 +756,11 @@ export function ProfessionalDetailClient({
           <InfoRow label="Telefon" value={pro.phone} />
           <InfoRow label="By" value={[pro.postal_code, pro.city].filter(Boolean).join(' ') || null} />
           <InfoRow label="Region" value={pro.region} />
+          <InfoRow label="Daglig beskæftigelse" value={pro.daily_occupation} />
           <InfoRow label="Profession" value={pro.profession_types?.name ?? pro.profession} />
-          <InfoRow label="Uddannelse" value={pro.education} />
           <InfoRow label="Specialisering" value={pro.specialization} />
-          <InfoRow label="Autorisation" value={pro.authorization} />
+          <InfoRow label="Autorisation" value={pro.authorization_note} />
+          <InfoRow label="Uddannelse" value={pro.education} />
           <InfoRow label="Erfaring (år)" value={pro.experience_years?.toString()} />
           <InfoRow label="Køn" value={pro.gender} />
         </dl>

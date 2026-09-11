@@ -29,7 +29,7 @@ export default async function ProfessionalDetailPage({
         capacity_hours_week, max_concurrent_cases, availability_days,
         status, gender, education, daily_occupation,
         job_title, phone, address, postal_code, city, region,
-        profession_type_id, specialization, authorization, bio,
+        profile_image_url, profession_type_id, specialization, authorization_note, bio,
         max_hours_per_week, available_now, can_take_acute,
         can_work_evening, can_work_weekend, can_work_night,
         has_drivers_license, has_own_car, can_transport_citizen,
@@ -159,8 +159,9 @@ export type ProfessionalDetail = {
   city: string | null
   region: string | null
   profession_type_id: string | null
+  profile_image_url: string | null
   specialization: string | null
-  authorization: string | null
+  authorization_note: string | null
   bio: string | null
   max_hours_per_week: number | null
   available_now: boolean

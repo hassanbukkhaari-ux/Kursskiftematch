@@ -86,7 +86,8 @@ function toForm(pro: ProfessionalRow): ProfileForm {
 export function ProfessionalsClient({ initialData }: { initialData: ProfessionalRow[] }) {
   const router = useRouter()
   const [filter, setFilter] = useState<FilterKey>('all')
-  const [selected, setSelected] = useState<ProfessionalRow | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const selected = selectedId ? (initialData.find(p => p.id === selectedId) ?? null) : null
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [updating, startUpdate] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -143,16 +144,17 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
   )
 
   function openDrawer(pro: ProfessionalRow) {
-    setSelected(pro)
+    setSelectedId(pro.id)
     setError(null)
     setEditingProfile(false)
     setProfileForm(toForm(pro))
     setDrawerOpen(true)
+    router.refresh()
   }
 
   function closeDrawer() {
     setDrawerOpen(false)
-    setSelected(null)
+    setSelectedId(null)
     setError(null)
     setEditingProfile(false)
     setProfileForm(null)
@@ -478,10 +480,9 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
               {/* Profile details */}
               <div className="grid grid-cols-2 gap-3">
                 <InfoBlock label="Profession" value={(selected as any).profession_types?.name ?? PROFESSION_LABEL[selected.profession] ?? selected.profession} />
-                <InfoBlock label="Daglig beskæftigelse" value={selected.daily_occupation || '—'} />
                 <InfoBlock label="Erfaring" value={`${selected.experience_years} år`} />
-                <InfoBlock label="Maks. kompleksitet" value={COMPLEXITY_LABEL[selected.max_complexity_level] ?? selected.max_complexity_level} />
-                <InfoBlock label="Kapacitet" value={`${selected.capacity_hours_week} t/uge · maks. ${selected.max_concurrent_cases} sager`} />
+                <InfoBlock label="Timer/uge" value={`${(selected as any).max_hours_per_week ?? selected.capacity_hours_week ?? '—'} t/uge`} />
+                <InfoBlock label="Maks. sager" value={`${selected.max_concurrent_cases} sager`} />
               </div>
 
               {/* Availability */}

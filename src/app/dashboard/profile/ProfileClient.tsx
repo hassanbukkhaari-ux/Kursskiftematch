@@ -354,6 +354,9 @@ function S2Profession({ pro, professionTypes }: { pro: Pro | null; professionTyp
   })
   const set = (k: keyof typeof f) => (v: string) => setF(p => ({ ...p, [k]: v }))
 
+  const selectedType = professionTypes.find(t => t.id === f.profession_type_id)
+  const isOther = selectedType?.name?.toLowerCase().includes('andet') || selectedType?.name?.toLowerCase().includes('other')
+
   return (
     <div className="space-y-4 mt-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -370,7 +373,14 @@ function S2Profession({ pro, professionTypes }: { pro: Pro | null; professionTyp
         <Field label="Antal års erfaring">
           <Input value={f.experience_years} onChange={set('experience_years')} type="number" placeholder="5" />
         </Field>
-        <Field label="Uddannelse"><Input value={f.education} onChange={set('education')} placeholder="F.eks. Pædagoguddannelsen" /></Field>
+        {isOther && (
+          <Field label="Beskriv din profession">
+            <Input value={f.education} onChange={set('education')} placeholder="Skriv din faktiske profession her" autoFocus />
+          </Field>
+        )}
+        {!isOther && (
+          <Field label="Uddannelse"><Input value={f.education} onChange={set('education')} placeholder="F.eks. Pædagoguddannelsen" /></Field>
+        )}
         <Field label="Specialisering"><Input value={f.specialization} onChange={set('specialization')} placeholder="F.eks. ABA, autisme" /></Field>
       </div>
       <Field label="Autorisation (hvis relevant)"><Input value={f.authorization} onChange={set('authorization')} placeholder="F.eks. Autoriseret psykolog" /></Field>

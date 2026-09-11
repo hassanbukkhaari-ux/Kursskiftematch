@@ -64,10 +64,10 @@ export async function DELETE(
 ) {
   const { id } = await params
   return withAdminAuth(request, async (userId) => {
-    const { createClient } = await import('@/lib/supabase/server')
-    const db = await createClient()
+    const { createServiceClient } = await import('@/lib/supabase/server')
+    const db = createServiceClient()
 
-    // Block if any cases (active or otherwise) are linked
+    // Block if any cases are still linked
     const { data: linkedCases } = await db
       .from('cases')
       .select('id')
@@ -75,7 +75,18 @@ export async function DELETE(
       .limit(1)
 
     if (linkedCases?.length) {
-      return badRequest('Kommunen har tilknyttede sager og kan ikke slettes. Overfør eller afslut sagerne først.')
+      return badRequest('Kommunen har tilknyttede sager og kan ikke slettes. Brug "Flyt alle sager" i kommuneudtrækket for at flytte sagerne først.')
+    }
+
+    // Also block if there are orphaned case_grants still referencing this municipality
+    const { data: linkedGrants } = await (db as any)
+      .from('case_grants')
+      .select('id')
+      .eq('municipality_id', id)
+      .limit(1)
+
+    if (linkedGrants?.length) {
+      return badRequest('Kommunen har tilknyttede bevillinger og kan ikke slettes. Brug "Flyt alle sager" for at flytte dem.')
     }
 
     const { error } = await db

@@ -18,14 +18,32 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (profile?.role !== 'professional') redirect('/login')
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: pro } = await (db as any)
-    .from('professionals')
-    .select('profile_image_url')
-    .eq('id', user.id)
-    .maybeSingle()
+  const dba = db as any
+
+  const [
+    { data: pro },
+    { data: consentsData },
+    { data: compData },
+    { data: geoData },
+  ] = await Promise.all([
+    dba.from('professionals').select('profile_image_url, phone, profession_type_id').eq('id', user.id).maybeSingle(),
+    dba.from('professional_consents').select('consent_type').eq('professional_id', user.id),
+    dba.from('professional_competencies').select('competency_type_id').eq('professional_id', user.id),
+    dba.from('professional_geography').select('municipality_id').eq('professional_id', user.id),
+  ])
+
+  const REQUIRED_CONSENTS = ['GDPR', 'PRIVACY', 'CONFIDENTIALITY', 'ETHICS', 'TERMS', 'DOCUMENT_STORAGE']
+  const hasAllConsents = REQUIRED_CONSENTS.every(
+    c => (consentsData ?? []).some((r: { consent_type: string }) => r.consent_type === c)
+  )
+  const onboardingComplete =
+    pro?.phone && pro?.profession_type_id && hasAllConsents &&
+    (compData ?? []).length > 0 && (geoData ?? []).length > 0
+
+  if (!onboardingComplete) redirect('/onboarding')
 
   return (
-    <DashboardShell userName={profile?.full_name} role="professional" profileImageUrl={pro?.profile_image_url}>
+    <DashboardShell userName={profile?.full_name} role="professional" profileImageUrl={pro?.profile_image_url as string | undefined}>
       {children}
     </DashboardShell>
   )

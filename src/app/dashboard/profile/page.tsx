@@ -3,7 +3,9 @@ import { createClient } from '@/lib/supabase/server'
 import { PageHeader, ContentContainer } from '@/components/layout/page-header'
 import { ProfileClient } from './ProfileClient'
 
-export default async function ProfilePage() {
+export default async function ProfilePage({ searchParams }: { searchParams: Promise<{ welcome?: string }> }) {
+  const { welcome } = await searchParams
+  const isWelcome = welcome === '1'
   const db = await createClient()
   const { data: { user } } = await db.auth.getUser()
   if (!user) redirect('/login')
@@ -76,6 +78,19 @@ export default async function ProfilePage() {
         breadcrumb={[{ label: 'Overblik', href: '/dashboard' }, { label: 'Min profil' }]}
       />
       <ContentContainer>
+        {isWelcome && (
+          <div className="mb-6 rounded-2xl bg-[#1C3829] px-6 py-5 text-white">
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#A3C4AE] mb-1">Velkommen til Kursskifte</p>
+            <h2 className="text-lg font-serif font-semibold mb-1">
+              Hej {profileRes.data?.full_name?.split(' ')[0] ?? ''} — din konto er oprettet 🎉
+            </h2>
+            <p className="text-sm text-[#C5D9CB] leading-relaxed">
+              Udfyld din profil nedenfor, så vi kan matche dig med de rette borgere.
+              Start med <strong className="text-white">Personlig information</strong> og arbejd dig ned gennem sektionerne.
+              Du kan gemme og vende tilbage når som helst.
+            </p>
+          </div>
+        )}
         <ProfileClient
           profileName={profileRes.data?.full_name ?? ''}
           profileEmail={profileRes.data?.email ?? ''}

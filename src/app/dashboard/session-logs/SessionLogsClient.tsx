@@ -105,9 +105,14 @@ export function SessionLogsClient({ initialLogs, cases, defaultCaseId }: Props) 
     setCreateError(null)
     if (!form.case_id) { setCreateError('Vælg en sag'); return }
     if (!form.session_date) { setCreateError('Angiv sessionsdato'); return }
+    if (form.session_date > new Date().toISOString().slice(0, 10)) {
+      setCreateError('Sessionsdato kan ikke være i fremtiden'); return
+    }
     if (!form.duration_minutes || parseInt(form.duration_minutes) < 1) {
-      setCreateError('Angiv varighed (min. 1 min.)')
-      return
+      setCreateError('Angiv varighed'); return
+    }
+    if (!form.observations.trim()) {
+      setCreateError('Beskriv hvad der skete i sessionen (Observationer er påkrævet)'); return
     }
 
     setSaving(true)
@@ -227,8 +232,8 @@ export function SessionLogsClient({ initialLogs, cases, defaultCaseId }: Props) 
                     <span className="text-sm font-medium text-[#1A1F1C]">
                       {new Intl.DateTimeFormat('da-DK', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(log.session_date))}
                     </span>
-                    {log.duration_minutes && (
-                      <span className="text-xs text-[#6B7569]">{log.duration_minutes} min.</span>
+                    {log.duration_minutes != null && (
+                      <span className="text-xs text-[#6B7569]">{formatDuration(log.duration_minutes)}</span>
                     )}
                   </div>
                   <span className="text-xs text-[#6B7569]">{caseLabel(log.case_id)}</span>
@@ -294,34 +299,48 @@ export function SessionLogsClient({ initialLogs, cases, defaultCaseId }: Props) 
             </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Sessionsdato *</label>
-              <input
-                type="date"
-                value={form.session_date}
-                onChange={e => setForm(f => ({ ...f, session_date: e.target.value }))}
-                className="w-full h-10 px-3 bg-[#F6F3EE] rounded-xl text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829]"
-              />
-            </div>
-            <div>
-              <label className="block text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Varighed (min.) *</label>
-              <input
-                type="number"
-                min={1}
-                placeholder="60"
-                value={form.duration_minutes}
-                onChange={e => setForm(f => ({ ...f, duration_minutes: e.target.value }))}
-                className="w-full h-10 px-3 bg-[#F6F3EE] rounded-xl text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829]"
-              />
+          <div>
+            <label className="block text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Sessionsdato *</label>
+            <input
+              type="date"
+              value={form.session_date}
+              max={new Date().toISOString().slice(0, 10)}
+              onChange={e => setForm(f => ({ ...f, session_date: e.target.value }))}
+              className="w-full h-10 px-3 bg-[#F6F3EE] rounded-xl text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829]"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Varighed *</label>
+            <div className="flex flex-wrap gap-2">
+              {[30, 60, 90, 120, 150, 180, 240].map(min => {
+                const h = Math.floor(min / 60)
+                const m = min % 60
+                const label = h > 0 ? (m > 0 ? `${h}t ${m}min` : `${h}t`) : `${m}min`
+                const active = form.duration_minutes === String(min)
+                return (
+                  <button
+                    key={min}
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, duration_minutes: String(min) }))}
+                    className={`px-3 py-1.5 rounded-xl text-sm font-medium border transition-all ${
+                      active
+                        ? 'bg-[#1C3829] text-white border-[#1C3829]'
+                        : 'bg-[#F6F3EE] text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829] hover:text-[#1C3829]'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                )
+              })}
             </div>
           </div>
 
           <div>
-            <label className="block text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Observationer</label>
+            <label className="block text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Hvad skete der i sessionen? *</label>
             <textarea
               rows={4}
-              placeholder="Beskriv sessionens forløb og observationer…"
+              placeholder="Beskriv sessionens forløb, observationer og hvad I arbejdede med…"
               value={form.observations}
               onChange={e => setForm(f => ({ ...f, observations: e.target.value }))}
               className="w-full px-3 py-2.5 bg-[#F6F3EE] rounded-xl text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829] resize-none"
@@ -440,7 +459,7 @@ export function SessionLogsClient({ initialLogs, cases, defaultCaseId }: Props) 
                 value={new Intl.DateTimeFormat('da-DK', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(viewingLog.session_date))}
               />
               {viewingLog.duration_minutes != null && (
-                <InfoRow label="Varighed" value={`${viewingLog.duration_minutes} minutter`} />
+                <InfoRow label="Varighed" value={formatDuration(viewingLog.duration_minutes)} />
               )}
               {viewingLog.location && (
                 <InfoRow label="Sted" value={viewingLog.location} />
@@ -503,6 +522,14 @@ export function SessionLogsClient({ initialLogs, cases, defaultCaseId }: Props) 
       </aside>
     </>
   )
+}
+
+function formatDuration(minutes: number): string {
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  if (h === 0) return `${m} min.`
+  if (m === 0) return `${h} time${h > 1 ? 'r' : ''}`
+  return `${h} time${h > 1 ? 'r' : ''} ${m} min.`
 }
 
 function InfoRow({ label, value }: { label: string; value: string }) {

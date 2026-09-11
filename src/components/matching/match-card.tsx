@@ -28,6 +28,7 @@ export interface MatchCandidate {
     max_concurrent_cases: number
     availability_status: string
     availability_days: string[]
+    profile_image_url?: string | null
     profiles?: {
       full_name: string
       email: string
@@ -78,10 +79,10 @@ export function MatchCard({ candidate, onSelect, isSelected, rank }: MatchCardPr
         <div className="shrink-0">
           {/* Mobile: 60px · Desktop: 72px */}
           <div className="block md:hidden">
-            <ProfessionalAvatar name={name} score={score} size={60} />
+            <ProfessionalAvatar name={name} score={score} size={60} imageUrl={pro?.profile_image_url} />
           </div>
           <div className="hidden md:block">
-            <ProfessionalAvatar name={name} score={score} size={72} />
+            <ProfessionalAvatar name={name} score={score} size={72} imageUrl={pro?.profile_image_url} />
           </div>
         </div>
 

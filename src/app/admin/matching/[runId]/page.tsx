@@ -36,6 +36,7 @@ export default async function MatchRunPage({ params }: PageProps) {
         id, profession, experience_years, max_complexity_level,
         target_age_groups, qualifications, capacity_hours_week,
         max_concurrent_cases, availability_status, availability_days,
+        profile_image_url,
         profiles!inner(full_name, email)
       )
     `)

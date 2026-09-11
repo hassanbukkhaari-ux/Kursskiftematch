@@ -32,6 +32,9 @@ type CaseEntry = {
   citizen_age_range: string
   status: string
   case_number: string | null
+  intake_contact_name: string | null
+  intake_contact_email: string | null
+  intake_contact_phone: string | null
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -113,7 +116,7 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
     setDeleteTarget('')
     setDrawerOpen(true)
     setCasesLoading(true)
-    fetch(`/api/cases?municipality_id=${m.id}&limit=100`)
+    fetch(`/api/municipalities/${m.id}/cases`)
       .then(r => r.json())
       .then((d: { data?: CaseEntry[] }) => setMunicipalityCases(d.data ?? []))
       .catch(() => setMunicipalityCases([]))
@@ -483,11 +486,26 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
                   {municipalityCases.map(c => (
                     <div key={c.id} className="rounded-xl border border-[#E0DAD0] p-3 bg-[#FAFAF8]">
                       <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <span className="text-sm font-medium text-[#1A1F1C]">{c.citizen_initials}</span>
-                          <span className="text-xs text-[#6B7569] ml-2">{c.citizen_age_range} år</span>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-[#1A1F1C]">{c.citizen_initials}</span>
+                            <span className="text-xs text-[#6B7569]">{c.citizen_age_range} år</span>
+                          </div>
                           {c.case_number && (
                             <div className="text-[10px] text-[#C8C0B0] mt-0.5">{c.case_number}</div>
+                          )}
+                          {c.intake_contact_name || c.intake_contact_email ? (
+                            <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-[#6B7569]">
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="shrink-0">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                              </svg>
+                              <span className="truncate">
+                                {c.intake_contact_name ?? c.intake_contact_email}
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="mt-1.5 text-[10px] text-[#C8C0B0]">Ingen sagsbehandler angivet</div>
                           )}
                         </div>
                         <Badge variant={STATUS_VARIANT[c.status] ?? 'default'}>

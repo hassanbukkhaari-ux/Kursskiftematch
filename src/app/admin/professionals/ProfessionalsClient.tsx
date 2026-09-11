@@ -154,7 +154,6 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
     setDrawerOpen(true)
     setDocs([])
     router.refresh()
-    // Fetch documents for this professional
     fetch(`/api/admin/professionals/${pro.id}/documents`)
       .then(r => r.json())
       .then((json: { data?: DocStatus[] }) => { if (json.data) setDocs(json.data) })

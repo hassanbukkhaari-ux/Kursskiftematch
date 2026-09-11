@@ -8,7 +8,7 @@ const Schema = z.object({
 })
 
 // POST /api/municipalities/[id]/reassign-cases
-// Bulk-moves all cases from this municipality to another
+// Bulk-moves all cases (and their grants) from this municipality to another
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -25,8 +25,8 @@ export async function POST(
 
     if (target_municipality_id === id) return badRequest('Mål-kommunen er den samme som kilde-kommunen.')
 
-    const { createClient } = await import('@/lib/supabase/server')
-    const db = await createClient()
+    const { createServiceClient } = await import('@/lib/supabase/server')
+    const db = createServiceClient()
 
     // Verify target municipality exists
     const { data: target } = await db
@@ -37,15 +37,22 @@ export async function POST(
 
     if (!target) return badRequest('Mål-kommunen findes ikke.')
 
-    const { data: updated, error } = await db
+    // Move cases
+    const { data: movedCases, error: casesError } = await db
       .from('cases')
       .update({ municipality_id: target_municipality_id, updated_at: new Date().toISOString() })
       .eq('municipality_id', id)
       .select('id')
 
-    if (error) return badRequest(error.message)
+    if (casesError) return badRequest(casesError.message)
 
-    const count = updated?.length ?? 0
+    // Move case_grants for the same municipality
+    await (db as any)
+      .from('case_grants')
+      .update({ municipality_id: target_municipality_id })
+      .eq('municipality_id', id)
+
+    const count = movedCases?.length ?? 0
 
     await logAuditEvent(db, {
       event_type: 'MUNICIPALITY_UPDATED',

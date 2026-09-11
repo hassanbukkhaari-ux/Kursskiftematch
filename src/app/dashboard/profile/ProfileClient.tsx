@@ -726,7 +726,11 @@ function DocUploadRow({ dt, doc }: { dt: typeof DOC_TYPES[0]; doc: DocumentRow |
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ document_type: dt.type, file_path: path, file_name: file.name }),
       })
-      if (!docRes.ok) { setError('Dokumentet blev uploadet, men kunne ikke registreres'); return }
+      if (!docRes.ok) {
+        const body = await docRes.json().catch(() => ({}))
+        setError(`Kunne ikke registrere dokument: ${body?.error ?? docRes.status}`)
+        return
+      }
 
       startT(() => router.refresh())
     } catch { setError('Netværksfejl — prøv igen') }

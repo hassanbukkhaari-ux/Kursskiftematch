@@ -30,6 +30,7 @@ export default function AuthCallbackPage() {
         const hashParams = new URLSearchParams(hash)
         const accessToken = hashParams.get('access_token')
         const refreshToken = hashParams.get('refresh_token')
+        const type = hashParams.get('type')
 
         if (accessToken && refreshToken) {
           const { error } = await supabase.auth.setSession({
@@ -37,7 +38,9 @@ export default function AuthCallbackPage() {
             refresh_token: refreshToken,
           })
           if (!error) {
-            router.replace('/set-password')
+            // Recovery tokens always go to reset-password
+            const dest = type === 'recovery' ? '/reset-password' : (next === '/set-password' ? '/set-password' : next)
+            router.replace(dest)
             return
           }
         }

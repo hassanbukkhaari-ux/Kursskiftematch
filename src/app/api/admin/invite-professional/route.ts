@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { withAdminAuth, badRequest, ok, serverError } from '@/lib/api-response'
+import { createServiceClient } from '@/lib/supabase/server'
 import { Resend } from 'resend'
 
 const InviteSchema = z.object({
@@ -18,14 +19,27 @@ export async function POST(request: NextRequest) {
 
     const { email, name } = parsed.data
     const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://kursskifte.dk'
-    const registerUrl = `${base}/signup?email=${encodeURIComponent(email)}`
 
     const resendKey = process.env.RESEND_API_KEY
     if (!resendKey) return serverError('Email service not configured')
 
-    const resend = new Resend(resendKey)
+    // Generate a Supabase invite link (magic link — clicking it authenticates the user)
+    const db = createServiceClient()
+    const { data: linkData, error: linkError } = await db.auth.admin.generateLink({
+      type: 'invite',
+      email,
+      options: {
+        data: { full_name: name || undefined },
+        redirectTo: `${base}/auth/callback?next=/set-password`,
+      },
+    })
+
+    if (linkError) return serverError(linkError.message)
+
+    const inviteUrl = linkData.properties.action_link
     const greeting = name ? `Hej ${name},` : 'Hej,'
 
+    const resend = new Resend(resendKey)
     const { error } = await resend.emails.send({
       from: 'Kursskifte <noreply@kursskifte.dk>',
       to: email,
@@ -34,10 +48,10 @@ export async function POST(request: NextRequest) {
 
 Du er blevet inviteret til at blive kontaktperson hos Kursskifte.
 
-Opret din konto her:
-${registerUrl}
+Klik på linket nedenfor for at oprette din konto:
+${inviteUrl}
 
-Linket åbner en oprettelsesside med din e-mailadresse udfyldt. Vælg en personlig adgangskode og klik "Opret konto". Herefter kan du logge ind og udfylde din profil.
+Linket er personligt og udløber efter 24 timer. Når du klikker det, bliver du bedt om at vælge en adgangskode — herefter har du direkte adgang til systemet.
 
 Med venlig hilsen
 Kursskifte-teamet

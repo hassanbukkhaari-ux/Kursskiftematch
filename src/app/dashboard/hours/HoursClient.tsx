@@ -25,7 +25,8 @@ const WORK_TYPE_LABEL: Record<string, string> = {
   OTHER: 'Andet',
 }
 
-const WORK_TYPES = Object.entries(WORK_TYPE_LABEL)
+// DIRECT_SESSION is auto-created from session logs — not available for manual entry
+const WORK_TYPES = Object.entries(WORK_TYPE_LABEL).filter(([v]) => v !== 'DIRECT_SESSION')
 
 type FormData = {
   case_id: string

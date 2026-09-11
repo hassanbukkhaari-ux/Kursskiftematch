@@ -98,6 +98,22 @@ export async function POST(request: NextRequest) {
       metadata: { case_id: parsed.data.case_id, session_date: parsed.data.session_date },
     })
 
+    // Auto-register DIRECT_SESSION hours from session log duration
+    const rawHours = parsed.data.duration_minutes / 60
+    const roundedHours = Math.round(rawHours * 4) / 4 // nearest 0.25
+    const clampedHours = Math.max(0.25, Math.min(8, roundedHours))
+    await db.from('registered_hours' as any).insert({
+      case_id: parsed.data.case_id,
+      professional_id: userId,
+      work_date: parsed.data.session_date,
+      work_type: 'DIRECT_SESSION',
+      hours: clampedHours,
+      session_log_id: data.id,
+      description: parsed.data.observations?.slice(0, 200) || 'Direkte session',
+      status: 'PENDING',
+      created_by: userId,
+    })
+
     // Email professional when follow-up is needed
     if (parsed.data.follow_up_needed) {
       const { data: profile } = await db.from('profiles').select('email, full_name').eq('id', userId).single()

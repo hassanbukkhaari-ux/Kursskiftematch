@@ -74,7 +74,9 @@ export function OnboardingWizard({
   const [consents, setConsents] = useState<Set<string>>(new Set(existingConsents))
   const [phone, setPhone] = useState(professional?.phone ?? '')
   const [jobTitle, setJobTitle] = useState(professional?.job_title ?? '')
-  const [professionTypeId, setProfessionTypeId] = useState(professional?.profession_type_id ?? '')
+  const [selectedProfessions, setSelectedProfessions] = useState<Set<string>>(
+    professional?.profession_type_id ? new Set([professional.profession_type_id]) : new Set()
+  )
   const [selectedCompetencies, setSelectedCompetencies] = useState<Set<string>>(new Set(existingCompetencies))
   const [selectedGeo, setSelectedGeo] = useState<Set<string>>(new Set(existingGeography))
 
@@ -106,7 +108,7 @@ export function OnboardingWizard({
   function canAdvance(): boolean {
     if (step === 0) return CONSENT_ITEMS.every(c => consents.has(c.type))
     if (step === 1) return phone.trim().length >= 8 && jobTitle.trim().length >= 2
-    if (step === 2) return professionTypeId.length > 0
+    if (step === 2) return selectedProfessions.size > 0
     if (step === 3) return selectedCompetencies.size > 0
     if (step === 4) return selectedGeo.size > 0
     return false
@@ -137,10 +139,12 @@ export function OnboardingWizard({
         })
         if (!r.ok) throw new Error('Kunne ikke gemme oplysninger')
       } else if (step === 2) {
+        // Save primary profession (first selected) to profession_type_id
+        const primaryId = Array.from(selectedProfessions)[0]
         const r = await fetch('/api/profile', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ profession_type_id: professionTypeId }),
+          body: JSON.stringify({ profession_type_id: primaryId }),
         })
         if (!r.ok) throw new Error('Kunne ikke gemme')
       } else if (step === 3) {
@@ -243,8 +247,12 @@ export function OnboardingWizard({
           {step === 2 && (
             <StepProfession
               professionTypes={professionTypes}
-              value={professionTypeId}
-              onChange={setProfessionTypeId}
+              selected={selectedProfessions}
+              toggle={(id) => setSelectedProfessions(prev => {
+                const next = new Set(prev)
+                if (next.has(id)) next.delete(id); else next.add(id)
+                return next
+              })}
             />
           )}
           {step === 3 && (
@@ -403,38 +411,41 @@ function StepPersonal({
 }
 
 function StepProfession({
-  professionTypes, value, onChange,
+  professionTypes, selected, toggle,
 }: {
-  professionTypes: ProfType[]; value: string; onChange: (v: string) => void
+  professionTypes: ProfType[]; selected: Set<string>; toggle: (id: string) => void
 }) {
   return (
     <div>
-      <h2 className="font-serif text-xl font-semibold text-[#1A1F1C] mb-1">Fagprofil</h2>
-      <p className="text-sm text-[#6B7569] mb-6">
-        Vælg din primære faglige baggrund. Den bruges til at matche dig med de rette borgere.
+      <h2 className="font-serif text-xl font-semibold text-[#1A1F1C] mb-1">Faglig baggrund</h2>
+      <p className="text-sm text-[#6B7569] mb-1">
+        Vælg alle de faglige baggrunde der passer på dig — du kan vælge flere.
       </p>
-      <div className="space-y-2">
-        {professionTypes.map(pt => (
-          <button
-            key={pt.id}
-            type="button"
-            onClick={() => onChange(pt.id)}
-            className={`w-full text-left px-4 py-3 rounded-xl border-2 text-sm transition-all ${
-              value === pt.id
-                ? 'border-[#1C3829] bg-[#F0F7F2] text-[#1C3829] font-semibold'
-                : 'border-[#E0DAD0] bg-[#F6F3EE] text-[#1A1F1C] hover:border-[#A3C4AE]'
-            }`}
-          >
-            <span className="flex items-center justify-between">
+      <p className="text-xs text-[#C8993A] font-medium mb-6">
+        Den første du vælger bruges som din primære profession i matching.
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {professionTypes.map((pt, i) => {
+          const isSelected = selected.has(pt.id)
+          const isPrimary = isSelected && Array.from(selected)[0] === pt.id
+          return (
+            <button
+              key={pt.id}
+              type="button"
+              onClick={() => toggle(pt.id)}
+              className={`px-3 py-1.5 rounded-full text-sm border transition-all flex items-center gap-1.5 ${
+                isSelected
+                  ? 'bg-[#1C3829] border-[#1C3829] text-white font-medium'
+                  : 'bg-white border-[#E0DAD0] text-[#1A1F1C] hover:border-[#1C3829]'
+              }`}
+            >
               {pt.name}
-              {value === pt.id && (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-[#1C3829]">
-                  <polyline points="20,6 9,17 4,12" />
-                </svg>
+              {isPrimary && (
+                <span className="text-[10px] bg-[#A3C4AE] text-[#1C3829] px-1 py-0.5 rounded font-semibold leading-none">primær</span>
               )}
-            </span>
-          </button>
-        ))}
+            </button>
+          )
+        })}
       </div>
     </div>
   )

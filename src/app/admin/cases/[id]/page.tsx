@@ -360,7 +360,11 @@ export default async function AdminCasePage({ params }: PageProps) {
                   follow_up_needed: l.follow_up_needed,
                   follow_up_reason: l.follow_up_reason,
                   status: l.status,
+<<<<<<< HEAD
                   professional_name: logProfileMap[l.professional_id] ?? 'Ukendt',
+=======
+                  professional_name: l.professionals?.profiles?.full_name ?? 'Ukendt',
+>>>>>>> origin/main
                 } satisfies CaseSessionLog))}
               />
             </div>

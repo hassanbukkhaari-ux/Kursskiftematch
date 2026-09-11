@@ -75,6 +75,7 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
   const [reassigning, startReassign] = useTransition()
   const [bulkTarget, setBulkTarget] = useState('')
   const [bulkMoving, startBulkMove] = useTransition()
+  const [deleteTarget, setDeleteTarget] = useState('')
 
   const statsById = new Map(caseStats.map(s => [s.municipality_id, s]))
   const getStats = (id: string) => statsById.get(id) ?? { active: 0, completed_90d: 0, municipality_id: id }
@@ -90,6 +91,7 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
     setForm(EMPTY_FORM)
     setError(null)
     setSuccessMsg(null)
+    setDeleteTarget('')
     setDrawerOpen(true)
   }
 
@@ -108,6 +110,7 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
     setReassigningId(null)
     setReassignTarget('')
     setBulkTarget('')
+    setDeleteTarget('')
     setDrawerOpen(true)
     setCasesLoading(true)
     fetch(`/api/cases?municipality_id=${m.id}&limit=100`)
@@ -123,6 +126,7 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
     setError(null)
     setSuccessMsg(null)
     setDeleteConfirm(false)
+    setDeleteTarget('')
     setMunicipalityCases([])
     setReassigningId(null)
     setReassignTarget('')
@@ -172,7 +176,13 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
   function handleDelete() {
     if (!editingId) return
     startDelete(async () => {
-      const res = await fetch(`/api/municipalities/${editingId}`, { method: 'DELETE' })
+      setError(null)
+      const body = deleteTarget ? JSON.stringify({ reassign_to: deleteTarget }) : undefined
+      const res = await fetch(`/api/municipalities/${editingId}`, {
+        method: 'DELETE',
+        headers: body ? { 'Content-Type': 'application/json' } : undefined,
+        body,
+      })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
         setError((data as { error?: string }).error ?? 'Kunne ikke slette kommunen')
@@ -553,28 +563,68 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
           {/* Delete — only shown when editing */}
           {editingId && (
             deleteConfirm ? (
-              <div className="flex gap-2">
-                <span className="flex-1 text-xs text-[#B91C1C] flex items-center">Er du sikker? Dette kan ikke fortrydes.</span>
-                <button
-                  onClick={() => setDeleteConfirm(false)}
-                  className="px-3 py-1.5 text-xs text-[#6B7569] border border-[#E0DAD0] rounded-xl hover:bg-[#F6F3EE] transition-colors"
-                  disabled={deleting}
-                >
-                  Nej
-                </button>
-                <button
-                  onClick={handleDelete}
-                  className="px-3 py-1.5 text-xs font-medium text-white bg-[#B91C1C] rounded-xl hover:bg-[#991B1B] transition-colors disabled:opacity-50"
-                  disabled={deleting}
-                >
-                  {deleting ? 'Sletter…' : 'Ja, slet'}
-                </button>
+              <div className="space-y-3">
+                {municipalityCases.length > 0 ? (
+                  <>
+                    <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 space-y-2">
+                      <p className="font-semibold">
+                        {form.name} har {municipalityCases.length} {municipalityCases.length === 1 ? 'sag' : 'sager'} der skal flyttes.
+                      </p>
+                      <p>Vælg hvilken kommune sagerne overføres til inden sletning:</p>
+                    </div>
+                    <select
+                      value={deleteTarget}
+                      onChange={e => setDeleteTarget(e.target.value)}
+                      className="w-full border border-[#E0DAD0] rounded-xl px-3 py-2 text-sm text-[#1A1F1C] bg-white focus:outline-none focus:border-[#B91C1C]"
+                    >
+                      <option value="">Vælg modtagerkommune…</option>
+                      {initialData
+                        .filter(m => m.id !== editingId && m.status === 'ACTIVE')
+                        .map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                    </select>
+                    {deleteTarget && (
+                      <div className="p-3 bg-[#FEE2E2] border border-[#FECACA] rounded-xl text-xs text-[#B91C1C] space-y-1">
+                        <p className="font-semibold">Advarsel — dette kan ikke fortrydes</p>
+                        <p>
+                          {municipalityCases.length} {municipalityCases.length === 1 ? 'sag' : 'sager'} flyttes til{' '}
+                          <span className="font-semibold">{initialData.find(m => m.id === deleteTarget)?.name}</span>,
+                          og <span className="font-semibold">{form.name}</span> slettes permanent.
+                        </p>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="p-3 bg-[#FEE2E2] border border-[#FECACA] rounded-xl text-xs text-[#B91C1C] space-y-1">
+                    <p className="font-semibold">Advarsel — dette kan ikke fortrydes</p>
+                    <p><span className="font-semibold">{form.name}</span> slettes permanent.</p>
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => { setDeleteConfirm(false); setDeleteTarget('') }}
+                    className="flex-1 px-3 py-2 text-xs text-[#6B7569] border border-[#E0DAD0] rounded-xl hover:bg-[#F6F3EE] transition-colors"
+                    disabled={deleting}
+                  >
+                    Fortryd
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    disabled={deleting || (municipalityCases.length > 0 && !deleteTarget)}
+                    className="flex-1 px-3 py-2 text-xs font-semibold text-white bg-[#B91C1C] rounded-xl hover:bg-[#991B1B] transition-colors disabled:opacity-40"
+                  >
+                    {deleting
+                      ? 'Sletter…'
+                      : municipalityCases.length > 0
+                        ? `Flyt ${municipalityCases.length} ${municipalityCases.length === 1 ? 'sag' : 'sager'} og slet`
+                        : 'Ja, slet permanent'}
+                  </button>
+                </div>
               </div>
             ) : (
               <button
                 onClick={() => setDeleteConfirm(true)}
                 className="w-full text-xs text-[#B91C1C] hover:text-[#991B1B] py-1 transition-colors"
-                disabled={saving || deleting}
+                disabled={saving || deleting || casesLoading}
               >
                 Slet kommune
               </button>

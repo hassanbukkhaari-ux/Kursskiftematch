@@ -123,7 +123,9 @@ export function AdminSessionLogsClient({ initialLogs }: Props) {
       {/* List */}
       {filtered.length === 0 ? (
         <Card className="text-center py-12">
-          <p className="text-sm text-[#6B7569]">Ingen sessionslogs matcher filtret</p>
+          <p className="text-sm text-[#6B7569]">
+            {filter === 'ALL' ? 'Ingen sessionslogs registreret endnu' : 'Ingen sessionslogs matcher filtret'}
+          </p>
         </Card>
       ) : (
         <div className="space-y-2">

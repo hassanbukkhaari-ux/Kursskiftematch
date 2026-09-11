@@ -39,20 +39,17 @@ export async function PATCH(
       updateData.published_at = parsed.data.is_published ? new Date().toISOString() : null
     }
 
-    const { data, error } = await db
+    const { error } = await db
       .from('cms_articles' as never)
       .update(updateData as never)
       .eq('id', id)
-      .select()
-      .single()
 
     if (error) {
       if ((error as { code?: string }).code === '23505') return badRequest('En artikel med dette slug eksisterer allerede')
       return serverError(error.message)
     }
-    if (!data) return notFound()
 
-    return ok(data)
+    return ok({ updated: true })
   })
 }
 

@@ -77,6 +77,7 @@ export function OnboardingWizard({
   const [selectedProfessions, setSelectedProfessions] = useState<Set<string>>(
     professional?.profession_type_id ? new Set([professional.profession_type_id]) : new Set()
   )
+  const [professionOtherLabel, setProfessionOtherLabel] = useState('')
   const [selectedCompetencies, setSelectedCompetencies] = useState<Set<string>>(new Set(existingCompetencies))
   const [selectedGeo, setSelectedGeo] = useState<Set<string>>(new Set(existingGeography))
 
@@ -144,7 +145,10 @@ export function OnboardingWizard({
         const r = await fetch('/api/profile', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ profession_type_id: primaryId }),
+          body: JSON.stringify({
+            profession_type_id: primaryId,
+            ...(professionOtherLabel.trim() ? { specialization: professionOtherLabel.trim() } : {}),
+          }),
         })
         if (!r.ok) throw new Error('Kunne ikke gemme')
       } else if (step === 3) {
@@ -253,6 +257,8 @@ export function OnboardingWizard({
                 if (next.has(id)) next.delete(id); else next.add(id)
                 return next
               })}
+              otherLabel={professionOtherLabel}
+              setOtherLabel={setProfessionOtherLabel}
             />
           )}
           {step === 3 && (
@@ -411,10 +417,19 @@ function StepPersonal({
 }
 
 function StepProfession({
-  professionTypes, selected, toggle,
+  professionTypes, selected, toggle, otherLabel, setOtherLabel,
 }: {
-  professionTypes: ProfType[]; selected: Set<string>; toggle: (id: string) => void
+  professionTypes: ProfType[]
+  selected: Set<string>
+  toggle: (id: string) => void
+  otherLabel: string
+  setOtherLabel: (v: string) => void
 }) {
+  const selectedArr = Array.from(selected)
+  const primaryId = selectedArr[0]
+  const primaryType = professionTypes.find(t => t.id === primaryId)
+  const isPrimaryOther = primaryType?.name?.toLowerCase().includes('andet') || primaryType?.name?.toLowerCase().includes('other')
+
   return (
     <div>
       <h2 className="font-serif text-xl font-semibold text-[#1A1F1C] mb-1">Faglig baggrund</h2>
@@ -425,9 +440,9 @@ function StepProfession({
         Den første du vælger bruges som din primære profession i matching.
       </p>
       <div className="flex flex-wrap gap-2">
-        {professionTypes.map((pt, i) => {
+        {professionTypes.map((pt) => {
           const isSelected = selected.has(pt.id)
-          const isPrimary = isSelected && Array.from(selected)[0] === pt.id
+          const isPrimary = isSelected && selectedArr[0] === pt.id
           return (
             <button
               key={pt.id}
@@ -447,6 +462,21 @@ function StepProfession({
           )
         })}
       </div>
+      {isPrimaryOther && (
+        <div className="mt-4">
+          <label className="block text-xs font-semibold uppercase tracking-widest text-[#6B7569] mb-2">
+            Titel (specificér) <span className="text-[#C8993A]">*</span>
+          </label>
+          <input
+            type="text"
+            value={otherLabel}
+            onChange={e => setOtherLabel(e.target.value)}
+            autoFocus
+            placeholder="Skriv din titel, f.eks. Familieterapeut"
+            className="w-full border border-[#E0DAD0] rounded-xl px-4 py-2.5 text-sm text-[#1A1F1C] bg-[#F6F3EE] placeholder:text-[#C8C0B0] focus:outline-none focus:border-[#1C3829] focus:bg-white transition-colors"
+          />
+        </div>
+      )}
     </div>
   )
 }

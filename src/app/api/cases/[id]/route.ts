@@ -10,9 +10,10 @@ const UpdateCaseSchema = z.object({
   complexity_level: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).optional(),
   citizen_notes: z.string().optional(),
   data_retention_expires_at: z.string().datetime().optional(),
+  municipality_id: z.string().uuid().optional(),
 })
 
-const ADMIN_ONLY_FIELDS = ['status', 'complexity_level', 'data_retention_expires_at']
+const ADMIN_ONLY_FIELDS = ['status', 'complexity_level', 'data_retention_expires_at', 'municipality_id']
 
 export async function GET(
   request: NextRequest,

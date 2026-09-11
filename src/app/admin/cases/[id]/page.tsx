@@ -98,7 +98,7 @@ export default async function AdminCasePage({ params }: PageProps) {
     db.from('goals_lookup').select('code, label_da'),
     db.from('special_wishes_lookup').select('code, label_da'),
     dba.from('case_grants').select('id, granted_hours, period_start, period_end, status, activated_at').eq('case_id', id).order('period_start', { ascending: false }),
-    dba.from('professionals').select('id, profiles!inner(full_name)').eq('status', 'ACTIVE'),
+    createServiceClient().from('professionals' as any).select('id, profiles!inner(full_name)').eq('status', 'ACTIVE'),
     dba.from('case_handovers').select('id, reason, status, handover_note, is_urgent, session_logs_transferred, created_at, completed_at, outgoing_professional_id, incoming_professional_id, created_by').eq('case_id', id).order('created_at', { ascending: false }),
   ])
 
@@ -109,7 +109,7 @@ export default async function AdminCasePage({ params }: PageProps) {
   const specialWishLabels = labelMap(specialWishesRes.data)
 
   const professional = caseData.professional_id
-    ? await db.from('professionals').select('profession, experience_years, profiles!inner(full_name, email)').eq('id', caseData.professional_id).single()
+    ? await (createServiceClient() as any).from('professionals').select('profession, experience_years, profiles!inner(full_name, email)').eq('id', caseData.professional_id).single()
     : null
 
   const proData = professional?.data as unknown as {
@@ -149,12 +149,13 @@ export default async function AdminCasePage({ params }: PageProps) {
   const handoverRawList: any[] = handoversRes.data ?? []
   const handovers: HandoverRow[] = await Promise.all(
     handoverRawList.map(async (h: any) => {
+      const svc = createServiceClient() as any
       const [outRes, inRes, byRes] = await Promise.all([
-        dba.from('professionals').select('profiles!inner(full_name)').eq('id', h.outgoing_professional_id).single(),
+        svc.from('professionals').select('profiles!inner(full_name)').eq('id', h.outgoing_professional_id).single(),
         h.incoming_professional_id
-          ? dba.from('professionals').select('profiles!inner(full_name)').eq('id', h.incoming_professional_id).single()
+          ? svc.from('professionals').select('profiles!inner(full_name)').eq('id', h.incoming_professional_id).single()
           : Promise.resolve({ data: null }),
-        dba.from('profiles').select('full_name').eq('id', h.created_by).single(),
+        svc.from('profiles').select('full_name').eq('id', h.created_by).single(),
       ])
       return {
         id: h.id,

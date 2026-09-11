@@ -37,6 +37,9 @@ const TYPE_LABEL: Record<NotificationType, string> = {
   PROPOSAL_ACCEPTED: 'Forslag accepteret',
   PROPOSAL_DECLINED: 'Forslag afvist',
   FOLLOW_UP_NEEDED: 'Opfølgning påkrævet',
+  STATUS_REPORT_REQUESTED: 'Statusrapport anmodet',
+  STATUS_REPORT_REMINDER: 'Påmindelse om statusrapport',
+  STATUS_REPORT_SUBMITTED: 'Statusrapport indsendt',
 }
 
 const STATUS_BADGE: Record<string, 'green' | 'amber' | 'red'> = {

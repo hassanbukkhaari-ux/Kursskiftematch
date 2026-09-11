@@ -50,7 +50,7 @@ export default function SetPasswordPage() {
       return
     }
 
-    router.push('/dashboard/profile?welcome=1')
+    router.push('/onboarding')
   }
 
   if (checking) {

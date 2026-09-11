@@ -15,7 +15,7 @@ export async function GET(
   const { data, error } = await svc
     .from('status_report_requests')
     .select(`
-      id, case_id, report_type, deadline, promised_date, status, message, created_at,
+      id, case_id, professional_id, report_type, deadline, promised_date, status, message, created_at,
       cases!inner(citizen_initials, citizen_age_range),
       status_reports(*)
     `)
@@ -24,16 +24,9 @@ export async function GET(
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  // Verify the logged-in professional owns this request
-  const { data: pro } = await svc
-    .from('professionals')
-    .select('id')
-    .eq('id', data.professional_id ?? '')
-    .single()
-
-  const { data: profile } = await db.from('profiles').select('role, id').eq('id', user.id).single()
+  const { data: profile } = await db.from('profiles').select('role').eq('id', user.id).single()
   const isAdmin = profile?.role === 'admin'
-  const isPro = pro?.id === user.id
+  const isPro = data.professional_id === user.id
 
   if (!isAdmin && !isPro) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

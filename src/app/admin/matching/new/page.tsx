@@ -116,10 +116,12 @@ export default async function NewMatchRunPage({
           </div>
         )}
 
-        {/* Start */}
-        <div className="max-w-sm">
-          <StartMatchButton caseId={case_id} caseLabel={caseLabel} />
-        </div>
+        {/* Start — only show when no active run exists */}
+        {!existingRun && (
+          <div className="max-w-sm">
+            <StartMatchButton caseId={case_id} caseLabel={caseLabel} />
+          </div>
+        )}
       </ContentContainer>
     </div>
   )

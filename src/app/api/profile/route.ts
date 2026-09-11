@@ -5,7 +5,7 @@ import type { NextRequest } from 'next/server'
 
 const ALLOWED_FIELDS = new Set([
   'job_title', 'phone', 'address', 'postal_code', 'city', 'region',
-  'profile_image_url', 'profession_type_id', 'specialization', 'authorization',
+  'profile_image_url', 'profession_type_id', 'specialization', 'authorization_note',
   'education', 'experience_years', 'bio',
   'max_hours_per_week', 'available_now', 'can_take_acute',
   'can_work_evening', 'can_work_weekend', 'can_work_night',

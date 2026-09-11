@@ -15,7 +15,7 @@ type Pro = {
   address?: string | null; postal_code?: string | null; city?: string | null
   region?: string | null; profile_image_url?: string | null
   profession_type_id?: string | null; specialization?: string | null
-  authorization?: string | null; experience_years?: number | null
+  authorization_note?: string | null; experience_years?: number | null
   education?: string | null; bio?: string | null
   max_hours_per_week?: number | null
   available_now?: boolean; can_take_acute?: boolean
@@ -364,7 +364,7 @@ function S2Profession({ pro, professionTypes }: { pro: Pro | null; professionTyp
   const [f, setF] = useState({
     profession_type_id: pro?.profession_type_id ?? '',
     specialization: pro?.specialization ?? '',
-    authorization: pro?.authorization ?? '',
+    authorization_note: pro?.authorization_note ?? '',
     experience_years: pro?.experience_years?.toString() ?? '',
   })
   const [educations, setEducations] = useState<string[]>(() => parseEducations(pro?.education))
@@ -454,7 +454,7 @@ function S2Profession({ pro, professionTypes }: { pro: Pro | null; professionTyp
         </div>
       </div>
 
-      <Field label="Autorisation (hvis relevant)"><Input value={f.authorization} onChange={set('authorization')} placeholder="F.eks. Autoriseret psykolog" /></Field>
+      <Field label="Autorisation (hvis relevant)"><Input value={f.authorization_note} onChange={set('authorization_note')} placeholder="F.eks. Autoriseret psykolog" /></Field>
       <SaveBar busy={busy} error={error} saved={saved} onSave={() => save('/api/profile', {
         ...f,
         education: serializeEducations(educations),

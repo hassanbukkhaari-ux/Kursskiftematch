@@ -1,6 +1,6 @@
 import { withAuth } from '@/lib/api-response'
 import { badRequest, created, serverError } from '@/lib/api-response'
-import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 import type { NextRequest } from 'next/server'
 
 const ALLOWED_TYPES = new Set(['CV', 'QUALIFICATION', 'DRIVING_LICENSE', 'OTHER'])
@@ -22,19 +22,21 @@ export async function POST(request: NextRequest) {
       { onConflict: 'id', ignoreDuplicates: true }
     )
 
-    const db = await createClient()
+    // Use service client: UPDATE policy on professional_documents is admin-only,
+    // so a regular user's upsert would be blocked on conflict. Service client bypasses RLS.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const dba = db as any
-
-    const { data, error } = await dba.from('professional_documents').insert({
-      professional_id: userId,
-      document_type: body.document_type,
-      file_path: body.file_path,
-      file_name: body.file_name ?? null,
-      status: 'UNVERIFIED',
-      uploaded_at: new Date().toISOString(),
-      uploaded_by: userId,
-    }).select('id').single()
+    const { data, error } = await (svc as any).from('professional_documents').upsert(
+      {
+        professional_id: userId,
+        document_type: body.document_type,
+        file_path: body.file_path,
+        file_name: body.file_name ?? null,
+        status: 'UNVERIFIED',
+        uploaded_at: new Date().toISOString(),
+        uploaded_by: userId,
+      },
+      { onConflict: 'professional_id,document_type' }
+    ).select('id').single()
 
     if (error) { console.error('[documents POST]', error); return serverError(error.message) }
     return created({ id: data.id })

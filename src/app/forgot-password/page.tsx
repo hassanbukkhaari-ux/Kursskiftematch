@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { CompassMark } from '@/components/brand/compass'
 
@@ -10,19 +9,22 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError(null)
 
-    const supabase = createClient()
-    const redirectTo = `${window.location.origin}/auth/callback?next=/reset-password`
-
-    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo })
+    const res = await fetch('/api/auth/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.trim().toLowerCase() }),
+    })
 
     setLoading(false)
-    if (error) {
-      setError('Noget gik galt. Prøv igen eller kontakt support.')
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}))
+      setError(body?.error ?? 'Noget gik galt. Prøv igen eller kontakt support.')
       return
     }
     setSent(true)

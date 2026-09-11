@@ -46,6 +46,8 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
   const [form, setForm] = useState<FormData>(EMPTY_FORM)
   const [error, setError] = useState<string | null>(null)
   const [saving, startSave] = useTransition()
+  const [deleting, startDelete] = useTransition()
+  const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [sortKey, setSortKey] = useState<SortKey>('volume')
 
   const statsById = new Map(caseStats.map(s => [s.municipality_id, s]))
@@ -81,6 +83,22 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
     setDrawerOpen(false)
     setEditingId(null)
     setError(null)
+    setDeleteConfirm(false)
+  }
+
+  function handleDelete() {
+    if (!editingId) return
+    startDelete(async () => {
+      const res = await fetch(`/api/municipalities/${editingId}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setError((data as { error?: string }).error ?? 'Kunne ikke slette kommunen')
+        setDeleteConfirm(false)
+        return
+      }
+      closeDrawer()
+      router.refresh()
+    })
   }
 
   function field(key: keyof FormData) {
@@ -328,19 +346,52 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-[#E0DAD0] shrink-0 flex gap-3">
-          <Button variant="secondary" className="flex-1" onClick={closeDrawer} disabled={saving}>
-            Annuller
-          </Button>
-          <Button
-            variant="primary"
-            className="flex-1"
-            loading={saving}
-            disabled={!form.name.trim()}
-            onClick={handleSave}
-          >
-            {editingId ? 'Gem ændringer' : 'Opret kommune'}
-          </Button>
+        <div className="px-6 py-4 border-t border-[#E0DAD0] shrink-0 space-y-3">
+          <div className="flex gap-3">
+            <Button variant="secondary" className="flex-1" onClick={closeDrawer} disabled={saving || deleting}>
+              Annuller
+            </Button>
+            <Button
+              variant="primary"
+              className="flex-1"
+              loading={saving}
+              disabled={!form.name.trim() || deleting}
+              onClick={handleSave}
+            >
+              {editingId ? 'Gem ændringer' : 'Opret kommune'}
+            </Button>
+          </div>
+
+          {/* Delete — only shown when editing */}
+          {editingId && (
+            deleteConfirm ? (
+              <div className="flex gap-2">
+                <span className="flex-1 text-xs text-[#B91C1C] flex items-center">Er du sikker? Dette kan ikke fortrydes.</span>
+                <button
+                  onClick={() => setDeleteConfirm(false)}
+                  className="px-3 py-1.5 text-xs text-[#6B7569] border border-[#E0DAD0] rounded-xl hover:bg-[#F6F3EE] transition-colors"
+                  disabled={deleting}
+                >
+                  Nej
+                </button>
+                <button
+                  onClick={handleDelete}
+                  className="px-3 py-1.5 text-xs font-medium text-white bg-[#B91C1C] rounded-xl hover:bg-[#991B1B] transition-colors disabled:opacity-50"
+                  disabled={deleting}
+                >
+                  {deleting ? 'Sletter…' : 'Ja, slet'}
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setDeleteConfirm(true)}
+                className="w-full text-xs text-[#B91C1C] hover:text-[#991B1B] py-1 transition-colors"
+                disabled={saving || deleting}
+              >
+                Slet kommune
+              </button>
+            )
+          )}
         </div>
       </aside>
     </>

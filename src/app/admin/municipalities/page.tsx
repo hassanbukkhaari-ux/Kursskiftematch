@@ -14,7 +14,7 @@ export default async function MunicipalitiesPage() {
   const [{ data: municipalities }, { data: cases }] = await Promise.all([
     db
       .from('municipalities')
-      .select('id, name, status, sagsbehandler_name, sagsbehandler_email, sagsbehandler_phone, secondary_contact_name, secondary_contact_email, secondary_contact_phone, created_at')
+      .select('id, name, status, sagsbehandler_name, sagsbehandler_email, sagsbehandler_phone, created_at')
       .order('name', { ascending: true }),
     db
       .from('cases')

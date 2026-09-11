@@ -6,7 +6,6 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
-import { SectionHeader } from '@/components/layout/page-header'
 import type { MunicipalityCaseStats } from './page'
 
 type Municipality = {
@@ -16,9 +15,6 @@ type Municipality = {
   sagsbehandler_name: string | null
   sagsbehandler_email: string | null
   sagsbehandler_phone: string | null
-  secondary_contact_name: string | null
-  secondary_contact_email: string | null
-  secondary_contact_phone: string | null
   created_at: string
 }
 
@@ -28,9 +24,6 @@ type FormData = {
   sagsbehandler_name: string
   sagsbehandler_email: string
   sagsbehandler_phone: string
-  secondary_contact_name: string
-  secondary_contact_email: string
-  secondary_contact_phone: string
 }
 
 const EMPTY_FORM: FormData = {
@@ -39,9 +32,6 @@ const EMPTY_FORM: FormData = {
   sagsbehandler_name: '',
   sagsbehandler_email: '',
   sagsbehandler_phone: '',
-  secondary_contact_name: '',
-  secondary_contact_email: '',
-  secondary_contact_phone: '',
 }
 
 const inputClass =
@@ -60,9 +50,6 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
 
   const statsById = new Map(caseStats.map(s => [s.municipality_id, s]))
   const getStats = (id: string) => statsById.get(id) ?? { active: 0, completed_90d: 0, municipality_id: id }
-
-  const totalActive = caseStats.reduce((sum, s) => sum + s.active, 0)
-  const totalCompleted90d = caseStats.reduce((sum, s) => sum + s.completed_90d, 0)
   const maxActive = Math.max(...caseStats.map(s => s.active), 1)
 
   const sorted = [...initialData].sort((a, b) => {
@@ -85,9 +72,6 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
       sagsbehandler_name: m.sagsbehandler_name ?? '',
       sagsbehandler_email: m.sagsbehandler_email ?? '',
       sagsbehandler_phone: m.sagsbehandler_phone ?? '',
-      secondary_contact_name: m.secondary_contact_name ?? '',
-      secondary_contact_email: m.secondary_contact_email ?? '',
-      secondary_contact_phone: m.secondary_contact_phone ?? '',
     })
     setError(null)
     setDrawerOpen(true)
@@ -115,9 +99,6 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
         sagsbehandler_name: form.sagsbehandler_name,
         sagsbehandler_email: form.sagsbehandler_email,
         sagsbehandler_phone: form.sagsbehandler_phone,
-        secondary_contact_name: form.secondary_contact_name,
-        secondary_contact_email: form.secondary_contact_email,
-        secondary_contact_phone: form.secondary_contact_phone,
       }
 
       const url = editingId ? `/api/municipalities/${editingId}` : '/api/municipalities'
@@ -145,52 +126,31 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
 
   return (
     <>
-      {/* Stats overview */}
-      {initialData.length > 0 && (
-        <div className="grid grid-cols-3 gap-3 mb-5">
-          <div className="bg-white border border-[#E0DAD0] rounded-2xl p-4">
-            <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-1">Aktive sager</div>
-            <div className="text-2xl font-bold text-[#1A1F1C] font-serif">{totalActive}</div>
-            <div className="text-xs text-[#6B7569] mt-0.5">på tværs af alle kommuner</div>
-          </div>
-          <div className="bg-white border border-[#E0DAD0] rounded-2xl p-4">
-            <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-1">Afsluttet (90d)</div>
-            <div className="text-2xl font-bold text-[#1A1F1C] font-serif">{totalCompleted90d}</div>
-            <div className="text-xs text-[#6B7569] mt-0.5">seneste 90 dage</div>
-          </div>
-          <div className="bg-white border border-[#E0DAD0] rounded-2xl p-4">
-            <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-1">Kommuner</div>
-            <div className="text-2xl font-bold text-[#1A1F1C] font-serif">{activeCount}</div>
-            <div className="text-xs text-[#6B7569] mt-0.5">{inactiveCount > 0 ? `+ ${inactiveCount} inaktive` : 'aktive aftaler'}</div>
-          </div>
+      {/* Toolbar — stacks on mobile so title never wraps */}
+      <div className="flex flex-col gap-3 mb-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="text-base font-semibold text-[#1A1F1C]">
+          {activeCount} aktive{inactiveCount > 0 ? ` · ${inactiveCount} inaktive` : ''}
         </div>
-      )}
-
-      <SectionHeader
-        title={`${activeCount} aktive · ${inactiveCount} inaktive`}
-        actions={
-          <div className="flex items-center gap-2">
-            {/* Sort toggle */}
-            <div className="flex rounded-xl border border-[#E0DAD0] overflow-hidden text-xs font-medium">
-              {(['volume', 'name'] as SortKey[]).map(k => (
-                <button
-                  key={k}
-                  onClick={() => setSortKey(k)}
-                  className={[
-                    'px-3 py-1.5 transition-colors',
-                    sortKey === k ? 'bg-[#1C3829] text-white' : 'text-[#6B7569] hover:bg-[#F6F3EE]',
-                  ].join(' ')}
-                >
-                  {k === 'volume' ? 'Flest sager' : 'A–Å'}
-                </button>
-              ))}
-            </div>
-            <Button variant="primary" size="sm" icon={<PlusIcon />} onClick={openNew}>
-              Ny kommune
-            </Button>
+        <div className="flex items-center gap-2">
+          <div className="flex rounded-xl border border-[#E0DAD0] overflow-hidden text-xs font-medium">
+            {(['volume', 'name'] as SortKey[]).map(k => (
+              <button
+                key={k}
+                onClick={() => setSortKey(k)}
+                className={[
+                  'px-3 py-1.5 transition-colors',
+                  sortKey === k ? 'bg-[#1C3829] text-white' : 'text-[#6B7569] hover:bg-[#F6F3EE]',
+                ].join(' ')}
+              >
+                {k === 'volume' ? 'Flest sager' : 'A–Å'}
+              </button>
+            ))}
           </div>
-        }
-      />
+          <Button variant="primary" size="sm" icon={<PlusIcon />} onClick={openNew}>
+            Ny kommune
+          </Button>
+        </div>
+      </div>
 
       {initialData.length === 0 ? (
         <EmptyState
@@ -210,23 +170,21 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
             const barWidth = maxActive > 0 ? Math.round((stats.active / maxActive) * 100) : 0
             return (
               <button key={m.id} onClick={() => openEdit(m)} className="w-full text-left block">
-                <Card hover className="flex items-center gap-4">
+                <Card hover className="flex items-center gap-3 sm:gap-4">
                   {/* Rank */}
-                  <div className="w-6 text-center text-xs font-semibold text-[#C8C0B0] shrink-0 tabular-nums">
+                  <div className="w-5 text-center text-xs font-semibold text-[#C8C0B0] shrink-0 tabular-nums">
                     {i + 1}
                   </div>
                   {/* Icon */}
                   <div className="w-9 h-9 rounded-xl bg-[#EEF4F0] flex items-center justify-center text-[#1C3829] shrink-0">
                     <MuniIcon size={18} />
                   </div>
-                  {/* Name + bar */}
+                  {/* Name + contact + bar */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className="font-medium text-[#1A1F1C] text-sm truncate">{m.name}</div>
-                      {(m.sagsbehandler_name) && (
-                        <div className="text-xs text-[#6B7569] truncate hidden sm:block">{m.sagsbehandler_name}</div>
-                      )}
-                    </div>
+                    <div className="font-medium text-[#1A1F1C] text-sm truncate mb-0.5">{m.name}</div>
+                    {m.sagsbehandler_name && (
+                      <div className="text-xs text-[#6B7569] truncate mb-1">{m.sagsbehandler_name}</div>
+                    )}
                     {/* Volume bar */}
                     <div className="h-1.5 bg-[#F0EDE8] rounded-full overflow-hidden">
                       <div
@@ -237,7 +195,7 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
                   </div>
                   {/* Stats */}
                   <div className="flex items-center gap-3 shrink-0">
-                    <div className="text-right hidden sm:block">
+                    <div className="text-right">
                       <div className="text-sm font-bold text-[#1A1F1C] tabular-nums">{stats.active}</div>
                       <div className="text-[10px] text-[#6B7569]">aktive</div>
                     </div>
@@ -345,27 +303,15 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
             </div>
           </div>
 
-          {/* Primary contact */}
+          {/* Contact */}
           <div>
             <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-3">
-              Primær kontaktperson (sagsbehandler)
+              Sagsbehandler (kommunal kontakt)
             </div>
             <div className="space-y-3">
               <input type="text" value={form.sagsbehandler_name} onChange={field('sagsbehandler_name')} placeholder="Fuldt navn" className={inputClass} />
               <input type="email" value={form.sagsbehandler_email} onChange={field('sagsbehandler_email')} placeholder="E-mailadresse" className={inputClass} />
               <input type="tel" value={form.sagsbehandler_phone} onChange={field('sagsbehandler_phone')} placeholder="Telefonnummer" className={inputClass} />
-            </div>
-          </div>
-
-          {/* Secondary contact */}
-          <div>
-            <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-3">
-              Sekundær kontaktperson
-            </div>
-            <div className="space-y-3">
-              <input type="text" value={form.secondary_contact_name} onChange={field('secondary_contact_name')} placeholder="Fuldt navn" className={inputClass} />
-              <input type="email" value={form.secondary_contact_email} onChange={field('secondary_contact_email')} placeholder="E-mailadresse" className={inputClass} />
-              <input type="tel" value={form.secondary_contact_phone} onChange={field('secondary_contact_phone')} placeholder="Telefonnummer" className={inputClass} />
             </div>
           </div>
 

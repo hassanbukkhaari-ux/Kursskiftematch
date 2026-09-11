@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { PageHeader, ContentContainer, SectionHeader } from '@/components/layout/page-header'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -91,7 +91,7 @@ export default async function AdminCasePage({ params }: PageProps) {
     handoversRes,
   ] = await Promise.all([
     db.from('municipalities').select('name, sagsbehandler_name, sagsbehandler_email').eq('id', caseData.municipality_id).single(),
-    db.from('session_logs').select('id, session_date, duration_minutes, observations, citizen_mood_tone, follow_up_needed, follow_up_reason, status, professionals!inner(profiles!inner(full_name))', { count: 'exact' }).eq('case_id', id).order('session_date', { ascending: false }).limit(20),
+    createServiceClient().from('session_logs' as any).select('id, session_date, duration_minutes, observations, citizen_mood_tone, follow_up_needed, follow_up_reason, status, professional_id', { count: 'exact' }).eq('case_id', id).order('session_date', { ascending: false }).limit(20),
     dba.from('cases').select('citizen_gender, citizen_notes, intake_contact_name, intake_contact_email').eq('id', id).single(),
     db.from('v_case_tags').select('problem_area_codes, goal_codes, special_wish_codes').eq('case_id', id).single(),
     db.from('problem_areas').select('code, label_da'),
@@ -122,6 +122,15 @@ export default async function AdminCasePage({ params }: PageProps) {
     TEACHER: 'Lærer', PEDAGOGUE: 'Pædagog', NURSE: 'Sygeplejerske',
     PSYCHOLOGIST: 'Psykolog', SOCIAL_WORKER: 'Socialrådgiver', COUNSELOR: 'Vejleder', OTHER: 'Andet',
   }
+
+  // Build a professional_id → full_name map for session log display
+  const logProfessionalIds = [...new Set((logsRes.data ?? []).map((l: any) => l.professional_id as string).filter(Boolean))]
+  const logProfilesRes = logProfessionalIds.length > 0
+    ? await createServiceClient().from('profiles' as any).select('id, full_name').in('id', logProfessionalIds)
+    : { data: [] }
+  const logProfileMap: Record<string, string> = Object.fromEntries(
+    ((logProfilesRes.data ?? []) as any[]).map((p: any) => [p.id, p.full_name])
+  )
 
   const grants: Grant[] = (grantsRes.data ?? []).map((g: any) => ({
     id: g.id,
@@ -351,7 +360,11 @@ export default async function AdminCasePage({ params }: PageProps) {
                   follow_up_needed: l.follow_up_needed,
                   follow_up_reason: l.follow_up_reason,
                   status: l.status,
+<<<<<<< HEAD
+                  professional_name: logProfileMap[l.professional_id] ?? 'Ukendt',
+=======
                   professional_name: l.professionals?.profiles?.full_name ?? 'Ukendt',
+>>>>>>> origin/main
                 } satisfies CaseSessionLog))}
               />
             </div>

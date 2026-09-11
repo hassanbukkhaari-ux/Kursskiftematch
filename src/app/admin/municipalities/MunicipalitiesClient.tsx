@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { SectionHeader } from '@/components/layout/page-header'
+import type { MunicipalityCaseStats } from './page'
 
 type Municipality = {
   id: string
@@ -46,13 +47,28 @@ const EMPTY_FORM: FormData = {
 const inputClass =
   'w-full border border-[#E0DAD0] rounded-xl px-4 py-2.5 text-sm text-[#1A1F1C] bg-[#F6F3EE] placeholder:text-[#C8C0B0] focus:outline-none focus:border-[#1C3829] focus:bg-white transition-colors'
 
-export function MunicipalitiesClient({ initialData }: { initialData: Municipality[] }) {
+type SortKey = 'volume' | 'name'
+
+export function MunicipalitiesClient({ initialData, caseStats }: { initialData: Municipality[]; caseStats: MunicipalityCaseStats[] }) {
   const router = useRouter()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState<FormData>(EMPTY_FORM)
   const [error, setError] = useState<string | null>(null)
   const [saving, startSave] = useTransition()
+  const [sortKey, setSortKey] = useState<SortKey>('volume')
+
+  const statsById = new Map(caseStats.map(s => [s.municipality_id, s]))
+  const getStats = (id: string) => statsById.get(id) ?? { active: 0, completed_90d: 0, municipality_id: id }
+
+  const totalActive = caseStats.reduce((sum, s) => sum + s.active, 0)
+  const totalCompleted90d = caseStats.reduce((sum, s) => sum + s.completed_90d, 0)
+  const maxActive = Math.max(...caseStats.map(s => s.active), 1)
+
+  const sorted = [...initialData].sort((a, b) => {
+    if (sortKey === 'volume') return getStats(b.id).active - getStats(a.id).active
+    return a.name.localeCompare(b.name, 'da')
+  })
 
   function openNew() {
     setEditingId(null)
@@ -124,17 +140,55 @@ export function MunicipalitiesClient({ initialData }: { initialData: Municipalit
     })
   }
 
-  const active = initialData.filter(m => m.status === 'ACTIVE').length
-  const inactive = initialData.filter(m => m.status === 'INACTIVE').length
+  const activeCount = initialData.filter(m => m.status === 'ACTIVE').length
+  const inactiveCount = initialData.filter(m => m.status === 'INACTIVE').length
 
   return (
     <>
+      {/* Stats overview */}
+      {initialData.length > 0 && (
+        <div className="grid grid-cols-3 gap-3 mb-5">
+          <div className="bg-white border border-[#E0DAD0] rounded-2xl p-4">
+            <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-1">Aktive sager</div>
+            <div className="text-2xl font-bold text-[#1A1F1C] font-serif">{totalActive}</div>
+            <div className="text-xs text-[#6B7569] mt-0.5">på tværs af alle kommuner</div>
+          </div>
+          <div className="bg-white border border-[#E0DAD0] rounded-2xl p-4">
+            <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-1">Afsluttet (90d)</div>
+            <div className="text-2xl font-bold text-[#1A1F1C] font-serif">{totalCompleted90d}</div>
+            <div className="text-xs text-[#6B7569] mt-0.5">seneste 90 dage</div>
+          </div>
+          <div className="bg-white border border-[#E0DAD0] rounded-2xl p-4">
+            <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-1">Kommuner</div>
+            <div className="text-2xl font-bold text-[#1A1F1C] font-serif">{activeCount}</div>
+            <div className="text-xs text-[#6B7569] mt-0.5">{inactiveCount > 0 ? `+ ${inactiveCount} inaktive` : 'aktive aftaler'}</div>
+          </div>
+        </div>
+      )}
+
       <SectionHeader
-        title={`${active} aktive · ${inactive} inaktive`}
+        title={`${activeCount} aktive · ${inactiveCount} inaktive`}
         actions={
-          <Button variant="primary" size="sm" icon={<PlusIcon />} onClick={openNew}>
-            Ny kommune
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* Sort toggle */}
+            <div className="flex rounded-xl border border-[#E0DAD0] overflow-hidden text-xs font-medium">
+              {(['volume', 'name'] as SortKey[]).map(k => (
+                <button
+                  key={k}
+                  onClick={() => setSortKey(k)}
+                  className={[
+                    'px-3 py-1.5 transition-colors',
+                    sortKey === k ? 'bg-[#1C3829] text-white' : 'text-[#6B7569] hover:bg-[#F6F3EE]',
+                  ].join(' ')}
+                >
+                  {k === 'volume' ? 'Flest sager' : 'A–Å'}
+                </button>
+              ))}
+            </div>
+            <Button variant="primary" size="sm" icon={<PlusIcon />} onClick={openNew}>
+              Ny kommune
+            </Button>
+          </div>
         }
       />
 
@@ -150,34 +204,60 @@ export function MunicipalitiesClient({ initialData }: { initialData: Municipalit
           }
         />
       ) : (
-        <div className="space-y-3">
-          {initialData.map(m => (
-            <button key={m.id} onClick={() => openEdit(m)} className="w-full text-left block">
-              <Card hover className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3 min-w-0">
+        <div className="space-y-2">
+          {sorted.map((m, i) => {
+            const stats = getStats(m.id)
+            const barWidth = maxActive > 0 ? Math.round((stats.active / maxActive) * 100) : 0
+            return (
+              <button key={m.id} onClick={() => openEdit(m)} className="w-full text-left block">
+                <Card hover className="flex items-center gap-4">
+                  {/* Rank */}
+                  <div className="w-6 text-center text-xs font-semibold text-[#C8C0B0] shrink-0 tabular-nums">
+                    {i + 1}
+                  </div>
+                  {/* Icon */}
                   <div className="w-9 h-9 rounded-xl bg-[#EEF4F0] flex items-center justify-center text-[#1C3829] shrink-0">
                     <MuniIcon size={18} />
                   </div>
-                  <div className="min-w-0">
-                    <div className="font-medium text-[#1A1F1C] text-sm">{m.name}</div>
-                    {(m.sagsbehandler_name || m.sagsbehandler_email) && (
-                      <div className="text-xs text-[#6B7569] truncate">
-                        {[m.sagsbehandler_name, m.sagsbehandler_email].filter(Boolean).join(' · ')}
+                  {/* Name + bar */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="font-medium text-[#1A1F1C] text-sm truncate">{m.name}</div>
+                      {(m.sagsbehandler_name) && (
+                        <div className="text-xs text-[#6B7569] truncate hidden sm:block">{m.sagsbehandler_name}</div>
+                      )}
+                    </div>
+                    {/* Volume bar */}
+                    <div className="h-1.5 bg-[#F0EDE8] rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-[#1C3829] rounded-full transition-all duration-500"
+                        style={{ width: `${barWidth}%` }}
+                      />
+                    </div>
+                  </div>
+                  {/* Stats */}
+                  <div className="flex items-center gap-3 shrink-0">
+                    <div className="text-right hidden sm:block">
+                      <div className="text-sm font-bold text-[#1A1F1C] tabular-nums">{stats.active}</div>
+                      <div className="text-[10px] text-[#6B7569]">aktive</div>
+                    </div>
+                    {stats.completed_90d > 0 && (
+                      <div className="text-right hidden sm:block">
+                        <div className="text-sm font-medium text-[#6B7569] tabular-nums">{stats.completed_90d}</div>
+                        <div className="text-[10px] text-[#6B7569]">afsl. 90d</div>
                       </div>
                     )}
+                    <Badge variant={m.status === 'ACTIVE' ? 'green' : 'default'} dot>
+                      {m.status === 'ACTIVE' ? 'Aktiv' : 'Inaktiv'}
+                    </Badge>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C8C0B0" strokeWidth="1.75" strokeLinecap="round">
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
                   </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Badge variant={m.status === 'ACTIVE' ? 'green' : 'default'} dot>
-                    {m.status === 'ACTIVE' ? 'Aktiv' : 'Inaktiv'}
-                  </Badge>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C8C0B0" strokeWidth="1.75" strokeLinecap="round">
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
-                </div>
-              </Card>
-            </button>
-          ))}
+                </Card>
+              </button>
+            )
+          })}
         </div>
       )}
 

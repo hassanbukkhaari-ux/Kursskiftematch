@@ -368,6 +368,7 @@ function S2Profession({ pro, professionTypes }: { pro: Pro | null; professionTyp
     experience_years: pro?.experience_years?.toString() ?? '',
   })
   const [educations, setEducations] = useState<string[]>(() => parseEducations(pro?.education))
+  const [otherLabel, setOtherLabel] = useState(pro?.specialization ?? '')
   const set = (k: keyof typeof f) => (v: string) => setF(p => ({ ...p, [k]: v }))
 
   const selectedType = professionTypes.find(t => t.id === f.profession_type_id)
@@ -397,12 +398,26 @@ function S2Profession({ pro, professionTypes }: { pro: Pro | null; professionTyp
         <Field label="Antal års erfaring">
           <Input value={f.experience_years} onChange={set('experience_years')} type="number" placeholder="5" />
         </Field>
-        <Field label="Specialisering"><Input value={f.specialization} onChange={set('specialization')} placeholder="F.eks. ABA, autisme" /></Field>
+        {isOther && (
+          <Field label="Titel (specificér)">
+            <input
+              type="text"
+              value={otherLabel}
+              onChange={e => setOtherLabel(e.target.value)}
+              autoFocus
+              placeholder="Skriv din titel her, f.eks. Familieterapeut"
+              className="w-full h-10 px-3 bg-[#F6F3EE] rounded-xl text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829]"
+            />
+          </Field>
+        )}
+        {!isOther && (
+          <Field label="Specialisering"><Input value={f.specialization} onChange={set('specialization')} placeholder="F.eks. ABA, autisme" /></Field>
+        )}
       </div>
 
       <div>
         <label className="block text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">
-          {isOther ? 'Beskriv din profession' : 'Uddannelse'}
+          Uddannelse
         </label>
         <div className="space-y-2">
           {educations.map((edu, i) => (
@@ -444,6 +459,7 @@ function S2Profession({ pro, professionTypes }: { pro: Pro | null; professionTyp
         ...f,
         education: serializeEducations(educations),
         profession_type_id: f.profession_type_id || null,
+        specialization: isOther ? otherLabel : f.specialization,
         experience_years: f.experience_years ? parseInt(f.experience_years) : null,
       })} />
     </div>

@@ -376,10 +376,10 @@ export default async function AdminCasePage({ params }: PageProps) {
               {proData ? (
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-[#EEF4F0] flex items-center justify-center text-sm font-semibold text-[#1C3829] shrink-0">
-                    {proData.profiles.full_name.charAt(0).toUpperCase()}
+                    {proData.profiles?.full_name?.charAt(0)?.toUpperCase() ?? '?'}
                   </div>
                   <div className="min-w-0">
-                    <div className="font-medium text-[#1A1F1C] text-sm">{proData.profiles.full_name}</div>
+                    <div className="font-medium text-[#1A1F1C] text-sm">{proData.profiles?.full_name ?? 'Ukendt'}</div>
                     <div className="text-xs text-[#6B7569]">
                       {PROFESSION_LABEL[proData.profession] ?? proData.profession}
                       {proData.experience_years > 0 && ` · ${proData.experience_years} år`}

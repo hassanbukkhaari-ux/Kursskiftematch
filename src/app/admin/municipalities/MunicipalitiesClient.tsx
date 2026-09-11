@@ -63,6 +63,7 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState<FormData>(EMPTY_FORM)
   const [error, setError] = useState<string | null>(null)
+  const [successMsg, setSuccessMsg] = useState<string | null>(null)
   const [saving, startSave] = useTransition()
   const [deleting, startDelete] = useTransition()
   const [deleteConfirm, setDeleteConfirm] = useState(false)
@@ -72,6 +73,8 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
   const [reassigningId, setReassigningId] = useState<string | null>(null)
   const [reassignTarget, setReassignTarget] = useState('')
   const [reassigning, startReassign] = useTransition()
+  const [bulkTarget, setBulkTarget] = useState('')
+  const [bulkMoving, startBulkMove] = useTransition()
 
   const statsById = new Map(caseStats.map(s => [s.municipality_id, s]))
   const getStats = (id: string) => statsById.get(id) ?? { active: 0, completed_90d: 0, municipality_id: id }
@@ -86,6 +89,7 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
     setEditingId(null)
     setForm(EMPTY_FORM)
     setError(null)
+    setSuccessMsg(null)
     setDrawerOpen(true)
   }
 
@@ -99,9 +103,11 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
       sagsbehandler_phone: m.sagsbehandler_phone ?? '',
     })
     setError(null)
+    setSuccessMsg(null)
     setMunicipalityCases([])
     setReassigningId(null)
     setReassignTarget('')
+    setBulkTarget('')
     setDrawerOpen(true)
     setCasesLoading(true)
     fetch(`/api/cases?municipality_id=${m.id}&limit=100`)
@@ -115,10 +121,35 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
     setDrawerOpen(false)
     setEditingId(null)
     setError(null)
+    setSuccessMsg(null)
     setDeleteConfirm(false)
     setMunicipalityCases([])
     setReassigningId(null)
     setReassignTarget('')
+    setBulkTarget('')
+  }
+
+  function handleBulkReassign() {
+    if (!bulkTarget || !editingId) return
+    startBulkMove(async () => {
+      setError(null)
+      const res = await fetch(`/api/municipalities/${editingId}/reassign-cases`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target_municipality_id: bulkTarget }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setError((data as { error?: string }).error ?? 'Noget gik galt')
+        return
+      }
+      const { moved, target_name } = data as { moved: number; target_name: string }
+      setMunicipalityCases([])
+      setBulkTarget('')
+      setError(null)
+      setSuccessMsg(`${moved} ${moved === 1 ? 'sag' : 'sager'} er flyttet til ${target_name}. Kommunen kan nu slettes.`)
+      router.refresh()
+    })
   }
 
   function handleReassign(caseId: string) {
@@ -342,6 +373,15 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
             </div>
           )}
 
+          {successMsg && (
+            <div className="flex items-center gap-2 p-3 bg-[#EEF4F0] border border-[#D1E7D8] rounded-xl text-sm text-[#1C3829]">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="shrink-0">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              {successMsg}
+            </div>
+          )}
+
           {/* Basic info */}
           <div className="space-y-4">
             <div>
@@ -402,6 +442,28 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
               <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-3">
                 Tilknyttede sager
               </div>
+              {!casesLoading && municipalityCases.length > 0 && (
+                <div className="mb-3 flex gap-2">
+                  <select
+                    value={bulkTarget}
+                    onChange={e => setBulkTarget(e.target.value)}
+                    className="flex-1 border border-[#E0DAD0] rounded-xl px-3 py-2 text-xs text-[#1A1F1C] bg-white focus:outline-none focus:border-[#1C3829]"
+                  >
+                    <option value="">Flyt alle {municipalityCases.length} sager til…</option>
+                    {initialData
+                      .filter(m => m.id !== editingId && m.status === 'ACTIVE')
+                      .map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={handleBulkReassign}
+                    disabled={!bulkTarget || bulkMoving}
+                    className="px-3 py-2 text-xs font-medium text-white bg-[#1C3829] rounded-xl hover:bg-[#16302d] transition-colors disabled:opacity-40 whitespace-nowrap"
+                  >
+                    {bulkMoving ? 'Flytter…' : 'Flyt alle'}
+                  </button>
+                </div>
+              )}
               {casesLoading ? (
                 <p className="text-xs text-[#6B7569]">Henter sager…</p>
               ) : municipalityCases.length === 0 ? (

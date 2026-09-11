@@ -494,15 +494,32 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
                           {c.case_number && (
                             <div className="text-[10px] text-[#C8C0B0] mt-0.5">{c.case_number}</div>
                           )}
-                          {c.intake_contact_name || c.intake_contact_email ? (
-                            <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-[#6B7569]">
-                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="shrink-0">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                <circle cx="12" cy="7" r="4" />
-                              </svg>
-                              <span className="truncate">
-                                {c.intake_contact_name ?? c.intake_contact_email}
-                              </span>
+                          {c.intake_contact_name || c.intake_contact_email || c.intake_contact_phone ? (
+                            <div className="mt-1.5 space-y-0.5">
+                              {c.intake_contact_name && (
+                                <div className="flex items-center gap-1.5 text-[10px] text-[#6B7569]">
+                                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="shrink-0">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+                                  </svg>
+                                  <span className="truncate font-medium text-[#1A1F1C]">{c.intake_contact_name}</span>
+                                </div>
+                              )}
+                              {c.intake_contact_email && (
+                                <div className="flex items-center gap-1.5 text-[10px] text-[#6B7569]">
+                                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="shrink-0">
+                                    <rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                                  </svg>
+                                  <a href={`mailto:${c.intake_contact_email}`} className="truncate hover:underline text-[#1C3829]">{c.intake_contact_email}</a>
+                                </div>
+                              )}
+                              {c.intake_contact_phone && (
+                                <div className="flex items-center gap-1.5 text-[10px] text-[#6B7569]">
+                                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="shrink-0">
+                                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.1 13.5a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3 2.84h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 10.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 18z" />
+                                  </svg>
+                                  <a href={`tel:${c.intake_contact_phone}`} className="truncate hover:underline">{c.intake_contact_phone}</a>
+                                </div>
+                              )}
                             </div>
                           ) : (
                             <div className="mt-1.5 text-[10px] text-[#C8C0B0]">Ingen sagsbehandler angivet</div>

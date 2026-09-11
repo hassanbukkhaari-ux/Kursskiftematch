@@ -102,7 +102,7 @@ export default async function AdminCasePage({ params }: PageProps) {
   ] = await Promise.all([
     db.from('municipalities').select('name, sagsbehandler_name, sagsbehandler_email').eq('id', caseData.municipality_id).single(),
     createServiceClient().from('session_logs' as any).select('id, session_date, duration_minutes, observations, citizen_mood_tone, follow_up_needed, follow_up_reason, status, professional_id', { count: 'exact' }).eq('case_id', id).order('session_date', { ascending: false }).limit(20),
-    dba.from('cases').select('citizen_gender, citizen_notes, intake_contact_name, intake_contact_email, legal_basis, diagnoses, daily_function, citizen_interests, expected_duration_months, preferred_prof_gender, transport_needs, created_at').eq('id', id).single(),
+    dba.from('cases').select('citizen_gender, citizen_notes, intake_contact_name, intake_contact_email, intake_contact_phone, legal_basis, diagnoses, daily_function, citizen_interests, expected_duration_months, preferred_prof_gender, transport_needs, created_at').eq('id', id).single(),
     db.from('v_case_tags').select('problem_area_codes, goal_codes, special_wish_codes').eq('case_id', id).single(),
     db.from('problem_areas').select('code, label_da'),
     db.from('goals_lookup').select('code, label_da'),
@@ -450,33 +450,47 @@ export default async function AdminCasePage({ params }: PageProps) {
               )}
             </Card>
 
-            {/* Municipality contact */}
-            {muniRes.data && (
-              <Card>
-                <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-3">Kommunekontakt</div>
-                <div className="space-y-1.5">
-                  <div className="text-sm font-medium text-[#1A1F1C]">{muniRes.data.name}</div>
-                  {/* Case-specific contact (set when admin created the case) */}
-                  {caseDetailRes.data?.intake_contact_name && (
-                    <div className="text-xs text-[#1A1F1C] font-medium">{caseDetailRes.data.intake_contact_name}</div>
+            {/* Per-case sagsbehandler */}
+            <Card>
+              <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-3">Sagsbehandler</div>
+              {caseDetailRes.data?.intake_contact_name || caseDetailRes.data?.intake_contact_email ? (
+                <div className="space-y-1">
+                  {caseDetailRes.data.intake_contact_name && (
+                    <div className="text-sm font-medium text-[#1A1F1C]">{caseDetailRes.data.intake_contact_name}</div>
                   )}
-                  {caseDetailRes.data?.intake_contact_email && (
+                  {muniRes.data && (
+                    <div className="text-xs text-[#6B7569]">{muniRes.data.name}</div>
+                  )}
+                  {caseDetailRes.data.intake_contact_email && (
                     <a href={`mailto:${caseDetailRes.data.intake_contact_email}`} className="text-xs text-[#1C3829] hover:underline block">
                       {caseDetailRes.data.intake_contact_email}
                     </a>
                   )}
-                  {/* Fallback to municipality-level contact */}
-                  {!caseDetailRes.data?.intake_contact_name && muniRes.data.sagsbehandler_name && (
-                    <div className="text-xs text-[#6B7569]">{muniRes.data.sagsbehandler_name}</div>
+                  {(caseDetailRes.data as any).intake_contact_phone && (
+                    <a href={`tel:${(caseDetailRes.data as any).intake_contact_phone}`} className="text-xs text-[#6B7569] hover:underline block">
+                      {(caseDetailRes.data as any).intake_contact_phone}
+                    </a>
                   )}
-                  {!caseDetailRes.data?.intake_contact_email && muniRes.data.sagsbehandler_email && (
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {muniRes.data && (
+                    <div className="text-xs text-[#6B7569]">{muniRes.data.name}</div>
+                  )}
+                  {muniRes.data?.sagsbehandler_name && (
+                    <div className="text-xs text-[#6B7569]">{muniRes.data.sagsbehandler_name} <span className="text-[#C8C0B0]">(kommunekontakt)</span></div>
+                  )}
+                  {muniRes.data?.sagsbehandler_email && (
                     <a href={`mailto:${muniRes.data.sagsbehandler_email}`} className="text-xs text-[#1C3829] hover:underline block">
                       {muniRes.data.sagsbehandler_email}
                     </a>
                   )}
+                  {!muniRes.data?.sagsbehandler_name && !muniRes.data?.sagsbehandler_email && (
+                    <div className="text-xs text-[#C8C0B0]">Ikke angivet — rediger sagen for at tilføje</div>
+                  )}
                 </div>
-              </Card>
-            )}
+              )}
+            </Card>
 
             {/* Matching action for open/matched cases */}
             {(caseData.status === 'OPEN' || caseData.status === 'MATCHED') && (
@@ -508,6 +522,9 @@ export default async function AdminCasePage({ params }: PageProps) {
               urgency={caseData.urgency as 'NORMAL' | 'HURTIG' | 'AKUT'}
               weeklyHours={caseData.weekly_hours}
               citizenNotes={caseDetailRes.data?.citizen_notes ?? null}
+              intakeContactName={caseDetailRes.data?.intake_contact_name ?? null}
+              intakeContactEmail={caseDetailRes.data?.intake_contact_email ?? null}
+              intakeContactPhone={(caseDetailRes.data as any)?.intake_contact_phone ?? null}
             />
 
             {/* Dynamic admin actions */}

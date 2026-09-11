@@ -427,7 +427,7 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
           {/* Contact */}
           <div>
             <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-3">
-              Sagsbehandler (kommunal kontakt)
+              Generel kommunekontakt
             </div>
             <div className="space-y-3">
               <input type="text" value={form.sagsbehandler_name} onChange={field('sagsbehandler_name')} placeholder="Fuldt navn" className={inputClass} />

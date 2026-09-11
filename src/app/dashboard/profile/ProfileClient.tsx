@@ -14,6 +14,7 @@ type Pro = {
   job_title?: string | null; phone?: string | null
   address?: string | null; postal_code?: string | null; city?: string | null
   region?: string | null; profile_image_url?: string | null
+  daily_occupation?: string | null
   profession_type_id?: string | null; specialization?: string | null
   authorization_note?: string | null; experience_years?: number | null
   education?: string | null; bio?: string | null
@@ -308,6 +309,7 @@ function S1Personal({ pro, profileName, profileEmail }: { pro: Pro | null; profi
     postal_code: pro?.postal_code ?? '',
     city: pro?.city ?? '',
     region: pro?.region ?? '',
+    daily_occupation: pro?.daily_occupation ?? '',
   })
   const set = (k: keyof typeof f) => (v: string) => setF(p => ({ ...p, [k]: v }))
 
@@ -349,6 +351,18 @@ function S1Personal({ pro, profileName, profileEmail }: { pro: Pro | null; profi
           </select>
         </Field>
       </div>
+      <Field label="Daglig beskæftigelse">
+        <select
+          value={f.daily_occupation}
+          onChange={e => setF(p => ({ ...p, daily_occupation: e.target.value }))}
+          className="w-full h-10 px-3 bg-[#F6F3EE] rounded-xl text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829]"
+        >
+          <option value="">Vælg status…</option>
+          <option value="Ledig">Ledig</option>
+          <option value="I arbejde">I arbejde</option>
+          <option value="Skole/Studie">Skole/Studie</option>
+        </select>
+      </Field>
       <SaveBar busy={busy} error={error} saved={saved} onSave={handleSave} />
     </div>
   )

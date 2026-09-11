@@ -22,7 +22,7 @@ export interface AdminLogRow {
 }
 
 const STATUS_LABEL: Record<string, string> = {
-  DRAFT: 'Kladde', FINAL: 'Afsluttet', CORRECTED: 'Korrigeret', ARCHIVED: 'Arkiveret',
+  DRAFT: 'Oprettet', FINAL: 'Afsluttet', CORRECTED: 'Korrigeret', ARCHIVED: 'Arkiveret',
 }
 const STATUS_BADGE: Record<string, 'default' | 'green' | 'amber'> = {
   DRAFT: 'default', FINAL: 'green', CORRECTED: 'amber', ARCHIVED: 'default',
@@ -105,7 +105,7 @@ export function AdminSessionLogsClient({ initialLogs }: Props) {
                   : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829] hover:text-[#1C3829]',
               ].join(' ')}
             >
-              {f === 'ALL' ? 'Alle' : f === 'FOLLOW_UP' ? 'Opfølgning' : STATUS_LABEL[f]}
+              {f === 'ALL' ? 'Alle' : f === 'FOLLOW_UP' ? 'Opfølgning' : f === 'DRAFT' ? 'Oprettede' : STATUS_LABEL[f]}
             </button>
           ))}
         </div>

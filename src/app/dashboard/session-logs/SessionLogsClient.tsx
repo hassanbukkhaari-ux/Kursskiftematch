@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import type { SessionLogRow, CaseOption } from './page'
 
 const STATUS_LABEL: Record<string, string> = {
-  DRAFT: 'Kladde', FINAL: 'Afsluttet', CORRECTED: 'Korrigeret', ARCHIVED: 'Arkiveret',
+  DRAFT: 'Oprettet', FINAL: 'Afsluttet', CORRECTED: 'Korrigeret', ARCHIVED: 'Arkiveret',
 }
 const STATUS_BADGE: Record<string, 'default' | 'green' | 'amber'> = {
   DRAFT: 'default', FINAL: 'green', CORRECTED: 'amber', ARCHIVED: 'default',
@@ -176,7 +176,7 @@ export function SessionLogsClient({ initialLogs, cases, defaultCaseId }: Props) 
 
   const TABS: { label: string; value: FilterStatus }[] = [
     { label: 'Alle', value: 'ALL' },
-    { label: 'Kladder', value: 'DRAFT' },
+    { label: 'Oprettede', value: 'DRAFT' },
     { label: 'Afsluttede', value: 'FINAL' },
   ]
 
@@ -420,7 +420,7 @@ export function SessionLogsClient({ initialLogs, cases, defaultCaseId }: Props) 
             disabled={saving || isPending}
             className="flex-1 h-10 rounded-xl bg-[#1C3829] text-[#F6F3EE] text-sm font-semibold hover:bg-[#2D5840] transition-colors disabled:opacity-50"
           >
-            {saving ? 'Gemmer…' : 'Gem som kladde'}
+            {saving ? 'Gemmer…' : 'Gem sessionslog'}
           </button>
         </div>
       </aside>

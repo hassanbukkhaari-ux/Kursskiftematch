@@ -17,7 +17,7 @@ export interface CaseSessionLog {
 }
 
 const STATUS_LABEL: Record<string, string> = {
-  DRAFT: 'Kladde', FINAL: 'Afsluttet', CORRECTED: 'Korrigeret', ARCHIVED: 'Arkiveret',
+  DRAFT: 'Oprettet', FINAL: 'Afsluttet', CORRECTED: 'Korrigeret', ARCHIVED: 'Arkiveret',
 }
 const STATUS_BADGE: Record<string, 'default' | 'green' | 'amber'> = {
   DRAFT: 'default', FINAL: 'green', CORRECTED: 'amber', ARCHIVED: 'default',

@@ -453,12 +453,12 @@ function CapacityPanel({
 // ── Document management ──────────────────────────────────────────────────
 
 const DOC_TYPES = [
-  { type: 'CRIMINAL_RECORD', label: 'Straffeattest', required: true },
-  { type: 'CHILD_RECORD', label: 'Børneattest', required: true },
-  { type: 'CV', label: 'CV', required: true },
-  { type: 'EDUCATION', label: 'Uddannelsesbeviser', required: false },
-  { type: 'DRIVING_LICENSE', label: 'Kørekort', required: false },
-  { type: 'AUTHORIZATION', label: 'Autorisation', required: false },
+  { type: 'CRIMINAL_RECORD', label: 'Straffeattest', required: true, managed: true },
+  { type: 'CHILD_PROTECTION', label: 'Børneattest', required: true, managed: true },
+  { type: 'CV', label: 'CV', required: true, managed: false },
+  { type: 'EDUCATION', label: 'Uddannelsesbeviser', required: false, managed: false },
+  { type: 'DRIVING_LICENSE', label: 'Kørekort', required: false, managed: false },
+  { type: 'AUTHORIZATION', label: 'Autorisation', required: false, managed: false },
 ]
 
 const DOC_STATUS_LABEL: Record<string, string> = {
@@ -509,33 +509,48 @@ function DocumentSection({ documents, professionalId }: { documents: DocumentRow
     finally { setActing(null) }
   }
 
+  async function managedAction(docType: string, action: 'APPROVE' | 'REVOKE') {
+    setActing(docType); setError(null)
+    try {
+      const res = await fetch(`/api/admin/professionals/${professionalId}/documents`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ document_type: docType, action }),
+      })
+      if (!res.ok) { const j = await res.json().catch(() => ({})); setError((j as { error?: string }).error ?? 'Fejl'); return }
+      startT(() => router.refresh())
+    } catch { setError('Netværksfejl') }
+    finally { setActing(null) }
+  }
+
   return (
     <div className="space-y-2">
       {error && <p className="text-sm text-red-600">{error}</p>}
       {DOC_TYPES.map(dt => {
         const doc = docMap[dt.type]
         const status = doc?.status ?? 'MISSING'
+        const isApproved = ['APPROVED', 'VERIFIED'].includes(status)
         const canAct = doc && ['UPLOADED', 'UNVERIFIED'].includes(status)
 
         return (
-          <div key={dt.type} className="border border-[#E0DAD0] rounded-xl p-4">
+          <div key={dt.type} className={`border rounded-xl p-4 ${isApproved ? 'border-[#A3C4AE] bg-[#F0F7F2]' : 'border-[#E0DAD0]'}`}>
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-[#1A1F1C]">{dt.label}</span>
                   {dt.required && <span className="text-[10px] text-[#C8C0B0] uppercase tracking-wide">krævet</span>}
+                  {dt.managed && <span className="text-[10px] text-[#6B7569] uppercase tracking-wide">indhentes af Kursskifte</span>}
                 </div>
                 {doc?.file_name && (
                   <div className="text-xs text-[#6B7569] mt-0.5">{doc.file_name}</div>
                 )}
-                {doc?.uploaded_at && (
+                {doc?.uploaded_at && !dt.managed && (
                   <div className="text-xs text-[#6B7569]">
                     Uploadet {new Date(doc.uploaded_at).toLocaleDateString('da-DK')}
                   </div>
                 )}
                 {doc?.verified_at && (
-                  <div className="text-xs text-[#1C3829]">
-                    Godkendt {new Date(doc.verified_at).toLocaleDateString('da-DK')}
+                  <div className="text-xs text-[#1C3829] font-medium">
+                    ✓ Godkendt {new Date(doc.verified_at).toLocaleDateString('da-DK')}
                   </div>
                 )}
               </div>
@@ -544,7 +559,31 @@ function DocumentSection({ documents, professionalId }: { documents: DocumentRow
               </Badge>
             </div>
 
-            {canAct && (
+            {/* Managed docs: admin marks as verified without file upload */}
+            {dt.managed && (
+              <div className="mt-3">
+                {isApproved ? (
+                  <button
+                    onClick={() => managedAction(dt.type, 'REVOKE')}
+                    disabled={acting === dt.type || pending}
+                    className="h-8 px-4 border border-red-300 text-red-600 text-xs font-semibold rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+                  >
+                    {acting === dt.type ? 'Behandler…' : 'Fortryd godkendelse'}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => managedAction(dt.type, 'APPROVE')}
+                    disabled={acting === dt.type || pending}
+                    className="h-8 px-4 bg-[#1C3829] text-white text-xs font-semibold rounded-lg hover:bg-[#2D5840] transition-colors disabled:opacity-50"
+                  >
+                    {acting === dt.type ? 'Behandler…' : '✓ Markér som indhentet og godkendt'}
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Uploaded docs: approve / reject flow */}
+            {!dt.managed && canAct && (
               <div className="mt-3 flex flex-wrap gap-2">
                 <button
                   onClick={() => approve(doc.id)}
@@ -666,7 +705,7 @@ export function ProfessionalDetailClient({
   const expiringSoon = certificates.filter(c =>
     c.expires_at && new Date(c.expires_at) < new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
   )
-  const missingDocs = ['CRIMINAL_RECORD', 'CHILD_RECORD', 'CV'].filter(
+  const missingDocs = ['CRIMINAL_RECORD', 'CHILD_PROTECTION', 'CV'].filter(
     type => !documents.find(d => d.document_type === type && ['APPROVED', 'VERIFIED', 'UPLOADED', 'UNVERIFIED'].includes(d.status))
   )
 

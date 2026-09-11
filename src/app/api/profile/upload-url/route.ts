@@ -32,6 +32,9 @@ export async function POST(request: NextRequest) {
       return badRequest('Ugyldig dokumenttype')
     }
 
+    // Ensure bucket exists (no-op if already created)
+    await svc.storage.createBucket('professional-documents', { public: false }).catch(() => {})
+
     const path = `${userId}/${body.document_type}/${Date.now()}.${ext}`
     const { data, error } = await svc.storage
       .from('professional-documents')

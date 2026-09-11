@@ -11,6 +11,10 @@ const UpdateMunicipalitySchema = z.object({
   sagsbehandler_phone: z.string().optional(),
 })
 
+const DeleteMunicipalitySchema = z.object({
+  reassign_to: z.string().uuid().optional(),
+})
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -64,29 +68,63 @@ export async function DELETE(
 ) {
   const { id } = await params
   return withAdminAuth(request, async (userId) => {
+    // Parse optional reassign_to from body
+    let reassign_to: string | undefined
+    try {
+      const body = await request.json().catch(() => ({}))
+      const parsed = DeleteMunicipalitySchema.safeParse(body)
+      if (parsed.success) reassign_to = parsed.data.reassign_to
+    } catch { /* no body is fine */ }
+
     const { createServiceClient } = await import('@/lib/supabase/server')
     const db = createServiceClient()
 
-    // Block if any cases are still linked
+    // Check for linked cases
     const { data: linkedCases } = await db
       .from('cases')
       .select('id')
       .eq('municipality_id', id)
-      .limit(1)
 
-    if (linkedCases?.length) {
-      return badRequest('Kommunen har tilknyttede sager og kan ikke slettes. Brug "Flyt alle sager" i kommuneudtrækket for at flytte sagerne først.')
+    const caseCount = linkedCases?.length ?? 0
+
+    if (caseCount > 0) {
+      if (!reassign_to) {
+        return badRequest(`Kommunen har ${caseCount} tilknyttede sager og kan ikke slettes direkte.`)
+      }
+      if (reassign_to === id) {
+        return badRequest('Mål-kommunen er den samme som kilde-kommunen.')
+      }
+
+      // Verify target exists
+      const { data: target } = await db
+        .from('municipalities')
+        .select('id')
+        .eq('id', reassign_to)
+        .single()
+      if (!target) return badRequest('Mål-kommunen findes ikke.')
+
+      // Reassign cases and grants atomically
+      const { error: casesErr } = await db
+        .from('cases')
+        .update({ municipality_id: reassign_to, updated_at: new Date().toISOString() })
+        .eq('municipality_id', id)
+      if (casesErr) return serverError(casesErr.message)
+
+      await (db as any)
+        .from('case_grants')
+        .update({ municipality_id: reassign_to })
+        .eq('municipality_id', id)
     }
 
-    // Also block if there are orphaned case_grants still referencing this municipality
-    const { data: linkedGrants } = await (db as any)
+    // Check for any remaining grants (edge case: grants without cases)
+    const { data: remainingGrants } = await (db as any)
       .from('case_grants')
       .select('id')
       .eq('municipality_id', id)
       .limit(1)
 
-    if (linkedGrants?.length) {
-      return badRequest('Kommunen har tilknyttede bevillinger og kan ikke slettes. Brug "Flyt alle sager" for at flytte dem.')
+    if (remainingGrants?.length) {
+      return badRequest('Kommunen har tilknyttede bevillinger der ikke kunne flyttes. Kontakt support.')
     }
 
     const { error } = await db
@@ -101,9 +139,9 @@ export async function DELETE(
       actor_id: userId,
       resource_type: 'municipalities',
       resource_id: id,
-      metadata: {},
+      metadata: { cases_reassigned: caseCount, reassigned_to: reassign_to ?? null },
     })
 
-    return ok({ ok: true })
+    return ok({ ok: true, cases_reassigned: caseCount })
   })
 }

@@ -446,9 +446,6 @@ function S2Profession({ pro, professionTypes }: { pro: Pro | null; professionTyp
             />
           </Field>
         )}
-        {!isOther && (
-          <Field label="Specialisering"><Input value={f.specialization} onChange={set('specialization')} placeholder="F.eks. ABA, autisme" /></Field>
-        )}
       </div>
 
       <div>

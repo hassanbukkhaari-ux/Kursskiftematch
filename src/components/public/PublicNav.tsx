@@ -68,26 +68,27 @@ export default function PublicNav() {
                 )}
               </Link>
 
-              {/* Dropdown — animates in/out via CSS */}
+              {/* Dropdown — pt-2 bridges the gap so mouse stays inside .group */}
               {item.children.length > 0 && (
                 <div
                   className="
-                    absolute top-full left-0 mt-1.5 min-w-[200px] z-50
-                    bg-white border border-[#E0DAD0] rounded-xl shadow-sm py-1.5
+                    absolute top-full left-0 pt-2 min-w-[200px] z-50
                     opacity-0 -translate-y-1 pointer-events-none
                     group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto
                     transition-all duration-150 ease-out
                   "
                 >
-                  {item.children.map(child => (
-                    <Link
-                      key={child.href}
-                      href={child.href}
-                      className="block px-4 py-2 text-sm text-[#6B7569] hover:text-[#1C3829] hover:bg-[#F6F3EE] transition-colors"
-                    >
-                      {child.label}
-                    </Link>
-                  ))}
+                  <div className="bg-white border border-[#E0DAD0] rounded-xl shadow-sm py-1.5">
+                    {item.children.map(child => (
+                      <Link
+                        key={child.href}
+                        href={child.href}
+                        className="block px-4 py-2 text-sm text-[#6B7569] hover:text-[#1C3829] hover:bg-[#F6F3EE] transition-colors"
+                      >
+                        {child.label}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

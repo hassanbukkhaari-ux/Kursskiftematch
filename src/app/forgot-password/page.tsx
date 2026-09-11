@@ -16,7 +16,7 @@ export default function ForgotPasswordPage() {
     setError(null)
 
     const supabase = createClient()
-    const redirectTo = `${window.location.origin}/auth/callback?next=/reset-password`
+    const redirectTo = `${window.location.origin}/auth/callback`
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo })
 

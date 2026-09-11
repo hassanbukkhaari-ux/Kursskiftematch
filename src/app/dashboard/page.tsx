@@ -25,7 +25,10 @@ export default async function DashboardPage() {
   const mondayStr = monday.toISOString().slice(0, 10)
   const sundayStr = new Date(monday.getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
 
-  const [casesRes, logsRes, proRes, weeklyHoursRes] = await Promise.all([
+  const { createServiceClient } = await import('@/lib/supabase/server')
+  const svc = createServiceClient() as any
+
+  const [casesRes, logsRes, proRes, weeklyHoursRes, pendingReportsRes] = await Promise.all([
     db.from('v_cases_with_professional')
       .select('id, citizen_initials, status, weekly_hours', { count: 'exact' })
       .eq('professional_id', userId)
@@ -43,12 +46,26 @@ export default async function DashboardPage() {
       .eq('professional_id', userId)
       .gte('work_date', mondayStr)
       .lte('work_date', sundayStr),
+    svc.from('status_report_requests')
+      .select('id, report_type, deadline, status, cases!inner(citizen_initials)')
+      .eq('professional_id', userId)
+      .in('status', ['PENDING', 'ACKNOWLEDGED'])
+      .order('deadline', { ascending: true })
+      .limit(5),
   ])
 
   const activeCases = casesRes.data ?? []
   const totalCases = casesRes.count ?? 0
   const totalLogs = logsRes.count ?? 0
   const weeklyHours = (weeklyHoursRes.data ?? []).reduce((sum, r) => sum + (r.hours ?? 0), 0)
+  const pendingReports = pendingReportsRes.data ?? []
+  const today = new Date().toISOString().slice(0, 10)
+
+  const REPORT_TYPE_SHORT: Record<string, string> = {
+    MONTHLY: 'Månedlig',
+    EXTENDED: 'Udvidet',
+    FINAL: 'Afsluttende',
+  }
 
   const proStatusRaw = (proRes.data?.status as string | undefined) ?? 'ACTIVE'
   const proStatusLabel: Record<string, string> = {
@@ -107,6 +124,53 @@ export default async function DashboardPage() {
                   </Card>
                 </Link>
               ))}
+            </div>
+          )}
+
+          {/* Pending status reports alert */}
+          {pendingReports.length > 0 && (
+            <div className="mb-10">
+              <SectionHeader title="Afventende statusrapporter" />
+              <div className="space-y-2">
+                {pendingReports.map((r: any) => {
+                  const overdue = r.deadline < today
+                  return (
+                    <Link key={r.id} href={`/dashboard/status-reports/${r.id}`}>
+                      <Card hover className={overdue ? 'border-red-200 bg-[#FEF2F2]' : 'border-amber-200 bg-[#FFFBF0]'}>
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${overdue ? 'bg-red-100' : 'bg-amber-100'}`}>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={overdue ? '#B91C1C' : '#92660A'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                                <line x1="16" y1="13" x2="8" y2="13" />
+                                <line x1="16" y1="17" x2="8" y2="17" />
+                              </svg>
+                            </div>
+                            <div className="min-w-0">
+                              <div className="text-sm font-medium text-[#1A1F1C]">
+                                {REPORT_TYPE_SHORT[r.report_type] ?? r.report_type} — Borger {r.cases?.citizen_initials}
+                              </div>
+                              <div className={`text-xs mt-0.5 ${overdue ? 'text-red-600 font-medium' : 'text-[#92660A]'}`}>
+                                {overdue ? 'Forfalden — ' : 'Frist '}
+                                {new Date(r.deadline).toLocaleDateString('da-DK', { day: 'numeric', month: 'short', year: 'numeric' })}
+                              </div>
+                            </div>
+                          </div>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C8C0B0" strokeWidth="1.75" strokeLinecap="round">
+                            <polyline points="9 18 15 12 9 6" />
+                          </svg>
+                        </div>
+                      </Card>
+                    </Link>
+                  )
+                })}
+                {pendingReports.length === 5 && (
+                  <Link href="/dashboard/status-reports" className="block text-center text-xs text-[#1C3829] font-medium py-2 hover:underline">
+                    Se alle statusrapporter →
+                  </Link>
+                )}
+              </div>
             </div>
           )}
 

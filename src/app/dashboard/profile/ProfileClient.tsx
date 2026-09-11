@@ -69,7 +69,7 @@ function useSave() {
     }
   }
 
-  return { busy: saving || pending, error, saved, save }
+  return { busy: saving || pending, error, saved, save, setError }
 }
 
 // ── Shared components ────────────────────────────────────────────────────
@@ -111,11 +111,11 @@ function SectionCard({
   )
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <div>
       <label className="block text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-1.5">
-        {label}
+        {label}{required && <span className="ml-0.5 text-red-500">*</span>}
       </label>
       {children}
     </div>
@@ -299,7 +299,7 @@ function ProfilePhotoUpload({ currentUrl }: { currentUrl?: string | null }) {
 }
 
 function S1Personal({ pro, profileName, profileEmail }: { pro: Pro | null; profileName: string; profileEmail: string }) {
-  const { busy, error, saved, save } = useSave()
+  const { busy, error, saved, save, setError } = useSave()
   const [f, setF] = useState({
     job_title: pro?.job_title ?? '',
     phone: pro?.phone ?? '',
@@ -312,19 +312,31 @@ function S1Personal({ pro, profileName, profileEmail }: { pro: Pro | null; profi
 
   const REGIONS = ['Hovedstaden', 'Sjælland', 'Syddanmark', 'Midtjylland', 'Nordjylland']
 
+  function handleSave() {
+    const missing: string[] = []
+    if (!f.job_title.trim()) missing.push('jobtitel')
+    if (!f.phone.trim()) missing.push('telefon')
+    if (!f.city.trim()) missing.push('by')
+    if (missing.length > 0) {
+      setError(`Udfyld venligst: ${missing.join(', ')}`)
+      return
+    }
+    save('/api/profile', f)
+  }
+
   return (
     <div className="space-y-4 mt-4">
       <ProfilePhotoUpload currentUrl={pro?.profile_image_url} />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Field label="Fulde navn"><Input value={profileName} disabled /></Field>
         <Field label="E-mail"><Input value={profileEmail} disabled /></Field>
-        <Field label="Jobtitel"><Input value={f.job_title} onChange={set('job_title')} placeholder="F.eks. Kontaktperson" /></Field>
-        <Field label="Telefon"><Input value={f.phone} onChange={set('phone')} placeholder="+45 12 34 56 78" type="tel" /></Field>
+        <Field label="Jobtitel" required><Input value={f.job_title} onChange={set('job_title')} placeholder="F.eks. Kontaktperson" /></Field>
+        <Field label="Telefon" required><Input value={f.phone} onChange={set('phone')} placeholder="+45 12 34 56 78" type="tel" /></Field>
       </div>
       <Field label="Adresse"><Input value={f.address} onChange={set('address')} placeholder="Gadenavn og nummer" /></Field>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <Field label="Postnummer"><Input value={f.postal_code} onChange={set('postal_code')} placeholder="8000" /></Field>
-        <Field label="By"><Input value={f.city} onChange={set('city')} placeholder="Aarhus" /></Field>
+        <Field label="By" required><Input value={f.city} onChange={set('city')} placeholder="Aarhus" /></Field>
         <Field label="Region">
           <select
             value={f.region}
@@ -336,7 +348,7 @@ function S1Personal({ pro, profileName, profileEmail }: { pro: Pro | null; profi
           </select>
         </Field>
       </div>
-      <SaveBar busy={busy} error={error} saved={saved} onSave={() => save('/api/profile', f)} />
+      <SaveBar busy={busy} error={error} saved={saved} onSave={handleSave} />
     </div>
   )
 }
@@ -360,7 +372,7 @@ function serializeEducations(entries: string[]): string | null {
 }
 
 function S2Profession({ pro, professionTypes }: { pro: Pro | null; professionTypes: LT[] }) {
-  const { busy, error, saved, save } = useSave()
+  const { busy, error, saved, save, setError } = useSave()
   const [f, setF] = useState({
     profession_type_id: pro?.profession_type_id ?? '',
     specialization: pro?.specialization ?? '',
@@ -385,7 +397,7 @@ function S2Profession({ pro, professionTypes }: { pro: Pro | null; professionTyp
   return (
     <div className="space-y-4 mt-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Field label="Profession">
+        <Field label="Profession" required>
           <select
             value={f.profession_type_id}
             onChange={e => setF(p => ({ ...p, profession_type_id: e.target.value }))}
@@ -395,11 +407,11 @@ function S2Profession({ pro, professionTypes }: { pro: Pro | null; professionTyp
             {professionTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
           </select>
         </Field>
-        <Field label="Antal års erfaring">
+        <Field label="Antal års erfaring" required>
           <Input value={f.experience_years} onChange={set('experience_years')} type="number" placeholder="5" />
         </Field>
         {isOther && (
-          <Field label="Titel (specificér)">
+          <Field label="Titel (specificér)" required>
             <input
               type="text"
               value={otherLabel}
@@ -455,13 +467,21 @@ function S2Profession({ pro, professionTypes }: { pro: Pro | null; professionTyp
       </div>
 
       <Field label="Autorisation (hvis relevant)"><Input value={f.authorization_note} onChange={set('authorization_note')} placeholder="F.eks. Autoriseret psykolog" /></Field>
-      <SaveBar busy={busy} error={error} saved={saved} onSave={() => save('/api/profile', {
-        ...f,
-        education: serializeEducations(educations),
-        profession_type_id: f.profession_type_id || null,
-        specialization: isOther ? otherLabel : f.specialization,
-        experience_years: f.experience_years ? parseInt(f.experience_years) : null,
-      })} />
+      <SaveBar busy={busy} error={error} saved={saved} onSave={() => {
+        const missing: string[] = []
+        if (!f.profession_type_id) missing.push('profession')
+        if (!f.experience_years.trim()) missing.push('antal års erfaring')
+        if (isOther && !otherLabel.trim()) missing.push('titel (specificér)')
+        if (!isOther && educations.every(e => !e.trim())) missing.push('uddannelse')
+        if (missing.length > 0) { setError(`Udfyld venligst: ${missing.join(', ')}`); return }
+        save('/api/profile', {
+          ...f,
+          education: serializeEducations(educations),
+          profession_type_id: f.profession_type_id || null,
+          specialization: isOther ? otherLabel : f.specialization,
+          experience_years: f.experience_years ? parseInt(f.experience_years) : null,
+        })
+      }} />
     </div>
   )
 }
@@ -469,12 +489,13 @@ function S2Profession({ pro, professionTypes }: { pro: Pro | null; professionTyp
 // ── Section: Om mig som fagperson ────────────────────────────────────────
 
 function S3Bio({ pro }: { pro: Pro | null }) {
-  const { busy, error, saved, save } = useSave()
+  const { busy, error, saved, save, setError } = useSave()
   const [bio, setBio] = useState(pro?.bio ?? '')
+  const MIN = 50
 
   return (
     <div className="space-y-3 mt-4">
-      <p className="text-xs text-[#6B7569]">Beskriv din arbejdsstil, værdier og faglige tilgang. Vises for administrator. Maks. 1000 tegn.</p>
+      <p className="text-xs text-[#6B7569]">Beskriv din arbejdsstil, værdier og faglige tilgang. Vises for administrator. Mindst {MIN} tegn. Maks. 1000 tegn.</p>
       <Textarea
         value={bio}
         onChange={setBio}
@@ -482,8 +503,13 @@ function S3Bio({ pro }: { pro: Pro | null }) {
         maxLength={1000}
         placeholder="Jeg arbejder relationsorienteret og tror på, at tillid er fundamentet for udvikling…"
       />
-      <div className="text-xs text-[#C8C0B0] text-right">{bio.length}/1000</div>
-      <SaveBar busy={busy} error={error} saved={saved} onSave={() => save('/api/profile', { bio })} />
+      <div className={`text-xs text-right ${bio.trim().length < MIN ? 'text-[#B45309]' : 'text-[#C8C0B0]'}`}>
+        {bio.length}/1000{bio.trim().length < MIN ? ` — mindst ${MIN - bio.trim().length} tegn mangler` : ''}
+      </div>
+      <SaveBar busy={busy} error={error} saved={saved} onSave={() => {
+        if (bio.trim().length < MIN) { setError(`Skriv mindst ${MIN} tegn om dig selv for at gemme`); return }
+        save('/api/profile', { bio })
+      }} />
     </div>
   )
 }
@@ -491,7 +517,7 @@ function S3Bio({ pro }: { pro: Pro | null }) {
 // ── Section: Kernekompetencer ────────────────────────────────────────────
 
 function S4Competencies({ initial, types }: { initial: string[]; types: LT[] }) {
-  const { busy, error, saved, save } = useSave()
+  const { busy, error, saved, save, setError } = useSave()
   const [selected, setSelected] = useState<string[]>(initial)
 
   function toggle(id: string) {
@@ -508,7 +534,10 @@ function S4Competencies({ initial, types }: { initial: string[]; types: LT[] }) 
       <ChipGrid items={types} selected={selected} onToggle={toggle} max={5} />
       <p className="text-xs text-[#6B7569]">{selected.length}/5 valgt</p>
       <SaveBar busy={busy} error={error} saved={saved}
-        onSave={() => save('/api/profile/selections/competencies', { ids: selected }, 'PUT')} />
+        onSave={() => {
+          if (selected.length === 0) { setError('Vælg mindst én kernekompetence'); return }
+          save('/api/profile/selections/competencies', { ids: selected }, 'PUT')
+        }} />
     </div>
   )
 }
@@ -516,11 +545,11 @@ function S4Competencies({ initial, types }: { initial: string[]; types: LT[] }) 
 // ── Generic selection section ────────────────────────────────────────────
 
 function SelectionSection({
-  initial, types, endpoint, description,
+  initial, types, endpoint, description, requiredMsg,
 }: {
-  initial: string[]; types: LT[]; endpoint: string; description?: string
+  initial: string[]; types: LT[]; endpoint: string; description?: string; requiredMsg?: string
 }) {
-  const { busy, error, saved, save } = useSave()
+  const { busy, error, saved, save, setError } = useSave()
   const [selected, setSelected] = useState<string[]>(initial)
 
   function toggle(id: string) {
@@ -532,7 +561,10 @@ function SelectionSection({
       {description && <p className="text-xs text-[#6B7569]">{description}</p>}
       <ChipGrid items={types} selected={selected} onToggle={toggle} />
       <SaveBar busy={busy} error={error} saved={saved}
-        onSave={() => save(`/api/profile/selections/${endpoint}`, { ids: selected }, 'PUT')} />
+        onSave={() => {
+          if (requiredMsg && selected.length === 0) { setError(requiredMsg); return }
+          save(`/api/profile/selections/${endpoint}`, { ids: selected }, 'PUT')
+        }} />
     </div>
   )
 }
@@ -761,7 +793,7 @@ function S9Documents({ docs }: { docs: DocumentRow[] }) {
 // ── Section: Tilgængelighed ──────────────────────────────────────────────
 
 function S10Availability({ pro }: { pro: Pro | null }) {
-  const { busy, error, saved, save } = useSave()
+  const { busy, error, saved, save, setError } = useSave()
   const [f, setF] = useState({
     max_hours_per_week: pro?.max_hours_per_week?.toString() ?? '',
     available_now: pro?.available_now ?? false,
@@ -773,7 +805,7 @@ function S10Availability({ pro }: { pro: Pro | null }) {
 
   return (
     <div className="space-y-4 mt-4">
-      <Field label="Maks. timer pr. uge">
+      <Field label="Maks. timer pr. uge" required>
         <Input
           type="number" value={f.max_hours_per_week} placeholder="37"
           onChange={v => setF(p => ({ ...p, max_hours_per_week: v }))}
@@ -786,10 +818,13 @@ function S10Availability({ pro }: { pro: Pro | null }) {
         <Toggle label="Kan arbejde weekend" value={f.can_work_weekend} onChange={v => setF(p => ({ ...p, can_work_weekend: v }))} />
         <Toggle label="Kan arbejde nat" value={f.can_work_night} onChange={v => setF(p => ({ ...p, can_work_night: v }))} />
       </div>
-      <SaveBar busy={busy} error={error} saved={saved} onSave={() => save('/api/profile', {
-        ...f,
-        max_hours_per_week: f.max_hours_per_week ? parseInt(f.max_hours_per_week) : null,
-      })} />
+      <SaveBar busy={busy} error={error} saved={saved} onSave={() => {
+        if (!f.max_hours_per_week.trim()) { setError('Angiv maks. timer pr. uge'); return }
+        save('/api/profile', {
+          ...f,
+          max_hours_per_week: parseInt(f.max_hours_per_week),
+        })
+      }} />
     </div>
   )
 }
@@ -817,6 +852,7 @@ function S11Geography({
   }
 
   async function handleSave() {
+    if (selected.length === 0) { setError('Vælg mindst én kommune du dækker'); return }
     setSaving(true); setError(null); setSaved(false)
     try {
       const [r1, r2] = await Promise.all([
@@ -1036,17 +1072,17 @@ export function ProfileClient(props: Props) {
     {
       id: 'methods', title: 'Pædagogiske metoder',
       complete: props.selectedMethods.length > 0,
-      content: <SelectionSection initial={props.selectedMethods} types={props.methodTypes} endpoint="methods" />,
+      content: <SelectionSection initial={props.selectedMethods} types={props.methodTypes} endpoint="methods" requiredMsg="Vælg mindst én pædagogisk metode" />,
     },
     {
       id: 'target-groups', title: 'Erfaring med målgrupper',
       complete: props.selectedTargetGroups.length > 0,
-      content: <SelectionSection initial={props.selectedTargetGroups} types={props.targetGroupTypes} endpoint="target-groups" />,
+      content: <SelectionSection initial={props.selectedTargetGroups} types={props.targetGroupTypes} endpoint="target-groups" requiredMsg="Vælg mindst én målgruppe" />,
     },
     {
       id: 'work-tasks', title: 'Arbejdsopgaver',
       complete: props.selectedWorkTasks.length > 0,
-      content: <SelectionSection initial={props.selectedWorkTasks} types={props.workTaskTypes} endpoint="work-tasks" />,
+      content: <SelectionSection initial={props.selectedWorkTasks} types={props.workTaskTypes} endpoint="work-tasks" requiredMsg="Vælg mindst én arbejdsopgave" />,
     },
     {
       id: 'certificates', title: 'Certifikater og kurser',
@@ -1076,7 +1112,7 @@ export function ProfileClient(props: Props) {
     {
       id: 'languages', title: 'Sprog',
       complete: props.selectedLanguages.length > 0,
-      content: <SelectionSection initial={props.selectedLanguages} types={props.languageTypes} endpoint="languages" />,
+      content: <SelectionSection initial={props.selectedLanguages} types={props.languageTypes} endpoint="languages" requiredMsg="Vælg mindst ét sprog" />,
     },
     {
       id: 'consents', title: 'Samtykker',

@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import type { ProfessionalDetail, AvailabilityPeriod } from './page'
 import type { DocumentRow, CertificateRow } from '@/app/dashboard/profile/page'
 
@@ -634,6 +635,179 @@ function DocumentSection({ documents, professionalId }: { documents: DocumentRow
   )
 }
 
+// ── Edit profile panel ───────────────────────────────────────────────────
+
+function EditProfilePanel({
+  professionalId,
+  profile,
+  professional: pro,
+}: {
+  professionalId: string
+  profile: { full_name: string; email: string }
+  professional: ProfessionalDetail
+}) {
+  const router = useRouter()
+  const [, startT] = useTransition()
+  const [editing, setEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const [fullName, setFullName] = useState(profile.full_name)
+  const [email, setEmail] = useState(profile.email)
+  const [phone, setPhone] = useState(pro.phone ?? '')
+  const [jobTitle, setJobTitle] = useState(pro.job_title ?? '')
+  const [address, setAddress] = useState(pro.address ?? '')
+  const [postalCode, setPostalCode] = useState(pro.postal_code ?? '')
+  const [city, setCity] = useState(pro.city ?? '')
+  const [region, setRegion] = useState(pro.region ?? '')
+
+  function cancel() {
+    setEditing(false)
+    setError(null)
+    setFullName(profile.full_name)
+    setEmail(profile.email)
+    setPhone(pro.phone ?? '')
+    setJobTitle(pro.job_title ?? '')
+    setAddress(pro.address ?? '')
+    setPostalCode(pro.postal_code ?? '')
+    setCity(pro.city ?? '')
+    setRegion(pro.region ?? '')
+  }
+
+  async function save() {
+    if (!fullName.trim()) { setError('Navn er påkrævet'); return }
+    if (!email.trim()) { setError('Email er påkrævet'); return }
+    setSaving(true); setError(null)
+    try {
+      const res = await fetch(`/api/admin/professionals/${professionalId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          full_name: fullName.trim(),
+          email: email.trim(),
+          phone: phone.trim() || null,
+          job_title: jobTitle.trim() || null,
+          address: address.trim() || null,
+          postal_code: postalCode.trim() || null,
+          city: city.trim() || null,
+          region: region.trim() || null,
+        }),
+      })
+      if (!res.ok) { const j = await res.json().catch(() => ({})); setError((j as { error?: string }).error ?? 'Fejl'); return }
+      setEditing(false)
+      startT(() => router.refresh())
+    } catch { setError('Netværksfejl') }
+    finally { setSaving(false) }
+  }
+
+  const inp = 'w-full h-9 px-3 rounded-xl border border-[#E0DAD0] text-sm text-[#1A1F1C] focus:outline-none focus:border-[#1C3829] bg-white'
+
+  if (!editing) return (
+    <button onClick={() => setEditing(true)} className="text-xs font-semibold text-[#1C3829] hover:underline">
+      Rediger
+    </button>
+  )
+
+  return (
+    <div className="mt-3 space-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] block mb-1">Navn *</label>
+          <input className={inp} value={fullName} onChange={e => setFullName(e.target.value)} />
+        </div>
+        <div>
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] block mb-1">Email *</label>
+          <input className={inp} type="email" value={email} onChange={e => setEmail(e.target.value)} />
+        </div>
+        <div>
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] block mb-1">Telefon</label>
+          <input className={inp} value={phone} onChange={e => setPhone(e.target.value)} />
+        </div>
+        <div>
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] block mb-1">Jobtitel</label>
+          <input className={inp} value={jobTitle} onChange={e => setJobTitle(e.target.value)} />
+        </div>
+        <div className="sm:col-span-2">
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] block mb-1">Adresse</label>
+          <input className={inp} value={address} onChange={e => setAddress(e.target.value)} />
+        </div>
+        <div>
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] block mb-1">Postnummer</label>
+          <input className={inp} value={postalCode} onChange={e => setPostalCode(e.target.value)} />
+        </div>
+        <div>
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] block mb-1">By</label>
+          <input className={inp} value={city} onChange={e => setCity(e.target.value)} />
+        </div>
+        <div>
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] block mb-1">Region</label>
+          <input className={inp} value={region} onChange={e => setRegion(e.target.value)} />
+        </div>
+      </div>
+      {error && <p className="text-xs text-red-600 bg-red-50 rounded-xl px-3 py-2">{error}</p>}
+      <div className="flex gap-2">
+        <Button variant="primary" size="sm" loading={saving} onClick={save}>Gem ændringer</Button>
+        <Button variant="ghost" size="sm" onClick={cancel}>Annuller</Button>
+      </div>
+    </div>
+  )
+}
+
+// ── Delete / archive professional ─────────────────────────────────────────
+
+function DeletePanel({ professionalId }: { professionalId: string }) {
+  const router = useRouter()
+  const [confirming, setConfirming] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function archive() {
+    setDeleting(true); setError(null)
+    try {
+      const res = await fetch(`/api/admin/professionals/${professionalId}`, { method: 'DELETE' })
+      const j = await res.json().catch(() => ({}))
+      if (!res.ok) { setError((j as { error?: string }).error ?? 'Fejl'); return }
+      router.push('/admin/professionals')
+    } catch { setError('Netværksfejl') }
+    finally { setDeleting(false) }
+  }
+
+  if (!confirming) return (
+    <button
+      onClick={() => setConfirming(true)}
+      className="text-xs font-semibold text-red-600 hover:underline"
+    >
+      Arkiver fagperson
+    </button>
+  )
+
+  return (
+    <div className="mt-3 p-4 bg-red-50 border border-red-200 rounded-xl space-y-3">
+      <p className="text-sm font-medium text-red-800">Er du sikker?</p>
+      <p className="text-xs text-red-700">
+        Fagpersonen sættes til <strong>Arkiveret</strong> og fjernes fra matching. Sagerne bevares i systemet.
+        Fagpersonen kan ikke have aktive sager.
+      </p>
+      {error && <p className="text-xs text-red-600 font-medium">{error}</p>}
+      <div className="flex gap-2">
+        <button
+          onClick={archive}
+          disabled={deleting}
+          className="h-8 px-4 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+        >
+          {deleting ? 'Arkiverer…' : 'Bekræft arkivering'}
+        </button>
+        <button
+          onClick={() => { setConfirming(false); setError(null) }}
+          className="h-8 px-4 border border-red-300 text-xs font-semibold rounded-lg hover:bg-red-100 transition-colors"
+        >
+          Annuller
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ── Status toggle ────────────────────────────────────────────────────────
 
 function StatusToggle({ professionalId, currentStatus }: { professionalId: string; currentStatus: string }) {
@@ -735,11 +909,17 @@ export function ProfessionalDetailClient({
           Oprettet {new Date(pro.created_at).toLocaleDateString('da-DK')}
           {pro.updated_at && ` · Opdateret ${new Date(pro.updated_at).toLocaleDateString('da-DK')}`}
         </div>
+        <div className="mt-4 pt-4 border-t border-[#F0EBE3]">
+          <DeletePanel professionalId={professionalId} />
+        </div>
       </Card>
 
       {/* Profil */}
       <Card className="!p-5">
-        <SectionTitle>Profil</SectionTitle>
+        <div className="flex items-center justify-between mb-3">
+          <SectionTitle>Profil</SectionTitle>
+          <EditProfilePanel professionalId={professionalId} profile={profile} professional={pro} />
+        </div>
         {pro.profile_image_url && (
           <div className="mb-4">
             <img
@@ -754,7 +934,7 @@ export function ProfessionalDetailClient({
           <InfoRow label="E-mail" value={profile.email} />
           <InfoRow label="Jobtitel" value={pro.job_title} />
           <InfoRow label="Telefon" value={pro.phone} />
-          <InfoRow label="By" value={[pro.postal_code, pro.city].filter(Boolean).join(' ') || null} />
+          <InfoRow label="Adresse" value={[pro.address, pro.postal_code, pro.city].filter(Boolean).join(', ') || null} />
           <InfoRow label="Region" value={pro.region} />
           <InfoRow label="Daglig beskæftigelse" value={pro.daily_occupation} />
           <InfoRow label="Profession" value={pro.profession_types?.name ?? pro.profession} />

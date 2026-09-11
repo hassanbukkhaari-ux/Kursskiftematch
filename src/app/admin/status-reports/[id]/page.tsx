@@ -170,7 +170,7 @@ export default async function AdminStatusReportDetailPage({ params }: PageProps)
         ) : (
           <Card className="text-center py-10">
             <p className="text-sm text-[#6B7569]">
-              {data.status === 'PENDING' ? 'Kontaktpersonen har endnu ikke set anmodningen.' :
+              {data.status === 'PENDING' ? 'Kontaktpersonen har endnu ikke bekræftet anmodningen.' :
                data.status === 'ACKNOWLEDGED' ? 'Kontaktpersonen har bekræftet og arbejder på rapporten.' :
                'Ingen rapport indsendt endnu.'}
             </p>

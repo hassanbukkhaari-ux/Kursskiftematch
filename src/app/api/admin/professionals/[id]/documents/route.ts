@@ -28,7 +28,7 @@ export async function POST(
         {
           professional_id: professionalId,
           document_type,
-          status: 'APPROVED',
+          status: 'VERIFIED',
           verified_at: now,
           verified_by: adminId,
           uploaded_at: now,
@@ -42,7 +42,7 @@ export async function POST(
     if (action === 'REVOKE') {
       const { error } = await (svc as any)
         .from('professional_documents')
-        .update({ status: 'REJECTED', verified_at: null, verified_by: null })
+        .update({ status: 'ARCHIVED', verified_at: null, verified_by: null })
         .eq('professional_id', professionalId)
         .eq('document_type', document_type)
       if (error) return serverError(error.message)

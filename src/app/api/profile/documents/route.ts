@@ -26,15 +26,18 @@ export async function POST(request: NextRequest) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dba = db as any
 
-    const { data, error } = await dba.from('professional_documents').insert({
-      professional_id: userId,
-      document_type: body.document_type,
-      file_path: body.file_path,
-      file_name: body.file_name ?? null,
-      status: 'UNVERIFIED',
-      uploaded_at: new Date().toISOString(),
-      uploaded_by: userId,
-    }).select('id').single()
+    const { data, error } = await dba.from('professional_documents').upsert(
+      {
+        professional_id: userId,
+        document_type: body.document_type,
+        file_path: body.file_path,
+        file_name: body.file_name ?? null,
+        status: 'UNVERIFIED',
+        uploaded_at: new Date().toISOString(),
+        uploaded_by: userId,
+      },
+      { onConflict: 'professional_id,document_type' }
+    ).select('id').single()
 
     if (error) { console.error('[documents POST]', error); return serverError(error.message) }
     return created({ id: data.id })

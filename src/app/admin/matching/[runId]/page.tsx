@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { PageHeader, ContentContainer } from '@/components/layout/page-header'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
@@ -26,7 +26,7 @@ export default async function MatchRunPage({ params }: PageProps) {
 
   if (runError || !run) notFound()
 
-  const { data: candidates } = await db
+  const { data: candidates } = await (createServiceClient() as any)
     .from('match_candidates')
     .select(`
       id, rank, overall_score,

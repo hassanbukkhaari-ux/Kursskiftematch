@@ -11,26 +11,37 @@ export default function AuthCallbackPage() {
     const supabase = createClient()
 
     async function handleCallback() {
-      // PKCE flow: ?code= in URL query params
       const searchParams = new URLSearchParams(window.location.search)
       const code = searchParams.get('code')
+      const tokenHash = searchParams.get('token_hash')
+      const type = searchParams.get('type') as 'recovery' | 'signup' | 'invite' | null
       const next = searchParams.get('next') ?? '/set-password'
 
+      // PKCE flow: ?code= in URL query params
       if (code) {
         const { error } = await supabase.auth.exchangeCodeForSession(code)
         if (!error) {
-          router.replace(next)
+          router.replace(type === 'recovery' ? '/reset-password' : next)
           return
         }
       }
 
-      // Implicit / token-hash flow: #access_token= in URL fragment
+      // Email OTP / token_hash flow (password reset, magic link)
+      if (tokenHash && type) {
+        const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type })
+        if (!error) {
+          router.replace(type === 'recovery' ? '/reset-password' : next)
+          return
+        }
+      }
+
+      // Implicit flow: #access_token= in URL fragment
       const hash = window.location.hash.substring(1)
       if (hash) {
         const hashParams = new URLSearchParams(hash)
         const accessToken = hashParams.get('access_token')
         const refreshToken = hashParams.get('refresh_token')
-        const type = hashParams.get('type')
+        const hashType = hashParams.get('type')
 
         if (accessToken && refreshToken) {
           const { error } = await supabase.auth.setSession({
@@ -38,9 +49,7 @@ export default function AuthCallbackPage() {
             refresh_token: refreshToken,
           })
           if (!error) {
-            // Recovery tokens always go to reset-password
-            const dest = type === 'recovery' ? '/reset-password' : (next === '/set-password' ? '/set-password' : next)
-            router.replace(dest)
+            router.replace(hashType === 'recovery' ? '/reset-password' : next)
             return
           }
         }
@@ -49,7 +58,7 @@ export default function AuthCallbackPage() {
       // Already authenticated (e.g. page reload)
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
-        router.replace('/set-password')
+        router.replace(next)
         return
       }
 

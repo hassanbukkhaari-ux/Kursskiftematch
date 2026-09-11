@@ -343,16 +343,43 @@ function S1Personal({ pro, profileName, profileEmail }: { pro: Pro | null; profi
 
 // ── Section: Profession ──────────────────────────────────────────────────
 
+function parseEducations(raw: string | null | undefined): string[] {
+  if (!raw) return ['']
+  try {
+    const parsed = JSON.parse(raw)
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed
+  } catch { /* fall through */ }
+  return [raw]
+}
+
+function serializeEducations(entries: string[]): string | null {
+  const filtered = entries.map(e => e.trim()).filter(Boolean)
+  if (filtered.length === 0) return null
+  if (filtered.length === 1) return filtered[0]
+  return JSON.stringify(filtered)
+}
+
 function S2Profession({ pro, professionTypes }: { pro: Pro | null; professionTypes: LT[] }) {
   const { busy, error, saved, save } = useSave()
   const [f, setF] = useState({
     profession_type_id: pro?.profession_type_id ?? '',
     specialization: pro?.specialization ?? '',
     authorization: pro?.authorization ?? '',
-    education: pro?.education ?? '',
     experience_years: pro?.experience_years?.toString() ?? '',
   })
+  const [educations, setEducations] = useState<string[]>(() => parseEducations(pro?.education))
   const set = (k: keyof typeof f) => (v: string) => setF(p => ({ ...p, [k]: v }))
+
+  const selectedType = professionTypes.find(t => t.id === f.profession_type_id)
+  const isOther = selectedType?.name?.toLowerCase().includes('andet') || selectedType?.name?.toLowerCase().includes('other')
+
+  function setEdu(i: number, v: string) {
+    setEducations(prev => prev.map((e, idx) => idx === i ? v : e))
+  }
+  function addEdu() { setEducations(prev => [...prev, '']) }
+  function removeEdu(i: number) {
+    setEducations(prev => prev.length > 1 ? prev.filter((_, idx) => idx !== i) : [''])
+  }
 
   return (
     <div className="space-y-4 mt-4">
@@ -370,12 +397,52 @@ function S2Profession({ pro, professionTypes }: { pro: Pro | null; professionTyp
         <Field label="Antal års erfaring">
           <Input value={f.experience_years} onChange={set('experience_years')} type="number" placeholder="5" />
         </Field>
-        <Field label="Uddannelse"><Input value={f.education} onChange={set('education')} placeholder="F.eks. Pædagoguddannelsen" /></Field>
         <Field label="Specialisering"><Input value={f.specialization} onChange={set('specialization')} placeholder="F.eks. ABA, autisme" /></Field>
       </div>
+
+      <div>
+        <label className="block text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">
+          {isOther ? 'Beskriv din profession' : 'Uddannelse'}
+        </label>
+        <div className="space-y-2">
+          {educations.map((edu, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <input
+                type="text"
+                value={edu}
+                onChange={e => setEdu(i, e.target.value)}
+                placeholder={isOther ? 'Skriv din faktiske profession' : 'F.eks. Pædagoguddannelsen'}
+                className="flex-1 h-10 px-3 bg-[#F6F3EE] rounded-xl text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829]"
+              />
+              {educations.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removeEdu(i)}
+                  className="w-7 h-7 rounded-full bg-[#F6F3EE] flex items-center justify-center text-[#6B7569] hover:bg-[#FEE2E2] hover:text-[#B91C1C] transition-colors shrink-0"
+                  title="Fjern"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={addEdu}
+            className="flex items-center gap-1.5 text-xs text-[#1C3829] font-medium hover:text-[#2D5840] transition-colors mt-1"
+          >
+            <span className="w-5 h-5 rounded-full bg-[#F0F7F2] border border-[#A3C4AE] flex items-center justify-center text-[#1C3829] font-bold text-sm leading-none">+</span>
+            Tilføj uddannelse
+          </button>
+        </div>
+      </div>
+
       <Field label="Autorisation (hvis relevant)"><Input value={f.authorization} onChange={set('authorization')} placeholder="F.eks. Autoriseret psykolog" /></Field>
       <SaveBar busy={busy} error={error} saved={saved} onSave={() => save('/api/profile', {
         ...f,
+        education: serializeEducations(educations),
         profession_type_id: f.profession_type_id || null,
         experience_years: f.experience_years ? parseInt(f.experience_years) : null,
       })} />

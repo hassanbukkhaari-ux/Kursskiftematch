@@ -16,6 +16,9 @@ export async function POST(request: NextRequest) {
     const svc = createServiceClient()
 
     if (body.document_type === 'PROFILE_IMAGE') {
+      // Ensure bucket exists (no-op if already created)
+      await svc.storage.createBucket('profile-images', { public: true }).catch(() => {})
+
       const path = `${userId}/${Date.now()}.${ext}`
       const { data, error } = await svc.storage
         .from('profile-images')

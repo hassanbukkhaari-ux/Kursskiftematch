@@ -55,6 +55,7 @@ export default async function PrintStatusReportPage({ params }: PageProps) {
     report.concern_text ? { label: 'Bekymring — uddybning', value: report.concern_text } : null,
     { label: 'Samarbejde med borger og netværk', value: report.collaboration },
     { label: 'Faglig anbefaling fremadrettet', value: report.recommendation },
+    report.overall_assessment_note ? { label: 'Uddybning af samlet vurdering', value: report.overall_assessment_note } : null,
   ].filter(Boolean) as { label: string; value: string }[]
 
   return (

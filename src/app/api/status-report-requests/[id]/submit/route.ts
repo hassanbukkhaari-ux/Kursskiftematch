@@ -32,6 +32,7 @@ export async function POST(
     everyday_situation, work_focus, progress_resources,
     challenges, concern_level, concern_text,
     collaboration, recommendation, overall_assessment,
+    overall_assessment_note,
   } = body
 
   if (!period_start || !period_end || !overall_assessment) {
@@ -53,6 +54,7 @@ export async function POST(
       everyday_situation, work_focus, progress_resources,
       challenges, concern_level, concern_text,
       collaboration, recommendation, overall_assessment,
+      overall_assessment_note: overall_assessment_note ?? null,
       submitted_at: now,
       updated_at: now,
     }).eq('id', existing.id)
@@ -65,6 +67,7 @@ export async function POST(
       everyday_situation, work_focus, progress_resources,
       challenges, concern_level, concern_text,
       collaboration, recommendation, overall_assessment,
+      overall_assessment_note: overall_assessment_note ?? null,
       submitted_at: now,
     })
   }

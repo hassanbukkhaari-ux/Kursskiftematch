@@ -48,6 +48,7 @@ interface StatusReport {
   collaboration: string | null
   recommendation: string | null
   overall_assessment: string | null
+  overall_assessment_note: string | null
   submitted_at: string | null
 }
 
@@ -64,6 +65,7 @@ type FormState = {
   collaboration: string
   recommendation: string
   overall_assessment: string
+  overall_assessment_note: string
 }
 
 export default function StatusReportDetailPage() {
@@ -92,6 +94,7 @@ export default function StatusReportDetailPage() {
     collaboration: '',
     recommendation: '',
     overall_assessment: 'ON_TRACK',
+    overall_assessment_note: '',
   })
 
   useEffect(() => {
@@ -115,6 +118,7 @@ export default function StatusReportDetailPage() {
             collaboration: report.collaboration ?? '',
             recommendation: report.recommendation ?? '',
             overall_assessment: report.overall_assessment ?? 'ON_TRACK',
+            overall_assessment_note: report.overall_assessment_note ?? '',
           }))
         }
         if (json.data.promised_date) {
@@ -165,6 +169,7 @@ export default function StatusReportDetailPage() {
           collaboration: form.collaboration,
           recommendation: form.recommendation,
           overall_assessment: form.overall_assessment,
+          overall_assessment_note: form.overall_assessment_note || null,
         }),
       })
       const json = await res.json().catch(() => ({}))
@@ -408,11 +413,23 @@ export default function StatusReportDetailPage() {
             {/* Overall assessment */}
             <Card>
               <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-3">Samlet faglig vurdering</div>
-              <div className="space-y-2">
+              <div className="space-y-2 mb-4">
                 {[
-                  { value: 'ON_TRACK', label: 'Forløbet kører planmæssigt', description: 'Borgeren udvikler sig positivt og indsatsen virker.' },
-                  { value: 'ADJUSTING', label: 'Forløbet justeres', description: 'Indsatsen skal tilpasses — ny retning, ændret intensitet eller andet.' },
-                  { value: 'RECOMMEND_CLOSE', label: 'Anbefales afsluttet', description: 'Borgeren har nået sine mål, eller forløbet er ikke længere den rigtige indsats.' },
+                  {
+                    value: 'ON_TRACK',
+                    label: 'Forløbet kører planmæssigt',
+                    description: 'Borgeren er stabil og udvikler sig som forventet. Mål følges, samarbejdet fungerer og der er ikke behov for at ændre indsatsen på nuværende tidspunkt.',
+                  },
+                  {
+                    value: 'ADJUSTING',
+                    label: 'Forløbet justeres',
+                    description: 'Noget i indsatsen skal ændres for at det fortsat har effekt. Det kan dreje sig om hyppighed, fokus, metode, mål eller samarbejdsform. Beskriv hvad og hvorfor nedenfor.',
+                  },
+                  {
+                    value: 'RECOMMEND_CLOSE',
+                    label: 'Anbefales afsluttet',
+                    description: 'Borgeren har nået sine mål og er klar til at stå på egne ben — eller forløbet har ikke den ønskede virkning og en anden indsats vil være mere hensigtsmæssig. Angiv begrundelse nedenfor.',
+                  },
                 ].map(opt => (
                   <label key={opt.value} className={[
                     'flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors',
@@ -428,10 +445,33 @@ export default function StatusReportDetailPage() {
                     />
                     <div>
                       <div className="text-sm font-medium text-[#1A1F1C]">{opt.label}</div>
-                      <div className="text-xs text-[#6B7569] mt-0.5">{opt.description}</div>
+                      <div className="text-xs text-[#6B7569] mt-0.5 leading-relaxed">{opt.description}</div>
                     </div>
                   </label>
                 ))}
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[#6B7569] block mb-1">
+                  {form.overall_assessment === 'ON_TRACK'
+                    ? 'Uddyb vurderingen (valgfrit)'
+                    : form.overall_assessment === 'ADJUSTING'
+                    ? <>Hvad justeres og hvorfor? <span className="text-red-400">*</span></>
+                    : <>Begrundelse for afslutning <span className="text-red-400">*</span></>}
+                </label>
+                <textarea
+                  required={form.overall_assessment !== 'ON_TRACK'}
+                  rows={3}
+                  value={form.overall_assessment_note}
+                  onChange={set('overall_assessment_note')}
+                  placeholder={
+                    form.overall_assessment === 'ON_TRACK'
+                      ? 'Tilføj evt. en kort kommentar til din vurdering — hvad er særligt positivt eller hvad vil du holde øje med fremover?'
+                      : form.overall_assessment === 'ADJUSTING'
+                      ? 'Beskriv hvad der skal justeres, hvorfor det er nødvendigt, og hvad du planlægger at gøre anderledes i den kommende periode.'
+                      : 'Beskriv hvorfor forløbet anbefales afsluttet. Er borgeren klar til at stå alene, eller er en anden indsats mere hensigtsmæssig? Hvad er næste skridt?'
+                  }
+                  className="w-full px-3 py-2 rounded-xl border border-[#E0DAD0] text-sm focus:outline-none focus:border-[#1C3829] resize-none bg-[#FAFAF8] placeholder:text-[#C8C0B0]"
+                />
               </div>
             </Card>
 
@@ -481,6 +521,7 @@ export default function StatusReportDetailPage() {
               { label: 'Bekymring — uddybning', value: report.concern_text, hide: !report.concern_text },
               { label: 'Samarbejde med borger og netværk', value: report.collaboration },
               { label: 'Faglig anbefaling fremadrettet', value: report.recommendation },
+              { label: 'Uddybning af samlet vurdering', value: report.overall_assessment_note, hide: !report.overall_assessment_note },
             ].filter(f => !('hide' in f && f.hide) && f.value).map(field => (
               <Card key={field.label}>
                 <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">{field.label}</div>

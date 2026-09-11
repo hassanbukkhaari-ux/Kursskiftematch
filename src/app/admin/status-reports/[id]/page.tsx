@@ -155,6 +155,7 @@ export default async function AdminStatusReportDetailPage({ params }: PageProps)
               { label: 'Bekymring — uddybning', value: report.concern_text, hide: !report.concern_text },
               { label: 'Samarbejde med borger og netværk', value: report.collaboration },
               { label: 'Faglig anbefaling fremadrettet', value: report.recommendation },
+              { label: 'Uddybning af samlet vurdering', value: report.overall_assessment_note, hide: !report.overall_assessment_note },
             ].filter(f => !f.hide && f.value).map(field => (
               <Card key={field.label} className="!p-4">
                 <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">{field.label}</div>

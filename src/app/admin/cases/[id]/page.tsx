@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import AdminCaseActionsClient, { type Grant, type AvailableProfessional } from './AdminCaseActionsClient'
 import CaseDocumentsClient from './CaseDocumentsClient'
+import { CaseSessionLogsClient, type CaseSessionLog } from './CaseSessionLogsClient'
 import type { HandoverReason, HandoverStatus } from '@/types/database'
 
 const STATUS_LABEL: Record<string, string> = {
@@ -90,7 +91,7 @@ export default async function AdminCasePage({ params }: PageProps) {
     handoversRes,
   ] = await Promise.all([
     db.from('municipalities').select('name, sagsbehandler_name, sagsbehandler_email').eq('id', caseData.municipality_id).single(),
-    db.from('session_logs').select('id, session_date, duration_minutes, professional_id', { count: 'exact' }).eq('case_id', id).order('session_date', { ascending: false }).limit(5),
+    db.from('session_logs').select('id, session_date, duration_minutes, observations, citizen_mood_tone, follow_up_needed, follow_up_reason, status, professionals!inner(profiles!inner(full_name))', { count: 'exact' }).eq('case_id', id).order('session_date', { ascending: false }).limit(20),
     dba.from('cases').select('citizen_gender, citizen_notes, intake_contact_name, intake_contact_email').eq('id', id).single(),
     db.from('v_case_tags').select('problem_area_codes, goal_codes, special_wish_codes').eq('case_id', id).single(),
     db.from('problem_areas').select('code, label_da'),
@@ -337,35 +338,22 @@ export default async function AdminCasePage({ params }: PageProps) {
             {/* Session logs */}
             <div>
               <SectionHeader
-                title="Seneste sessionslog"
+                title="Sessionslogs"
                 description={`${logsRes.count ?? 0} sessioner i alt`}
               />
-              {(logsRes.data?.length ?? 0) === 0 ? (
-                <Card className="text-center py-10 text-[#6B7569] text-sm">
-                  Ingen sessionslogs registreret endnu
-                </Card>
-              ) : (
-                <div className="space-y-2">
-                  {logsRes.data?.map(log => (
-                    <Card key={log.id} className="flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-2">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7569" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                          <line x1="16" y1="2" x2="16" y2="6" />
-                          <line x1="8" y1="2" x2="8" y2="6" />
-                          <line x1="3" y1="10" x2="21" y2="10" />
-                        </svg>
-                        <span className="text-sm text-[#1A1F1C]">
-                          {new Intl.DateTimeFormat('da-DK', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(log.session_date))}
-                        </span>
-                      </div>
-                      {log.duration_minutes && (
-                        <span className="text-xs text-[#6B7569]">{log.duration_minutes} min.</span>
-                      )}
-                    </Card>
-                  ))}
-                </div>
-              )}
+              <CaseSessionLogsClient
+                logs={(logsRes.data ?? []).map((l: any) => ({
+                  id: l.id,
+                  session_date: l.session_date,
+                  duration_minutes: l.duration_minutes,
+                  observations: l.observations,
+                  citizen_mood_tone: l.citizen_mood_tone,
+                  follow_up_needed: l.follow_up_needed,
+                  follow_up_reason: l.follow_up_reason,
+                  status: l.status,
+                  professional_name: l.professionals?.profiles?.full_name ?? 'Ukendt',
+                } satisfies CaseSessionLog))}
+              />
             </div>
           </div>
 

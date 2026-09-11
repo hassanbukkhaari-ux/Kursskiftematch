@@ -5,6 +5,7 @@ interface ProfessionalAvatarProps {
   score: number
   size?: number
   showScore?: boolean
+  imageUrl?: string | null
 }
 
 function getInitials(name: string): string {
@@ -25,22 +26,24 @@ function getAvatarBg(name: string): string {
   return avatarHues[index]
 }
 
-export function ProfessionalAvatar({ name, score, size = 80, showScore = true }: ProfessionalAvatarProps) {
+export function ProfessionalAvatar({ name, score, size = 80, showScore = true, imageUrl }: ProfessionalAvatarProps) {
   const initials = getInitials(name)
   const bg = getAvatarBg(name)
   const ringPad = size * 0.12
   const innerSize = size - ringPad * 2
 
   if (!showScore) {
-    return (
+    return imageUrl ? (
+      <img
+        src={imageUrl}
+        alt={name}
+        className="rounded-full object-cover shrink-0"
+        style={{ width: size, height: size }}
+      />
+    ) : (
       <div
         className="rounded-full flex items-center justify-center font-semibold text-white shrink-0"
-        style={{
-          width: size,
-          height: size,
-          backgroundColor: bg,
-          fontSize: size * 0.3,
-        }}
+        style={{ width: size, height: size, backgroundColor: bg, fontSize: size * 0.3 }}
       >
         {initials}
       </div>
@@ -49,21 +52,24 @@ export function ProfessionalAvatar({ name, score, size = 80, showScore = true }:
 
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
-      {/* Score ring underneath */}
       <div className="absolute inset-0">
         <ScoreRing score={score} size={size} />
       </div>
-      {/* Avatar inner circle */}
-      <div
-        className="absolute rounded-full flex items-center justify-center font-semibold text-white"
-        style={{
-          inset: ringPad,
-          backgroundColor: bg,
-          fontSize: innerSize * 0.35,
-        }}
-      >
-        {initials}
-      </div>
+      {imageUrl ? (
+        <img
+          src={imageUrl}
+          alt={name}
+          className="absolute rounded-full object-cover"
+          style={{ inset: ringPad, width: innerSize, height: innerSize }}
+        />
+      ) : (
+        <div
+          className="absolute rounded-full flex items-center justify-center font-semibold text-white"
+          style={{ inset: ringPad, backgroundColor: bg, fontSize: innerSize * 0.35 }}
+        >
+          {initials}
+        </div>
+      )}
     </div>
   )
 }

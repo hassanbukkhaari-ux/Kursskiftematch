@@ -72,8 +72,10 @@ type NewCaseForm = {
   daily_function: string
   citizen_interests: string
   problem_area_codes: string[]
-  // Ønsker til fagperson
+  problem_area_other_text: string
   goal_codes: string[]
+  goal_other_text: string
+  // Ønsker til fagperson
   special_wish_codes: string[]
   preferred_prof_gender: string
   required_languages: string[]
@@ -102,7 +104,9 @@ const EMPTY_FORM: NewCaseForm = {
   daily_function: '',
   citizen_interests: '',
   problem_area_codes: [],
+  problem_area_other_text: '',
   goal_codes: [],
+  goal_other_text: '',
   special_wish_codes: [],
   preferred_prof_gender: '',
   required_languages: [],
@@ -113,6 +117,19 @@ const EMPTY_FORM: NewCaseForm = {
 
 function toggleInArray(arr: string[], value: string): string[] {
   return arr.includes(value) ? arr.filter(v => v !== value) : [...arr, value]
+}
+
+function ageRangeFromDob(dob: string): string {
+  if (!dob) return ''
+  const birth = new Date(dob)
+  const today = new Date()
+  let age = today.getFullYear() - birth.getFullYear()
+  const m = today.getMonth() - birth.getMonth()
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
+  if (age <= 5) return '0-5'
+  if (age <= 12) return '6-12'
+  if (age <= 18) return '13-18'
+  return '18+'
 }
 
 const inputClass =
@@ -449,7 +466,12 @@ export function AdminCasesClient({
                 <input
                   type="date"
                   value={form.citizen_dob}
-                  onChange={field('citizen_dob')}
+                  max={new Date().toISOString().slice(0, 10)}
+                  onChange={e => {
+                    const dob = e.target.value
+                    const ageRange = ageRangeFromDob(dob)
+                    setForm(f => ({ ...f, citizen_dob: dob, ...(ageRange ? { citizen_age_range: ageRange } : {}) }))
+                  }}
                   className={inputClass}
                 />
               </div>
@@ -666,6 +688,15 @@ export function AdminCasesClient({
                   )
                 })}
               </div>
+              {form.problem_area_codes.includes('OTHER') && (
+                <textarea
+                  rows={2}
+                  placeholder="Beskriv problemområdet nærmere…"
+                  value={form.problem_area_other_text}
+                  onChange={e => setForm(f => ({ ...f, problem_area_other_text: e.target.value }))}
+                  className={`mt-2 ${inputClass} resize-none`}
+                />
+              )}
             </div>
           </FormSection>
 
@@ -693,6 +724,15 @@ export function AdminCasesClient({
                   )
                 })}
               </div>
+              {form.goal_codes.includes('OTHER') && (
+                <textarea
+                  rows={2}
+                  placeholder="Beskriv målet nærmere…"
+                  value={form.goal_other_text}
+                  onChange={e => setForm(f => ({ ...f, goal_other_text: e.target.value }))}
+                  className={`mt-2 ${inputClass} resize-none`}
+                />
+              )}
             </div>
 
             <div>

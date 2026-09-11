@@ -24,27 +24,33 @@ export default function AuthCallbackPage() {
         }
       }
 
-      // Implicit flow: #access_token= in URL hash — createBrowserClient handles it
-      // automatically via onAuthStateChange when the session is detected in the hash
+      // Implicit / token-hash flow: #access_token= in URL fragment
+      const hash = window.location.hash.substring(1)
+      if (hash) {
+        const hashParams = new URLSearchParams(hash)
+        const accessToken = hashParams.get('access_token')
+        const refreshToken = hashParams.get('refresh_token')
+
+        if (accessToken && refreshToken) {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          })
+          if (!error) {
+            router.replace('/set-password')
+            return
+          }
+        }
+      }
+
+      // Already authenticated (e.g. page reload)
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
         router.replace('/set-password')
         return
       }
 
-      // Listen for auth state (handles implicit flow hash detection)
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-        if (session) {
-          subscription.unsubscribe()
-          router.replace('/set-password')
-        }
-      })
-
-      // Timeout fallback
-      setTimeout(() => {
-        subscription.unsubscribe()
-        router.replace('/login?error=auth_callback_failed')
-      }, 5000)
+      router.replace('/login?error=auth_callback_failed')
     }
 
     handleCallback()

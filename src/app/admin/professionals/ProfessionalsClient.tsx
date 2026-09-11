@@ -382,7 +382,7 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
                     <img src={(pro as any).profile_image_url} alt={pro.profiles.full_name} className="w-9 h-9 rounded-full object-cover shrink-0 border border-[#E0DAD0]" />
                   ) : (
                     <div className="w-9 h-9 rounded-full bg-[#EEF4F0] flex items-center justify-center text-sm font-semibold text-[#1C3829] shrink-0">
-                      {pro.profiles.full_name.charAt(0).toUpperCase()}
+                      {pro.profiles?.full_name?.charAt(0)?.toUpperCase() ?? '?'}
                     </div>
                   )}
                   <div className="min-w-0">
@@ -437,7 +437,7 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
                   <img src={(selected as any).profile_image_url} alt={selected.profiles.full_name} className="w-10 h-10 rounded-full object-cover shrink-0 border border-[#E0DAD0]" />
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-[#EEF4F0] flex items-center justify-center text-base font-semibold text-[#1C3829] shrink-0">
-                    {selected.profiles.full_name.charAt(0).toUpperCase()}
+                    {selected.profiles?.full_name?.charAt(0)?.toUpperCase() ?? '?'}
                   </div>
                 )}
                 <div className="min-w-0">

@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import { createServiceClient } from '@/lib/supabase/server'
 import { PageHeader, ContentContainer } from '@/components/layout/page-header'
 import { Badge } from '@/components/ui/badge'
@@ -78,6 +79,20 @@ export default async function AdminStatusReportDetailPage({ params }: PageProps)
             <Badge variant={data.status === 'SUBMITTED' ? 'green' : data.status === 'ACKNOWLEDGED' ? 'brand' : data.status === 'REVIEWED' ? 'default' : 'amber'} dot>
               {STATUS_LABEL[data.status] ?? data.status}
             </Badge>
+            {(data.status === 'SUBMITTED' || data.status === 'REVIEWED') && (
+              <Link
+                href={`/admin/status-reports/${id}/print`}
+                target="_blank"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E0DAD0] text-xs font-medium text-[#1A1F1C] hover:bg-[#F0EDE8] transition-colors"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="6 9 6 2 18 2 18 9" />
+                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                  <rect x="6" y="14" width="12" height="8" />
+                </svg>
+                Download PDF
+              </Link>
+            )}
           </div>
         }
       />

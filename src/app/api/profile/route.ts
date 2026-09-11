@@ -1,6 +1,6 @@
 import { withAuth } from '@/lib/api-response'
 import { badRequest, ok, serverError } from '@/lib/api-response'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import type { NextRequest } from 'next/server'
 
 const ALLOWED_FIELDS = new Set([
@@ -25,15 +25,19 @@ export async function PATCH(request: NextRequest) {
 
     if (Object.keys(patch).length === 0) return badRequest('No valid fields provided')
 
+    // INSERT policy on professionals restricts to admin — use service client
+    // to ensure the row exists, then the update goes through either way.
+    const svc = createServiceClient()
+    await (svc as any).from('professionals').upsert(
+      { id: userId, profession: 'OTHER' },
+      { onConflict: 'id', ignoreDuplicates: true }
+    )
+
     const db = await createClient()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dba = db as any
 
-    // Upsert so the professional can edit even before admin creates their row
-    const { error } = await dba.from('professionals').upsert(
-      { id: userId, profession: 'OTHER', ...patch },
-      { onConflict: 'id' }
-    )
+    const { error } = await dba.from('professionals').update(patch).eq('id', userId)
 
     if (error) return serverError(error.message)
     return ok({ ok: true })

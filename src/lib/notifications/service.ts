@@ -130,6 +130,10 @@ export function adminEmailBody(type: NotificationType, entityId: string): { subj
       subject: 'Kommunen har afvist forslaget — Kursskifte',
       body: `Kommunen har afvist forslaget for sag ${entityId}.\n\nGennemgå og send et nyt forslag:\n${base}/admin/cases/${entityId}`,
     },
+    FOLLOW_UP_NEEDED: {
+      subject: 'Opfølgning påkrævet — Kursskifte',
+      body: `Der er markeret behov for opfølgning i en sessionslog.\n\nLog-ID: ${entityId}\n\nSe dine sager:\n${base}/dashboard/session-logs`,
+    },
   }
   return map[type]
 }

@@ -4,6 +4,23 @@ import type { NextRequest } from 'next/server'
 
 const MANAGED_TYPES = new Set(['CRIMINAL_RECORD', 'CHILD_PROTECTION'])
 
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id: professionalId } = await params
+  return withAdminAuth(request, async () => {
+    const svc = createServiceClient()
+    const { data, error } = await (svc as any)
+      .from('professional_documents')
+      .select('document_type, status, file_name')
+      .eq('professional_id', professionalId)
+      .order('document_type')
+    if (error) return serverError(error.message)
+    return ok({ data: data ?? [] })
+  })
+}
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

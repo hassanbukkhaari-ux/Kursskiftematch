@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { ok, created, badRequest, forbidden, serverError, withAuth } from '@/lib/api-response'
 import { logAuditEvent } from '@/lib/audit'
+import { sendNotification } from '@/lib/notifications/service'
 
 const CreateSessionLogSchema = z.object({
   case_id: z.string().uuid(),
@@ -96,6 +97,24 @@ export async function POST(request: NextRequest) {
       resource_id: data.id,
       metadata: { case_id: parsed.data.case_id, session_date: parsed.data.session_date },
     })
+
+    // Email professional when follow-up is needed
+    if (parsed.data.follow_up_needed) {
+      const { data: profile } = await db.from('profiles').select('email, full_name').eq('id', userId).single()
+      if (profile?.email) {
+        const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://kursskifte.dk'
+        await sendNotification({
+          db,
+          notification_type: 'FOLLOW_UP_NEEDED',
+          related_entity_type: 'session_logs',
+          related_entity_id: data.id,
+          recipient_profile_id: userId,
+          recipient_email: profile.email,
+          subject: 'Opfølgning påkrævet — Kursskifte',
+          body: `Hej ${profile.full_name ?? ''},\n\nDu har markeret en sessionslog med behov for opfølgning.\n\n${parsed.data.follow_up_reason ? `Opfølgningsnote:\n${parsed.data.follow_up_reason}\n\n` : ''}Se dine sessionslogs her:\n${base}/dashboard/session-logs\n\nMed venlig hilsen\nKursskifte`,
+        })
+      }
+    }
 
     return created(data)
   })

@@ -1240,6 +1240,7 @@ export type NotificationType =
   | 'PROPOSAL_SENT'
   | 'PROPOSAL_ACCEPTED'
   | 'PROPOSAL_DECLINED'
+  | 'FOLLOW_UP_NEEDED'
 
 // ================================================================
 // Convenience row types

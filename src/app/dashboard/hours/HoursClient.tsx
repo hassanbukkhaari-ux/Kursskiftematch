@@ -82,6 +82,10 @@ export function HoursClient({ initialHours, cases, defaultCaseId }: Props) {
     if (!form.work_date) { setError('Angiv dato'); return }
     if (form.work_types.length === 0) { setError('Vælg mindst én arbejdstype'); return }
     const hours = parseFloat(form.hours)
+    if (!form.description.trim()) {
+      setError('Beskrivelse er påkrævet — beskriv hvad der blev udført')
+      return
+    }
     if (!form.hours || isNaN(hours) || hours < 0.25 || hours > 8) {
       setError('Timer skal være mellem 0,25 og 8')
       return
@@ -97,7 +101,7 @@ export function HoursClient({ initialHours, cases, defaultCaseId }: Props) {
           work_date: form.work_date,
           work_type: form.work_types,
           hours,
-          description: form.description || undefined,
+          description: form.description.trim(),
         }),
       })
       if (!res.ok) {
@@ -349,13 +353,14 @@ export function HoursClient({ initialHours, cases, defaultCaseId }: Props) {
 
           {/* Description */}
           <div>
-            <label className="block text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Beskrivelse</label>
+            <label className="block text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Beskrivelse *</label>
             <textarea
               rows={3}
-              placeholder="Valgfri beskrivelse af arbejdet…"
+              placeholder="Beskriv hvad der blev udført med borger…"
               value={form.description}
               onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
               className="w-full px-3 py-2.5 bg-[#F6F3EE] rounded-xl text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829] resize-none"
+              required
             />
           </div>
 

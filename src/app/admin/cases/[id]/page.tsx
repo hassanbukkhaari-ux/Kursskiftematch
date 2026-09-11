@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import AdminCaseActionsClient, { type Grant, type AvailableProfessional } from './AdminCaseActionsClient'
+import CaseDocumentsClient from './CaseDocumentsClient'
 import type { HandoverReason, HandoverStatus } from '@/types/database'
 
 const STATUS_LABEL: Record<string, string> = {
@@ -435,6 +436,12 @@ export default async function AdminCasePage({ params }: PageProps) {
                 </Link>
               </Card>
             )}
+
+            {/* Case documents — admin only */}
+            <Card>
+              <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-3">Sagsdokumenter</div>
+              <CaseDocumentsClient caseId={id} />
+            </Card>
 
             {/* Dynamic admin actions */}
             <AdminCaseActionsClient

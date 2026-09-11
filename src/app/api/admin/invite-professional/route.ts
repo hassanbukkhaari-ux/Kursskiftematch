@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
       email,
       options: {
         data: { full_name: name || undefined },
-        redirectTo: `${base}/auth/callback?next=/set-password`,
+        redirectTo: `${base}/auth/callback`,
       },
     })
 

@@ -55,12 +55,21 @@ export async function PATCH(
 
     const { data: existing, error: fetchError } = await db
       .from('session_logs')
-      .select('id, status, professional_id, safeguarding_concern_flag')
+      .select('id, status, professional_id, safeguarding_concern_flag, created_at')
       .eq('id', id)
       .single()
 
     if (fetchError || !existing) return notFound('Session log')
     if (role !== 'admin' && existing.professional_id !== userId) return forbidden()
+
+    // Professionals can only edit within 24 hours of creation
+    if (role !== 'admin' && existing.status === 'DRAFT') {
+      const createdAt = new Date(existing.created_at as string).getTime()
+      const hoursSinceCreation = (Date.now() - createdAt) / (1000 * 60 * 60)
+      if (hoursSinceCreation > 24 && parsed.data.action !== 'FLAG_SAFEGUARDING') {
+        return badRequest('Sessionsloggen kan ikke redigeres efter 24 timer. Kontakt admin for ændringer.')
+      }
+    }
 
     const { action, ...fields } = parsed.data
     type SessionLogUpdate = Database['public']['Tables']['session_logs']['Update']

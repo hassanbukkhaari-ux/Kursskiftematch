@@ -83,6 +83,8 @@ function toForm(pro: ProfessionalRow): ProfileForm {
   }
 }
 
+type DocStatus = { document_type: string; status: string; file_name: string | null }
+
 export function ProfessionalsClient({ initialData }: { initialData: ProfessionalRow[] }) {
   const router = useRouter()
   const [filter, setFilter] = useState<FilterKey>('all')
@@ -93,6 +95,7 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
   const [error, setError] = useState<string | null>(null)
   const [editingProfile, setEditingProfile] = useState(false)
   const [profileForm, setProfileForm] = useState<ProfileForm | null>(null)
+  const [docs, setDocs] = useState<DocStatus[]>([])
   const [inviteOpen, setInviteOpen] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteName, setInviteName] = useState('')
@@ -149,7 +152,13 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
     setEditingProfile(false)
     setProfileForm(toForm(pro))
     setDrawerOpen(true)
+    setDocs([])
     router.refresh()
+    // Fetch documents for this professional
+    fetch(`/api/admin/professionals/${pro.id}/documents`)
+      .then(r => r.json())
+      .then((json: { data?: DocStatus[] }) => { if (json.data) setDocs(json.data) })
+      .catch(() => {})
   }
 
   function closeDrawer() {
@@ -653,6 +662,36 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
                     <InfoBlock label="Geografi" value={selected.geography.length > 0 ? selected.geography.join(', ') : '—'} />
                   </div>
                 )}
+
+              {/* Documents */}
+              {docs.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#6B7569]">Dokumenter</span>
+                    <div className="flex-1 h-px bg-[#E0DAD0]" />
+                  </div>
+                  <div className="space-y-2">
+                    {docs.map(d => {
+                      const label = d.document_type === 'CV' ? 'CV' : d.document_type === 'CRIMINAL_RECORD' ? 'Straffeattest' : d.document_type === 'CHILD_PROTECTION' ? 'Børneattest' : d.document_type
+                      const badgeVariant: 'green' | 'amber' | 'default' = d.status === 'VERIFIED' ? 'green' : d.status === 'PENDING' ? 'amber' : 'default'
+                      const statusLabel = d.status === 'VERIFIED' ? 'Godkendt' : d.status === 'PENDING' ? 'Afventer' : d.status === 'REJECTED' ? 'Afvist' : d.status === 'ARCHIVED' ? 'Arkiveret' : d.status
+                      return (
+                        <div key={d.document_type} className="flex items-center justify-between gap-2 bg-[#F6F3EE] rounded-xl px-3 py-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B7569" strokeWidth="1.75" strokeLinecap="round">
+                              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                              <polyline points="14 2 14 8 20 8" />
+                            </svg>
+                            <span className="text-xs font-medium text-[#1A1F1C] truncate">{label}</span>
+                            {d.file_name && <span className="text-[10px] text-[#6B7569] truncate hidden sm:block">{d.file_name}</span>}
+                          </div>
+                          <Badge variant={badgeVariant}>{statusLabel}</Badge>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
               </div>
 
               {error && (

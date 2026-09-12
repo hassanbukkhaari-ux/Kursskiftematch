@@ -106,7 +106,7 @@ export default async function AdminCasePage({ params }: PageProps) {
   ] = await Promise.all([
     db.from('municipalities').select('name, sagsbehandler_name, sagsbehandler_email').eq('id', caseData.municipality_id).single(),
     createServiceClient().from('session_logs' as any).select('id, session_date, duration_minutes, observations, citizen_mood_tone, follow_up_needed, follow_up_reason, status, professional_id', { count: 'exact' }).eq('case_id', id).order('session_date', { ascending: false }).limit(20),
-    dba.from('cases').select('citizen_gender, citizen_notes, intake_contact_name, intake_contact_email, intake_contact_phone, legal_basis, diagnoses, daily_function, citizen_interests, expected_duration_months, preferred_prof_gender, transport_needs, urgency, case_number, created_at').eq('id', id).single(),
+    dba.from('cases').select('citizen_gender, citizen_notes, intake_contact_name, intake_contact_email, intake_contact_phone, legal_basis, diagnoses, daily_function, citizen_interests, expected_duration_months, preferred_prof_gender, transport_needs, required_languages, geographical_area, requires_evening, requires_weekend, requires_night, urgency, case_number, created_at').eq('id', id).single(),
     db.from('v_case_tags').select('problem_area_codes, goal_codes, special_wish_codes').eq('case_id', id).single(),
     db.from('problem_areas').select('code, label_da'),
     db.from('goals_lookup').select('code, label_da'),
@@ -321,7 +321,10 @@ export default async function AdminCasePage({ params }: PageProps) {
             )}
 
             {/* Citizen profile */}
-            {(caseDetailRes.data?.diagnoses || caseDetailRes.data?.daily_function || caseDetailRes.data?.citizen_interests || caseDetailRes.data?.preferred_prof_gender || caseDetailRes.data?.transport_needs) && (
+            {(caseDetailRes.data?.diagnoses || caseDetailRes.data?.daily_function || caseDetailRes.data?.citizen_interests ||
+              caseDetailRes.data?.preferred_prof_gender || caseDetailRes.data?.transport_needs ||
+              (caseDetailRes.data?.required_languages?.length ?? 0) > 0 || caseDetailRes.data?.geographical_area ||
+              caseDetailRes.data?.requires_evening || caseDetailRes.data?.requires_weekend || caseDetailRes.data?.requires_night) && (
               <Card>
                 <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-4">Borgerprofil</div>
                 <div className="space-y-3">
@@ -349,10 +352,29 @@ export default async function AdminCasePage({ params }: PageProps) {
                         {PREF_GENDER_LABEL[caseDetailRes.data.preferred_prof_gender] ?? caseDetailRes.data.preferred_prof_gender}
                       </span>
                     )}
+                    {(caseDetailRes.data?.required_languages ?? []).map((lang: string) => (
+                      <span key={lang} className="text-xs bg-[#F6F3EE] border border-[#E0DAD0] rounded-lg px-2 py-1 text-[#6B7569]">
+                        {lang}
+                      </span>
+                    ))}
                     {caseDetailRes.data?.transport_needs === 'JA' && (
                       <span className="text-xs bg-[#FEF2E2] border border-[#F5DDB0] rounded-lg px-2 py-1 text-[#92660A]">
                         Transport nødvendig
                       </span>
+                    )}
+                    {caseDetailRes.data?.geographical_area && (
+                      <span className="text-xs bg-[#F6F3EE] border border-[#E0DAD0] rounded-lg px-2 py-1 text-[#6B7569]">
+                        {caseDetailRes.data.geographical_area}
+                      </span>
+                    )}
+                    {caseDetailRes.data?.requires_evening && (
+                      <span className="text-xs bg-[#FEF2E2] border border-[#F5DDB0] rounded-lg px-2 py-1 text-[#92660A]">Aften</span>
+                    )}
+                    {caseDetailRes.data?.requires_weekend && (
+                      <span className="text-xs bg-[#FEF2E2] border border-[#F5DDB0] rounded-lg px-2 py-1 text-[#92660A]">Weekend</span>
+                    )}
+                    {caseDetailRes.data?.requires_night && (
+                      <span className="text-xs bg-[#FEF2E2] border border-[#F5DDB0] rounded-lg px-2 py-1 text-[#92660A]">Nat</span>
                     )}
                   </div>
                 </div>

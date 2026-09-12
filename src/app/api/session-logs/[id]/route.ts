@@ -62,16 +62,21 @@ export async function PATCH(
     if (fetchError || !existing) return notFound('Session log')
     if (role !== 'admin' && existing.professional_id !== userId) return forbidden()
 
-    // Professionals can only edit within 24 hours of creation
+    const { action, ...fields } = parsed.data
+    const isFinalizeOnly = action === 'FINALIZE' && Object.keys(fields).length === 0
+
+    // Professionals can only edit content within 24 hours of creation. Finalizing
+    // a log that is otherwise unchanged is a status transition, not a content
+    // edit, so it stays available past the window — a forgotten log must not
+    // become permanently stuck in DRAFT with no way for its owner to close it.
     if (role !== 'admin' && existing.status === 'DRAFT') {
       const createdAt = new Date(existing.created_at as string).getTime()
       const hoursSinceCreation = (Date.now() - createdAt) / (1000 * 60 * 60)
-      if (hoursSinceCreation > 24 && parsed.data.action !== 'FLAG_SAFEGUARDING') {
+      if (hoursSinceCreation > 24 && action !== 'FLAG_SAFEGUARDING' && !isFinalizeOnly) {
         return badRequest('Sessionsloggen kan ikke redigeres efter 24 timer. Kontakt admin for ændringer.')
       }
     }
 
-    const { action, ...fields } = parsed.data
     type SessionLogUpdate = Database['public']['Tables']['session_logs']['Update']
     const update: SessionLogUpdate = {}
 

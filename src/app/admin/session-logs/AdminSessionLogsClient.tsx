@@ -51,6 +51,8 @@ export function AdminSessionLogsClient({ initialLogs }: Props) {
   const [filter, setFilter] = useState<Filter>('ALL')
   const [viewing, setViewing] = useState<AdminLogRow | null>(null)
   const [liveIndicator, setLiveIndicator] = useState(false)
+  const [finalizing, setFinalizing] = useState(false)
+  const [finalizeError, setFinalizeError] = useState<string | null>(null)
 
   const fetchLogs = useCallback(async () => {
     const res = await fetch('/api/admin/session-logs')
@@ -88,6 +90,30 @@ export function AdminSessionLogsClient({ initialLogs }: Props) {
     if (filter === 'FOLLOW_UP') return l.follow_up_needed
     return l.status === filter
   })
+
+  async function handleFinalize() {
+    if (!viewing) return
+    setFinalizeError(null)
+    setFinalizing(true)
+    try {
+      const res = await fetch(`/api/session-logs/${viewing.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'FINALIZE' }),
+      })
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}))
+        setFinalizeError((json as { error?: string }).error ?? 'Noget gik galt')
+        return
+      }
+      setViewing(null)
+      await fetchLogs()
+    } catch {
+      setFinalizeError('Netværksfejl — prøv igen')
+    } finally {
+      setFinalizing(false)
+    }
+  }
 
   return (
     <>
@@ -132,7 +158,7 @@ export function AdminSessionLogsClient({ initialLogs }: Props) {
           {filtered.map(log => (
             <button
               key={log.id}
-              onClick={() => setViewing(log)}
+              onClick={() => { setViewing(log); setFinalizeError(null) }}
               className="w-full text-left block"
             >
               <Card hover className="flex items-start justify-between gap-4">
@@ -245,7 +271,26 @@ export function AdminSessionLogsClient({ initialLogs }: Props) {
                   </p>
                 </div>
               )}
+
+              {finalizeError && (
+                <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3">{finalizeError}</p>
+              )}
             </div>
+
+            {viewing.status === 'DRAFT' && (
+              <div className="px-6 py-4 border-t border-[#E0DAD0] shrink-0">
+                <button
+                  onClick={handleFinalize}
+                  disabled={finalizing}
+                  className="w-full h-10 rounded-xl bg-[#1C3829] text-white text-sm font-semibold hover:bg-[#2D5840] transition-colors disabled:opacity-50"
+                >
+                  {finalizing ? 'Afslutter…' : 'Afslut sessionslog'}
+                </button>
+                <p className="text-xs text-[#9B9589] text-center mt-2">
+                  Bruges når kontaktpersonen ikke selv har afsluttet loggen inden for 24 timer.
+                </p>
+              </div>
+            )}
           </>
         )}
       </aside>

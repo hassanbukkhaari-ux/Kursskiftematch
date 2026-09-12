@@ -16,7 +16,7 @@ export default async function AdminStatusReportsPage() {
       .order('deadline', { ascending: true }),
 
     svc.from('cases')
-      .select('id, citizen_initials, citizen_age_range, status, municipality_id, municipalities(name)')
+      .select('id, citizen_initials, citizen_age_range, status, municipality_id, professional_id, municipalities(name)')
       .in('status', ['ACTIVE', 'OPEN', 'MATCHED']),
 
     svc.from('professionals')

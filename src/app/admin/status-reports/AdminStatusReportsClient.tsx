@@ -113,7 +113,7 @@ export function AdminStatusReportsClient({ initialRequests, cases, professionals
                 <button
                   type="button"
                   onClick={() => {
-                    setForm(f => ({ ...f, case_id: c.id }))
+                    setForm(f => ({ ...f, case_id: c.id, professional_id: c.professional_id ?? '' }))
                     setCreating(true)
                   }}
                   className="shrink-0 text-[10px] font-semibold text-white bg-[#1C3829] hover:bg-[#2D5840] transition-colors rounded-lg px-2.5 py-1.5"
@@ -178,7 +178,15 @@ export function AdminStatusReportsClient({ initialRequests, cases, professionals
                 <select
                   required
                   value={form.case_id}
-                  onChange={e => setForm(f => ({ ...f, case_id: e.target.value }))}
+                  onChange={e => {
+                    const caseId = e.target.value
+                    const matched = cases.find(c => c.id === caseId)
+                    setForm(f => ({
+                      ...f,
+                      case_id: caseId,
+                      professional_id: matched?.professional_id ?? f.professional_id,
+                    }))
+                  }}
                   className="w-full px-3 py-2 rounded-xl border border-[#E0DAD0] text-sm focus:outline-none focus:border-[#1C3829]"
                 >
                   <option value="">Vælg sag</option>
@@ -188,7 +196,12 @@ export function AdminStatusReportsClient({ initialRequests, cases, professionals
                 </select>
               </div>
               <div>
-                <label className="text-xs font-medium text-[#6B7569] block mb-1">Kontaktperson <span className="text-red-500">*</span></label>
+                <label className="text-xs font-medium text-[#6B7569] block mb-1">
+                  Kontaktperson <span className="text-red-500">*</span>
+                  {form.case_id && cases.find(c => c.id === form.case_id)?.professional_id && (
+                    <span className="ml-1 font-normal text-[#1C3829]">(auto-valgt ud fra sagen)</span>
+                  )}
+                </label>
                 <select
                   required
                   value={form.professional_id}

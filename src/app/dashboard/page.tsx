@@ -38,7 +38,7 @@ export default async function DashboardPage() {
     // Unlimited — used to sum grant/hours totals across every active case,
     // not just the 3 shown in the "Mine sager" preview below.
     db.from('v_cases_with_professional')
-      .select('id, active_grant_hours, approved_hours_used')
+      .select('id, citizen_initials, weekly_hours, active_grant_hours, approved_hours_used')
       .eq('professional_id', userId)
       .in('status', ['ACTIVE', 'MATCHED']),
     db.from('session_logs')
@@ -52,7 +52,7 @@ export default async function DashboardPage() {
     // this reflects hours the contact person can actually rely on as
     // confirmed, combined across every active case (no case_id filter).
     db.from('registered_hours')
-      .select('hours')
+      .select('case_id, hours')
       .eq('professional_id', userId)
       .eq('status', 'APPROVED')
       .gte('work_date', mondayStr)
@@ -73,11 +73,16 @@ export default async function DashboardPage() {
   const activeCases = casesRes.data ?? []
   const totalCases = casesRes.count ?? 0
   const totalLogs = logsRes.count ?? 0
-  const weeklyApprovedHours = (weeklyHoursRes.data ?? []).reduce((sum, r) => sum + (r.hours ?? 0), 0)
+  const weeklyHoursByCase = new Map<string, number>()
+  for (const r of weeklyHoursRes.data ?? []) {
+    weeklyHoursByCase.set(r.case_id, (weeklyHoursByCase.get(r.case_id) ?? 0) + (r.hours ?? 0))
+  }
+  const weeklyApprovedHours = Array.from(weeklyHoursByCase.values()).reduce((sum, h) => sum + h, 0)
   const monthlyApprovedHours = (monthlyHoursRes.data ?? []).reduce((sum, r) => sum + (r.hours ?? 0), 0)
   const allActiveCases = allActiveCasesRes.data ?? []
   const totalGrantedHours = allActiveCases.reduce((sum, c: any) => sum + (c.active_grant_hours ?? 0), 0)
   const totalApprovedHours = allActiveCases.reduce((sum, c: any) => sum + (c.approved_hours_used ?? 0), 0)
+  const weeklyCapacityHours = allActiveCases.reduce((sum, c: any) => sum + (c.weekly_hours ?? 0), 0)
   const pendingReports = pendingReportsRes.data ?? []
   const today = new Date().toISOString().slice(0, 10)
 
@@ -109,7 +114,7 @@ export default async function DashboardPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
             <StatCard label="Aktive sager" value={totalCases} color="brand" />
             <StatCard label="Sessionslogs" value={totalLogs} color="green" />
-            <StatCard label="Godkendte timer (uge)" value={weeklyApprovedHours > 0 ? `${weeklyApprovedHours} t` : '0 t'} color="gold" />
+            <StatCard label="Godkendte timer (uge)" value={weeklyCapacityHours > 0 ? `${weeklyApprovedHours}/${weeklyCapacityHours} t` : `${weeklyApprovedHours} t`} color="gold" />
             <StatCard label="Kontaktpersonstatus" value={proStatusDisplay} color={proStatusColorValue} />
           </div>
 
@@ -126,7 +131,13 @@ export default async function DashboardPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
             <Card>
               <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-1.5">Denne uge</div>
-              <div className="text-2xl font-serif font-semibold text-[#1A1F1C]">{weeklyApprovedHours} t</div>
+              <div className="text-2xl font-serif font-semibold text-[#1A1F1C]">
+                {weeklyApprovedHours}
+                {weeklyCapacityHours > 0 && (
+                  <span className="text-[#9B9589] text-base font-sans font-normal">/{weeklyCapacityHours} t</span>
+                )}
+                {weeklyCapacityHours === 0 && ' t'}
+              </div>
               <div className="text-xs text-[#9B9589] mt-0.5">Godkendt, alle sager</div>
             </Card>
             <Card>
@@ -142,6 +153,40 @@ export default async function DashboardPage() {
               <div className="text-xs text-[#9B9589] mt-0.5">Godkendt af bevilget, alle sager</div>
             </Card>
           </div>
+
+          {/* Per-case breakdown — how much of the combined weekly total each citizen accounts for */}
+          {allActiveCases.length > 0 && (
+            <div className="mb-10">
+              <SectionHeader
+                title="Timer pr. borger"
+                description="Godkendte timer denne uge, udspecificeret pr. sag"
+              />
+              <div className="space-y-2">
+                {allActiveCases.map((c: any) => {
+                  const used = weeklyHoursByCase.get(c.id) ?? 0
+                  const target = c.weekly_hours ?? 0
+                  const over = target > 0 && used > target
+                  return (
+                    <Link key={c.id} href={`/dashboard/cases/${c.id}`}>
+                      <Card hover className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-[#FBF3E1] flex items-center justify-center shrink-0">
+                            <span className="text-sm font-bold text-[#92660A]">
+                              {(c.citizen_initials as string | undefined) ?? 'XX'}
+                            </span>
+                          </div>
+                          <div className="font-medium text-[#1A1F1C] text-sm">Borger {c.citizen_initials}</div>
+                        </div>
+                        <div className={`text-sm font-semibold ${over ? 'text-red-600' : 'text-[#1A1F1C]'}`}>
+                          {used}{target > 0 ? `/${target}` : ''} t <span className="text-xs font-normal text-[#9B9589]">denne uge</span>
+                        </div>
+                      </Card>
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Recent cases */}
           <SectionHeader title="Mine sager" />

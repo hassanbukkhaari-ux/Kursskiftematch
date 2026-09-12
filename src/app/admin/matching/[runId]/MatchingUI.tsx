@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { LoadingState, EmptyState } from '@/components/ui/empty-state'
 import { Label } from '@/components/ui/badge'
+import Link from 'next/link'
 import { getScoreColor } from '@/components/matching/score-ring'
 
 interface MatchingUIProps {
@@ -221,7 +222,13 @@ export function MatchingUI({ candidates, runId, caseId, runStatus, caseData }: M
               <span className="text-sm font-semibold text-[#92660A]">Aktiv søgning</span>
             </div>
             <h3 className="font-serif text-lg font-semibold text-[#1A1F1C] mb-2">Kursskifte arbejder aktivt på sagen</h3>
-            <p className="text-sm text-[#6B7569] max-w-sm">Der er endnu ingen scorede kandidater til denne sag. Kør en ny match-kørsel når der er egnede kontaktpersoner tilgængelige.</p>
+            <p className="text-sm text-[#6B7569] max-w-sm mb-4">Ingen kontaktpersoner opfyldte kravene ved denne kørsel. Har du rettet en kandidats kapacitet eller tilgængelighed siden, kan du køre matching igen.</p>
+            <Link
+              href={`/admin/matching/new?case_id=${caseId}`}
+              className="inline-flex items-center gap-1.5 h-10 px-4 rounded-xl bg-[#1C3829] text-white text-sm font-semibold hover:bg-[#2D5840] transition-colors"
+            >
+              Kør matching igen
+            </Link>
           </div>
         ) : filtered.length === 0 ? (
           <EmptyState

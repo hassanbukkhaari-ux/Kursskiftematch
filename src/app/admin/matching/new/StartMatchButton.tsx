@@ -6,9 +6,10 @@ import { useRouter } from 'next/navigation'
 interface StartMatchButtonProps {
   caseId: string
   caseLabel: string
+  isRerun?: boolean
 }
 
-export function StartMatchButton({ caseId, caseLabel }: StartMatchButtonProps) {
+export function StartMatchButton({ caseId, caseLabel, isRerun }: StartMatchButtonProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -73,7 +74,7 @@ export function StartMatchButton({ caseId, caseLabel }: StartMatchButtonProps) {
               <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
               <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
             </svg>
-            Start match-kørsel for {caseLabel}
+            {isRerun ? `Kør matching igen for ${caseLabel}` : `Start match-kørsel for ${caseLabel}`}
           </>
         )}
       </button>

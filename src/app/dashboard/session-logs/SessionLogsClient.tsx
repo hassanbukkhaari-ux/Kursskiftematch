@@ -63,6 +63,8 @@ export function SessionLogsClient({ initialLogs, cases, defaultCaseId }: Props) 
   const [viewOpen, setViewOpen] = useState(false)
   const [finalizing, setFinalizing] = useState(false)
   const [viewError, setViewError] = useState<string | null>(null)
+  const [editedDuration, setEditedDuration] = useState('')
+  const [savingDuration, setSavingDuration] = useState(false)
 
   const filtered = filter === 'ALL' ? initialLogs : initialLogs.filter(l => l.status === filter)
   const anyOpen = createOpen || viewOpen
@@ -81,6 +83,7 @@ export function SessionLogsClient({ initialLogs, cases, defaultCaseId }: Props) 
   function openView(log: SessionLogRow) {
     setViewingLog(log)
     setViewError(null)
+    setEditedDuration(String(log.duration_minutes ?? ''))
     setViewOpen(true)
   }
 
@@ -136,6 +139,34 @@ export function SessionLogsClient({ initialLogs, cases, defaultCaseId }: Props) 
       setCreateError('Netværksfejl — prøv igen')
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function handleSaveDuration() {
+    if (!viewingLog) return
+    const minutes = parseInt(editedDuration, 10)
+    if (!minutes || minutes < 1) { setViewError('Angiv en gyldig varighed'); return }
+    if (minutes === viewingLog.duration_minutes) return
+
+    setViewError(null)
+    setSavingDuration(true)
+    try {
+      const res = await fetch(`/api/session-logs/${viewingLog.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ duration_minutes: minutes }),
+      })
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}))
+        setViewError((json as { error?: string }).error ?? 'Noget gik galt')
+        return
+      }
+      setViewingLog(v => v ? { ...v, duration_minutes: minutes } : v)
+      startTransition(() => { router.refresh() })
+    } catch {
+      setViewError('Netværksfejl — prøv igen')
+    } finally {
+      setSavingDuration(false)
     }
   }
 
@@ -453,7 +484,33 @@ export function SessionLogsClient({ initialLogs, cases, defaultCaseId }: Props) 
                 value={new Intl.DateTimeFormat('da-DK', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(viewingLog.session_date))}
               />
               {viewingLog.duration_minutes != null && (
-                <InfoRow label="Varighed" value={formatDuration(viewingLog.duration_minutes)} />
+                viewingLog.status === 'DRAFT' ? (
+                  <div>
+                    <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-1">Varighed</div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min={1}
+                        value={editedDuration}
+                        onChange={e => setEditedDuration(e.target.value)}
+                        className="w-24 h-9 px-3 rounded-lg border border-[#E0DAD0] text-sm text-[#1A1F1C] focus:outline-none focus:border-[#1C3829]"
+                      />
+                      <span className="text-sm text-[#6B7569]">minutter</span>
+                      {parseInt(editedDuration, 10) !== viewingLog.duration_minutes && (
+                        <button
+                          onClick={handleSaveDuration}
+                          disabled={savingDuration}
+                          className="h-9 px-3 rounded-lg bg-[#1C3829] text-white text-xs font-semibold hover:bg-[#2D5840] transition-colors disabled:opacity-50"
+                        >
+                          {savingDuration ? 'Gemmer…' : 'Gem'}
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-xs text-[#9B9589] mt-1">Opdaterer også de tilknyttede timer under Timeregistrering.</p>
+                  </div>
+                ) : (
+                  <InfoRow label="Varighed" value={formatDuration(viewingLog.duration_minutes)} />
+                )
               )}
               {viewingLog.location && (
                 <InfoRow label="Sted" value={viewingLog.location} />

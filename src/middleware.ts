@@ -20,11 +20,19 @@ const PUBLIC_PATHS = [
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  const { response, user } = await updateSession(request)
+
+  // API routes enforce their own auth (session check, Bearer token for cron,
+  // or are intentionally public) and must return a JSON 401 — never an HTML
+  // redirect, which silently breaks fetch() callers and cron jobs alike.
+  if (pathname.startsWith('/api/')) {
+    return response
+  }
+
   const isPublic =
     pathname === '/' ||
     PUBLIC_PATHS.some(p => pathname === p || pathname.startsWith(p + '/'))
-
-  const { response, user } = await updateSession(request)
 
   if (!isPublic && !user) {
     return NextResponse.redirect(new URL('/login', request.url))

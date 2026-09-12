@@ -17,6 +17,23 @@ const MOOD_OPTIONS = [
 ]
 const MOOD_LABEL: Record<string, string> = Object.fromEntries(MOOD_OPTIONS.map(m => [m.value, m.label]))
 
+const CORRECTION_REASON_OPTIONS = [
+  { value: 'TYPO', label: 'Tastefejl' },
+  { value: 'WRONG_TIME', label: 'Forkert tidspunkt' },
+  { value: 'CLARIFICATION', label: 'Uddybning' },
+  { value: 'OMISSION', label: 'Manglende oplysning' },
+  { value: 'SAFEGUARDING', label: 'Underretningsbekymring' },
+  { value: 'OTHER', label: 'Andet' },
+]
+const CORRECTION_REASON_LABEL: Record<string, string> = Object.fromEntries(CORRECTION_REASON_OPTIONS.map(o => [o.value, o.label]))
+
+type SessionLogCorrection = {
+  id: string
+  correction_note: string
+  correction_reason: string
+  created_at: string
+}
+
 type FormData = {
   case_id: string
   session_date: string
@@ -66,6 +83,15 @@ export function SessionLogsClient({ initialLogs, cases, defaultCaseId }: Props) 
   const [editedDuration, setEditedDuration] = useState('')
   const [savingDuration, setSavingDuration] = useState(false)
 
+  // Corrections (only relevant once a log is FINAL/CORRECTED and immutable)
+  const [corrections, setCorrections] = useState<SessionLogCorrection[]>([])
+  const [correctionsLoading, setCorrectionsLoading] = useState(false)
+  const [correctionFormOpen, setCorrectionFormOpen] = useState(false)
+  const [correctionReason, setCorrectionReason] = useState('')
+  const [correctionNote, setCorrectionNote] = useState('')
+  const [correctionSaving, setCorrectionSaving] = useState(false)
+  const [correctionError, setCorrectionError] = useState<string | null>(null)
+
   const filtered = filter === 'ALL' ? initialLogs : initialLogs.filter(l => l.status === filter)
   const anyOpen = createOpen || viewOpen
 
@@ -85,12 +111,56 @@ export function SessionLogsClient({ initialLogs, cases, defaultCaseId }: Props) 
     setViewError(null)
     setEditedDuration(String(log.duration_minutes ?? ''))
     setViewOpen(true)
+    setCorrections([])
+    setCorrectionFormOpen(false)
+    setCorrectionReason('')
+    setCorrectionNote('')
+    setCorrectionError(null)
+    if (log.status === 'FINAL' || log.status === 'CORRECTED') {
+      setCorrectionsLoading(true)
+      fetch(`/api/session-logs/${log.id}/corrections`)
+        .then(res => res.ok ? res.json() : [])
+        .then(data => setCorrections(Array.isArray(data) ? data : []))
+        .catch(() => {})
+        .finally(() => setCorrectionsLoading(false))
+    }
   }
 
   function closeView() {
     setViewOpen(false)
     setViewingLog(null)
     setViewError(null)
+  }
+
+  async function handleSubmitCorrection() {
+    if (!viewingLog) return
+    if (!correctionReason) { setCorrectionError('Vælg en årsag'); return }
+    if (!correctionNote.trim()) { setCorrectionError('Beskriv rettelsen'); return }
+
+    setCorrectionError(null)
+    setCorrectionSaving(true)
+    try {
+      const res = await fetch(`/api/session-logs/${viewingLog.id}/corrections`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ correction_reason: correctionReason, correction_note: correctionNote }),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setCorrectionError((json as { error?: string }).error ?? 'Noget gik galt')
+        return
+      }
+      setCorrections(prev => [json as SessionLogCorrection, ...prev])
+      setViewingLog(v => v ? { ...v, status: 'CORRECTED' } : v)
+      setCorrectionFormOpen(false)
+      setCorrectionReason('')
+      setCorrectionNote('')
+      startTransition(() => { router.refresh() })
+    } catch {
+      setCorrectionError('Netværksfejl — prøv igen')
+    } finally {
+      setCorrectionSaving(false)
+    }
   }
 
   function closeAll() {
@@ -538,6 +608,87 @@ export function SessionLogsClient({ initialLogs, cases, defaultCaseId }: Props) 
                   {viewingLog.follow_up_reason && (
                     <div className="bg-[#FFFBEB] border border-[#FDE68A] rounded-xl p-4 text-sm text-[#1A1F1C] leading-relaxed whitespace-pre-wrap">
                       {viewingLog.follow_up_reason}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {(viewingLog.status === 'FINAL' || viewingLog.status === 'CORRECTED') && (
+                <div className="pt-2 border-t border-[#E0DAD0]">
+                  <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Rettelser</div>
+                  {correctionsLoading && <p className="text-xs text-[#9B9589]">Henter…</p>}
+                  {!correctionsLoading && corrections.length === 0 && !correctionFormOpen && (
+                    <p className="text-xs text-[#9B9589] mb-2">Ingen rettelser endnu</p>
+                  )}
+                  {corrections.length > 0 && (
+                    <div className="space-y-2 mb-3">
+                      {corrections.map(c => (
+                        <div key={c.id} className="bg-[#F6F3EE] rounded-xl p-3">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-semibold text-[#1A1F1C]">{CORRECTION_REASON_LABEL[c.correction_reason] ?? c.correction_reason}</span>
+                            <span className="text-[10px] text-[#9B9589]">
+                              {new Intl.DateTimeFormat('da-DK', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(c.created_at))}
+                            </span>
+                          </div>
+                          <p className="text-xs text-[#1A1F1C] whitespace-pre-wrap">{c.correction_note}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {!correctionFormOpen ? (
+                    <button
+                      type="button"
+                      onClick={() => setCorrectionFormOpen(true)}
+                      className="text-sm font-semibold text-[#1C3829] hover:underline"
+                    >
+                      Ret log
+                    </button>
+                  ) : (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Årsag *</label>
+                        <select
+                          value={correctionReason}
+                          onChange={e => setCorrectionReason(e.target.value)}
+                          className="w-full h-10 px-3 bg-[#F6F3EE] rounded-xl text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829]"
+                        >
+                          <option value="">Vælg…</option>
+                          {CORRECTION_REASON_OPTIONS.map(o => (
+                            <option key={o.value} value={o.value}>{o.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Beskriv rettelsen *</label>
+                        <textarea
+                          rows={3}
+                          value={correctionNote}
+                          onChange={e => setCorrectionNote(e.target.value)}
+                          placeholder="Hvad rettes, og hvorfor…"
+                          className="w-full px-3 py-2.5 bg-[#F6F3EE] rounded-xl text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829] resize-none"
+                        />
+                      </div>
+                      {correctionError && (
+                        <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3">{correctionError}</p>
+                      )}
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => { setCorrectionFormOpen(false); setCorrectionError(null) }}
+                          className="h-9 px-4 rounded-lg border border-[#E0DAD0] text-xs font-semibold text-[#1A1F1C] hover:bg-[#F6F3EE] transition-colors"
+                        >
+                          Annuller
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleSubmitCorrection}
+                          disabled={correctionSaving}
+                          className="h-9 px-4 rounded-lg bg-[#1C3829] text-white text-xs font-semibold hover:bg-[#2D5840] transition-colors disabled:opacity-50"
+                        >
+                          {correctionSaving ? 'Gemmer…' : 'Gem rettelse'}
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>

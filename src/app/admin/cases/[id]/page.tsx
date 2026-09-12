@@ -99,6 +99,7 @@ export default async function AdminCasePage({ params }: PageProps) {
     grantsRes,
     prosRes,
     handoversRes,
+    reportRequestsRes,
   ] = await Promise.all([
     db.from('municipalities').select('name, sagsbehandler_name, sagsbehandler_email').eq('id', caseData.municipality_id).single(),
     createServiceClient().from('session_logs' as any).select('id, session_date, duration_minutes, observations, citizen_mood_tone, follow_up_needed, follow_up_reason, status, professional_id', { count: 'exact' }).eq('case_id', id).order('session_date', { ascending: false }).limit(20),
@@ -110,6 +111,7 @@ export default async function AdminCasePage({ params }: PageProps) {
     dba.from('case_grants').select('id, granted_hours, period_start, period_end, status, activated_at').eq('case_id', id).order('period_start', { ascending: false }),
     createServiceClient().from('professionals' as any).select('id, profiles!inner(full_name)').eq('status', 'ACTIVE'),
     dba.from('case_handovers').select('id, reason, status, handover_note, is_urgent, session_logs_transferred, created_at, completed_at, outgoing_professional_id, incoming_professional_id, created_by').eq('case_id', id).order('created_at', { ascending: false }),
+    (createServiceClient() as any).from('status_report_requests').select('id, report_type, deadline, promised_date, status, created_at, professionals!inner(profiles!inner(full_name))').eq('case_id', id).order('created_at', { ascending: false }).limit(5),
   ])
 
   const labelMap = (rows: { code: string; label_da: string }[] | null) =>
@@ -515,6 +517,61 @@ export default async function AdminCasePage({ params }: PageProps) {
                 </div>
               )}
             </Card>
+
+            {/* Status reports */}
+            {(() => {
+              const reports: any[] = reportRequestsRes?.data ?? []
+              const latest = reports[0] ?? null
+              const today = new Date().toISOString().slice(0, 10)
+              const RTYPE: Record<string, string> = { MONTHLY: 'Kort månedlig', EXTENDED: 'Udvidet', FINAL: 'Afsluttende' }
+              const RSTATUS: Record<string, string> = { PENDING: 'Afventer', ACKNOWLEDGED: 'Bekræftet', SUBMITTED: 'Indsendt', REVIEWED: 'Gennemset' }
+              const RBADGE: Record<string, string> = { PENDING: 'amber', ACKNOWLEDGED: 'brand', SUBMITTED: 'green', REVIEWED: 'default' }
+              const isOverdue = latest && latest.deadline < today && latest.status !== 'SUBMITTED' && latest.status !== 'REVIEWED'
+              return (
+                <Card>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569]">Statusrapporter</div>
+                    <Link href="/admin/status-reports" className="text-[10px] text-[#1C3829] hover:underline">Se alle →</Link>
+                  </div>
+                  {latest ? (
+                    <div className="space-y-2">
+                      <Link href={`/admin/status-reports/${latest.id}`} className="block">
+                        <div className={`rounded-xl border p-3 hover:border-[#1C3829] transition-colors ${isOverdue ? 'border-red-200 bg-[#FEF2F2]' : 'border-[#E0DAD0] bg-[#FAFAF8]'}`}>
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <span className="text-xs font-medium text-[#1A1F1C]">{RTYPE[latest.report_type] ?? latest.report_type}</span>
+                            <Badge variant={(RBADGE[latest.status] ?? 'default') as any} dot>{RSTATUS[latest.status] ?? latest.status}</Badge>
+                          </div>
+                          <div className="text-[10px] text-[#6B7569] space-y-0.5">
+                            <div>Frist: {new Date(latest.deadline).toLocaleDateString('da-DK', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                            {latest.promised_date && latest.status === 'ACKNOWLEDGED' && (
+                              <div className="text-[#1C3829]">Lover: {new Date(latest.promised_date).toLocaleDateString('da-DK', { day: 'numeric', month: 'short' })}</div>
+                            )}
+                            {isOverdue && <div className="text-red-700 font-semibold">Forfalden</div>}
+                            <div className="truncate">{latest.professionals?.profiles?.full_name ?? ''}</div>
+                          </div>
+                        </div>
+                      </Link>
+                      {reports.length > 1 && (
+                        <div className="text-[10px] text-[#C8C0B0]">{reports.length - 1} tidligere {reports.length - 1 === 1 ? 'rapport' : 'rapporter'}</div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="text-xs text-[#C8C0B0]">Ingen aktiv anmodning denne måned</div>
+                    </div>
+                  )}
+                  <Link
+                    href={`/admin/status-reports?new=1&case_id=${id}`}
+                    className="mt-3 flex items-center gap-1.5 text-[10px] font-medium text-[#1C3829] hover:text-[#16302d] transition-colors"
+                  >
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Anmod om ny rapport
+                  </Link>
+                </Card>
+              )
+            })()}
 
             {/* Matching action for open/matched cases */}
             {(caseData.status === 'OPEN' || caseData.status === 'MATCHED') && (

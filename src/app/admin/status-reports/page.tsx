@@ -5,7 +5,7 @@ import { AdminStatusReportsClient } from './AdminStatusReportsClient'
 export default async function AdminStatusReportsPage() {
   const svc = createServiceClient() as any
 
-  const [{ data: requests }, { data: cases }, { data: professionals }] = await Promise.all([
+  const [{ data: requests }, { data: activeCases }, { data: professionals }] = await Promise.all([
     svc.from('status_report_requests')
       .select(`
         id, case_id, report_type, deadline, promised_date, status, message, created_at,
@@ -16,13 +16,22 @@ export default async function AdminStatusReportsPage() {
       .order('deadline', { ascending: true }),
 
     svc.from('cases')
-      .select('id, citizen_initials, citizen_age_range, status')
-      .in('status', ['ACTIVE', 'OPEN', 'MATCHING']),
+      .select('id, citizen_initials, citizen_age_range, status, municipality_id, municipalities(name)')
+      .in('status', ['ACTIVE', 'OPEN', 'MATCHED']),
 
     svc.from('professionals')
       .select('id, profiles!inner(full_name)')
       .eq('status', 'ACTIVE'),
   ])
+
+  // Find active cases with no pending/acknowledged request (blind spots)
+  const pendingCaseIds = new Set(
+    (requests ?? [])
+      .filter((r: any) => r.status === 'PENDING' || r.status === 'ACKNOWLEDGED')
+      .map((r: any) => r.case_id)
+  )
+  const casesWithoutRequest = (activeCases ?? []).filter((c: any) => !pendingCaseIds.has(c.id))
+  const cases = activeCases ?? []
 
   return (
     <div>
@@ -38,8 +47,9 @@ export default async function AdminStatusReportsPage() {
       <ContentContainer>
         <AdminStatusReportsClient
           initialRequests={(requests ?? []) as any[]}
-          cases={(cases ?? []) as any[]}
+          cases={cases as any[]}
           professionals={(professionals ?? []) as any[]}
+          casesWithoutRequest={casesWithoutRequest as any[]}
         />
       </ContentContainer>
     </div>

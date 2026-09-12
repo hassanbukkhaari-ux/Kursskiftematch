@@ -738,6 +738,7 @@ export type Database = {
           created_by: string
           created_at: string
           completed_at: string | null
+          overlap_meeting_completed_at: string | null
         }
         Insert: {
           id?: string
@@ -753,6 +754,7 @@ export type Database = {
           created_by: string
           created_at?: string
           completed_at?: string | null
+          overlap_meeting_completed_at?: string | null
         }
         Update: {
           incoming_professional_id?: string | null
@@ -762,6 +764,7 @@ export type Database = {
           session_logs_transferred?: boolean
           transferred_session_logs?: string[] | null
           completed_at?: string | null
+          overlap_meeting_completed_at?: string | null
         }
         Relationships: []
       }

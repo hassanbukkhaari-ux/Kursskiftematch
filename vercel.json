@@ -1,6 +1,14 @@
 {
   "crons": [
     {
+      "path": "/api/cron/retention-scan",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/deletion-execute",
+      "schedule": "0 4 * * *"
+    },
+    {
       "path": "/api/cron/auto-status-reports",
       "schedule": "0 7 * * *"
     },

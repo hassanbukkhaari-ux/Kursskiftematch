@@ -1,16 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createServiceClient } from '@/lib/supabase/server'
+import { requireCronSecret } from '@/lib/cron-auth'
 
 // GET /api/cron/retention-scan — called by Vercel Cron, scans for expired retention dates (WF-013)
 export async function GET(request: NextRequest) {
-  if (!process.env.CRON_SECRET) {
-    return NextResponse.json({ error: 'Cron secret not configured' }, { status: 500 })
-  }
-  const authHeader = request.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const denied = requireCronSecret(request)
+  if (denied) return denied
 
-  const { createServiceClient } = await import('@/lib/supabase/server')
   const db = createServiceClient()
   const now = new Date().toISOString()
 

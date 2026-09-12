@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createServiceClient } from '@/lib/supabase/server'
+import { requireCronSecret } from '@/lib/cron-auth'
+import { logAuditEvent } from '@/lib/audit'
 
 // GET /api/cron/deletion-execute — called by Vercel Cron, executes pending deletions (WF-013)
 export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const denied = requireCronSecret(request)
+  if (denied) return denied
 
-  const { createServiceClient } = await import('@/lib/supabase/server')
   const db = createServiceClient()
   const now = new Date().toISOString()
 
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
   }
 
   const executed: string[] = []
-  const errors: string[] = []
+  const errors: { id: string; reason: string }[] = []
 
   for (const schedule of pending || []) {
     try {
@@ -36,9 +36,19 @@ export async function GET(request: NextRequest) {
         .update({ executed_at: now })
         .eq('id', schedule.id)
 
+      await logAuditEvent(db, {
+        event_type: 'RETENTION_DELETION_EXECUTED',
+        actor_id: null,
+        resource_type: schedule.record_type,
+        resource_id: schedule.record_id,
+        metadata: { schedule_id: schedule.id, reason: schedule.reason },
+      })
+
       executed.push(schedule.record_id)
-    } catch {
-      errors.push(schedule.record_id)
+    } catch (err) {
+      const reason = err instanceof Error ? err.message : String(err)
+      console.error('[deletion-execute] Failed for', schedule.record_type, schedule.record_id, reason)
+      errors.push({ id: schedule.record_id, reason })
     }
   }
 
@@ -47,13 +57,27 @@ export async function GET(request: NextRequest) {
     executed: executed.length,
     errors: errors.length,
     executed_ids: executed,
+    error_details: errors,
   })
 }
 
 async function executeCaseDeletion(
-  db: Awaited<ReturnType<typeof import('@/lib/supabase/server').createServiceClient>>,
+  db: ReturnType<typeof createServiceClient>,
   caseId: string
 ) {
+  // 0. Storage objects — must go before the DB rows that reference them
+  const { data: docs } = await (db as any)
+    .from('case_documents')
+    .select('storage_path')
+    .eq('case_id', caseId)
+
+  const paths: string[] = (docs ?? []).map((d: { storage_path: string }) => d.storage_path).filter(Boolean)
+  if (paths.length) {
+    const { error: storageError } = await db.storage.from('case-documents').remove(paths)
+    if (storageError) throw new Error(`Storage removal failed: ${storageError.message}`)
+  }
+  await (db as any).from('case_documents').delete().eq('case_id', caseId)
+
   // Delete in FK-safe order per WF-013
   // 1. contact_disclosures
   const { data: contactLogs } = await db

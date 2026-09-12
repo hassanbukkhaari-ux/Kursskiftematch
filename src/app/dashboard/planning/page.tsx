@@ -40,6 +40,27 @@ export default async function PlanningPage() {
     db.from('professionals').select('capacity_hours_week').eq('id', user.id).single(),
   ])
 
+  const cases = (casesRes.data ?? []) as PlanningCase[]
+  const caseIds = cases.map(c => c.id)
+
+  const lastMonday = new Date(`${weekStarts[weekStarts.length - 1]}T00:00:00`)
+  const lastSunday = new Date(lastMonday)
+  lastSunday.setDate(lastMonday.getDate() + 6)
+
+  // Actuals — used to show "planned vs. what was really logged" so the
+  // contact person can see and correct drift week to week, instead of it
+  // only surfacing once the grant runs out or is left unused.
+  const actualRes = caseIds.length > 0
+    ? await db.from('registered_hours')
+        .select('case_id, work_date, hours')
+        .eq('professional_id', user.id)
+        .in('case_id', caseIds)
+        .gte('work_date', weekStarts[0])
+        .lte('work_date', lastSunday.toISOString().slice(0, 10))
+        .neq('status', 'REJECTED')
+        .is('archived_at', null)
+    : { data: [] }
+
   return (
     <div>
       <PageHeader
@@ -50,8 +71,9 @@ export default async function PlanningPage() {
       />
       <ContentContainer>
         <PlanningClient
-          cases={(casesRes.data ?? []) as PlanningCase[]}
+          cases={cases}
           initialPlanned={(plannedRes.data ?? []) as PlannedHoursRow[]}
+          actualHours={(actualRes.data ?? []) as ActualHoursRow[]}
           weekStarts={weekStarts}
           capacityHoursWeek={proRes.data?.capacity_hours_week ?? null}
         />
@@ -74,4 +96,10 @@ export type PlannedHoursRow = {
   case_id: string
   week_start: string
   planned_hours: number
+}
+
+export type ActualHoursRow = {
+  case_id: string
+  work_date: string
+  hours: number
 }

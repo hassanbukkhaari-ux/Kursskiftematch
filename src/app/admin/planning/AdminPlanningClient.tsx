@@ -19,10 +19,17 @@ export type ProfessionalRow = {
   profiles: { full_name: string | null } | null
 }
 
+export type ActualRow = {
+  professional_id: string
+  case_id: string
+  hours: number
+}
+
 interface Props {
   initialWeekStart: string
   initialPlanned: PlannedRow[]
   initialProfessionals: ProfessionalRow[]
+  initialActual: ActualRow[]
 }
 
 function shiftWeek(weekStart: string, deltaWeeks: number) {
@@ -48,10 +55,15 @@ function currentMonday() {
   return d.toISOString().slice(0, 10)
 }
 
-export function AdminPlanningClient({ initialWeekStart, initialPlanned, initialProfessionals }: Props) {
+function fmtHours(n: number) {
+  return Math.round(n * 100) / 100
+}
+
+export function AdminPlanningClient({ initialWeekStart, initialPlanned, initialProfessionals, initialActual }: Props) {
   const [weekStart, setWeekStart] = useState(initialWeekStart)
   const [planned, setPlanned] = useState<PlannedRow[]>(initialPlanned)
   const [professionals, setProfessionals] = useState<ProfessionalRow[]>(initialProfessionals)
+  const [actual, setActual] = useState<ActualRow[]>(initialActual)
   const [loading, setLoading] = useState(false)
   const [expanded, setExpanded] = useState<string | null>(null)
 
@@ -62,6 +74,7 @@ export function AdminPlanningClient({ initialWeekStart, initialPlanned, initialP
       const json = await res.json()
       if (json.planned) setPlanned(json.planned)
       if (json.professionals) setProfessionals(json.professionals)
+      if (json.actual) setActual(json.actual)
     } finally {
       setLoading(false)
     }
@@ -73,6 +86,9 @@ export function AdminPlanningClient({ initialWeekStart, initialPlanned, initialP
   }
 
   const todayMonday = useMemo(() => currentMonday(), [])
+  // Fully-elapsed weeks are the only ones worth flagging a variance for —
+  // the current week is still in progress, so a gap there is expected, not a problem.
+  const isPastWeek = weekStart < todayMonday
 
   const byProfessional = useMemo(() => {
     const map = new Map<string, PlannedRow[]>()
@@ -84,14 +100,32 @@ export function AdminPlanningClient({ initialWeekStart, initialPlanned, initialP
     return map
   }, [planned])
 
+  const actualByProCase = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const a of actual) {
+      const k = `${a.professional_id}_${a.case_id}`
+      map.set(k, (map.get(k) ?? 0) + Number(a.hours))
+    }
+    return map
+  }, [actual])
+
+  const actualTotalByPro = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const a of actual) {
+      map.set(a.professional_id, (map.get(a.professional_id) ?? 0) + Number(a.hours))
+    }
+    return map
+  }, [actual])
+
   const rows = professionals
     .map(pro => {
       const cases = byProfessional.get(pro.id) ?? []
-      const total = cases.reduce((sum, c) => sum + Number(c.planned_hours), 0)
-      return { pro, cases, total }
+      const totalPlanned = cases.reduce((sum, c) => sum + Number(c.planned_hours), 0)
+      const totalActual = actualTotalByPro.get(pro.id) ?? 0
+      return { pro, cases, totalPlanned, totalActual }
     })
-    .filter(r => r.cases.length > 0)
-    .sort((a, b) => b.total - a.total)
+    .filter(r => r.cases.length > 0 || r.totalActual > 0)
+    .sort((a, b) => b.totalPlanned - a.totalPlanned)
 
   const isCurrentWeek = weekStart === todayMonday
 
@@ -143,9 +177,11 @@ export function AdminPlanningClient({ initialWeekStart, initialPlanned, initialP
         />
       ) : (
         <div className="space-y-2">
-          {rows.map(({ pro, cases, total }) => {
+          {rows.map(({ pro, cases, totalPlanned, totalActual }) => {
             const capacity = pro.capacity_hours_week
-            const overCapacity = capacity != null && total > capacity
+            const overCapacity = capacity != null && totalPlanned > capacity
+            const variance = totalActual - totalPlanned
+            const showVariance = isPastWeek && Math.abs(variance) >= 0.25
             const isExpanded = expanded === pro.id
             return (
               <Card key={pro.id} className="!p-0 overflow-hidden">
@@ -158,28 +194,49 @@ export function AdminPlanningClient({ initialWeekStart, initialPlanned, initialP
                     <div className="text-sm font-medium text-[#1A1F1C]">{pro.profiles?.full_name ?? 'Ukendt'}</div>
                     <div className="text-xs text-[#6B7569] mt-0.5">{cases.length} {cases.length === 1 ? 'sag' : 'sager'} planlagt</div>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    <Badge variant={overCapacity ? 'red' : 'green'} dot>
-                      {total}t{capacity != null ? ` / ${capacity}t` : ''}
-                    </Badge>
-                    <svg
-                      width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C8C0B0" strokeWidth="2" strokeLinecap="round"
-                      style={{ transform: isExpanded ? 'rotate(90deg)' : 'none', transition: 'transform 150ms' }}
-                    >
-                      <polyline points="9 18 15 12 9 6" />
-                    </svg>
+                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    <div className="flex items-center gap-3">
+                      <Badge variant={overCapacity ? 'red' : 'green'} dot>
+                        {fmtHours(totalPlanned)}t{capacity != null ? ` / ${capacity}t` : ''}
+                      </Badge>
+                      <svg
+                        width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C8C0B0" strokeWidth="2" strokeLinecap="round"
+                        style={{ transform: isExpanded ? 'rotate(90deg)' : 'none', transition: 'transform 150ms' }}
+                      >
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
+                    </div>
+                    {(isPastWeek || isCurrentWeek) && (
+                      <span className={`text-[11px] ${showVariance ? (variance > 0 ? 'text-amber-700 font-medium' : 'text-[#92660A] font-medium') : 'text-[#9B9589]'}`}>
+                        Faktisk {fmtHours(totalActual)}t
+                        {showVariance ? ` (${variance > 0 ? '+' : ''}${fmtHours(variance)})` : ''}
+                      </span>
+                    )}
                   </div>
                 </button>
                 {isExpanded && (
                   <div className="border-t border-[#E0DAD0] divide-y divide-[#EEEAE2]">
-                    {cases.map(c => (
-                      <div key={c.id} className="flex items-center justify-between px-5 py-2.5 text-sm">
-                        <span className="text-[#1A1F1C]">
-                          Borger {c.cases?.citizen_initials} <span className="text-[#9B9589]">· {c.cases?.citizen_age_range}</span>
-                        </span>
-                        <span className="font-medium text-[#1A1F1C]">{c.planned_hours}t</span>
-                      </div>
-                    ))}
+                    {cases.map(c => {
+                      const caseActual = actualByProCase.get(`${pro.id}_${c.case_id}`) ?? 0
+                      const caseVariance = caseActual - Number(c.planned_hours)
+                      const showCaseVariance = isPastWeek && Math.abs(caseVariance) >= 0.25
+                      return (
+                        <div key={c.id} className="flex items-center justify-between px-5 py-2.5 text-sm">
+                          <span className="text-[#1A1F1C]">
+                            Borger {c.cases?.citizen_initials} <span className="text-[#9B9589]">· {c.cases?.citizen_age_range}</span>
+                          </span>
+                          <span className="text-right">
+                            <span className="font-medium text-[#1A1F1C]">{fmtHours(Number(c.planned_hours))}t planlagt</span>
+                            {(isPastWeek || isCurrentWeek) && (
+                              <span className={`block text-[11px] ${showCaseVariance ? (caseVariance > 0 ? 'text-amber-700' : 'text-[#92660A]') : 'text-[#9B9589]'}`}>
+                                {fmtHours(caseActual)}t faktisk
+                                {showCaseVariance ? ` (${caseVariance > 0 ? '+' : ''}${fmtHours(caseVariance)})` : ''}
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                      )
+                    })}
                   </div>
                 )}
               </Card>

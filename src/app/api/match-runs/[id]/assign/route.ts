@@ -40,7 +40,7 @@ export async function POST(
     // Verify the candidate belongs to this match run
     const { data: candidate, error: candError } = await db
       .from('match_candidates')
-      .select('id, professional_id, overall_score')
+      .select('id, professional_id, overall_score, eligible, ineligibility_reason')
       .eq('id', parsed.data.candidate_id)
       .eq('match_run_id', id)
       .single()
@@ -99,6 +99,7 @@ export async function POST(
         professional_id: parsed.data.professional_id,
         match_run_id: id,
         match_score: candidate.overall_score,
+        assigned_despite_ineligibility: candidate.eligible === false ? candidate.ineligibility_reason : undefined,
       },
     })
 

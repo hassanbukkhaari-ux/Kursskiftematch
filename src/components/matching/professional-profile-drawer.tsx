@@ -192,6 +192,11 @@ export function ProfessionalProfileDrawer({
           {/* Match-analyse */}
           <section className="px-5 py-4 md:px-6 md:py-5 border-b border-[#E0DAD0]">
             <Label className="block mb-4">Match-analyse</Label>
+            {candidate?.eligible === false && (
+              <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">
+                <span className="font-semibold">Ikke kvalificeret automatisk:</span> {candidate.ineligibility_reason ?? 'ukendt årsag'}
+              </div>
+            )}
             {candidate && (
               <ScoreBreakdown
                 qualifications_score={candidate.qualifications_score}

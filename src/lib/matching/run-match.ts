@@ -70,22 +70,31 @@ export async function runMatchForCase(
 
   if (runError || !matchRun) throw new Error(runError?.message || 'Failed to create match run')
 
+  // Query the base table directly, not v_professionals_available — every
+  // active professional is scored and stored here, eligible or not.
+  // Silently dropping anyone who failed availability/case-load/capacity
+  // meant admin had no way to see, search for, or manually assign a
+  // candidate the algorithm excluded, and a run that excluded everyone
+  // looked identical to a run with genuinely no professionals at all.
   const { data: professionals, error: proError } = await db
-    .from('v_professionals_available')
+    .from('professionals')
     .select(`
       id, experience_years, target_age_groups, max_complexity_level,
       capacity_hours_week, max_concurrent_cases, availability_status,
-      current_assignments, current_hours_assigned, qualifications
+      qualifications, gender, experience_with_genders, can_transport_citizen,
+      has_drivers_license, has_own_car, can_take_acute, geography
     `)
+    .eq('status', 'ACTIVE')
 
   if (proError) {
     await db.from('match_runs').update({ status: 'CANCELLED' }).eq('id', matchRun.id)
     return { runId: matchRun.id, candidateCount: 0, status: 'CANCELLED' }
   }
 
+  const proIds = (professionals ?? []).map(p => p.id)
+
   // Each candidate's stated target-group experience (e.g. a teacher who has
   // selected "Skolevægring" on their profile), fetched in one batched query.
-  const proIds = (professionals ?? []).map(p => p.id)
   const { data: targetGroupRows } = proIds.length > 0
     ? await (db as any)
         .from('professional_target_groups')
@@ -99,34 +108,25 @@ export async function runMatchForCase(
     targetGroupsByPro.set(row.professional_id, list)
   }
 
-  // Logistics fields (gender, transport, geography, acute readiness) aren't
-  // exposed by v_professionals_available — fetched directly from
-  // professionals, read-only, same pattern as the target-group query above.
-  const { data: logisticsRows } = proIds.length > 0
+  // current_assignments / current_hours_assigned — mirrors exactly what
+  // v_professionals_available computes (every non-ended assignment counts
+  // toward the case-load limit; only assignments to an ACTIVE-status case
+  // count toward hours), just computed here instead of through the view,
+  // since we're no longer filtering through it.
+  const { data: assignmentRows } = proIds.length > 0
     ? await (db as any)
-        .from('professionals')
-        .select('id, gender, experience_with_genders, can_transport_citizen, has_drivers_license, has_own_car, can_take_acute, geography')
-        .in('id', proIds)
+        .from('case_assignments')
+        .select('professional_id, cases!inner(weekly_hours, status)')
+        .in('professional_id', proIds)
+        .is('ended_at', null)
     : { data: [] }
-  const logisticsByPro = new Map<string, {
-    gender: string | null
-    experience_with_genders: string[]
-    can_transport_citizen: boolean
-    has_drivers_license: boolean
-    has_own_car: boolean
-    can_take_acute: boolean
-    geography: string[]
-  }>()
-  for (const row of logisticsRows ?? []) {
-    logisticsByPro.set(row.id, {
-      gender: row.gender,
-      experience_with_genders: row.experience_with_genders ?? [],
-      can_transport_citizen: !!row.can_transport_citizen,
-      has_drivers_license: !!row.has_drivers_license,
-      has_own_car: !!row.has_own_car,
-      can_take_acute: !!row.can_take_acute,
-      geography: row.geography ?? [],
-    })
+  const assignmentCountByPro = new Map<string, number>()
+  const hoursAssignedByPro = new Map<string, number>()
+  for (const row of assignmentRows ?? []) {
+    assignmentCountByPro.set(row.professional_id, (assignmentCountByPro.get(row.professional_id) ?? 0) + 1)
+    if (row.cases?.status === 'ACTIVE') {
+      hoursAssignedByPro.set(row.professional_id, (hoursAssignedByPro.get(row.professional_id) ?? 0) + (row.cases?.weekly_hours ?? 0))
+    }
   }
 
   const caseInput = {
@@ -145,7 +145,22 @@ export async function runMatchForCase(
   }
 
   const scored = (professionals || []).map(pro => {
-    const logistics = logisticsByPro.get(pro.id)
+    const currentAssignments = assignmentCountByPro.get(pro.id) ?? 0
+    const currentHoursAssigned = hoursAssignedByPro.get(pro.id) ?? 0
+
+    // Same three conditions v_professionals_available's HAVING clause
+    // enforces — computed here as metadata instead of a hard exclusion, so
+    // admin can see exactly why and still choose to assign anyway.
+    const availabilityOk = pro.availability_status !== 'UNAVAILABLE'
+    const caseLoadOk = currentAssignments < (pro.max_concurrent_cases ?? 0)
+    const capacityOk = currentHoursAssigned < (pro.capacity_hours_week ?? 0)
+    const eligible = availabilityOk && caseLoadOk && capacityOk
+
+    const reasons: string[] = []
+    if (!availabilityOk) reasons.push('Ikke tilgængelig')
+    if (!caseLoadOk) reasons.push(`Nået maks. antal sager (${currentAssignments}/${pro.max_concurrent_cases ?? 0})`)
+    if (!capacityOk) reasons.push(`Ingen ledig kapacitet (${currentHoursAssigned}/${pro.capacity_hours_week ?? 0} t)`)
+
     const scores = scoreCandidate(
       {
         id: pro.id,
@@ -154,26 +169,39 @@ export async function runMatchForCase(
         max_complexity_level: pro.max_complexity_level as ComplexityLevel,
         capacity_hours_week: pro.capacity_hours_week,
         max_concurrent_cases: pro.max_concurrent_cases,
-        current_assignments: Number(pro.current_assignments),
-        current_hours_assigned: Number(pro.current_hours_assigned),
+        current_assignments: currentAssignments,
+        current_hours_assigned: currentHoursAssigned,
         has_certifications: Array.isArray(pro.qualifications) && pro.qualifications.length > 0,
         availability_status: pro.availability_status,
         target_group_names: targetGroupsByPro.get(pro.id) ?? [],
-        gender: logistics?.gender as 'MALE' | 'FEMALE' | 'OTHER' | null | undefined,
-        experience_with_genders: logistics?.experience_with_genders as ('BOYS' | 'GIRLS')[] | undefined,
-        can_transport_citizen: logistics?.can_transport_citizen,
-        has_drivers_license: logistics?.has_drivers_license,
-        has_own_car: logistics?.has_own_car,
-        can_take_acute: logistics?.can_take_acute,
-        geography: logistics?.geography,
+        gender: pro.gender as 'MALE' | 'FEMALE' | 'OTHER' | null | undefined,
+        experience_with_genders: pro.experience_with_genders as ('BOYS' | 'GIRLS')[] | undefined,
+        can_transport_citizen: pro.can_transport_citizen ?? undefined,
+        has_drivers_license: pro.has_drivers_license ?? undefined,
+        has_own_car: pro.has_own_car ?? undefined,
+        can_take_acute: pro.can_take_acute ?? undefined,
+        geography: pro.geography ?? undefined,
       },
       caseInput,
     )
     const { match_strengths: _ms, attention_points: _ap, ...dbScores } = scores
-    return { match_run_id: matchRun.id, professional_id: pro.id, ...dbScores }
+    return {
+      match_run_id: matchRun.id,
+      professional_id: pro.id,
+      ...dbScores,
+      eligible,
+      ineligibility_reason: reasons.length > 0 ? reasons.join('; ') : null,
+    }
   })
 
-  scored.sort((a, b) => b.overall_score - a.overall_score)
+  // Eligible candidates first (ranked by score), so the ordinary case still
+  // reads exactly as before; everyone else follows, also ranked by score,
+  // so a strong-but-currently-unavailable candidate isn't buried under a
+  // weak one who happens to be free.
+  scored.sort((a, b) => {
+    if (a.eligible !== b.eligible) return a.eligible ? -1 : 1
+    return b.overall_score - a.overall_score
+  })
   const candidateRows = scored.map((c, i) => ({ ...c, rank: i + 1 }))
 
   if (candidateRows.length > 0) {

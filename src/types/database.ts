@@ -1050,6 +1050,8 @@ export type Database = {
           capacity_score: number
           complexity_fit_score: number
           logistics_score: number | null
+          eligible: boolean
+          ineligibility_reason: string | null
           algorithm_version: string
           scoring_explanation: string
           created_at: string
@@ -1065,6 +1067,8 @@ export type Database = {
           capacity_score: number
           complexity_fit_score: number
           logistics_score?: number | null
+          eligible?: boolean
+          ineligibility_reason?: string | null
           algorithm_version?: string
           scoring_explanation: string
           created_at?: string

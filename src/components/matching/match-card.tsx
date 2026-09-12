@@ -14,6 +14,8 @@ export interface MatchCandidate {
   capacity_score: number
   complexity_fit_score: number
   logistics_score?: number | null
+  eligible?: boolean
+  ineligibility_reason?: string | null
   scoring_explanation: string
   match_strengths?: string[]
   attention_points?: string[]
@@ -113,6 +115,14 @@ export function MatchCard({ candidate, onSelect, isSelected, rank }: MatchCardPr
               {pro?.capacity_hours_week ?? 0} t/uge
             </span>
           </div>
+
+          {/* Not eligible for automatic matching right now — shown, not hidden,
+              so admin can still find and manually assign this person. */}
+          {candidate.eligible === false && (
+            <div className="mt-2 text-xs font-medium text-red-600">
+              Ikke kvalificeret automatisk: {candidate.ineligibility_reason ?? 'ukendt årsag'}
+            </div>
+          )}
         </div>
 
         {/* Chevron */}

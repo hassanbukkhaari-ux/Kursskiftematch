@@ -81,7 +81,7 @@ export async function runMatchForCase(
     .select(`
       id, experience_years, target_age_groups, max_complexity_level,
       capacity_hours_week, max_concurrent_cases, availability_status,
-      qualifications, gender, experience_with_genders, can_transport_citizen,
+      gender, experience_with_genders, can_transport_citizen,
       has_drivers_license, has_own_car, can_take_acute,
       can_work_evening, can_work_weekend, can_work_night
     `)
@@ -141,6 +141,22 @@ export async function runMatchForCase(
     if (row.municipality_id) list.push(row.municipality_id)
     municipalityIdsByPro.set(row.professional_id, list)
   }
+
+  // has_certifications used to come from professionals.qualifications — a
+  // free-text column nothing in the app has ever written to (admin's own
+  // "Certifikater" editor writes a different column, professionals.certificates,
+  // which matching never read). The real, actually-maintained signal for a
+  // confirmed qualification is a VERIFIED QUALIFICATION document, the same
+  // record admin approves in the professional's document checklist.
+  const { data: verifiedQualRows } = proIds.length > 0
+    ? await (db as any)
+        .from('professional_documents')
+        .select('professional_id')
+        .in('professional_id', proIds)
+        .eq('document_type', 'QUALIFICATION')
+        .eq('status', 'VERIFIED')
+    : { data: [] }
+  const hasVerifiedQualification = new Set((verifiedQualRows ?? []).map((r: any) => r.professional_id))
 
   // current_assignments / current_hours_assigned — mirrors exactly what
   // v_professionals_available computes (every non-ended assignment counts
@@ -209,7 +225,7 @@ export async function runMatchForCase(
         max_concurrent_cases: pro.max_concurrent_cases,
         current_assignments: currentAssignments,
         current_hours_assigned: currentHoursAssigned,
-        has_certifications: Array.isArray(pro.qualifications) && pro.qualifications.length > 0,
+        has_certifications: hasVerifiedQualification.has(pro.id),
         availability_status: pro.availability_status,
         target_group_names: targetGroupsByPro.get(pro.id) ?? [],
         gender: pro.gender as 'MALE' | 'FEMALE' | 'OTHER' | null | undefined,

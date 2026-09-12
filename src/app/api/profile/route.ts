@@ -45,21 +45,33 @@ export async function PATCH(request: NextRequest) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dba = db as any
 
-    // capacity_hours_week (what matching actually uses) defaults to 0 at
-    // registration and nothing besides an admin editing the profile ever
-    // touches it — a professional could complete onboarding, declare their
-    // real weekly availability here, and still be permanently invisible to
-    // matching. Seed it from what they just told us, but only while it's
-    // still at that untouched default — never overwrite a capacity an
-    // admin has deliberately set since.
-    if (typeof patch.max_hours_per_week === 'number') {
+    if (typeof patch.max_hours_per_week === 'number' || typeof patch.available_now === 'boolean') {
       const { data: existing } = await dba
         .from('professionals')
-        .select('capacity_hours_week')
+        .select('capacity_hours_week, availability_status')
         .eq('id', userId)
         .single()
-      if (existing && (!existing.capacity_hours_week || existing.capacity_hours_week <= 0)) {
+
+      // capacity_hours_week (what matching actually uses) defaults to 0 at
+      // registration and nothing besides an admin editing the profile ever
+      // touches it — a professional could complete onboarding, declare their
+      // real weekly availability here, and still be permanently invisible to
+      // matching. Seed it from what they just told us, but only while it's
+      // still at that untouched default — never overwrite a capacity an
+      // admin has deliberately set since.
+      if (typeof patch.max_hours_per_week === 'number' && existing && (!existing.capacity_hours_week || existing.capacity_hours_week <= 0)) {
         patch.capacity_hours_week = patch.max_hours_per_week
+      }
+
+      // The "Ledig nu" toggle on this page writes available_now, but
+      // matching's eligibility check (v_professionals_available) reads a
+      // completely different column, availability_status — one only an
+      // admin's edit form ever touched. The toggle looked like it controlled
+      // availability for matching; it did nothing at all. Keep the two in
+      // sync for the common on/off case, without overwriting an admin's more
+      // specific PARTIALLY_AVAILABLE (e.g. during a partial leave).
+      if (typeof patch.available_now === 'boolean' && existing?.availability_status !== 'PARTIALLY_AVAILABLE') {
+        patch.availability_status = patch.available_now ? 'AVAILABLE' : 'UNAVAILABLE'
       }
     }
 

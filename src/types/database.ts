@@ -1165,6 +1165,33 @@ export type Database = {
         }
         Relationships: []
       }
+      planned_hours: {
+        Row: {
+          id: string
+          case_id: string
+          professional_id: string
+          week_start: string
+          planned_hours: number
+          created_by: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          case_id: string
+          professional_id: string
+          week_start: string
+          planned_hours: number
+          created_by: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          planned_hours?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       case_documents: {
         Row: {
           id: string
@@ -1708,6 +1735,7 @@ export type NotificationLog = Database['public']['Tables']['notification_log']['
 export type DeletionSchedule = Database['public']['Tables']['deletion_schedules']['Row']
 export type CaseProposal = Database['public']['Tables']['case_proposals']['Row']
 export type CaseDocument = Database['public']['Tables']['case_documents']['Row']
+export type PlannedHours = Database['public']['Tables']['planned_hours']['Row']
 export type StatusReportRequest = Database['public']['Tables']['status_report_requests']['Row']
 export type StatusReport = Database['public']['Tables']['status_reports']['Row']
 export type ProfessionTypeRow = Database['public']['Tables']['profession_types']['Row']

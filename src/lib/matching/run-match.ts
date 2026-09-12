@@ -108,6 +108,21 @@ export async function runMatchForCase(
     targetGroupsByPro.set(row.professional_id, list)
   }
 
+  // Each candidate's stated languages, fetched the same way as target-group
+  // experience — a batched join against the lookup table's names.
+  const { data: languageRows } = proIds.length > 0
+    ? await (db as any)
+        .from('professional_languages')
+        .select('professional_id, language_types(name)')
+        .in('professional_id', proIds)
+    : { data: [] }
+  const languagesByPro = new Map<string, string[]>()
+  for (const row of languageRows ?? []) {
+    const list = languagesByPro.get(row.professional_id) ?? []
+    if (row.language_types?.name) list.push(row.language_types.name)
+    languagesByPro.set(row.professional_id, list)
+  }
+
   // current_assignments / current_hours_assigned — mirrors exactly what
   // v_professionals_available computes (every non-ended assignment counts
   // toward the case-load limit; only assignments to an ACTIVE-status case
@@ -142,6 +157,7 @@ export async function runMatchForCase(
     citizen_gender: caseRow.citizen_gender,
     transport_needs: caseRow.transport_needs,
     geographical_area: caseRow.geographical_area,
+    required_languages: caseRow.required_languages,
   }
 
   const scored = (professionals || []).map(pro => {
@@ -181,6 +197,7 @@ export async function runMatchForCase(
         has_own_car: pro.has_own_car ?? undefined,
         can_take_acute: pro.can_take_acute ?? undefined,
         geography: pro.geography ?? undefined,
+        languages: languagesByPro.get(pro.id) ?? undefined,
       },
       caseInput,
     )

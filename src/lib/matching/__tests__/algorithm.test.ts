@@ -443,6 +443,16 @@ describe('Logistics fit', () => {
     expect(scoreCandidate(proWithoutCoverage, c).logistics_score).toBe(0)
   })
 
+  it('checks languages only when both the case requires one and the professional has stated any', () => {
+    const proWithNoData = baseProfessional({ languages: [] })
+    const proWithMatch = baseProfessional({ languages: ['Arabisk', 'Dansk'] })
+    const proWithoutMatch = baseProfessional({ languages: ['Polsk'] })
+    const c = baseCase({ required_languages: ['Arabisk', 'Somali'] })
+    expect(scoreCandidate(proWithNoData, c).logistics_score).toBeNull()
+    expect(scoreCandidate(proWithMatch, c).logistics_score).toBe(100)
+    expect(scoreCandidate(proWithoutMatch, c).logistics_score).toBe(0)
+  })
+
   it('averages multiple applicable checks together', () => {
     const pro = baseProfessional({
       can_transport_citizen: true, has_drivers_license: true, has_own_car: true, // passes

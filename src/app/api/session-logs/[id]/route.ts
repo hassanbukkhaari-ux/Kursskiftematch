@@ -12,6 +12,7 @@ const UpdateSessionLogSchema = z.object({
   follow_up_reason: z.string().optional(),
   participant_names: z.array(z.string()).optional(),
   location: z.string().optional(),
+  duration_minutes: z.number().int().min(1).optional(),
   action: z.enum(['FINALIZE', 'FLAG_SAFEGUARDING', 'ACKNOWLEDGE_SAFEGUARDING']).optional(),
   safeguarding_detail: z.string().optional(),
 })
@@ -113,6 +114,22 @@ export async function PATCH(
       .single()
 
     if (error || !data) return serverError(error?.message)
+
+    // Keep the auto-created DIRECT_SESSION hours entry in sync with a
+    // corrected duration — but only while it's still PENDING. Once it's
+    // been submitted or approved, silently rewriting the hours behind
+    // that workflow would be worse than leaving a mismatch for admin to
+    // resolve directly.
+    if (update.duration_minutes != null) {
+      const rawHours = update.duration_minutes / 60
+      const roundedHours = Math.round(rawHours * 4) / 4
+      const clampedHours = Math.max(0.25, Math.min(8, roundedHours))
+      await db
+        .from('registered_hours')
+        .update({ hours: clampedHours, updated_by: userId, updated_at: new Date().toISOString() })
+        .eq('session_log_id', id)
+        .eq('status', 'PENDING')
+    }
 
     await logAuditEvent(db, {
       event_type: 'SESSION_LOG_UPDATED',

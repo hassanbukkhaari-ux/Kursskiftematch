@@ -181,7 +181,7 @@ export function AdminPlanningClient({ initialWeekStart, initialPlanned, initialP
       </div>
 
       <p className="text-xs text-[#9B9589] mb-4 leading-relaxed">
-        Tre tal per kontaktperson: <strong className="text-[#6B7569]">planlagt</strong> (timeplanlægningen), <strong className="text-[#6B7569]">faktisk</strong> (godkendte/registrerede timer) og <strong className="text-[#6B3FA0]">matching-kapacitet</strong> (det tal matching-algoritmen bruger i dag til at vurdere ledig kapacitet). De tre beregnes uafhængigt af hinanden — vises her side om side så I kan se om de stemmer overens, før noget i selve matchingen ændres.
+        Per kontaktperson: <strong className="text-[#6B7569]">planlagt</strong> (timeplanlægningen), <strong className="text-[#6B7569]">faktisk</strong> (godkendte/registrerede timer) og <strong className="text-[#6B3FA0]">ledig kapacitet (matching)</strong> — kontaktpersonens kapacitet i timer/uge minus timer tildelt via aktive sager, som er det matching-algoritmen reelt tjekker. Rettes kapaciteten på kontaktpersonens profil, opdateres tallet her automatisk. De beregnes uafhængigt af hinanden — vises side om side så I kan se om de stemmer overens, før noget i selve matchingen ændres.
       </p>
 
       {loading ? (
@@ -202,6 +202,11 @@ export function AdminPlanningClient({ initialWeekStart, initialPlanned, initialP
             const variance = totalActual - totalPlanned
             const showVariance = isPastWeek && Math.abs(variance) >= 0.25
             const matchingMismatch = Math.abs(totalMatching - totalPlanned) >= 0.25
+            // totalMatching is hours already tied up in active cases — the
+            // free room matching actually checks is capacity minus that,
+            // not totalMatching itself. Showing totalMatching alone read as
+            // "how much room they have" when it's the opposite.
+            const freeMatchingCapacity = capacity != null ? Math.max(0, capacity - totalMatching) : null
             const isExpanded = expanded === pro.id
             return (
               <Card key={pro.id} className="!p-0 overflow-hidden">
@@ -234,9 +239,10 @@ export function AdminPlanningClient({ initialWeekStart, initialPlanned, initialP
                     )}
                     <span
                       className={`text-[11px] ${matchingMismatch ? 'text-[#6B3FA0] font-medium' : 'text-[#9B9589]'}`}
-                      title="Det tal matching-algoritmen i dag bruger til at vurdere denne kontaktpersons ledige kapacitet — vist til sammenligning, ændrer intet i matchingen"
+                      title={`Ledig kapacitet ifølge matching-systemet: kapacitet (${capacity != null ? `${capacity}t` : 'ikke sat'}) minus ${fmtHours(totalMatching)}t tildelt via aktive sager. Rettes kapaciteten på profilen, opdateres dette tal automatisk — ændrer intet i selve matchingen.`}
                     >
-                      Matching-kapacitet {fmtHours(totalMatching)}t
+                      Ledig kapacitet (matching) {freeMatchingCapacity != null ? `${fmtHours(freeMatchingCapacity)}t` : '—'}
+                      <span className="text-[#C8C0B0]"> ({fmtHours(totalMatching)}t tildelt{capacity != null ? ` af ${capacity}t` : ''})</span>
                     </span>
                   </div>
                 </button>

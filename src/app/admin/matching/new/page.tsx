@@ -98,7 +98,7 @@ export default async function NewMatchRunPage({
             </svg>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-semibold text-[#92660A] mb-0.5">
-                Der eksisterer allerede en aktiv match-kørsel for denne sag
+                Der findes allerede en match-kørsel for denne sag
               </div>
               <div className="text-xs text-[#B45309]">
                 Status: {existingRun.status === 'SCORED' ? 'Klar til tildeling' : 'Initieret'}
@@ -112,16 +112,18 @@ export default async function NewMatchRunPage({
                   <polyline points="9 18 15 12 9 6" />
                 </svg>
               </Link>
+              <p className="text-xs text-[#B45309] mt-2">
+                Kører du matching igen, erstattes den kørsel med en ny — f.eks. hvis en kontaktpersons kapacitet eller tilgængelighed er blevet rettet siden sidst.
+              </p>
             </div>
           </div>
         )}
 
-        {/* Start — only show when no active run exists */}
-        {!existingRun && (
-          <div className="max-w-sm">
-            <StartMatchButton caseId={case_id} caseLabel={caseLabel} />
-          </div>
-        )}
+        {/* Starting a new run always works — it supersedes any unassigned
+            existing run above, so a stale empty run never blocks a re-run. */}
+        <div className="max-w-sm">
+          <StartMatchButton caseId={case_id} caseLabel={caseLabel} isRerun={!!existingRun} />
+        </div>
       </ContentContainer>
     </div>
   )

@@ -25,6 +25,20 @@ export async function runMatchForCase(
 
   if (caseError || !caseRow) throw new Error('Case not found')
 
+  // A case's previous run can land at zero candidates (nobody in the pool
+  // passed v_professionals_available's filters yet) and there was no way
+  // back from that: it stays SCORED forever, which the "start a new run"
+  // page treated as "already handled" and refused to let admin re-run —
+  // even after the underlying professional data was fixed. Superseding any
+  // still-open run for this case (never assigned, so nothing depends on it)
+  // keeps exactly one live run per case and lets a re-run always proceed.
+  await db
+    .from('match_runs')
+    .update({ status: 'CANCELLED' })
+    .eq('case_id', caseId)
+    .is('final_assignment_id', null)
+    .in('status', ['INITIATED', 'SCORED'])
+
   const { data: complexityRows } = await db
     .from('case_complexity_factors')
     .select('*')

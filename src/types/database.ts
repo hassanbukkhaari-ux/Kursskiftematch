@@ -1,5 +1,15 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
+// Shape shared by the profile taxonomy lookup tables (profession_types,
+// competency_types, method_types, target_group_types, work_task_types,
+// language_types, certificate_types).
+type LookupTable = {
+  Row: { id: string; name: string; is_active: boolean; sort_order: number }
+  Insert: { id?: string; name: string; is_active?: boolean; sort_order?: number }
+  Update: { name?: string; is_active?: boolean; sort_order?: number }
+  Relationships: []
+}
+
 export type Database = {
   public: {
     Tables: {
@@ -143,6 +153,27 @@ export type Database = {
           daily_occupation: string | null
           experience_with_genders: ExperienceWithGender[]
           geography: string[]
+          job_title: string | null
+          phone: string | null
+          address: string | null
+          postal_code: string | null
+          city: string | null
+          region: string | null
+          profile_image_url: string | null
+          profession_type_id: string | null
+          specialization: string | null
+          authorization_note: string | null
+          bio: string | null
+          max_hours_per_week: number | null
+          available_now: boolean
+          can_take_acute: boolean
+          can_work_evening: boolean
+          can_work_weekend: boolean
+          can_work_night: boolean
+          has_drivers_license: boolean
+          has_own_car: boolean
+          can_transport_citizen: boolean
+          max_driving_radius_km: number | null
           created_at: string
           updated_at: string
           archived_at: string | null
@@ -167,6 +198,27 @@ export type Database = {
           daily_occupation?: string | null
           experience_with_genders?: ExperienceWithGender[]
           geography?: string[]
+          job_title?: string | null
+          phone?: string | null
+          address?: string | null
+          postal_code?: string | null
+          city?: string | null
+          region?: string | null
+          profile_image_url?: string | null
+          profession_type_id?: string | null
+          specialization?: string | null
+          authorization_note?: string | null
+          bio?: string | null
+          max_hours_per_week?: number | null
+          available_now?: boolean
+          can_take_acute?: boolean
+          can_work_evening?: boolean
+          can_work_weekend?: boolean
+          can_work_night?: boolean
+          has_drivers_license?: boolean
+          has_own_car?: boolean
+          can_transport_citizen?: boolean
+          max_driving_radius_km?: number | null
           created_at?: string
           updated_at?: string
           archived_at?: string | null
@@ -190,6 +242,27 @@ export type Database = {
           daily_occupation?: string | null
           experience_with_genders?: ExperienceWithGender[]
           geography?: string[]
+          job_title?: string | null
+          phone?: string | null
+          address?: string | null
+          postal_code?: string | null
+          city?: string | null
+          region?: string | null
+          profile_image_url?: string | null
+          profession_type_id?: string | null
+          specialization?: string | null
+          authorization_note?: string | null
+          bio?: string | null
+          max_hours_per_week?: number | null
+          available_now?: boolean
+          can_take_acute?: boolean
+          can_work_evening?: boolean
+          can_work_weekend?: boolean
+          can_work_night?: boolean
+          has_drivers_license?: boolean
+          has_own_car?: boolean
+          can_transport_citizen?: boolean
+          max_driving_radius_km?: number | null
           updated_at?: string
           archived_at?: string | null
         }
@@ -231,6 +304,7 @@ export type Database = {
           document_type: DocumentType
           status: DocumentStatus
           file_path: string | null
+          file_name: string | null
           file_hash: string | null
           uploaded_at: string | null
           uploaded_by: string | null
@@ -248,6 +322,7 @@ export type Database = {
           document_type: DocumentType
           status?: DocumentStatus
           file_path?: string | null
+          file_name?: string | null
           file_hash?: string | null
           uploaded_at?: string | null
           uploaded_by?: string | null
@@ -262,6 +337,7 @@ export type Database = {
         Update: {
           status?: DocumentStatus
           file_path?: string | null
+          file_name?: string | null
           file_hash?: string | null
           uploaded_at?: string | null
           uploaded_by?: string | null
@@ -802,7 +878,7 @@ export type Database = {
           case_id: string
           professional_id: string
           work_date: string
-          work_type: WorkType
+          work_type: string
           hours: number
           session_log_id: string | null
           status: HoursStatus
@@ -824,7 +900,7 @@ export type Database = {
           case_id: string
           professional_id: string
           work_date: string
-          work_type: WorkType
+          work_type: string
           hours: number
           session_log_id?: string | null
           status?: HoursStatus
@@ -843,7 +919,7 @@ export type Database = {
         }
         Update: {
           work_date?: string
-          work_type?: WorkType
+          work_type?: string
           hours?: number
           session_log_id?: string | null
           status?: HoursStatus
@@ -1089,6 +1165,348 @@ export type Database = {
         }
         Relationships: []
       }
+      case_documents: {
+        Row: {
+          id: string
+          case_id: string
+          file_name: string
+          storage_path: string
+          mime_type: string | null
+          size_bytes: number | null
+          description: string | null
+          uploaded_by: string
+          uploaded_at: string
+        }
+        Insert: {
+          id?: string
+          case_id: string
+          file_name: string
+          storage_path: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          description?: string | null
+          uploaded_by: string
+          uploaded_at?: string
+        }
+        Update: {
+          file_name?: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          description?: string | null
+        }
+        Relationships: []
+      }
+      status_report_requests: {
+        Row: {
+          id: string
+          case_id: string
+          professional_id: string
+          requested_by: string
+          report_type: 'MONTHLY' | 'EXTENDED' | 'FINAL'
+          deadline: string
+          message: string | null
+          status: 'PENDING' | 'ACKNOWLEDGED' | 'SUBMITTED' | 'REVIEWED'
+          promised_date: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          case_id: string
+          professional_id: string
+          requested_by: string
+          report_type: 'MONTHLY' | 'EXTENDED' | 'FINAL'
+          deadline: string
+          message?: string | null
+          status?: 'PENDING' | 'ACKNOWLEDGED' | 'SUBMITTED' | 'REVIEWED'
+          promised_date?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          report_type?: 'MONTHLY' | 'EXTENDED' | 'FINAL'
+          deadline?: string
+          message?: string | null
+          status?: 'PENDING' | 'ACKNOWLEDGED' | 'SUBMITTED' | 'REVIEWED'
+          promised_date?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      status_reports: {
+        Row: {
+          id: string
+          request_id: string
+          professional_id: string
+          case_id: string
+          period_start: string
+          period_end: string
+          everyday_situation: string | null
+          work_focus: string | null
+          progress_resources: string | null
+          challenges: string | null
+          concern_level: 'NONE' | 'MINOR' | 'CONCERN' | null
+          concern_text: string | null
+          collaboration: string | null
+          recommendation: string | null
+          overall_assessment: 'ON_TRACK' | 'ADJUSTING' | 'RECOMMEND_CLOSE' | null
+          overall_assessment_note: string | null
+          submitted_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          request_id: string
+          professional_id: string
+          case_id: string
+          period_start: string
+          period_end: string
+          everyday_situation?: string | null
+          work_focus?: string | null
+          progress_resources?: string | null
+          challenges?: string | null
+          concern_level?: 'NONE' | 'MINOR' | 'CONCERN' | null
+          concern_text?: string | null
+          collaboration?: string | null
+          recommendation?: string | null
+          overall_assessment?: 'ON_TRACK' | 'ADJUSTING' | 'RECOMMEND_CLOSE' | null
+          overall_assessment_note?: string | null
+          submitted_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          period_start?: string
+          period_end?: string
+          everyday_situation?: string | null
+          work_focus?: string | null
+          progress_resources?: string | null
+          challenges?: string | null
+          concern_level?: 'NONE' | 'MINOR' | 'CONCERN' | null
+          concern_text?: string | null
+          collaboration?: string | null
+          recommendation?: string | null
+          overall_assessment?: 'ON_TRACK' | 'ADJUSTING' | 'RECOMMEND_CLOSE' | null
+          overall_assessment_note?: string | null
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profession_types: LookupTable
+      competency_types: LookupTable
+      method_types: LookupTable
+      target_group_types: LookupTable
+      work_task_types: LookupTable
+      language_types: LookupTable
+      certificate_types: LookupTable
+      professional_competencies: {
+        Row: { professional_id: string; competency_type_id: string }
+        Insert: { professional_id: string; competency_type_id: string }
+        Update: { professional_id?: string; competency_type_id?: string }
+        Relationships: []
+      }
+      professional_methods: {
+        Row: { professional_id: string; method_type_id: string }
+        Insert: { professional_id: string; method_type_id: string }
+        Update: { professional_id?: string; method_type_id?: string }
+        Relationships: []
+      }
+      professional_target_groups: {
+        Row: { professional_id: string; target_group_type_id: string }
+        Insert: { professional_id: string; target_group_type_id: string }
+        Update: { professional_id?: string; target_group_type_id?: string }
+        Relationships: []
+      }
+      professional_work_tasks: {
+        Row: { professional_id: string; work_task_type_id: string }
+        Insert: { professional_id: string; work_task_type_id: string }
+        Update: { professional_id?: string; work_task_type_id?: string }
+        Relationships: []
+      }
+      professional_languages: {
+        Row: { professional_id: string; language_type_id: string }
+        Insert: { professional_id: string; language_type_id: string }
+        Update: { professional_id?: string; language_type_id?: string }
+        Relationships: []
+      }
+      professional_geography: {
+        Row: { professional_id: string; municipality_id: string }
+        Insert: { professional_id: string; municipality_id: string }
+        Update: { professional_id?: string; municipality_id?: string }
+        Relationships: []
+      }
+      professional_certificates: {
+        Row: {
+          id: string
+          professional_id: string
+          certificate_type_id: string | null
+          custom_name: string | null
+          file_url: string | null
+          file_name: string | null
+          issued_at: string | null
+          expires_at: string | null
+          status: 'ACTIVE' | 'EXPIRED' | 'EXPIRING_SOON'
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          professional_id: string
+          certificate_type_id?: string | null
+          custom_name?: string | null
+          file_url?: string | null
+          file_name?: string | null
+          issued_at?: string | null
+          expires_at?: string | null
+          status?: 'ACTIVE' | 'EXPIRED' | 'EXPIRING_SOON'
+          created_at?: string
+        }
+        Update: {
+          custom_name?: string | null
+          file_url?: string | null
+          file_name?: string | null
+          issued_at?: string | null
+          expires_at?: string | null
+          status?: 'ACTIVE' | 'EXPIRED' | 'EXPIRING_SOON'
+        }
+        Relationships: []
+      }
+      professional_consents: {
+        Row: {
+          id: string
+          professional_id: string
+          consent_type: 'GDPR' | 'PRIVACY' | 'CONFIDENTIALITY' | 'ETHICS' | 'TERMS' | 'DOCUMENT_STORAGE'
+          accepted_at: string
+          ip_address: string | null
+          document_version: string
+        }
+        Insert: {
+          id?: string
+          professional_id: string
+          consent_type: 'GDPR' | 'PRIVACY' | 'CONFIDENTIALITY' | 'ETHICS' | 'TERMS' | 'DOCUMENT_STORAGE'
+          accepted_at?: string
+          ip_address?: string | null
+          document_version?: string
+        }
+        Update: never
+        Relationships: []
+      }
+      cms_categories: {
+        Row: {
+          slug: string
+          name: string
+          description: string | null
+          sort_order: number
+        }
+        Insert: {
+          slug: string
+          name: string
+          description?: string | null
+          sort_order?: number
+        }
+        Update: {
+          name?: string
+          description?: string | null
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      cms_municipalities: {
+        Row: {
+          slug: string
+          name: string
+          county: string
+          population_approx: number | null
+          hero_title: string
+          hero_intro: string
+          local_context: string
+          services_description: string
+          meta_title: string
+          meta_description: string
+          sort_order: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          slug: string
+          name: string
+          county?: string
+          population_approx?: number | null
+          hero_title: string
+          hero_intro: string
+          local_context: string
+          services_description: string
+          meta_title: string
+          meta_description: string
+          sort_order?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          name?: string
+          county?: string
+          population_approx?: number | null
+          hero_title?: string
+          hero_intro?: string
+          local_context?: string
+          services_description?: string
+          meta_title?: string
+          meta_description?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cms_articles: {
+        Row: {
+          id: string
+          slug: string
+          title: string
+          excerpt: string
+          content: string
+          category: string
+          tags: string[]
+          is_published: boolean
+          published_at: string | null
+          reading_time_minutes: number
+          meta_title: string | null
+          meta_description: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          slug: string
+          title: string
+          excerpt: string
+          content: string
+          category: string
+          tags?: string[]
+          is_published?: boolean
+          published_at?: string | null
+          reading_time_minutes?: number
+          meta_title?: string | null
+          meta_description?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          slug?: string
+          title?: string
+          excerpt?: string
+          content?: string
+          category?: string
+          tags?: string[]
+          is_published?: boolean
+          published_at?: string | null
+          reading_time_minutes?: number
+          meta_title?: string | null
+          meta_description?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       v_cases_with_professional: {
@@ -1180,12 +1598,24 @@ export type DocumentType =
   | 'CV'
   | 'CRIMINAL_RECORD'
   | 'CHILD_PROTECTION'
+  | 'CHILD_RECORD'
   | 'DRIVING_LICENSE'
   | 'QUALIFICATION'
+  | 'EDUCATION'
   | 'INSURANCE'
+  | 'AUTHORIZATION'
   | 'OTHER'
 
-export type DocumentStatus = 'PENDING_UPLOAD' | 'UNVERIFIED' | 'VERIFIED' | 'ARCHIVED'
+export type DocumentStatus =
+  | 'PENDING_UPLOAD'
+  | 'UNVERIFIED'
+  | 'VERIFIED'
+  | 'ARCHIVED'
+  | 'MISSING'
+  | 'UPLOADED'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'EXPIRING_SOON'
 
 export type CaseStatus = 'OPEN' | 'MATCHED' | 'PROPOSED' | 'ACTIVE' | 'COMPLETED' | 'ARCHIVED'
 export type CaseUrgency = 'NORMAL' | 'HURTIG' | 'AKUT'
@@ -1277,3 +1707,18 @@ export type AuditEvent = Database['public']['Tables']['audit_events']['Row']
 export type NotificationLog = Database['public']['Tables']['notification_log']['Row']
 export type DeletionSchedule = Database['public']['Tables']['deletion_schedules']['Row']
 export type CaseProposal = Database['public']['Tables']['case_proposals']['Row']
+export type CaseDocument = Database['public']['Tables']['case_documents']['Row']
+export type StatusReportRequest = Database['public']['Tables']['status_report_requests']['Row']
+export type StatusReport = Database['public']['Tables']['status_reports']['Row']
+export type ProfessionTypeRow = Database['public']['Tables']['profession_types']['Row']
+export type CompetencyTypeRow = Database['public']['Tables']['competency_types']['Row']
+export type MethodTypeRow = Database['public']['Tables']['method_types']['Row']
+export type TargetGroupTypeRow = Database['public']['Tables']['target_group_types']['Row']
+export type WorkTaskTypeRow = Database['public']['Tables']['work_task_types']['Row']
+export type LanguageTypeRow = Database['public']['Tables']['language_types']['Row']
+export type CertificateTypeRow = Database['public']['Tables']['certificate_types']['Row']
+export type ProfessionalCertificate = Database['public']['Tables']['professional_certificates']['Row']
+export type ProfessionalConsent = Database['public']['Tables']['professional_consents']['Row']
+export type CmsCategory = Database['public']['Tables']['cms_categories']['Row']
+export type CmsMunicipality = Database['public']['Tables']['cms_municipalities']['Row']
+export type CmsArticle = Database['public']['Tables']['cms_articles']['Row']

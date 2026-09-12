@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition, useMemo, useEffect } from 'react'
+import { useState, useTransition, useMemo } from 'react'
 import { MatchCard, type MatchCandidate } from '@/components/matching/match-card'
 import { ProfessionalProfileDrawer, type CaseRequirements } from '@/components/matching/professional-profile-drawer'
 import { Button } from '@/components/ui/button'
@@ -24,20 +24,6 @@ type FilterState = {
   search: string
 }
 
-interface EligibilityRow {
-  professional_id: string
-  full_name: string
-  availability_status: string
-  availability_ok: boolean
-  current_assignments: number
-  max_concurrent_cases: number | null
-  case_load_ok: boolean
-  current_hours_assigned: number
-  capacity_hours_week: number | null
-  capacity_ok: boolean
-  eligible: boolean
-}
-
 export function MatchingUI({ candidates, runId, caseId, runStatus, caseData }: MatchingUIProps) {
   const [selected, setSelected] = useState<MatchCandidate | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -45,18 +31,6 @@ export function MatchingUI({ candidates, runId, caseId, runStatus, caseData }: M
   const [assignedId, setAssignedId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [confirmCandidate, setConfirmCandidate] = useState<MatchCandidate | null>(null)
-  const [eligibility, setEligibility] = useState<EligibilityRow[] | null>(null)
-  const [eligibilityLoading, setEligibilityLoading] = useState(false)
-
-  useEffect(() => {
-    if (candidates.length > 0) return
-    setEligibilityLoading(true)
-    fetch(`/api/cases/${caseId}/eligibility`)
-      .then(res => res.ok ? res.json() : null)
-      .then(json => setEligibility(json?.breakdown ?? null))
-      .catch(() => setEligibility(null))
-      .finally(() => setEligibilityLoading(false))
-  }, [candidates.length, caseId])
   const [filters, setFilters] = useState<FilterState>({
     minScore: 0,
     availability: '',
@@ -248,48 +222,13 @@ export function MatchingUI({ candidates, runId, caseId, runStatus, caseData }: M
               <span className="text-sm font-semibold text-[#92660A]">Aktiv søgning</span>
             </div>
             <h3 className="font-serif text-lg font-semibold text-[#1A1F1C] mb-2">Kursskifte arbejder aktivt på sagen</h3>
-            <p className="text-sm text-[#6B7569] max-w-sm mb-4">Ingen kontaktpersoner opfyldte kravene ved denne kørsel. Har du rettet en kandidats kapacitet eller tilgængelighed siden, kan du køre matching igen.</p>
+            <p className="text-sm text-[#6B7569] max-w-sm mb-4">Der er ingen aktive kontaktpersoner i systemet overhovedet endnu — så snart en er oprettet og aktiveret, vil de vises her, uanset om de opfylder alle krav.</p>
             <Link
               href={`/admin/matching/new?case_id=${caseId}`}
               className="inline-flex items-center gap-1.5 h-10 px-4 rounded-xl bg-[#1C3829] text-white text-sm font-semibold hover:bg-[#2D5840] transition-colors"
             >
               Kør matching igen
             </Link>
-
-            {/* Diagnostic breakdown — exactly why each active professional
-                does or doesn't qualify, instead of a silent zero. */}
-            <div className="w-full max-w-2xl mt-8 text-left">
-              <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-3">
-                Hvorfor kom ingen kandidater med?
-              </div>
-              {eligibilityLoading ? (
-                <div className="text-sm text-[#9B9589]">Tjekker aktive kontaktpersoner...</div>
-              ) : !eligibility || eligibility.length === 0 ? (
-                <div className="text-sm text-[#9B9589]">Der er ingen aktive kontaktpersoner i systemet overhovedet.</div>
-              ) : (
-                <div className="space-y-2">
-                  {eligibility.map(row => (
-                    <div key={row.professional_id} className="rounded-xl border border-[#E0DAD0] bg-white px-4 py-3">
-                      <div className="flex items-center justify-between gap-2 mb-1.5">
-                        <span className="text-sm font-medium text-[#1A1F1C]">{row.full_name}</span>
-                        <Badge variant={row.eligible ? 'green' : 'red'}>{row.eligible ? 'Kvalificeret' : 'Ikke kvalificeret'}</Badge>
-                      </div>
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
-                        <span className={row.availability_ok ? 'text-[#6B7569]' : 'text-red-600 font-medium'}>
-                          {row.availability_ok ? '✓' : '✗'} Tilgængelighed: {row.availability_status ?? '—'}
-                        </span>
-                        <span className={row.case_load_ok ? 'text-[#6B7569]' : 'text-red-600 font-medium'}>
-                          {row.case_load_ok ? '✓' : '✗'} Sager: {row.current_assignments}/{row.max_concurrent_cases ?? '—'}
-                        </span>
-                        <span className={row.capacity_ok ? 'text-[#6B7569]' : 'text-red-600 font-medium'}>
-                          {row.capacity_ok ? '✓' : '✗'} Kapacitet: {row.current_hours_assigned}t/{row.capacity_hours_week ?? '—'}t
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
           </div>
         ) : filtered.length === 0 ? (
           <EmptyState
@@ -343,6 +282,11 @@ export function MatchingUI({ candidates, runId, caseId, runStatus, caseData }: M
               </svg>
             </div>
             <h3 className="font-serif text-lg font-semibold text-[#1A1F1C] mb-1">Bekræft tildeling</h3>
+            {confirmCandidate.eligible === false && (
+              <div className="mb-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                <span className="font-semibold">Ikke kvalificeret automatisk:</span> {confirmCandidate.ineligibility_reason ?? 'ukendt årsag'}. Du tildeler alligevel, som et bevidst valg.
+              </div>
+            )}
             <p className="text-sm text-[#6B7569] mb-6 leading-relaxed">
               Er du sikker på, at du vil tildele{' '}
               <strong className="text-[#1A1F1C]">

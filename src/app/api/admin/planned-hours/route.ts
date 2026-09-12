@@ -14,7 +14,15 @@ export async function GET(request: NextRequest) {
 
     const svc = createServiceClient() as any
 
-    const [{ data: planned, error: plannedError }, { data: professionals, error: proError }] = await Promise.all([
+    const weekEnd = new Date(`${weekStart}T00:00:00`)
+    weekEnd.setDate(weekEnd.getDate() + 6)
+    const weekEndStr = weekEnd.toISOString().slice(0, 10)
+
+    const [
+      { data: planned, error: plannedError },
+      { data: professionals, error: proError },
+      { data: actual, error: actualError },
+    ] = await Promise.all([
       svc
         .from('planned_hours')
         .select('id, case_id, professional_id, planned_hours, cases!inner(citizen_initials, citizen_age_range)')
@@ -23,12 +31,26 @@ export async function GET(request: NextRequest) {
         .from('professionals')
         .select('id, capacity_hours_week, profiles!inner(full_name)')
         .eq('status', 'ACTIVE'),
+      // Actual hours logged in the same calendar week, across all professionals —
+      // shown alongside the plan so admin can see whether it was actually followed.
+      svc
+        .from('registered_hours')
+        .select('professional_id, case_id, hours')
+        .gte('work_date', weekStart)
+        .lte('work_date', weekEndStr)
+        .neq('status', 'REJECTED')
+        .is('archived_at', null),
     ])
 
-    if (plannedError || proError) {
-      return badRequest((plannedError ?? proError)?.message ?? 'Kunne ikke hente data')
+    if (plannedError || proError || actualError) {
+      return badRequest((plannedError ?? proError ?? actualError)?.message ?? 'Kunne ikke hente data')
     }
 
-    return ok({ week_start: weekStart, planned: planned ?? [], professionals: professionals ?? [] })
+    return ok({
+      week_start: weekStart,
+      planned: planned ?? [],
+      professionals: professionals ?? [],
+      actual: actual ?? [],
+    })
   })
 }

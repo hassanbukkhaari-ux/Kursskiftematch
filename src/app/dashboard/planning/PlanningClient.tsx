@@ -2,11 +2,12 @@
 
 import { useState, useMemo } from 'react'
 import { EmptyState } from '@/components/ui/empty-state'
-import type { PlanningCase, PlannedHoursRow } from './page'
+import type { PlanningCase, PlannedHoursRow, ActualHoursRow } from './page'
 
 interface Props {
   cases: PlanningCase[]
   initialPlanned: PlannedHoursRow[]
+  actualHours: ActualHoursRow[]
   weekStarts: string[]
   capacityHoursWeek: number | null
 }
@@ -23,7 +24,15 @@ function weekRange(weekStart: string) {
   return `${fmt(monday)}–${fmt(sunday)}`
 }
 
-export function PlanningClient({ cases, initialPlanned, weekStarts, capacityHoursWeek }: Props) {
+function mondayOfDate(dateStr: string) {
+  const d = new Date(`${dateStr}T00:00:00`)
+  const day = d.getDay()
+  const diff = day === 0 ? -6 : 1 - day
+  d.setDate(d.getDate() + diff)
+  return d.toISOString().slice(0, 10)
+}
+
+export function PlanningClient({ cases, initialPlanned, actualHours, weekStarts, capacityHoursWeek }: Props) {
   const [values, setValues] = useState<Record<string, number>>(() => {
     const map: Record<string, number> = {}
     for (const p of initialPlanned) map[keyOf(p.case_id, p.week_start)] = Number(p.planned_hours)
@@ -32,6 +41,19 @@ export function PlanningClient({ cases, initialPlanned, weekStarts, capacityHour
   const [savingKey, setSavingKey] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  const todayMonday = useMemo(() => mondayOfDate(new Date().toISOString().slice(0, 10)), [])
+
+  // Bucket actual (registered) hours into the same Monday-keyed weeks as the plan.
+  const actuals = useMemo(() => {
+    const map: Record<string, number> = {}
+    for (const r of actualHours) {
+      const ws = mondayOfDate(r.work_date)
+      const k = keyOf(r.case_id, ws)
+      map[k] = (map[k] ?? 0) + Number(r.hours)
+    }
+    return map
+  }, [actualHours])
+
   const weekTotals = useMemo(() => {
     const totals: Record<string, number> = {}
     for (const ws of weekStarts) {
@@ -39,6 +61,23 @@ export function PlanningClient({ cases, initialPlanned, weekStarts, capacityHour
     }
     return totals
   }, [values, cases, weekStarts])
+
+  // Cumulative variance per case, for weeks that have started (current or past)
+  // — future weeks have no actual yet, so they're excluded from this comparison.
+  const caseVariance = useMemo(() => {
+    const variance: Record<string, number> = {}
+    for (const c of cases) {
+      let v = 0
+      for (const ws of weekStarts) {
+        if (ws > todayMonday) continue
+        const planned = values[keyOf(c.id, ws)] ?? 0
+        const actual = actuals[keyOf(c.id, ws)] ?? 0
+        v += actual - planned
+      }
+      variance[c.id] = v
+    }
+    return variance
+  }, [values, actuals, cases, weekStarts, todayMonday])
 
   const caseTotals = useMemo(() => {
     const totals: Record<string, number> = {}
@@ -101,7 +140,7 @@ export function PlanningClient({ cases, initialPlanned, weekStarts, capacityHour
                 Borger
               </th>
               {weekStarts.map((ws, i) => (
-                <th key={ws} className="text-center pb-3 px-2 min-w-[90px]">
+                <th key={ws} className="text-center pb-3 px-2 min-w-[92px]">
                   <div className="text-xs font-semibold text-[#1A1F1C]">
                     {i === 0 ? 'Denne uge' : `Om ${i} ${i === 1 ? 'uge' : 'uger'}`}
                   </div>
@@ -116,6 +155,7 @@ export function PlanningClient({ cases, initialPlanned, weekStarts, capacityHour
                 ? Math.max(0, c.active_grant_hours - (c.approved_hours_used ?? 0))
                 : null
               const overPlanned = grantRemaining != null && caseTotals[c.id] > grantRemaining
+              const variance = caseVariance[c.id] ?? 0
               return (
                 <tr key={c.id}>
                   <td className="py-2 pr-4 sticky left-0 bg-[#F6F3EE] z-10 align-top">
@@ -130,12 +170,23 @@ export function PlanningClient({ cases, initialPlanned, weekStarts, capacityHour
                           : `${grantRemaining}t tilbage på bevilling`}
                       </div>
                     )}
+                    {Math.round(Math.abs(variance) * 4) / 4 > 0 && (
+                      <div className={`text-[11px] mt-0.5 font-medium ${variance > 0 ? 'text-amber-700' : 'text-[#92660A]'}`}>
+                        {variance > 0
+                          ? `${variance.toFixed(2).replace(/\.?0+$/, '')}t mere brugt end planlagt`
+                          : `${Math.abs(variance).toFixed(2).replace(/\.?0+$/, '')}t mindre brugt end planlagt`}
+                      </div>
+                    )}
                   </td>
                   {weekStarts.map(ws => {
                     const k = keyOf(c.id, ws)
                     const val = values[k] ?? 0
+                    const hasHappened = ws <= todayMonday
+                    const actual = actuals[k] ?? 0
+                    const delta = actual - val
+                    const isFullyPast = ws < todayMonday
                     return (
-                      <td key={ws} className="py-2 px-2 text-center">
+                      <td key={ws} className="py-2 px-2 text-center align-top">
                         <input
                           type="number"
                           min={0}
@@ -150,6 +201,14 @@ export function PlanningClient({ cases, initialPlanned, weekStarts, capacityHour
                             savingKey === k ? 'border-[#1C3829]' : 'border-[#E0DAD0] focus:border-[#1C3829]',
                           ].join(' ')}
                         />
+                        {hasHappened && (actual > 0 || val > 0) && (
+                          <div className={[
+                            'text-[10px] mt-1',
+                            !isFullyPast ? 'text-[#9B9589]' : delta === 0 ? 'text-[#9B9589]' : delta > 0 ? 'text-amber-700 font-medium' : 'text-[#92660A] font-medium',
+                          ].join(' ')}>
+                            {actual}t reg.{isFullyPast && delta !== 0 ? ` (${delta > 0 ? '+' : ''}${delta.toFixed(2).replace(/\.?0+$/, '')})` : ''}
+                          </div>
+                        )}
                       </td>
                     )
                   })}
@@ -184,7 +243,8 @@ export function PlanningClient({ cases, initialPlanned, weekStarts, capacityHour
       </div>
 
       <p className="text-xs text-[#9B9589] mt-4">
-        Timerne gemmes automatisk når du forlader et felt. Dette er en planlægning — de faktiske timer registreres stadig under Timeregistrering.
+        Timerne gemmes automatisk når du forlader et felt. "Reg." viser hvad du faktisk har registreret den uge under Timeregistrering —
+        brug det til at justere kommende ugers plan, hvis I ligger foran eller bagud.
       </p>
     </div>
   )

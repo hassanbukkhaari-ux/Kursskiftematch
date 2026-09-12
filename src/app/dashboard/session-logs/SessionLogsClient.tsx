@@ -4,14 +4,8 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { SESSION_LOG_STATUS_LABEL as STATUS_LABEL, SESSION_LOG_STATUS_BADGE as STATUS_BADGE } from '@/lib/labels'
 import type { SessionLogRow, CaseOption } from './page'
-
-const STATUS_LABEL: Record<string, string> = {
-  DRAFT: 'Oprettet', FINAL: 'Afsluttet', CORRECTED: 'Korrigeret', ARCHIVED: 'Arkiveret',
-}
-const STATUS_BADGE: Record<string, 'default' | 'green' | 'amber'> = {
-  DRAFT: 'default', FINAL: 'green', CORRECTED: 'amber', ARCHIVED: 'default',
-}
 
 const MOOD_OPTIONS = [
   { value: 'VERY_POSITIVE', label: 'Meget positiv' },

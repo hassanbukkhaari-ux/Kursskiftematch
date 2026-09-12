@@ -109,7 +109,14 @@ export function OnboardingWizard({
   function canAdvance(): boolean {
     if (step === 0) return CONSENT_ITEMS.every(c => consents.has(c.type))
     if (step === 1) return phone.trim().length >= 8 && jobTitle.trim().length >= 2
-    if (step === 2) return selectedProfessions.size > 0
+    if (step === 2) {
+      if (selectedProfessions.size === 0) return false
+      const primaryId = Array.from(selectedProfessions)[0]
+      const primaryType = professionTypes.find(t => t.id === primaryId)
+      const isPrimaryOther = primaryType?.name?.toLowerCase().includes('andet') || primaryType?.name?.toLowerCase().includes('other')
+      if (isPrimaryOther) return professionOtherLabel.trim().length > 0
+      return true
+    }
     if (step === 3) return selectedCompetencies.size > 0
     if (step === 4) return selectedGeo.size > 0
     return false

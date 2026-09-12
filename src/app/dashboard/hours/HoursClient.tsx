@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { WORK_TYPE_LABEL } from '@/lib/labels'
 import type { HoursRow, CaseOption } from './page'
 
 const STATUS_LABEL: Record<string, string> = {
@@ -13,16 +14,6 @@ const STATUS_LABEL: Record<string, string> = {
 const STATUS_BADGE: Record<string, 'default' | 'green' | 'amber' | 'red'> = {
   PENDING: 'default', SUBMITTED: 'amber', APPROVED: 'green',
   REJECTED: 'red', OUTSIDE_GRANT: 'default',
-}
-
-const WORK_TYPE_LABEL: Record<string, string> = {
-  DIRECT_SESSION: 'Direkte session',
-  TRANSPORT: 'Transport',
-  DOCUMENTATION: 'Dokumentation',
-  COORDINATION: 'Koordinering',
-  CRISIS_RESPONSE: 'Krisehåndtering',
-  TRAINING: 'Kompetenceudvikling',
-  OTHER: 'Andet',
 }
 
 // DIRECT_SESSION is auto-created from session logs — not available for manual entry
@@ -64,7 +55,9 @@ export function HoursClient({ initialHours, cases, defaultCaseId }: Props) {
 
   const filtered = filter === 'ALL' ? initialHours : initialHours.filter(h => h.status === filter)
 
-  const totalHours = filtered.reduce((sum, h) => sum + h.hours, 0)
+  const totalHours = filtered
+    .filter(h => h.status !== 'REJECTED')
+    .reduce((sum, h) => sum + h.hours, 0)
 
   function openNew() {
     setForm({ ...EMPTY_FORM, case_id: defaultCaseId ?? '' })

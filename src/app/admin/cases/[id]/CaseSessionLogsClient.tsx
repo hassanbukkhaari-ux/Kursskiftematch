@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { SESSION_LOG_STATUS_LABEL as STATUS_LABEL, SESSION_LOG_STATUS_BADGE as STATUS_BADGE } from '@/lib/labels'
 
 export interface CaseSessionLog {
   id: string
@@ -16,12 +17,6 @@ export interface CaseSessionLog {
   professional_name: string
 }
 
-const STATUS_LABEL: Record<string, string> = {
-  DRAFT: 'Oprettet', FINAL: 'Afsluttet', CORRECTED: 'Korrigeret', ARCHIVED: 'Arkiveret',
-}
-const STATUS_BADGE: Record<string, 'default' | 'green' | 'amber'> = {
-  DRAFT: 'default', FINAL: 'green', CORRECTED: 'amber', ARCHIVED: 'default',
-}
 const MOOD_LABEL: Record<string, string> = {
   VERY_POSITIVE: 'Meget positiv', POSITIVE: 'Positiv', NEUTRAL: 'Neutral',
   NEGATIVE: 'Negativ', VERY_NEGATIVE: 'Meget negativ', VARIED: 'Varierende',

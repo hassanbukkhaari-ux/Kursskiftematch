@@ -82,7 +82,8 @@ export async function runMatchForCase(
       id, experience_years, target_age_groups, max_complexity_level,
       capacity_hours_week, max_concurrent_cases, availability_status,
       qualifications, gender, experience_with_genders, can_transport_citizen,
-      has_drivers_license, has_own_car, can_take_acute, geography
+      has_drivers_license, has_own_car, can_take_acute, geography,
+      can_work_evening, can_work_weekend, can_work_night
     `)
     .eq('status', 'ACTIVE')
 
@@ -106,6 +107,21 @@ export async function runMatchForCase(
     const list = targetGroupsByPro.get(row.professional_id) ?? []
     if (row.target_group_types?.name) list.push(row.target_group_types.name)
     targetGroupsByPro.set(row.professional_id, list)
+  }
+
+  // Each candidate's stated languages, fetched the same way as target-group
+  // experience — a batched join against the lookup table's names.
+  const { data: languageRows } = proIds.length > 0
+    ? await (db as any)
+        .from('professional_languages')
+        .select('professional_id, language_types(name)')
+        .in('professional_id', proIds)
+    : { data: [] }
+  const languagesByPro = new Map<string, string[]>()
+  for (const row of languageRows ?? []) {
+    const list = languagesByPro.get(row.professional_id) ?? []
+    if (row.language_types?.name) list.push(row.language_types.name)
+    languagesByPro.set(row.professional_id, list)
   }
 
   // current_assignments / current_hours_assigned — mirrors exactly what
@@ -142,6 +158,10 @@ export async function runMatchForCase(
     citizen_gender: caseRow.citizen_gender,
     transport_needs: caseRow.transport_needs,
     geographical_area: caseRow.geographical_area,
+    required_languages: caseRow.required_languages,
+    requires_evening: caseRow.requires_evening,
+    requires_weekend: caseRow.requires_weekend,
+    requires_night: caseRow.requires_night,
   }
 
   const scored = (professionals || []).map(pro => {
@@ -181,6 +201,10 @@ export async function runMatchForCase(
         has_own_car: pro.has_own_car ?? undefined,
         can_take_acute: pro.can_take_acute ?? undefined,
         geography: pro.geography ?? undefined,
+        languages: languagesByPro.get(pro.id) ?? undefined,
+        can_work_evening: pro.can_work_evening ?? undefined,
+        can_work_weekend: pro.can_work_weekend ?? undefined,
+        can_work_night: pro.can_work_night ?? undefined,
       },
       caseInput,
     )

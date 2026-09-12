@@ -378,6 +378,9 @@ export type Database = {
           required_languages: string[] | null
           transport_needs: 'JA' | 'NEJ' | null
           geographical_area: string | null
+          requires_evening: boolean
+          requires_weekend: boolean
+          requires_night: boolean
           created_at: string
           updated_at: string
           archived_at: string | null
@@ -410,6 +413,9 @@ export type Database = {
           required_languages?: string[] | null
           transport_needs?: 'JA' | 'NEJ' | null
           geographical_area?: string | null
+          requires_evening?: boolean
+          requires_weekend?: boolean
+          requires_night?: boolean
           created_at?: string
           updated_at?: string
           archived_at?: string | null
@@ -441,6 +447,9 @@ export type Database = {
           required_languages?: string[] | null
           transport_needs?: 'JA' | 'NEJ' | null
           geographical_area?: string | null
+          requires_evening?: boolean
+          requires_weekend?: boolean
+          requires_night?: boolean
           updated_at?: string
           archived_at?: string | null
           data_retention_expires_at?: string | null
@@ -738,6 +747,7 @@ export type Database = {
           created_by: string
           created_at: string
           completed_at: string | null
+          overlap_meeting_completed_at: string | null
         }
         Insert: {
           id?: string
@@ -753,6 +763,7 @@ export type Database = {
           created_by: string
           created_at?: string
           completed_at?: string | null
+          overlap_meeting_completed_at?: string | null
         }
         Update: {
           incoming_professional_id?: string | null
@@ -762,6 +773,7 @@ export type Database = {
           session_logs_transferred?: boolean
           transferred_session_logs?: string[] | null
           completed_at?: string | null
+          overlap_meeting_completed_at?: string | null
         }
         Relationships: []
       }

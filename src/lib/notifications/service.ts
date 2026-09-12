@@ -88,11 +88,11 @@ export function adminEmailBody(type: NotificationType, entityId: string): { subj
   const map: Record<NotificationType, { subject: string; body: string }> = {
     INQUIRY_RECEIVED: {
       subject: 'Ny henvendelse modtaget — Kursskifte',
-      body: `En ny henvendelse er modtaget og afventer behandling.\n\nHenvendelses-ID: ${entityId}\n\nSe henvendelsen her:\n${base}/admin/inquiries`,
+      body: `En ny henvendelse er modtaget og afventer behandling.\n\nHenvendelses-ID: ${entityId}\n\nOpret sagen her:\n${base}/admin/cases`,
     },
     PROFESSIONAL_APPLICATION_RECEIVED: {
       subject: 'Ny fagperson-ansøgning — Kursskifte',
-      body: `En ny fagperson-ansøgning er modtaget og afventer godkendelse.\n\nHenvendelses-ID: ${entityId}\n\nSe ansøgningen her:\n${base}/admin/inquiries`,
+      body: `En ny fagperson-ansøgning er modtaget og afventer godkendelse.\n\nFagperson-ID: ${entityId}\n\nSe ansøgningen her:\n${base}/admin/professionals`,
     },
     CASE_CREATED: {
       subject: 'Ny sag oprettet — Kursskifte',

@@ -48,6 +48,21 @@ export async function POST(
       return badRequest(`Handover requires an ACTIVE case, current status: ${caseData.status}`)
     }
 
+    // Nothing previously stopped a second handover being initiated while one
+    // was already open — the case stays ACTIVE throughout a handover, so the
+    // button was never hidden. Two concurrent handovers for the same case
+    // makes "which one is real" ambiguous.
+    const { data: existingHandover } = await db
+      .from('case_handovers')
+      .select('id')
+      .eq('case_id', id)
+      .in('status', ['INITIATED', 'IN_PROGRESS'])
+      .maybeSingle()
+
+    if (existingHandover) {
+      return badRequest('Der er allerede en igangværende overdragelse for denne sag — fuldfør eller annuller den først.')
+    }
+
     // Get current active assignment — outgoing professional
     const { data: assignment, error: assignError } = await db
       .from('case_assignments')

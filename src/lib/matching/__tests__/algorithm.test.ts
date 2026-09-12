@@ -443,6 +443,28 @@ describe('Logistics fit', () => {
     expect(scoreCandidate(proWithoutCoverage, c).logistics_score).toBe(0)
   })
 
+  it('checks languages only when both the case requires one and the professional has stated any', () => {
+    const proWithNoData = baseProfessional({ languages: [] })
+    const proWithMatch = baseProfessional({ languages: ['Arabisk', 'Dansk'] })
+    const proWithoutMatch = baseProfessional({ languages: ['Polsk'] })
+    const c = baseCase({ required_languages: ['Arabisk', 'Somali'] })
+    expect(scoreCandidate(proWithNoData, c).logistics_score).toBeNull()
+    expect(scoreCandidate(proWithMatch, c).logistics_score).toBe(100)
+    expect(scoreCandidate(proWithoutMatch, c).logistics_score).toBe(0)
+  })
+
+  it('checks evening/weekend/night availability only when the case requires it', () => {
+    const proNone = baseProfessional({ can_work_evening: false, can_work_weekend: false, can_work_night: false })
+    const proAll = baseProfessional({ can_work_evening: true, can_work_weekend: true, can_work_night: true })
+    expect(scoreCandidate(proNone, baseCase({})).logistics_score).toBeNull()
+    expect(scoreCandidate(proNone, baseCase({ requires_evening: true })).logistics_score).toBe(0)
+    expect(scoreCandidate(proAll, baseCase({ requires_evening: true })).logistics_score).toBe(100)
+    expect(scoreCandidate(proNone, baseCase({ requires_weekend: true })).logistics_score).toBe(0)
+    expect(scoreCandidate(proAll, baseCase({ requires_weekend: true })).logistics_score).toBe(100)
+    expect(scoreCandidate(proNone, baseCase({ requires_night: true })).logistics_score).toBe(0)
+    expect(scoreCandidate(proAll, baseCase({ requires_night: true })).logistics_score).toBe(100)
+  })
+
   it('averages multiple applicable checks together', () => {
     const pro = baseProfessional({
       can_transport_citizen: true, has_drivers_license: true, has_own_car: true, // passes

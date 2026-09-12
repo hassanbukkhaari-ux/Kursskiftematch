@@ -1,6 +1,11 @@
 import { NextRequest } from 'next/server'
+import { z } from 'zod'
 import { ok, badRequest, notFound, serverError, withAdminAuth } from '@/lib/api-response'
 import { logAuditEvent } from '@/lib/audit'
+
+const CompleteSchema = z.object({
+  overlap_meeting_completed: z.boolean().default(false),
+})
 
 // PATCH /api/cases/:id/handover/:handoverId/complete — WF-008 completion
 export async function PATCH(
@@ -9,6 +14,11 @@ export async function PATCH(
 ) {
   const { id, handoverId } = await params
   return withAdminAuth(request, async (userId) => {
+    let body: unknown = {}
+    try { body = await request.json() } catch { /* body is optional */ }
+    const parsed = CompleteSchema.safeParse(body)
+    if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
+
     const { createClient } = await import('@/lib/supabase/server')
     const db = await createClient()
 
@@ -23,6 +33,15 @@ export async function PATCH(
     if (handoverError || !handover) return notFound('Handover')
     if (!['INITIATED', 'IN_PROGRESS'].includes(handover.status)) {
       return badRequest(`Cannot complete a handover with status: ${handover.status}`)
+    }
+
+    // A named replacement is only meaningful with a confirmed overlap
+    // meeting between outgoing and incoming professional — the two
+    // mandatory steps CLAUDE.md ties together. No named replacement means
+    // the case is reverting to the open pool instead, where an overlap
+    // meeting has nobody to be held with.
+    if (handover.incoming_professional_id && !parsed.data.overlap_meeting_completed) {
+      return badRequest('Overlapsmøde skal bekræftes afholdt, før overdragelsen kan fuldføres.')
     }
 
     const now = new Date().toISOString()
@@ -58,7 +77,11 @@ export async function PATCH(
     // Mark handover completed
     const { data: updated, error: updateError } = await db
       .from('case_handovers')
-      .update({ status: 'COMPLETED', completed_at: now })
+      .update({
+        status: 'COMPLETED',
+        completed_at: now,
+        overlap_meeting_completed_at: parsed.data.overlap_meeting_completed ? now : null,
+      })
       .eq('id', handoverId)
       .select()
       .single()

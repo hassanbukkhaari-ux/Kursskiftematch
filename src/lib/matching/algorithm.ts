@@ -32,6 +32,10 @@ export interface ProfessionalInput {
   has_own_car?: boolean
   can_take_acute?: boolean
   geography?: string[]
+  languages?: string[]
+  can_work_evening?: boolean
+  can_work_weekend?: boolean
+  can_work_night?: boolean
 }
 
 export interface CaseInput {
@@ -53,6 +57,10 @@ export interface CaseInput {
   citizen_gender?: 'MALE' | 'FEMALE' | 'OTHER' | null
   transport_needs?: 'JA' | 'NEJ' | null
   geographical_area?: string | null
+  required_languages?: string[] | null
+  requires_evening?: boolean
+  requires_weekend?: boolean
+  requires_night?: boolean
 }
 
 export interface MatchScores {
@@ -195,7 +203,8 @@ interface LogisticsCheck {
 
 // Every point of contact between a case's stated requirements and a
 // professional's own profile that has nothing to do with qualifications or
-// raw capacity: gender preference, transport, acute readiness, geography.
+// raw capacity: gender preference, transport, acute readiness, geography,
+// language, and evening/weekend/night availability.
 // Each check only applies when the case actually states the requirement —
 // a professional who hasn't filled in an optional field is never treated
 // as failing it, only as not applicable. Returns null (excluded from
@@ -229,6 +238,26 @@ function computeLogisticsChecks(professional: ProfessionalInput, caseData: CaseI
     if (geography.length > 0) {
       checks.push({ label: 'Dækker sagens geografi', ok: geography.includes(caseData.geographical_area) })
     }
+  }
+
+  const requiredLanguages = caseData.required_languages ?? []
+  if (requiredLanguages.length > 0) {
+    const languages = professional.languages ?? []
+    if (languages.length > 0) {
+      checks.push({ label: 'Taler et af sagens krævede sprog', ok: requiredLanguages.some(l => languages.includes(l)) })
+    }
+  }
+
+  if (caseData.requires_evening) {
+    checks.push({ label: 'Kan arbejde aften', ok: !!professional.can_work_evening })
+  }
+
+  if (caseData.requires_weekend) {
+    checks.push({ label: 'Kan arbejde weekend', ok: !!professional.can_work_weekend })
+  }
+
+  if (caseData.requires_night) {
+    checks.push({ label: 'Kan arbejde nat', ok: !!professional.can_work_night })
   }
 
   return checks

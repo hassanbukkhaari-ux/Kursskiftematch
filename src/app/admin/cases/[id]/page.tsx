@@ -8,6 +8,7 @@ import AdminCaseActionsClient, { type Grant, type AvailableProfessional } from '
 import AdminCaseEditClient from './AdminCaseEditClient'
 import CaseDocumentsClient from './CaseDocumentsClient'
 import { CaseSessionLogsClient, type CaseSessionLog } from './CaseSessionLogsClient'
+import { HandoverActionsClient } from './HandoverActionsClient'
 import type { HandoverReason, HandoverStatus } from '@/types/database'
 
 const STATUS_LABEL: Record<string, string> = {
@@ -64,8 +65,10 @@ interface HandoverRow {
   handover_note: string | null
   is_urgent: boolean
   session_logs_transferred: boolean
+  transferred_session_logs: string[]
   created_at: string
   completed_at: string | null
+  incoming_professional_id: string | null
   outgoing_name: string
   incoming_name: string | null
   created_by_name: string
@@ -110,7 +113,7 @@ export default async function AdminCasePage({ params }: PageProps) {
     db.from('special_wishes_lookup').select('code, label_da'),
     dba.from('case_grants').select('id, granted_hours, period_start, period_end, status, activated_at').eq('case_id', id).order('period_start', { ascending: false }),
     createServiceClient().from('professionals' as any).select('id, profiles!inner(full_name)').eq('status', 'ACTIVE'),
-    dba.from('case_handovers').select('id, reason, status, handover_note, is_urgent, session_logs_transferred, created_at, completed_at, outgoing_professional_id, incoming_professional_id, created_by').eq('case_id', id).order('created_at', { ascending: false }),
+    dba.from('case_handovers').select('id, reason, status, handover_note, is_urgent, session_logs_transferred, transferred_session_logs, created_at, completed_at, outgoing_professional_id, incoming_professional_id, created_by').eq('case_id', id).order('created_at', { ascending: false }),
     (createServiceClient() as any).from('status_report_requests').select('id, report_type, deadline, promised_date, status, created_at, professionals!inner(profiles!inner(full_name))').eq('case_id', id).order('created_at', { ascending: false }).limit(5),
   ])
 
@@ -176,8 +179,10 @@ export default async function AdminCasePage({ params }: PageProps) {
         handover_note: h.handover_note,
         is_urgent: h.is_urgent ?? false,
         session_logs_transferred: h.session_logs_transferred,
+        transferred_session_logs: h.transferred_session_logs ?? [],
         created_at: h.created_at,
         completed_at: h.completed_at,
+        incoming_professional_id: h.incoming_professional_id,
         outgoing_name: outRes.data?.profiles?.full_name ?? 'Ukendt',
         incoming_name: inRes.data?.profiles?.full_name ?? null,
         created_by_name: byRes.data?.full_name ?? 'Admin',
@@ -400,6 +405,15 @@ export default async function AdminCasePage({ params }: PageProps) {
                           {HANDOVER_STATUS_LABEL[h.status]}
                         </Badge>
                       </div>
+                      {(h.status === 'INITIATED' || h.status === 'IN_PROGRESS') && (
+                        <HandoverActionsClient
+                          caseId={id}
+                          handoverId={h.id}
+                          incomingProfessionalId={h.incoming_professional_id}
+                          alreadyTransferred={h.transferred_session_logs}
+                          sessionLogs={(logsRes.data ?? []).map((l: any) => ({ id: l.id, session_date: l.session_date }))}
+                        />
+                      )}
                     </Card>
                   ))}
                 </div>

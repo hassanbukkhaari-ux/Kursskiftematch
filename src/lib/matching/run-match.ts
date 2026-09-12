@@ -82,7 +82,8 @@ export async function runMatchForCase(
       id, experience_years, target_age_groups, max_complexity_level,
       capacity_hours_week, max_concurrent_cases, availability_status,
       qualifications, gender, experience_with_genders, can_transport_citizen,
-      has_drivers_license, has_own_car, can_take_acute, geography
+      has_drivers_license, has_own_car, can_take_acute, geography,
+      can_work_evening, can_work_weekend, can_work_night
     `)
     .eq('status', 'ACTIVE')
 
@@ -158,6 +159,9 @@ export async function runMatchForCase(
     transport_needs: caseRow.transport_needs,
     geographical_area: caseRow.geographical_area,
     required_languages: caseRow.required_languages,
+    requires_evening: caseRow.requires_evening,
+    requires_weekend: caseRow.requires_weekend,
+    requires_night: caseRow.requires_night,
   }
 
   const scored = (professionals || []).map(pro => {
@@ -198,6 +202,9 @@ export async function runMatchForCase(
         can_take_acute: pro.can_take_acute ?? undefined,
         geography: pro.geography ?? undefined,
         languages: languagesByPro.get(pro.id) ?? undefined,
+        can_work_evening: pro.can_work_evening ?? undefined,
+        can_work_weekend: pro.can_work_weekend ?? undefined,
+        can_work_night: pro.can_work_night ?? undefined,
       },
       caseInput,
     )

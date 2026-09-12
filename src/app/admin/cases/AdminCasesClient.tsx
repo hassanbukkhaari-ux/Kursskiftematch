@@ -96,6 +96,9 @@ type NewCaseForm = {
   required_languages: string[]
   transport_needs: string
   geographical_area: string
+  requires_evening: boolean
+  requires_weekend: boolean
+  requires_night: boolean
   // Interne noter
   citizen_notes: string
 }
@@ -137,6 +140,9 @@ const EMPTY_FORM: NewCaseForm = {
   required_languages: [],
   transport_needs: '',
   geographical_area: '',
+  requires_evening: false,
+  requires_weekend: false,
+  requires_night: false,
   citizen_notes: '',
 }
 
@@ -311,6 +317,9 @@ export function AdminCasesClient({
           required_languages: form.required_languages.length > 0 ? form.required_languages : undefined,
           transport_needs: form.transport_needs || undefined,
           geographical_area: form.geographical_area || undefined,
+          requires_evening: form.requires_evening,
+          requires_weekend: form.requires_weekend,
+          requires_night: form.requires_night,
         }),
       })
       if (!res.ok) {
@@ -1014,6 +1023,31 @@ export function AdminCasesClient({
                   placeholder="By / bydel / postnr."
                   className={inputClass}
                 />
+              </div>
+            </div>
+
+            <div>
+              <label className={labelClass}>Skæve arbejdstider (valgfri — vælg alle relevante)</label>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { key: 'requires_evening', label: 'Aften' },
+                  { key: 'requires_weekend', label: 'Weekend' },
+                  { key: 'requires_night', label: 'Nat' },
+                ] as const).map(opt => (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, [opt.key]: !f[opt.key] }))}
+                    className={[
+                      'h-10 rounded-xl text-xs font-medium border transition-all',
+                      form[opt.key]
+                        ? 'bg-[#1C3829] text-white border-[#1C3829]'
+                        : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]',
+                    ].join(' ')}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
               </div>
             </div>
           </FormSection>

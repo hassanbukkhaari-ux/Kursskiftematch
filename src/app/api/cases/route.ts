@@ -33,6 +33,9 @@ const CreateCaseSchema = z.object({
   required_languages: z.array(z.string()).optional(),
   transport_needs: z.enum(['JA', 'NEJ']).optional(),
   geographical_area: z.string().optional(),
+  requires_evening: z.boolean().optional(),
+  requires_weekend: z.boolean().optional(),
+  requires_night: z.boolean().optional(),
 })
 
 // GET /api/cases — admin sees all, professionals see assigned

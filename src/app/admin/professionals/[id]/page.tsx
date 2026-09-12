@@ -108,12 +108,12 @@ export default async function ProfessionalDetailPage({
   return (
     <div>
       <PageHeader
-        label="Fagperson"
+        label="Kontaktperson"
         title={profile.full_name || 'Profil'}
         subtitle={profile.email}
         breadcrumb={[
           { label: 'Kursskifte Administration', href: '/admin' },
-          { label: 'Fagpersoner', href: '/admin/professionals' },
+          { label: 'Kontaktpersoner', href: '/admin/professionals' },
           { label: profile.full_name || 'Detalje' },
         ]}
       />

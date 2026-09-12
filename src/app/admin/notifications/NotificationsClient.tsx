@@ -26,7 +26,7 @@ export interface NotificationRow {
 
 const TYPE_LABEL: Record<NotificationType, string> = {
   INQUIRY_RECEIVED: 'Henvendelse modtaget',
-  PROFESSIONAL_APPLICATION_RECEIVED: 'Fagpersonansøgning',
+  PROFESSIONAL_APPLICATION_RECEIVED: 'Kontaktpersonansøgning',
   CASE_CREATED: 'Sag oprettet',
   SAFEGUARDING_FLAGGED: 'Bekymring markeret',
   HOURS_SUBMITTED: 'Timer indsendt',

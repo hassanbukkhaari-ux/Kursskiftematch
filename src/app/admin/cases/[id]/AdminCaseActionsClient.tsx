@@ -22,9 +22,9 @@ export interface AvailableProfessional {
 }
 
 const HANDOVER_REASONS: { value: string; label: string }[] = [
-  { value: 'PROFESSIONAL_UNAVAILABLE', label: 'Fagperson utilgængelig' },
+  { value: 'PROFESSIONAL_UNAVAILABLE', label: 'Kontaktperson utilgængelig' },
   { value: 'WORKLOAD_EXCEEDED', label: 'For høj arbejdsbyrde' },
-  { value: 'REQUEST_PROFESSIONAL', label: 'Ønske fra fagperson' },
+  { value: 'REQUEST_PROFESSIONAL', label: 'Ønske fra kontaktperson' },
   { value: 'REQUEST_CASE', label: 'Ønske fra borger/sag' },
   { value: 'BETTER_MATCH', label: 'Bedre match tilgængeligt' },
   { value: 'SAFEGUARDING_CONCERN', label: 'Bekymring for borger' },

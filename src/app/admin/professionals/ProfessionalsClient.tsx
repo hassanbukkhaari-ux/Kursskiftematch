@@ -238,7 +238,7 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
   return (
     <>
       <SectionHeader
-        title={`${counts.ACTIVE} aktive fagpersoner`}
+        title={`${counts.ACTIVE} aktive kontaktpersoner`}
         description={counts.REGISTERED > 0 ? `${counts.REGISTERED} afventer aktivering` : undefined}
         actions={
           <button
@@ -250,7 +250,7 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
               <line x1="12" y1="5" x2="12" y2="19" />
               <line x1="5" y1="12" x2="19" y2="12" />
             </svg>
-            Inviter fagperson
+            Inviter kontaktperson
           </button>
         }
       />
@@ -284,7 +284,7 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
             ) : (
               <form onSubmit={sendInvite} noValidate>
                 <div className="flex items-center justify-between mb-5">
-                  <div className="font-serif text-lg text-[#1A1F1C]">Inviter fagperson</div>
+                  <div className="font-serif text-lg text-[#1A1F1C]">Inviter kontaktperson</div>
                   <button type="button" onClick={closeInvite} className="w-7 h-7 rounded-full bg-[#F6F3EE] hover:bg-[#EEF4F0] flex items-center justify-center text-[#6B7569] transition-colors">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                       <line x1="18" y1="6" x2="6" y2="18" />
@@ -292,7 +292,7 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
                     </svg>
                   </button>
                 </div>
-                <p className="text-xs text-[#6B7569] mb-4">Fagpersonen modtager et link til at oprette sin profil selv.</p>
+                <p className="text-xs text-[#6B7569] mb-4">Kontaktpersonen modtager et link til at oprette sin profil selv.</p>
                 <div className="space-y-3 mb-5">
                   <div>
                     <label htmlFor="invite-email" className="text-xs font-medium text-[#6B7569] block mb-1">E-mailadresse <span className="text-red-500">*</span></label>
@@ -369,7 +369,7 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
       {filtered.length === 0 ? (
         <EmptyState
           icon={<PeopleIcon />}
-          title={filter === 'all' ? 'Ingen fagpersoner endnu' : `Ingen ${STATUS_LABEL[filter]?.toLowerCase() ?? ''} fagpersoner`}
+          title={filter === 'all' ? 'Ingen kontaktpersoner endnu' : `Ingen ${STATUS_LABEL[filter]?.toLowerCase() ?? ''} kontaktpersoner`}
           description={filter === 'REGISTERED' ? 'Nye registreringer vises her' : undefined}
         />
       ) : (
@@ -421,7 +421,7 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
       <aside
         role="dialog"
         aria-modal="true"
-        aria-label="Fagpersonprofil"
+        aria-label="Kontaktpersonprofil"
         className={[
           'fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-xl',
           'flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]',

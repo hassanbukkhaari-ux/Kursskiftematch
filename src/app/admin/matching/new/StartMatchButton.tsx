@@ -65,7 +65,7 @@ export function StartMatchButton({ caseId, caseLabel }: StartMatchButtonProps) {
               <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="2" strokeOpacity="0.25" />
               <path d="M14 8a6 6 0 0 0-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
-            Analyserer fagpersoner — vent venligst…
+            Analyserer kontaktpersoner — vent venligst…
           </>
         ) : (
           <>
@@ -79,7 +79,7 @@ export function StartMatchButton({ caseId, caseLabel }: StartMatchButtonProps) {
       </button>
 
       <p className="text-xs text-center text-[#6B7569]">
-        Algoritmen scorer alle tilgængelige fagpersoner mod sagens krav. Tager typisk under 5 sekunder.
+        Algoritmen scorer alle tilgængelige kontaktpersoner mod sagens krav. Tager typisk under 5 sekunder.
       </p>
     </div>
   )

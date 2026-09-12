@@ -51,7 +51,7 @@ export default async function AdminMatchingPage() {
       <PageHeader
         label="Matching"
         title="Match-administration"
-        subtitle="Tildel fagpersoner til sager baseret på algoritme-scoren"
+        subtitle="Tildel kontaktpersoner til sager baseret på algoritme-scoren"
         breadcrumb={[{ label: 'Kursskifte Administration', href: '/admin' }, { label: 'Matching' }]}
       />
       <ContentContainer>
@@ -112,7 +112,7 @@ export default async function AdminMatchingPage() {
         {/* Cases needing matching */}
         <SectionHeader
           title="Sager klar til matching"
-          description="Åbne sager uden tildelt fagperson"
+          description="Åbne sager uden tildelt kontaktperson"
         />
         {cases.length === 0 ? (
           <Card className="text-center py-12 text-[#6B7569] text-sm">

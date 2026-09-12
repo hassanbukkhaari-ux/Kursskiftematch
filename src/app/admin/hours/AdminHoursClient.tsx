@@ -185,7 +185,7 @@ export function AdminHoursClient({ initialHours }: { initialHours: AdminHoursRow
           <div className="absolute inset-0 bg-[#1A1F1C]/50" onClick={closeReject} aria-hidden="true" />
           <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 z-10">
             <div className="font-serif text-lg text-[#1A1F1C] mb-1">Afvis timeregistrering</div>
-            <p className="text-xs text-[#6B7569] mb-4">Skriv en begrundelse — den sendes til fagpersonen.</p>
+            <p className="text-xs text-[#6B7569] mb-4">Skriv en begrundelse — den sendes til kontaktpersonen.</p>
             <textarea
               value={rejectNote}
               onChange={e => setRejectNote(e.target.value)}

@@ -94,7 +94,7 @@ export function MatchingUI({ candidates, runId, caseId, runStatus, caseData }: M
   }
 
   if (assignedId) {
-    const assignedName = candidates.find(c => c.id === assignedId)?.professionals?.profiles?.full_name ?? 'Fagpersonen'
+    const assignedName = candidates.find(c => c.id === assignedId)?.professionals?.profiles?.full_name ?? 'Kontaktpersonen'
     return (
       <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
         <div className="w-16 h-16 rounded-2xl bg-[#DCFCE7] flex items-center justify-center mb-4">
@@ -131,7 +131,7 @@ export function MatchingUI({ candidates, runId, caseId, runStatus, caseData }: M
             </svg>
             <input
               type="text"
-              placeholder="Søg fagperson..."
+              placeholder="Søg kontaktperson..."
               value={filters.search}
               onChange={e => setFilters(f => ({ ...f, search: e.target.value }))}
               className="pl-9 pr-3 h-10 w-full text-sm border border-[#E0DAD0] rounded-xl bg-[#F6F3EE] placeholder:text-[#C8C0B0] focus:outline-none focus:border-[#1C3829] transition-colors"
@@ -150,7 +150,7 @@ export function MatchingUI({ candidates, runId, caseId, runStatus, caseData }: M
               </svg>
               <input
                 type="text"
-                placeholder="Søg fagperson..."
+                placeholder="Søg kontaktperson..."
                 value={filters.search}
                 onChange={e => setFilters(f => ({ ...f, search: e.target.value }))}
                 className="pl-9 pr-3 h-9 w-52 text-sm border border-[#E0DAD0] rounded-xl bg-[#F6F3EE] placeholder:text-[#C8C0B0] focus:outline-none focus:border-[#1C3829] transition-colors"
@@ -221,7 +221,7 @@ export function MatchingUI({ candidates, runId, caseId, runStatus, caseData }: M
               <span className="text-sm font-semibold text-[#92660A]">Aktiv søgning</span>
             </div>
             <h3 className="font-serif text-lg font-semibold text-[#1A1F1C] mb-2">Kursskifte arbejder aktivt på sagen</h3>
-            <p className="text-sm text-[#6B7569] max-w-sm">Der er endnu ingen scorede kandidater til denne sag. Kør en ny match-kørsel når der er egnede fagpersoner tilgængelige.</p>
+            <p className="text-sm text-[#6B7569] max-w-sm">Der er endnu ingen scorede kandidater til denne sag. Kør en ny match-kørsel når der er egnede kontaktpersoner tilgængelige.</p>
           </div>
         ) : filtered.length === 0 ? (
           <EmptyState
@@ -278,7 +278,7 @@ export function MatchingUI({ candidates, runId, caseId, runStatus, caseData }: M
             <p className="text-sm text-[#6B7569] mb-6 leading-relaxed">
               Er du sikker på, at du vil tildele{' '}
               <strong className="text-[#1A1F1C]">
-                {confirmCandidate.professionals?.profiles?.full_name ?? 'denne fagperson'}
+                {confirmCandidate.professionals?.profiles?.full_name ?? 'denne kontaktperson'}
               </strong>{' '}
               til sagen? Handlingen registreres i systemet.
             </p>

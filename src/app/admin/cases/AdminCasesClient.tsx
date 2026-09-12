@@ -75,7 +75,7 @@ type NewCaseForm = {
   problem_area_other_text: string
   goal_codes: string[]
   goal_other_text: string
-  // Ønsker til fagperson
+  // Ønsker til kontaktperson
   special_wish_codes: string[]
   preferred_prof_gender: string
   required_languages: string[]
@@ -700,8 +700,8 @@ export function AdminCasesClient({
             </div>
           </FormSection>
 
-          {/* ── Ønsker til fagperson ── */}
-          <FormSection title="Ønsker til fagperson">
+          {/* ── Ønsker til kontaktperson ── */}
+          <FormSection title="Ønsker til kontaktperson">
             <div>
               <label className={labelClass}>Mål for indsatsen (valgfri)</label>
               <div className="flex flex-wrap gap-1.5">
@@ -760,7 +760,7 @@ export function AdminCasesClient({
             </div>
 
             <div>
-              <label className={labelClass}>Foretrukket fagperson køn (hvis begrundet)</label>
+              <label className={labelClass}>Foretrukket kontaktperson køn (hvis begrundet)</label>
               <div className="grid grid-cols-3 gap-2">
                 {PROF_GENDER_OPTIONS.map(g => (
                   <button
@@ -849,7 +849,7 @@ export function AdminCasesClient({
                 placeholder="Baggrundsinformation, særlige hensyn, kommunikation med kommunen, øvrige bemærkninger..."
                 className={`${inputClass} resize-none`}
               />
-              <p className="text-[10px] text-[#6B7569] mt-1.5">Gemmes kun internt — deles aldrig med kommunen eller fagpersonen</p>
+              <p className="text-[10px] text-[#6B7569] mt-1.5">Gemmes kun internt — deles aldrig med kommunen eller kontaktpersonen</p>
             </div>
           </FormSection>
 

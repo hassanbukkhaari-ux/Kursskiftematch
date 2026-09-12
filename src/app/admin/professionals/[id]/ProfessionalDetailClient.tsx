@@ -777,7 +777,7 @@ function DeletePanel({ professionalId }: { professionalId: string }) {
       onClick={() => setConfirming(true)}
       className="text-xs font-semibold text-red-600 hover:underline"
     >
-      Arkiver fagperson
+      Arkiver kontaktperson
     </button>
   )
 
@@ -785,8 +785,8 @@ function DeletePanel({ professionalId }: { professionalId: string }) {
     <div className="mt-3 p-4 bg-red-50 border border-red-200 rounded-xl space-y-3">
       <p className="text-sm font-medium text-red-800">Er du sikker?</p>
       <p className="text-xs text-red-700">
-        Fagpersonen sættes til <strong>Arkiveret</strong> og fjernes fra matching. Sagerne bevares i systemet.
-        Fagpersonen kan ikke have aktive sager.
+        Kontaktpersonen sættes til <strong>Arkiveret</strong> og fjernes fra matching. Sagerne bevares i systemet.
+        Kontaktpersonen kan ikke have aktive sager.
       </p>
       {error && <p className="text-xs text-red-600 font-medium">{error}</p>}
       <div className="flex gap-2">
@@ -946,10 +946,10 @@ export function ProfessionalDetailClient({
         </dl>
       </Card>
 
-      {/* Om fagperson */}
+      {/* Om kontaktperson */}
       {pro.bio && (
         <Card className="!p-5">
-          <SectionTitle>Om fagperson</SectionTitle>
+          <SectionTitle>Om kontaktperson</SectionTitle>
           <p className="text-sm text-[#1A1F1C] whitespace-pre-wrap leading-relaxed">{pro.bio}</p>
         </Card>
       )}

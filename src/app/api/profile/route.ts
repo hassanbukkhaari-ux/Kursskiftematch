@@ -52,14 +52,16 @@ export async function PATCH(request: NextRequest) {
         .eq('id', userId)
         .single()
 
-      // capacity_hours_week (what matching actually uses) defaults to 0 at
-      // registration and nothing besides an admin editing the profile ever
-      // touches it — a professional could complete onboarding, declare their
-      // real weekly availability here, and still be permanently invisible to
-      // matching. Seed it from what they just told us, but only while it's
-      // still at that untouched default — never overwrite a capacity an
-      // admin has deliberately set since.
-      if (typeof patch.max_hours_per_week === 'number' && existing && (!existing.capacity_hours_week || existing.capacity_hours_week <= 0)) {
+      // capacity_hours_week (what matching actually uses) is only ever
+      // changed by an admin editing the profile directly. Only seeding it
+      // once — while still at the untouched 0 default — left it stuck at
+      // whatever that first value was: a professional who later revised
+      // their own declared hours upward (e.g. 10 -> 37) saw nothing change
+      // for matching, since capacity was no longer 0. The professional is
+      // the one who actually knows their own availability, so their number
+      // always wins here now; an admin who needs a stricter cap for
+      // workload reasons still sets that on their own edit form.
+      if (typeof patch.max_hours_per_week === 'number') {
         patch.capacity_hours_week = patch.max_hours_per_week
       }
 

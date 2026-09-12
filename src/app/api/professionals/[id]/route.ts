@@ -66,6 +66,13 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       }
     }
 
+    // Standard full-time work week (37 timer) is the legal cap on how much a
+    // contact person may be scheduled — only an admin may set it higher.
+    const WEEKLY_HOURS_CAP = 37
+    if (role !== 'admin' && parsed.data.capacity_hours_week != null && parsed.data.capacity_hours_week > WEEKLY_HOURS_CAP) {
+      return badRequest(`Timer/uge kan maksimalt være ${WEEKLY_HOURS_CAP} (fuld arbejdstid). Kun en administrator kan sætte det højere.`)
+    }
+
     const { createClient } = await import('@/lib/supabase/server')
     const db = await createClient()
 

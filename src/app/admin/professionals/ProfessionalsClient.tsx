@@ -504,7 +504,15 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
               <div className="grid grid-cols-2 gap-3">
                 <InfoBlock label="Profession" value={(selected as any).profession_types?.name ?? PROFESSION_LABEL[selected.profession] ?? selected.profession} />
                 <InfoBlock label="Erfaring" value={`${selected.experience_years} år`} />
-                <InfoBlock label="Timer/uge" value={`${(selected as any).max_hours_per_week ?? selected.capacity_hours_week ?? '—'} t/uge`} />
+                <InfoBlock
+                  label="Timer/uge (kapacitet)"
+                  value={`${selected.capacity_hours_week ?? '—'} t/uge`}
+                  note={
+                    (selected as any).max_hours_per_week != null && (selected as any).max_hours_per_week !== selected.capacity_hours_week
+                      ? `Fagpersonen har selv angivet ${(selected as any).max_hours_per_week} t/uge`
+                      : undefined
+                  }
+                />
                 <InfoBlock label="Maks. sager" value={`${selected.max_concurrent_cases} sager`} />
               </div>
 
@@ -739,11 +747,12 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
   )
 }
 
-function InfoBlock({ label, value }: { label: string; value: string }) {
+function InfoBlock({ label, value, note }: { label: string; value: string; note?: string }) {
   return (
     <div className="bg-[#F6F3EE] rounded-xl p-3">
       <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-1">{label}</div>
       <div className="text-sm font-medium text-[#1A1F1C]">{value}</div>
+      {note && <div className="text-[10px] text-[#9B9589] mt-0.5">{note}</div>}
     </div>
   )
 }

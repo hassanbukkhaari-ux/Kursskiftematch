@@ -22,7 +22,7 @@ const orgContactSchema = {
   name: 'Kursskifte ApS',
   url: 'https://kursskifte.dk',
   email: 'kontakt@kursskifte.dk',
-  telephone: '+4571420376',
+  telephone: '+4531319594',
   taxID: '46470974',
   areaServed: [
     { '@type': 'City', name: 'Aalborg' },
@@ -33,7 +33,7 @@ const orgContactSchema = {
   contactPoint: {
     '@type': 'ContactPoint',
     email: 'kontakt@kursskifte.dk',
-    telephone: '+4571420376',
+    telephone: '+4531319594',
     contactType: 'customer service',
     availableLanguage: 'Danish',
   },
@@ -87,7 +87,7 @@ export default function KontaktPage() {
                 </div>
                 <div className="py-2.5 border-b border-white/10">
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-white/40 mb-0.5">Telefon</div>
-                  <a href="tel:+4571420376" className="text-sm text-white hover:text-[#C8993A] transition-colors">71 42 03 76</a>
+                  <a href="tel:+4531319594" className="text-sm text-white hover:text-[#C8993A] transition-colors">31 31 95 94</a>
                 </div>
               </div>
               <a
@@ -131,7 +131,7 @@ export default function KontaktPage() {
                 </div>
                 <div>
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-2">Telefon</div>
-                  <a href="tel:+4571420376" className="text-sm text-[#1A1F1C] hover:text-[#1C3829] transition-colors">71 42 03 76</a>
+                  <a href="tel:+4531319594" className="text-sm text-[#1A1F1C] hover:text-[#1C3829] transition-colors">31 31 95 94</a>
                 </div>
                 <div>
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-2">E-mail</div>

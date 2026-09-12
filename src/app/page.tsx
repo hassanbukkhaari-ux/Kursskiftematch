@@ -140,7 +140,7 @@ function AudiencePaths() {
 // they commit. 5-step summary answers that question without the full
 // detail that lives on /kommuner. No CTA here — purely informational.
 const STEPS = [
-  { n: '01', title: 'I kontakter os', body: 'Send en e-mail til kontakt@kursskifte.dk eller ring på 71 42 03 76 — ingen åben database at gennemse.' },
+  { n: '01', title: 'I kontakter os', body: 'Send en e-mail til kontakt@kursskifte.dk eller ring på 31 31 95 94 — ingen åben database at gennemse.' },
   { n: '02', title: 'Kursskifte vurderer', body: 'Vi gennemgår kompleksitet, aldersgruppe og kompetencebehov.' },
   { n: '03', title: 'Kursskifte udvælger', body: 'Egnede fagpersoner identificeres og vurderes på kompetencer, kapacitet og tilgængelighed.' },
   { n: '04', title: 'I modtager forslag', body: 'Et dokumenteret forslag med anbefalet kontaktperson og faglig begrundelse.' },
@@ -197,7 +197,7 @@ function ProcessSection() {
               </div>
               <div className="flex flex-col gap-2">
                 <a href="mailto:kontakt@kursskifte.dk" className="text-sm text-white/70 hover:text-white transition-colors">kontakt@kursskifte.dk</a>
-                <a href="tel:+4571420376" className="text-sm text-white/70 hover:text-white transition-colors">71 42 03 76</a>
+                <a href="tel:+4531319594" className="text-sm text-white/70 hover:text-white transition-colors">31 31 95 94</a>
                 <Link href="/kontakt" className="mt-2 h-9 px-4 bg-[#C8993A] text-white text-sm font-semibold rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center gap-1.5 self-start">
                   Kontakt os <ArrowRight />
                 </Link>
@@ -332,7 +332,7 @@ function CtaStrip() {
             <p className="text-sm text-white/55 mb-2">Send en e-mail — vi vender tilbage hurtigst muligt.</p>
             <div className="flex flex-wrap gap-4">
               <a href="mailto:kontakt@kursskifte.dk" className="text-sm text-white/70 hover:text-white transition-colors">kontakt@kursskifte.dk</a>
-              <a href="tel:+4571420376" className="text-sm text-white/70 hover:text-white transition-colors">71 42 03 76</a>
+              <a href="tel:+4531319594" className="text-sm text-white/70 hover:text-white transition-colors">31 31 95 94</a>
             </div>
           </div>
           <div className="flex flex-col items-start gap-3 shrink-0">

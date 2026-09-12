@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createServiceClient } from '@/lib/supabase/server'
+import { requireCronSecret } from '@/lib/cron-auth'
 import { sendNotification } from '@/lib/notifications/service'
 
 const REPORT_LABEL: Record<string, string> = {
@@ -9,14 +11,9 @@ const REPORT_LABEL: Record<string, string> = {
 
 // GET /api/cron/status-report-reminders — send 14-day and 7-day reminders
 export async function GET(request: NextRequest) {
-  if (!process.env.CRON_SECRET) {
-    return NextResponse.json({ error: 'Cron secret not configured' }, { status: 500 })
-  }
-  if (request.headers.get('authorization') !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const denied = requireCronSecret(request)
+  if (denied) return denied
 
-  const { createServiceClient } = await import('@/lib/supabase/server')
   const svc = createServiceClient() as any
 
   const today = new Date()

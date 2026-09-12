@@ -1701,6 +1701,7 @@ export type NotificationType =
   | 'STATUS_REPORT_REQUESTED'
   | 'STATUS_REPORT_REMINDER'
   | 'STATUS_REPORT_SUBMITTED'
+  | 'GRANT_ACTIVATED'
 
 // ================================================================
 // Convenience row types

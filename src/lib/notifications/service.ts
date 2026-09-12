@@ -146,6 +146,10 @@ export function adminEmailBody(type: NotificationType, entityId: string): { subj
       subject: 'Statusrapport indsendt — Kursskifte',
       body: `En kontaktperson har indsendt en statusrapport.\n\nAnmodnings-ID: ${entityId}\n\nGennemse rapporten:\n${base}/admin/status-reports/${entityId}`,
     },
+    GRANT_ACTIVATED: {
+      subject: 'Bevilling oprettet — Kursskifte',
+      body: `En ny bevilling er oprettet for en sag.\n\nBevillings-ID: ${entityId}\n\nSe sagen:\n${base}/admin/cases`,
+    },
   }
   return map[type]
 }

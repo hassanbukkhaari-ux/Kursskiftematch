@@ -106,7 +106,7 @@ export default async function AdminCasePage({ params }: PageProps) {
   ] = await Promise.all([
     db.from('municipalities').select('name, sagsbehandler_name, sagsbehandler_email').eq('id', caseData.municipality_id).single(),
     createServiceClient().from('session_logs' as any).select('id, session_date, duration_minutes, observations, citizen_mood_tone, follow_up_needed, follow_up_reason, status, professional_id', { count: 'exact' }).eq('case_id', id).order('session_date', { ascending: false }).limit(20),
-    dba.from('cases').select('citizen_gender, citizen_notes, intake_contact_name, intake_contact_email, intake_contact_phone, legal_basis, diagnoses, daily_function, citizen_interests, expected_duration_months, preferred_prof_gender, transport_needs, created_at').eq('id', id).single(),
+    dba.from('cases').select('citizen_gender, citizen_notes, intake_contact_name, intake_contact_email, intake_contact_phone, legal_basis, diagnoses, daily_function, citizen_interests, expected_duration_months, preferred_prof_gender, transport_needs, urgency, case_number, created_at').eq('id', id).single(),
     db.from('v_case_tags').select('problem_area_codes, goal_codes, special_wish_codes').eq('case_id', id).single(),
     db.from('problem_areas').select('code, label_da'),
     db.from('goals_lookup').select('code, label_da'),
@@ -198,7 +198,7 @@ export default async function AdminCasePage({ params }: PageProps) {
     <div>
       <PageHeader
         label="Sag"
-        title={caseData.case_number ?? `Borger ${caseData.citizen_initials}`}
+        title={caseDetailRes.data?.case_number ?? `Borger ${caseData.citizen_initials}`}
         subtitle={`${caseData.citizen_initials} · ${caseData.citizen_age_range} · ${muniRes.data?.name ?? 'Ukendt kommune'}${caseDetailRes.data?.created_at ? ` · Oprettet ${fmt(caseDetailRes.data.created_at)}` : ''}`}
         breadcrumb={[
           { label: 'Kursskifte Administration', href: '/admin' },
@@ -234,9 +234,9 @@ export default async function AdminCasePage({ params }: PageProps) {
                   <span className="font-semibold text-[#1A1F1C]">{caseData.citizen_age_range}</span>
                 </InfoBlock>
                 <InfoBlock label="Hastighed">
-                  {caseData.urgency === 'AKUT' && <span className="font-semibold text-red-700">🔴 Akut (24 timer)</span>}
-                  {caseData.urgency === 'HURTIG' && <span className="font-semibold text-amber-700">🟡 Hurtig</span>}
-                  {(!caseData.urgency || caseData.urgency === 'NORMAL') && <span className="font-semibold text-[#6B7569]">⚪ Normal</span>}
+                  {caseDetailRes.data?.urgency === 'AKUT' && <span className="font-semibold text-red-700">🔴 Akut (24 timer)</span>}
+                  {caseDetailRes.data?.urgency === 'HURTIG' && <span className="font-semibold text-amber-700">🟡 Hurtig</span>}
+                  {(!caseDetailRes.data?.urgency || caseDetailRes.data.urgency === 'NORMAL') && <span className="font-semibold text-[#6B7569]">⚪ Normal</span>}
                 </InfoBlock>
                 {caseDetailRes.data?.citizen_gender && (
                   <InfoBlock label="Køn">
@@ -614,7 +614,7 @@ export default async function AdminCasePage({ params }: PageProps) {
               caseId={id}
               status={caseData.status as 'OPEN' | 'MATCHED' | 'ACTIVE' | 'COMPLETED' | 'ARCHIVED'}
               complexityLevel={caseData.complexity_level as 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'}
-              urgency={caseData.urgency as 'NORMAL' | 'HURTIG' | 'AKUT'}
+              urgency={(caseDetailRes.data?.urgency ?? 'NORMAL') as 'NORMAL' | 'HURTIG' | 'AKUT'}
               weeklyHours={caseData.weekly_hours}
               citizenNotes={caseDetailRes.data?.citizen_notes ?? null}
               intakeContactName={caseDetailRes.data?.intake_contact_name ?? null}

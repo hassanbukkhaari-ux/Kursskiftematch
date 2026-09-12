@@ -35,13 +35,24 @@ interface Props {
   cases: any[]
   professionals: any[]
   casesWithoutRequest: any[]
+  initialCreating?: boolean
+  initialCaseId?: string
 }
 
-export function AdminStatusReportsClient({ initialRequests, cases, professionals, casesWithoutRequest }: Props) {
+export function AdminStatusReportsClient({ initialRequests, cases, professionals, casesWithoutRequest, initialCreating, initialCaseId }: Props) {
   const router = useRouter()
   const [filter, setFilter] = useState<FilterKey>('all')
-  const [creating, setCreating] = useState(false)
-  const [form, setForm] = useState({ case_id: '', professional_id: '', report_type: 'EXTENDED', deadline: '', message: '' })
+  const [creating, setCreating] = useState(!!initialCreating)
+  const [form, setForm] = useState(() => {
+    const matched = initialCaseId ? cases.find(c => c.id === initialCaseId) : undefined
+    return {
+      case_id: initialCaseId ?? '',
+      professional_id: matched?.professional_id ?? '',
+      report_type: 'EXTENDED',
+      deadline: '',
+      message: '',
+    }
+  })
   const [submitting, startSubmit] = useTransition()
   const [error, setError] = useState<string | null>(null)
 

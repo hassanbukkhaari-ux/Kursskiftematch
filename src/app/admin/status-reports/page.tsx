@@ -2,7 +2,12 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { PageHeader, ContentContainer } from '@/components/layout/page-header'
 import { AdminStatusReportsClient } from './AdminStatusReportsClient'
 
-export default async function AdminStatusReportsPage() {
+interface PageProps {
+  searchParams: Promise<{ new?: string; case_id?: string }>
+}
+
+export default async function AdminStatusReportsPage({ searchParams }: PageProps) {
+  const { new: openNew, case_id: initialCaseId } = await searchParams
   const svc = createServiceClient() as any
 
   const [{ data: requests }, { data: activeCases }, { data: professionals }] = await Promise.all([
@@ -50,6 +55,8 @@ export default async function AdminStatusReportsPage() {
           cases={cases as any[]}
           professionals={(professionals ?? []) as any[]}
           casesWithoutRequest={casesWithoutRequest as any[]}
+          initialCreating={openNew === '1'}
+          initialCaseId={initialCaseId}
         />
       </ContentContainer>
     </div>

@@ -18,6 +18,9 @@ export interface ProfessionalInput {
   current_hours_assigned: number
   has_certifications: boolean
   availability_status: string
+  // Target-group areas the professional has stated experience with (e.g.
+  // "Skolevægring"). Optional — omitted or empty means no signal either way.
+  target_group_names?: string[]
 }
 
 export interface CaseInput {
@@ -27,6 +30,10 @@ export interface CaseInput {
   violence: boolean
   substance_use: boolean
   criminality: boolean
+  // The case's tagged problem areas, as Danish labels (e.g. "Skolevægring").
+  // Uses the same controlled vocabulary as target_group_names by design —
+  // problem_areas and target_group_types share several identical labels.
+  problem_area_labels?: string[]
 }
 
 export interface MatchScores {
@@ -44,7 +51,7 @@ export function scoreCandidate(
   professional: ProfessionalInput,
   caseData: CaseInput
 ): MatchScores {
-  const qualifications_score = computeQualificationsScore(professional)
+  const qualifications_score = computeQualificationsScore(professional, caseData)
   const availability_score = computeAvailabilityScore(professional, caseData)
   const capacity_score = computeCapacityScore(professional, caseData)
   const complexity_fit_score = computeComplexityFitScore(professional, caseData)
@@ -84,11 +91,29 @@ export function scoreCandidate(
   }
 }
 
-function computeQualificationsScore(professional: ProfessionalInput): number {
+function computeQualificationsScore(professional: ProfessionalInput, caseData: CaseInput): number {
   const experience_score = Math.min(professional.experience_years * 4, 50)
-  const profession_score = 25 // MVP v1.0: all profession types eligible for all cases
+  const relevance_score = computeRelevanceScore(professional, caseData)
   const certification_score = professional.has_certifications ? 25 : 0
-  return Math.min(experience_score + profession_score + certification_score, 100)
+  return Math.min(experience_score + relevance_score + certification_score, 100)
+}
+
+// What the professional actually works with day to day, weighed against
+// what this specific case needs — e.g. a teacher's stated experience with
+// "Skolevægring" should count for a case tagged with that same problem area.
+// When there's nothing to compare (no tags on either side), this returns the
+// same flat 25 the score used before relevance was measurable, so existing
+// callers without tag data see no change in behavior.
+function computeRelevanceScore(professional: ProfessionalInput, caseData: CaseInput): number {
+  const caseLabels = caseData.problem_area_labels ?? []
+  const proGroups = professional.target_group_names ?? []
+
+  if (caseLabels.length === 0 || proGroups.length === 0) return 25
+
+  const proGroupSet = new Set(proGroups)
+  const overlap = caseLabels.filter(label => proGroupSet.has(label)).length
+  const coverage = overlap / caseLabels.length
+  return Math.round(coverage * 25)
 }
 
 function computeAvailabilityScore(
@@ -148,6 +173,17 @@ function buildExplanation(
     parts.push(`Begrænset erfaring (${professional.experience_years} år)`)
   }
 
+  const caseLabels = caseData.problem_area_labels ?? []
+  const proGroups = professional.target_group_names ?? []
+  if (caseLabels.length > 0 && proGroups.length > 0) {
+    const matchedLabels = caseLabels.filter(label => proGroups.includes(label))
+    parts.push(
+      matchedLabels.length > 0
+        ? `erfaring med sagens problemområder (${matchedLabels.join(', ')})`
+        : 'ingen dokumenteret erfaring med sagens specifikke problemområder'
+    )
+  }
+
   const remaining = professional.capacity_hours_week - professional.current_hours_assigned
   if (scores.availability_score >= 80) {
     parts.push(`god kapacitet (${remaining.toFixed(1)}/${professional.capacity_hours_week} timer tilgængeligt)`)
@@ -196,6 +232,17 @@ function buildStrengthsAndAttentionPoints(params: {
   }
   if (complexity_fit_score >= 80) {
     strengths.push('Erfaring med den relevante aldersgruppe og kompleksitetstype')
+  }
+
+  const caseLabels = caseData.problem_area_labels ?? []
+  const proGroups = professional.target_group_names ?? []
+  if (caseLabels.length > 0 && proGroups.length > 0) {
+    const matchedLabels = caseLabels.filter(label => proGroups.includes(label))
+    if (matchedLabels.length > 0) {
+      strengths.push(`Dokumenteret erfaring med sagens problemområder: ${matchedLabels.join(', ')}`)
+    } else {
+      attention.push('Ingen dokumenteret erfaring med sagens problemområder')
+    }
   }
 
   if (qualifications_score < 50) {
@@ -259,4 +306,4 @@ export function getScoreColor(score: number): 'green' | 'yellow' | 'red' {
   return 'red'
 }
 
-export const ALGORITHM_VERSION = '1.1'
+export const ALGORITHM_VERSION = '1.2'

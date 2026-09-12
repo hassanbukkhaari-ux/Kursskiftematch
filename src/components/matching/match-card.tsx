@@ -16,6 +16,7 @@ export interface MatchCandidate {
   logistics_score?: number | null
   eligible?: boolean
   ineligibility_reason?: string | null
+  current_hours_assigned?: number
   scoring_explanation: string
   match_strengths?: string[]
   attention_points?: string[]
@@ -112,7 +113,8 @@ export function MatchCard({ candidate, onSelect, isSelected, rank }: MatchCardPr
           <div className="flex items-center gap-2 md:gap-3 mt-2 flex-wrap">
             <AvailabilityBadge status={pro?.availability_status ?? 'UNAVAILABLE'} />
             <span className="text-xs text-[#6B7569] hidden sm:inline">
-              {pro?.capacity_hours_week ?? 0} t/uge
+              {Math.max(0, (pro?.capacity_hours_week ?? 0) - (candidate.current_hours_assigned ?? 0))} ledige t/uge
+              <span className="text-[#C8C0B0]"> (af {pro?.capacity_hours_week ?? 0})</span>
             </span>
           </div>
 

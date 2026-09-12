@@ -45,6 +45,32 @@ export async function PATCH(
         const labels = missing.map(t => REQUIRED_VERIFIED_DOCS[t]).join(' og ')
         return badRequest(`Kan ikke aktivere: ${labels} er ikke verificeret endnu. Godkend dokumentet/dokumenterne på fagpersonens profil først.`)
       }
+
+      // capacity_hours_week and availability_status both default to 0 /
+      // UNAVAILABLE at registration and are only ever changed by an admin
+      // editing the profile separately. v_professionals_available (the
+      // matching pool) excludes anyone left at those defaults — so a
+      // professional could be switched to ACTIVE and look completely normal
+      // in the admin list while being permanently invisible to matching,
+      // with nothing anywhere pointing at why. Block activation until both
+      // are set to real values.
+      const { data: proRow, error: proError } = await svc
+        .from('professionals')
+        .select('capacity_hours_week, availability_status')
+        .eq('id', id)
+        .single()
+
+      if (proError || !proRow) return serverError(proError?.message)
+
+      const capacityMissing = !proRow.capacity_hours_week || proRow.capacity_hours_week <= 0
+      const availabilityMissing = proRow.availability_status === 'UNAVAILABLE'
+
+      if (capacityMissing || availabilityMissing) {
+        const parts: string[] = []
+        if (capacityMissing) parts.push('ugentlig kapacitet (timer/uge)')
+        if (availabilityMissing) parts.push('tilgængelighed (må ikke stå som "Utilgængelig")')
+        return badRequest(`Kan ikke aktivere: ${parts.join(' og ')} er ikke sat endnu. Ret det på fagpersonens profil først, ellers kan personen aldrig matches til en sag.`)
+      }
     }
 
     const db = await createClient()

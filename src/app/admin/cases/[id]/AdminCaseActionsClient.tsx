@@ -72,6 +72,11 @@ export default function AdminCaseActionsClient({ caseId, currentStatus, grants: 
   const [grantStart, setGrantStart] = useState('')
   const [grantEnd, setGrantEnd] = useState('')
 
+  // Manual assignment state
+  const [showAssign, setShowAssign] = useState(false)
+  const [assignPro, setAssignPro] = useState('')
+  const [assignNote, setAssignNote] = useState('')
+
   // Handover state
   const [showHandover, setShowHandover] = useState(false)
   const [handoverReason, setHandoverReason] = useState('')
@@ -151,6 +156,25 @@ export default function AdminCaseActionsClient({ caseId, currentStatus, grants: 
     })
   }
 
+  function handleAssign() {
+    if (!assignPro) { setError('Vælg en kontaktperson'); return }
+    startTransition(async () => {
+      try {
+        await doFetch(`/api/cases/${caseId}/assign`, 'POST', {
+          professional_id: assignPro,
+          notes: assignNote || undefined,
+        })
+        setSuccess('Kontaktperson tildelt manuelt. Sagen er nu aktiv.')
+        setShowAssign(false)
+        setAssignPro('')
+        setAssignNote('')
+        router.refresh()
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Ukendt fejl')
+      }
+    })
+  }
+
   function handleHandover() {
     if (!handoverReason) { setError('Vælg en årsag til overdragelse'); return }
     startTransition(async () => {
@@ -182,6 +206,7 @@ export default function AdminCaseActionsClient({ caseId, currentStatus, grants: 
   const canClose = isActive || currentStatus === 'OPEN' || currentStatus === 'MATCHED' || currentStatus === 'PROPOSED'
   const canArchive = isCompleted
   const canHandover = isActive
+  const canAssign = ['OPEN', 'MATCHED', 'PROPOSED'].includes(currentStatus)
 
   return (
     <div className="space-y-4">
@@ -340,6 +365,68 @@ export default function AdminCaseActionsClient({ caseId, currentStatus, grants: 
           </div>
         )}
       </Card>
+
+      {/* Manual assignment — bypasses the matching algorithm entirely */}
+      {canAssign && (
+        <Card>
+          <div className="flex items-center justify-between mb-3">
+            <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569]">Manuel tildeling</div>
+            {!showAssign && (
+              <button
+                onClick={() => { setShowAssign(true); setShowHandover(false); setShowClose(false); setShowGrantForm(false) }}
+                className="text-[10px] font-semibold uppercase tracking-widest text-[#1C3829] hover:underline"
+              >
+                + Tildel
+              </button>
+            )}
+          </div>
+
+          {!showAssign ? (
+            <p className="text-sm text-[#6B7569]">
+              Tildel en kontaktperson direkte uden at afvente matching-algoritmen — brug hvis en kandidat, du ved er relevant, ikke dukker op automatisk.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              <div>
+                <label className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] block mb-1">Kontaktperson *</label>
+                <select
+                  value={assignPro}
+                  onChange={e => setAssignPro(e.target.value)}
+                  className="w-full border border-[#E0DAD0] rounded-xl px-3 py-2 text-sm text-[#1A1F1C] focus:outline-none focus:ring-2 focus:ring-[#1C3829]/20 bg-white"
+                >
+                  <option value="">Vælg kontaktperson...</option>
+                  {professionals.map(p => (
+                    <option key={p.id} value={p.id}>{p.full_name}</option>
+                  ))}
+                </select>
+                {professionals.length === 0 && (
+                  <p className="text-xs text-[#9B9589] mt-1">Ingen aktive fagpersoner fundet.</p>
+                )}
+              </div>
+              <div>
+                <label className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] block mb-1">
+                  Begrundelse <span className="normal-case font-normal">(valgfri, indgår i sagshistorik)</span>
+                </label>
+                <textarea
+                  value={assignNote}
+                  onChange={e => setAssignNote(e.target.value)}
+                  rows={2}
+                  className="w-full border border-[#E0DAD0] rounded-xl px-3 py-2 text-sm text-[#1A1F1C] focus:outline-none focus:ring-2 focus:ring-[#1C3829]/20 resize-none"
+                  placeholder="F.eks. hvorfor kandidaten ikke kom frem automatisk..."
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button variant="primary" size="sm" loading={pending} onClick={handleAssign} className="flex-1 justify-center">
+                  Tildel og aktivér sag
+                </Button>
+                <Button variant="secondary" size="sm" onClick={() => setShowAssign(false)}>
+                  Annuller
+                </Button>
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* Handover */}
       {canHandover && (

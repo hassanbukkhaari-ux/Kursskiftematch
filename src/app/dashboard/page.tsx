@@ -45,7 +45,9 @@ export default async function DashboardPage() {
       .select('hours')
       .eq('professional_id', userId)
       .gte('work_date', mondayStr)
-      .lte('work_date', sundayStr),
+      .lte('work_date', sundayStr)
+      .neq('status', 'REJECTED')
+      .is('archived_at', null),
     svc.from('status_report_requests')
       .select('id, report_type, deadline, status, cases!inner(citizen_initials)')
       .eq('professional_id', userId)

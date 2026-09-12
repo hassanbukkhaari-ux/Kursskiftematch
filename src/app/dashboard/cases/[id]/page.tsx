@@ -212,7 +212,7 @@ export default async function DashboardCasePage({ params }: PageProps) {
                           <span className="text-xs text-[#6B7569]">{log.duration_minutes} min.</span>
                         )}
                         <Badge variant={log.status === 'FINAL' ? 'green' : 'default'}>
-                          {log.status === 'FINAL' ? 'Afsluttet' : 'Kladde'}
+                          {log.status === 'FINAL' ? 'Afsluttet' : 'Oprettet'}
                         </Badge>
                       </div>
                     </Card>

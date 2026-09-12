@@ -465,12 +465,32 @@ describe('Logistics fit', () => {
     expect(scoreCandidate(proAll, baseCase({ requires_night: true })).logistics_score).toBe(100)
   })
 
-  it('averages multiple applicable checks together', () => {
+  it('floors logistics_score at 0 when a critical check fails, even if another critical check passes', () => {
     const pro = baseProfessional({
-      can_transport_citizen: true, has_drivers_license: true, has_own_car: true, // passes
-      can_take_acute: false, // fails
+      can_transport_citizen: true, has_drivers_license: true, has_own_car: true, // critical, passes
+      can_take_acute: false, // critical, fails
     })
     const c = baseCase({ transport_needs: 'JA', urgency: 'AKUT' })
+    const scores = scoreCandidate(pro, c)
+    expect(scores.logistics_score).toBe(0)
+  })
+
+  it('averages soft (non-critical) checks together normally when no critical check fails', () => {
+    const pro = baseProfessional({
+      covered_municipality_ids: ['muni-odense'], // soft, fails (doesn't cover the case's municipality)
+      languages: ['Dansk'], // soft, passes
+    })
+    const c = baseCase({ municipality_id: 'muni-aarhus', required_languages: ['Dansk'] })
+    const scores = scoreCandidate(pro, c)
+    expect(scores.logistics_score).toBe(50)
+  })
+
+  it('does not floor logistics_score when only soft checks fail', () => {
+    const pro = baseProfessional({
+      can_transport_citizen: true, has_drivers_license: true, has_own_car: true, // critical, passes
+      covered_municipality_ids: ['muni-odense'], // soft, fails
+    })
+    const c = baseCase({ transport_needs: 'JA', municipality_id: 'muni-aarhus' })
     const scores = scoreCandidate(pro, c)
     expect(scores.logistics_score).toBe(50)
   })

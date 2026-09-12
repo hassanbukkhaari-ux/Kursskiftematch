@@ -21,6 +21,17 @@ export interface ProfessionalInput {
   // Target-group areas the professional has stated experience with (e.g.
   // "Skolevægring"). Optional — omitted or empty means no signal either way.
   target_group_names?: string[]
+  // Logistics fields from the professional's own profile — all optional.
+  // Each only affects scoring when the case actually states a matching
+  // requirement; a professional who hasn't filled one in is never
+  // penalized for missing data, only for a stated requirement they can't meet.
+  gender?: 'MALE' | 'FEMALE' | 'OTHER' | null
+  experience_with_genders?: ('BOYS' | 'GIRLS')[]
+  can_transport_citizen?: boolean
+  has_drivers_license?: boolean
+  has_own_car?: boolean
+  can_take_acute?: boolean
+  geography?: string[]
 }
 
 export interface CaseInput {
@@ -34,6 +45,14 @@ export interface CaseInput {
   // Uses the same controlled vocabulary as target_group_names by design —
   // problem_areas and target_group_types share several identical labels.
   problem_area_labels?: string[]
+  // Logistics requirements from the case — all optional. Each is only
+  // "applicable" (affects logistics_score) when actually stated; an unset
+  // requirement never penalizes any candidate.
+  urgency?: 'NORMAL' | 'HURTIG' | 'AKUT'
+  preferred_prof_gender?: 'MALE' | 'FEMALE' | 'NO_PREF' | null
+  citizen_gender?: 'MALE' | 'FEMALE' | 'OTHER' | null
+  transport_needs?: 'JA' | 'NEJ' | null
+  geographical_area?: string | null
 }
 
 export interface MatchScores {
@@ -41,6 +60,10 @@ export interface MatchScores {
   availability_score: number
   capacity_score: number
   complexity_fit_score: number
+  // null when the case states no logistics requirement the professional's
+  // profile has a corresponding answer for — excluded from overall_score
+  // entirely rather than counted as a penalty or a free pass.
+  logistics_score: number | null
   overall_score: number
   scoring_explanation: string
   match_strengths: string[]
@@ -55,11 +78,15 @@ export function scoreCandidate(
   const availability_score = computeAvailabilityScore(professional, caseData)
   const capacity_score = computeCapacityScore(professional, caseData)
   const complexity_fit_score = computeComplexityFitScore(professional, caseData)
+  const logistics_score = computeLogisticsScore(professional, caseData)
 
+  // logistics_score only joins the average when the case actually states a
+  // requirement it can speak to — a pair with none of that data behaves
+  // identically to before this dimension existed (same /4 average).
+  const dimensions = [qualifications_score, availability_score, capacity_score, complexity_fit_score]
+  if (logistics_score !== null) dimensions.push(logistics_score)
   const overall_score = parseFloat(
-    (
-      (qualifications_score + availability_score + capacity_score + complexity_fit_score) / 4
-    ).toFixed(2)
+    (dimensions.reduce((sum, d) => sum + d, 0) / dimensions.length).toFixed(2)
   )
 
   const scoring_explanation = buildExplanation(professional, caseData, {
@@ -67,6 +94,7 @@ export function scoreCandidate(
     availability_score,
     capacity_score,
     complexity_fit_score,
+    logistics_score,
     overall_score,
   })
 
@@ -75,6 +103,7 @@ export function scoreCandidate(
     availability_score,
     capacity_score,
     complexity_fit_score,
+    logistics_score,
     professional,
     caseData,
   })
@@ -84,6 +113,7 @@ export function scoreCandidate(
     availability_score,
     capacity_score,
     complexity_fit_score,
+    logistics_score,
     overall_score,
     scoring_explanation,
     match_strengths,
@@ -158,6 +188,59 @@ function computeComplexityFitScore(
   return Math.min(age_match + exp_fit + special_skills, 100)
 }
 
+interface LogisticsCheck {
+  label: string
+  ok: boolean
+}
+
+// Every point of contact between a case's stated requirements and a
+// professional's own profile that has nothing to do with qualifications or
+// raw capacity: gender preference, transport, acute readiness, geography.
+// Each check only applies when the case actually states the requirement —
+// a professional who hasn't filled in an optional field is never treated
+// as failing it, only as not applicable. Returns null (excluded from
+// overall_score) when nothing on the case side applies to this candidate.
+function computeLogisticsChecks(professional: ProfessionalInput, caseData: CaseInput): LogisticsCheck[] {
+  const checks: LogisticsCheck[] = []
+
+  if (caseData.transport_needs === 'JA') {
+    const canTransport = !!(professional.can_transport_citizen && professional.has_drivers_license && professional.has_own_car)
+    checks.push({ label: 'Kan transportere borgeren', ok: canTransport })
+  }
+
+  if (caseData.urgency === 'AKUT') {
+    checks.push({ label: 'Kan tage akutte sager', ok: !!professional.can_take_acute })
+  }
+
+  if (caseData.preferred_prof_gender && caseData.preferred_prof_gender !== 'NO_PREF') {
+    checks.push({ label: 'Opfylder kommunens køns-ønske', ok: professional.gender === caseData.preferred_prof_gender })
+  }
+
+  if (caseData.citizen_gender === 'MALE' || caseData.citizen_gender === 'FEMALE') {
+    const experience = professional.experience_with_genders ?? []
+    if (experience.length > 0) {
+      const wanted = caseData.citizen_gender === 'MALE' ? 'BOYS' : 'GIRLS'
+      checks.push({ label: 'Erfaring med borgerens køn', ok: experience.includes(wanted) })
+    }
+  }
+
+  if (caseData.geographical_area) {
+    const geography = professional.geography ?? []
+    if (geography.length > 0) {
+      checks.push({ label: 'Dækker sagens geografi', ok: geography.includes(caseData.geographical_area) })
+    }
+  }
+
+  return checks
+}
+
+function computeLogisticsScore(professional: ProfessionalInput, caseData: CaseInput): number | null {
+  const checks = computeLogisticsChecks(professional, caseData)
+  if (checks.length === 0) return null
+  const passed = checks.filter(c => c.ok).length
+  return Math.round((passed / checks.length) * 100)
+}
+
 function buildExplanation(
   professional: ProfessionalInput,
   caseData: CaseInput,
@@ -206,6 +289,15 @@ function buildExplanation(
     parts.push(`aldersgruppe-match (${caseData.citizen_age_range})`)
   }
 
+  if (scores.logistics_score !== null) {
+    const failed = computeLogisticsChecks(professional, caseData).filter(c => !c.ok)
+    parts.push(
+      failed.length === 0
+        ? 'opfylder alle logistiske krav (transport/køn/geografi/akut)'
+        : `opfylder ikke: ${failed.map(c => c.label.toLowerCase()).join(', ')}`
+    )
+  }
+
   return parts.join(' + ') + '.'
 }
 
@@ -214,6 +306,7 @@ function buildStrengthsAndAttentionPoints(params: {
   availability_score: number
   capacity_score: number
   complexity_fit_score: number
+  logistics_score: number | null
   professional: ProfessionalInput
   caseData: CaseInput
 }): { match_strengths: string[]; attention_points: string[] } {
@@ -261,6 +354,15 @@ function buildStrengthsAndAttentionPoints(params: {
     attention.push(`Aldersgruppe ${caseData.citizen_age_range} er ikke i fagpersonens primærgruppe`)
   }
 
+  const logisticsChecks = computeLogisticsChecks(professional, caseData)
+  for (const check of logisticsChecks) {
+    if (check.ok) {
+      strengths.push(check.label)
+    } else {
+      attention.push(`${check.label} — ikke opfyldt`)
+    }
+  }
+
   return { match_strengths: strengths, attention_points: attention }
 }
 
@@ -306,4 +408,4 @@ export function getScoreColor(score: number): 'green' | 'yellow' | 'red' {
   return 'red'
 }
 
-export const ALGORITHM_VERSION = '1.2'
+export const ALGORITHM_VERSION = '1.3'

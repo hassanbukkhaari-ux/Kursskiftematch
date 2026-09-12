@@ -24,8 +24,8 @@ export async function GET(
       .from('match_candidates')
       .select(`
         id, rank, overall_score,
-        qualifications_score, availability_score, capacity_score, complexity_fit_score,
-        scoring_explanation, match_strengths, attention_points,
+        qualifications_score, availability_score, capacity_score, complexity_fit_score, logistics_score,
+        scoring_explanation,
         professional_id,
         professionals!inner(
           id, profession, experience_years, max_complexity_level,

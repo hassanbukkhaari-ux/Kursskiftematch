@@ -36,6 +36,9 @@ interface ScoreBreakdownProps {
   availability_score: number
   capacity_score: number
   complexity_fit_score: number
+  // Absent for a case/professional pair with no logistics requirement to
+  // check — the bar is simply not shown, same as before this dimension existed.
+  logistics_score?: number | null
   overall_score: number
 }
 
@@ -45,6 +48,7 @@ export function ScoreBreakdown(scores: ScoreBreakdownProps) {
     { label: 'Tilgængelighed', score: scores.availability_score },
     { label: 'Kapacitet', score: scores.capacity_score },
     { label: 'Kompleksitet', score: scores.complexity_fit_score },
+    ...(scores.logistics_score != null ? [{ label: 'Logistik', score: scores.logistics_score }] : []),
   ]
 
   return (

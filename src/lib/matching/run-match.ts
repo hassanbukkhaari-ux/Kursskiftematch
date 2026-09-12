@@ -99,6 +99,36 @@ export async function runMatchForCase(
     targetGroupsByPro.set(row.professional_id, list)
   }
 
+  // Logistics fields (gender, transport, geography, acute readiness) aren't
+  // exposed by v_professionals_available — fetched directly from
+  // professionals, read-only, same pattern as the target-group query above.
+  const { data: logisticsRows } = proIds.length > 0
+    ? await (db as any)
+        .from('professionals')
+        .select('id, gender, experience_with_genders, can_transport_citizen, has_drivers_license, has_own_car, can_take_acute, geography')
+        .in('id', proIds)
+    : { data: [] }
+  const logisticsByPro = new Map<string, {
+    gender: string | null
+    experience_with_genders: string[]
+    can_transport_citizen: boolean
+    has_drivers_license: boolean
+    has_own_car: boolean
+    can_take_acute: boolean
+    geography: string[]
+  }>()
+  for (const row of logisticsRows ?? []) {
+    logisticsByPro.set(row.id, {
+      gender: row.gender,
+      experience_with_genders: row.experience_with_genders ?? [],
+      can_transport_citizen: !!row.can_transport_citizen,
+      has_drivers_license: !!row.has_drivers_license,
+      has_own_car: !!row.has_own_car,
+      can_take_acute: !!row.can_take_acute,
+      geography: row.geography ?? [],
+    })
+  }
+
   const caseInput = {
     complexity_level: caseRow.complexity_level as ComplexityLevel,
     weekly_hours: caseRow.weekly_hours,
@@ -107,9 +137,15 @@ export async function runMatchForCase(
     substance_use: complexity?.substance_use ?? false,
     criminality: complexity?.criminality ?? false,
     problem_area_labels: problemAreaLabels,
+    urgency: caseRow.urgency,
+    preferred_prof_gender: caseRow.preferred_prof_gender,
+    citizen_gender: caseRow.citizen_gender,
+    transport_needs: caseRow.transport_needs,
+    geographical_area: caseRow.geographical_area,
   }
 
   const scored = (professionals || []).map(pro => {
+    const logistics = logisticsByPro.get(pro.id)
     const scores = scoreCandidate(
       {
         id: pro.id,
@@ -123,6 +159,13 @@ export async function runMatchForCase(
         has_certifications: Array.isArray(pro.qualifications) && pro.qualifications.length > 0,
         availability_status: pro.availability_status,
         target_group_names: targetGroupsByPro.get(pro.id) ?? [],
+        gender: logistics?.gender as 'MALE' | 'FEMALE' | 'OTHER' | null | undefined,
+        experience_with_genders: logistics?.experience_with_genders as ('BOYS' | 'GIRLS')[] | undefined,
+        can_transport_citizen: logistics?.can_transport_citizen,
+        has_drivers_license: logistics?.has_drivers_license,
+        has_own_car: logistics?.has_own_car,
+        can_take_acute: logistics?.can_take_acute,
+        geography: logistics?.geography,
       },
       caseInput,
     )

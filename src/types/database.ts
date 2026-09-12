@@ -1049,6 +1049,7 @@ export type Database = {
           availability_score: number
           capacity_score: number
           complexity_fit_score: number
+          logistics_score: number | null
           algorithm_version: string
           scoring_explanation: string
           created_at: string
@@ -1063,6 +1064,7 @@ export type Database = {
           availability_score: number
           capacity_score: number
           complexity_fit_score: number
+          logistics_score?: number | null
           algorithm_version?: string
           scoring_explanation: string
           created_at?: string

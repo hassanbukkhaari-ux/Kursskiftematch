@@ -4,6 +4,7 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { PageHeader, ContentContainer } from '@/components/layout/page-header'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
+import { AdminStatusReportActions } from './AdminStatusReportActions'
 
 const REPORT_TYPE_LABEL: Record<string, string> = {
   MONTHLY: 'Kort månedlig status',
@@ -74,7 +75,7 @@ export default async function AdminStatusReportDetailPage({ params }: PageProps)
           { label: `Borger ${data.cases.citizen_initials}` },
         ]}
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {isOverdue && <Badge variant="red">Forfalden</Badge>}
             <Badge variant={data.status === 'SUBMITTED' ? 'green' : data.status === 'ACKNOWLEDGED' ? 'brand' : data.status === 'REVIEWED' ? 'default' : 'amber'} dot>
               {STATUS_LABEL[data.status] ?? data.status}
@@ -93,6 +94,12 @@ export default async function AdminStatusReportDetailPage({ params }: PageProps)
                 Download PDF
               </Link>
             )}
+            <AdminStatusReportActions
+              requestId={id}
+              status={data.status}
+              isOverdue={isOverdue}
+              professionalName={data.professionals?.profiles?.full_name ?? 'Kontaktpersonen'}
+            />
           </div>
         }
       />
@@ -103,7 +110,23 @@ export default async function AdminStatusReportDetailPage({ params }: PageProps)
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
             <InfoBlock label="Kontaktperson" value={data.professionals?.profiles?.full_name ?? 'Ukendt'} />
             <InfoBlock label="Email" value={data.professionals?.profiles?.email ?? '—'} />
-            <InfoBlock label="Borger" value={`${data.cases.citizen_initials} · ${data.cases.citizen_age_range}`} />
+            <div className="bg-[#F6F3EE] rounded-xl p-3">
+              <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-1">Borger</div>
+              <div className="flex items-center justify-between gap-2">
+                <div className="text-sm font-medium text-[#1A1F1C]">{data.cases.citizen_initials} · {data.cases.citizen_age_range}</div>
+                <Link
+                  href={`/admin/cases/${data.case_id}`}
+                  target="_blank"
+                  className="shrink-0 inline-flex items-center gap-1 text-[10px] font-semibold text-[#1C3829] hover:underline"
+                >
+                  Åbn sag
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                    <polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
+                  </svg>
+                </Link>
+              </div>
+            </div>
             <InfoBlock label="Frist" value={deadlineDate.toLocaleDateString('da-DK', { day: 'numeric', month: 'long', year: 'numeric' })} />
             {data.promised_date && (
               <InfoBlock label="Lovet levering" value={new Date(data.promised_date).toLocaleDateString('da-DK', { day: 'numeric', month: 'long', year: 'numeric' })} />

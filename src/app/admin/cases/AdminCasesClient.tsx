@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { SectionHeader } from '@/components/layout/page-header'
+import { calculateComplexityLevel } from '@/lib/matching/algorithm'
 import type { AdminCase, MunicipalityOption, LookupOption } from './page'
 
 const STATUS_LABEL: Record<string, string> = {
@@ -67,6 +68,15 @@ type NewCaseForm = {
   weekly_hours: string
   urgency: string
   expected_duration_months: string
+  // Kompleksitetsfaktorer — complexity_level beregnes automatisk herfra
+  // (samme logik som matching-algoritmen bruger), i stedet for kun gættet.
+  factor_violence: boolean
+  factor_substance_use: boolean
+  factor_mental_health: boolean
+  factor_criminality: boolean
+  factor_family_instability: boolean
+  factor_school: boolean
+  factor_multiple_agencies: boolean
   // Bevilling — kommunens bevilgede timetal for perioden. Ugentlige timer
   // beregnes automatisk herfra, så de to tal ikke kan løbe fra hinanden.
   granted_hours: string
@@ -102,6 +112,13 @@ const EMPTY_FORM: NewCaseForm = {
   legal_basis: '',
   citizen_gender: '',
   complexity_level: 'MEDIUM',
+  factor_violence: false,
+  factor_substance_use: false,
+  factor_mental_health: false,
+  factor_criminality: false,
+  factor_family_instability: false,
+  factor_school: false,
+  factor_multiple_agencies: false,
   weekly_hours: '5',
   urgency: 'NORMAL',
   expected_duration_months: '',
@@ -216,6 +233,22 @@ export function AdminCasesClient({
     }
   }
 
+  function toggleFactor(key: 'factor_violence' | 'factor_substance_use' | 'factor_mental_health' | 'factor_criminality' | 'factor_family_instability' | 'factor_school' | 'factor_multiple_agencies') {
+    setForm(f => {
+      const next = { ...f, [key]: !f[key] }
+      next.complexity_level = calculateComplexityLevel({
+        violence: next.factor_violence,
+        substance_use: next.factor_substance_use,
+        mental_health: next.factor_mental_health,
+        criminality: next.factor_criminality,
+        family_instability: next.factor_family_instability,
+        school: next.factor_school,
+        multiple_agencies: next.factor_multiple_agencies,
+      })
+      return next
+    })
+  }
+
   function openNewCase() {
     setForm({ ...EMPTY_FORM, municipality_id: municipalities[0]?.id ?? '' })
     setError(null)
@@ -302,6 +335,23 @@ export function AdminCasesClient({
         router.refresh()
         return
       }
+
+      // Best-effort — the case and grant are already saved regardless of
+      // whether this succeeds, so a failure here shouldn't look like the
+      // whole creation failed.
+      await fetch(`/api/cases/${newCase.id}/complexity`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          violence: form.factor_violence,
+          substance_use: form.factor_substance_use,
+          mental_health: form.factor_mental_health,
+          criminality: form.factor_criminality,
+          family_instability: form.factor_family_instability,
+          school: form.factor_school,
+          multiple_agencies: form.factor_multiple_agencies,
+        }),
+      }).catch(() => {})
 
       closeDrawer()
       router.refresh()
@@ -627,6 +677,7 @@ export function AdminCasesClient({
                     </button>
                   ))}
                 </div>
+                <p className="text-xs text-[#9B9589] mt-1">Beregnes automatisk ud fra kompleksitetsfaktorerne nedenfor — kan justeres manuelt.</p>
               </div>
               <div>
                 <label className={labelClass}>Ugentlige timer</label>
@@ -674,6 +725,35 @@ export function AdminCasesClient({
                     className={inputClass}
                   />
                 </div>
+              </div>
+            </div>
+
+            <div className="border-t border-[#E0DAD0] pt-4">
+              <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#6B7569] mb-3">Kompleksitetsfaktorer</div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {([
+                  { key: 'factor_violence', label: 'Vold' },
+                  { key: 'factor_substance_use', label: 'Misbrug' },
+                  { key: 'factor_mental_health', label: 'Psykisk sygdom' },
+                  { key: 'factor_criminality', label: 'Kriminalitet' },
+                  { key: 'factor_family_instability', label: 'Familieustabilitet' },
+                  { key: 'factor_school', label: 'Skoleproblemer' },
+                  { key: 'factor_multiple_agencies', label: 'Flere instanser involveret' },
+                ] as const).map(opt => (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => toggleFactor(opt.key)}
+                    className={[
+                      'h-10 rounded-xl text-xs font-medium border transition-all px-2',
+                      form[opt.key]
+                        ? 'bg-red-700 text-white border-red-700'
+                        : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]',
+                    ].join(' ')}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
               </div>
             </div>
 

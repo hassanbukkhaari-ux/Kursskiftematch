@@ -61,10 +61,9 @@ export async function POST(request: NextRequest) {
       // 1 was too tight a default — the same shape of silent-block bug as
       // capacity_hours_week and availability_status: a professional could
       // be activated, already have one case, and be permanently excluded
-      // from a second because nobody thought to raise this. 3 matches the
-      // fallback every admin screen already assumes (`?? 3`) when this was
-      // null; admin can still lower or raise it per professional.
-      max_concurrent_cases: 3,
+      // from a second because nobody thought to raise this. Admin can still
+      // lower or raise it per professional.
+      max_concurrent_cases: 10,
       experience_years: 0,
     })
     .select()

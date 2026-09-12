@@ -433,11 +433,11 @@ describe('Logistics fit', () => {
     expect(scoreCandidate(proWithMatch, c).logistics_score).toBe(100)
   })
 
-  it('checks geography only when the professional has stated any coverage area', () => {
-    const proWithNoData = baseProfessional({ geography: [] })
-    const proWithCoverage = baseProfessional({ geography: ['Aarhus'] })
-    const proWithoutCoverage = baseProfessional({ geography: ['Odense'] })
-    const c = baseCase({ geographical_area: 'Aarhus' })
+  it('checks municipality coverage only when the professional has stated any', () => {
+    const proWithNoData = baseProfessional({ covered_municipality_ids: [] })
+    const proWithCoverage = baseProfessional({ covered_municipality_ids: ['muni-aarhus'] })
+    const proWithoutCoverage = baseProfessional({ covered_municipality_ids: ['muni-odense'] })
+    const c = baseCase({ municipality_id: 'muni-aarhus' })
     expect(scoreCandidate(proWithNoData, c).logistics_score).toBeNull()
     expect(scoreCandidate(proWithCoverage, c).logistics_score).toBe(100)
     expect(scoreCandidate(proWithoutCoverage, c).logistics_score).toBe(0)

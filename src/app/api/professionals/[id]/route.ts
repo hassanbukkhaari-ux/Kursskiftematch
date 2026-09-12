@@ -20,7 +20,6 @@ const UpdateProfessionalSchema = z.object({
   certificates: z.array(z.string()).optional(),
   daily_occupation: z.string().optional(),
   experience_with_genders: z.array(z.enum(['BOYS', 'GIRLS'])).optional(),
-  geography: z.array(z.string()).optional(),
   available_from_date: z.string().nullable().optional(),
   availability_note: z.string().nullable().optional(),
 })

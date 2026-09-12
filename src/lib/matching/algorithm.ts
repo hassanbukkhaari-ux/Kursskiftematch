@@ -31,7 +31,10 @@ export interface ProfessionalInput {
   has_drivers_license?: boolean
   has_own_car?: boolean
   can_take_acute?: boolean
-  geography?: string[]
+  // Municipality IDs the professional has stated they cover — the same
+  // structured selection they make on their own profile (professional_geography),
+  // not a free-text field. Optional — omitted or empty means no signal.
+  covered_municipality_ids?: string[]
   languages?: string[]
   can_work_evening?: boolean
   can_work_weekend?: boolean
@@ -56,7 +59,9 @@ export interface CaseInput {
   preferred_prof_gender?: 'MALE' | 'FEMALE' | 'NO_PREF' | null
   citizen_gender?: 'MALE' | 'FEMALE' | 'OTHER' | null
   transport_needs?: 'JA' | 'NEJ' | null
-  geographical_area?: string | null
+  // The municipality the case belongs to — always set on a real case,
+  // compared against the professional's own covered_municipality_ids.
+  municipality_id?: string | null
   required_languages?: string[] | null
   requires_evening?: boolean
   requires_weekend?: boolean
@@ -233,10 +238,10 @@ function computeLogisticsChecks(professional: ProfessionalInput, caseData: CaseI
     }
   }
 
-  if (caseData.geographical_area) {
-    const geography = professional.geography ?? []
-    if (geography.length > 0) {
-      checks.push({ label: 'Dækker sagens geografi', ok: geography.includes(caseData.geographical_area) })
+  if (caseData.municipality_id) {
+    const covered = professional.covered_municipality_ids ?? []
+    if (covered.length > 0) {
+      checks.push({ label: 'Dækker sagens kommune', ok: covered.includes(caseData.municipality_id) })
     }
   }
 

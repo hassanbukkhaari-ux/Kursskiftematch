@@ -69,7 +69,6 @@ type ProfileForm = {
   education: string
   daily_occupation: string
   certificates: string
-  geography: string
   experience_with_genders: string[]
 }
 
@@ -79,7 +78,6 @@ function toForm(pro: ProfessionalRow): ProfileForm {
     education: pro.education ?? '',
     daily_occupation: pro.daily_occupation ?? '',
     certificates: pro.certificates.join(', '),
-    geography: pro.geography.join(', '),
     experience_with_genders: pro.experience_with_genders,
   }
 }
@@ -195,7 +193,6 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
           education: profileForm.education || undefined,
           daily_occupation: profileForm.daily_occupation || undefined,
           certificates: profileForm.certificates.split(',').map(s => s.trim()).filter(Boolean),
-          geography: profileForm.geography.split(',').map(s => s.trim()).filter(Boolean),
           experience_with_genders: profileForm.experience_with_genders,
         }),
       })
@@ -647,15 +644,6 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
                         className="w-full px-3 py-2 rounded-lg border border-[#E0DAD0] text-sm focus:outline-none focus:border-[#1C3829]"
                       />
                     </div>
-                    <div>
-                      <label className="text-xs text-[#6B7569] mb-1 block">Geografi (kommasepareret)</label>
-                      <input
-                        type="text"
-                        value={profileForm.geography}
-                        onChange={e => setProfileForm({ ...profileForm, geography: e.target.value })}
-                        className="w-full px-3 py-2 rounded-lg border border-[#E0DAD0] text-sm focus:outline-none focus:border-[#1C3829]"
-                      />
-                    </div>
                     <div className="flex gap-2 pt-1">
                       <Button variant="primary" size="sm" loading={updating} onClick={saveProfile}>
                         Gem
@@ -681,8 +669,12 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
                     <InfoBlock label="Uddannelse" value={selected.education || '—'} />
                     <InfoBlock label="Daglig beskæftigelse" value={selected.daily_occupation || '—'} />
                     <InfoBlock label="Certifikater" value={selected.certificates.length > 0 ? selected.certificates.join(', ') : '—'} />
-                    <InfoBlock label="Geografi" value={selected.geography.length > 0 ? selected.geography.join(', ') : '—'} />
                   </div>
+                )}
+                {!editingProfile && (
+                  <p className="text-xs text-[#9B9589] -mt-2">
+                    Geografisk dækning sættes af fagpersonen selv — se den fulde profil for detaljer.
+                  </p>
                 )}
 
               {/* Documents */}

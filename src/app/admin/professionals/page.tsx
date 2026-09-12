@@ -12,7 +12,7 @@ export default async function ProfessionalsPage() {
       target_age_groups, qualifications, capacity_hours_week,
       max_concurrent_cases, availability_status, availability_days,
       status, gender, education, certificates, daily_occupation,
-      experience_with_genders, geography, created_at, updated_at,
+      experience_with_genders, created_at, updated_at,
       profile_image_url, profession_type_id, max_hours_per_week,
       profession_types(name),
       profiles!inner(full_name, email)
@@ -51,7 +51,6 @@ export type ProfessionalRow = {
   certificates: string[]
   daily_occupation: string | null
   experience_with_genders: string[]
-  geography: string[]
   created_at: string
   updated_at: string | null
   profile_image_url: string | null

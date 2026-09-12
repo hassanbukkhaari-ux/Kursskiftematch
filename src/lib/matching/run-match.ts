@@ -82,7 +82,7 @@ export async function runMatchForCase(
       id, experience_years, target_age_groups, max_complexity_level,
       capacity_hours_week, max_concurrent_cases, availability_status,
       qualifications, gender, experience_with_genders, can_transport_citizen,
-      has_drivers_license, has_own_car, can_take_acute, geography,
+      has_drivers_license, has_own_car, can_take_acute,
       can_work_evening, can_work_weekend, can_work_night
     `)
     .eq('status', 'ACTIVE')
@@ -124,6 +124,24 @@ export async function runMatchForCase(
     languagesByPro.set(row.professional_id, list)
   }
 
+  // Each candidate's stated municipality coverage — the same structured
+  // selection the professional makes on their own profile
+  // (professional_geography), compared directly against the case's
+  // municipality_id instead of the free-text professionals.geography
+  // column matching never actually connected to that selection.
+  const { data: geographyRows } = proIds.length > 0
+    ? await (db as any)
+        .from('professional_geography')
+        .select('professional_id, municipality_id')
+        .in('professional_id', proIds)
+    : { data: [] }
+  const municipalityIdsByPro = new Map<string, string[]>()
+  for (const row of geographyRows ?? []) {
+    const list = municipalityIdsByPro.get(row.professional_id) ?? []
+    if (row.municipality_id) list.push(row.municipality_id)
+    municipalityIdsByPro.set(row.professional_id, list)
+  }
+
   // current_assignments / current_hours_assigned — mirrors exactly what
   // v_professionals_available computes (every non-ended assignment counts
   // toward the case-load limit; only assignments to an ACTIVE-status case
@@ -157,7 +175,7 @@ export async function runMatchForCase(
     preferred_prof_gender: caseRow.preferred_prof_gender,
     citizen_gender: caseRow.citizen_gender,
     transport_needs: caseRow.transport_needs,
-    geographical_area: caseRow.geographical_area,
+    municipality_id: caseRow.municipality_id,
     required_languages: caseRow.required_languages,
     requires_evening: caseRow.requires_evening,
     requires_weekend: caseRow.requires_weekend,
@@ -200,7 +218,7 @@ export async function runMatchForCase(
         has_drivers_license: pro.has_drivers_license ?? undefined,
         has_own_car: pro.has_own_car ?? undefined,
         can_take_acute: pro.can_take_acute ?? undefined,
-        geography: pro.geography ?? undefined,
+        covered_municipality_ids: municipalityIdsByPro.get(pro.id) ?? undefined,
         languages: languagesByPro.get(pro.id) ?? undefined,
         can_work_evening: pro.can_work_evening ?? undefined,
         can_work_weekend: pro.can_work_weekend ?? undefined,

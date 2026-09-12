@@ -15,10 +15,10 @@ interface QuickLink {
 export default async function AdminPage() {
   const db = await createClient()
 
-  const [casesRes, prosRes, inquiriesRes, runsRes] = await Promise.all([
+  const [casesRes, prosRes, newProsRes, runsRes] = await Promise.all([
     db.from('cases').select('id', { count: 'exact', head: true }).neq('status', 'ARCHIVED'),
     db.from('professionals').select('id', { count: 'exact', head: true }).eq('status', 'ACTIVE'),
-    db.from('inbound_inquiries').select('id', { count: 'exact', head: true }).eq('status', 'PENDING'),
+    db.from('professionals').select('id', { count: 'exact', head: true }).eq('status', 'REGISTERED'),
     db.from('match_runs').select('id', { count: 'exact', head: true }).eq('status', 'SCORED'),
   ])
 
@@ -44,13 +44,6 @@ export default async function AdminPage() {
       title: 'Kontaktpersoner',
       description: 'Administrer profiler og dokumenter',
       icon: <ProsIcon />,
-    },
-    {
-      href: '/admin/inquiries',
-      title: 'Henvendelser',
-      description: 'Indkomne kommunehenvendelser',
-      icon: <InquiryIcon />,
-      badge: inquiriesRes.count ? { label: `${inquiriesRes.count} nye`, variant: 'amber' } : undefined,
     },
     {
       href: '/admin/municipalities',
@@ -84,7 +77,7 @@ export default async function AdminPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
           <StatCard label="Aktive sager" value={casesRes.count ?? 0} color="brand" href="/admin/cases" />
           <StatCard label="Aktive kontaktpersoner" value={prosRes.count ?? 0} color="green" href="/admin/professionals" />
-          <StatCard label="Nye henvendelser" value={inquiriesRes.count ?? 0} color="amber" href="/admin/inquiries" />
+          <StatCard label="Nye fagpersoner" value={newProsRes.count ?? 0} color="amber" sublabel="afventer aktivering" href="/admin/professionals" />
           <StatCard label="Klar til tildeling" value={pendingMatchRuns} color="gold" sublabel="match-kørsler" href="/admin/matching" />
         </div>
 
@@ -141,13 +134,6 @@ function ProsIcon() {
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
       <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
       <path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  )
-}
-function InquiryIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
     </svg>
   )
 }

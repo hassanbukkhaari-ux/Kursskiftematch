@@ -484,7 +484,11 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
               ) : (
                 <div className="space-y-2">
                   {municipalityCases.map(c => (
-                    <div key={c.id} className="rounded-xl border border-[#E0DAD0] p-3 bg-[#FAFAF8]">
+                    <div
+                      key={c.id}
+                      onClick={() => window.open(`/admin/cases/${c.id}`, '_blank')}
+                      className="rounded-xl border border-[#E0DAD0] p-3 bg-[#FAFAF8] cursor-pointer hover:border-[#1C3829] hover:bg-[#EEF4F0] transition-colors group"
+                    >
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
@@ -509,7 +513,11 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
                                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="shrink-0">
                                     <rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
                                   </svg>
-                                  <a href={`mailto:${c.intake_contact_email}`} className="truncate hover:underline text-[#1C3829]">{c.intake_contact_email}</a>
+                                  <a
+                                    href={`mailto:${c.intake_contact_email}`}
+                                    onClick={e => e.stopPropagation()}
+                                    className="truncate hover:underline text-[#1C3829]"
+                                  >{c.intake_contact_email}</a>
                                 </div>
                               )}
                               {c.intake_contact_phone && (
@@ -517,7 +525,11 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
                                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="shrink-0">
                                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.1 13.5a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3 2.84h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 10.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 18z" />
                                   </svg>
-                                  <a href={`tel:${c.intake_contact_phone}`} className="truncate hover:underline">{c.intake_contact_phone}</a>
+                                  <a
+                                    href={`tel:${c.intake_contact_phone}`}
+                                    onClick={e => e.stopPropagation()}
+                                    className="truncate hover:underline"
+                                  >{c.intake_contact_phone}</a>
                                 </div>
                               )}
                             </div>
@@ -525,13 +537,20 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
                             <div className="mt-1.5 text-[10px] text-[#C8C0B0]">Ingen sagsbehandler angivet</div>
                           )}
                         </div>
-                        <Badge variant={STATUS_VARIANT[c.status] ?? 'default'}>
-                          {STATUS_LABEL[c.status] ?? c.status}
-                        </Badge>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <Badge variant={STATUS_VARIANT[c.status] ?? 'default'}>
+                            {STATUS_LABEL[c.status] ?? c.status}
+                          </Badge>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C8C0B0" strokeWidth="2" strokeLinecap="round" className="group-hover:stroke-[#1C3829] transition-colors">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                            <polyline points="15 3 21 3 21 9" />
+                            <line x1="10" y1="14" x2="21" y2="3" />
+                          </svg>
+                        </div>
                       </div>
 
                       {reassigningId === c.id ? (
-                        <div className="mt-2 flex gap-2">
+                        <div className="mt-2 flex gap-2" onClick={e => e.stopPropagation()}>
                           <select
                             value={reassignTarget}
                             onChange={e => setReassignTarget(e.target.value)}
@@ -546,7 +565,7 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
                           </select>
                           <button
                             type="button"
-                            onClick={() => handleReassign(c.id)}
+                            onClick={e => { e.stopPropagation(); handleReassign(c.id) }}
                             disabled={!reassignTarget || reassigning}
                             className="px-2.5 py-1.5 text-xs font-medium text-white bg-[#1C3829] rounded-lg hover:bg-[#16302d] transition-colors disabled:opacity-40"
                           >
@@ -554,7 +573,7 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
                           </button>
                           <button
                             type="button"
-                            onClick={() => { setReassigningId(null); setReassignTarget('') }}
+                            onClick={e => { e.stopPropagation(); setReassigningId(null); setReassignTarget('') }}
                             className="px-2.5 py-1.5 text-xs text-[#6B7569] border border-[#E0DAD0] rounded-lg hover:bg-[#F6F3EE] transition-colors"
                           >
                             Annuller
@@ -563,7 +582,7 @@ export function MunicipalitiesClient({ initialData, caseStats }: { initialData: 
                       ) : (
                         <button
                           type="button"
-                          onClick={() => { setReassigningId(c.id); setReassignTarget('') }}
+                          onClick={e => { e.stopPropagation(); setReassigningId(c.id); setReassignTarget('') }}
                           className="mt-1.5 text-[10px] text-[#1C3829] hover:text-[#16302d] transition-colors"
                         >
                           Skift kommune →

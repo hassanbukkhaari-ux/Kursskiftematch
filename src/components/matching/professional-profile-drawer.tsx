@@ -198,6 +198,7 @@ export function ProfessionalProfileDrawer({
                 availability_score={candidate.availability_score}
                 capacity_score={candidate.capacity_score}
                 complexity_fit_score={candidate.complexity_fit_score}
+                logistics_score={candidate.logistics_score}
                 overall_score={candidate.overall_score}
               />
             )}

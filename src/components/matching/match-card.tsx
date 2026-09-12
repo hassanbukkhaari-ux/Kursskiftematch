@@ -13,6 +13,7 @@ export interface MatchCandidate {
   availability_score: number
   capacity_score: number
   complexity_fit_score: number
+  logistics_score?: number | null
   scoring_explanation: string
   match_strengths?: string[]
   attention_points?: string[]
@@ -129,6 +130,7 @@ export function MatchCard({ candidate, onSelect, isSelected, rank }: MatchCardPr
           availability_score={candidate.availability_score}
           capacity_score={candidate.capacity_score}
           complexity_fit_score={candidate.complexity_fit_score}
+          logistics_score={candidate.logistics_score}
           overall_score={candidate.overall_score}
         />
       </div>

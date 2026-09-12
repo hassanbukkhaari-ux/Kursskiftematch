@@ -363,3 +363,103 @@ describe('Score boundary conditions', () => {
     expect(scores.complexity_fit_score).toBe(75)
   })
 })
+
+// ================================================================
+// Logistics fit: transport, akut-readiness, gender preference,
+// geography and gender experience — each only applies when the case
+// actually states the requirement.
+// ================================================================
+describe('Logistics fit', () => {
+  it('is null and excluded from overall_score when the case states no logistics requirement', () => {
+    const pro = baseProfessional()
+    const c = baseCase()
+    const scores = scoreCandidate(pro, c)
+    expect(scores.logistics_score).toBeNull()
+    // overall_score is still the plain /4 average of the four base dimensions
+    const manualAverage = parseFloat((
+      (scores.qualifications_score + scores.availability_score + scores.capacity_score + scores.complexity_fit_score) / 4
+    ).toFixed(2))
+    expect(scores.overall_score).toBe(manualAverage)
+  })
+
+  it('scores 100 when transport is required and the professional can provide it', () => {
+    const pro = baseProfessional({ can_transport_citizen: true, has_drivers_license: true, has_own_car: true })
+    const c = baseCase({ transport_needs: 'JA' })
+    const scores = scoreCandidate(pro, c)
+    expect(scores.logistics_score).toBe(100)
+  })
+
+  it('scores 0 when transport is required and the professional is missing any part of it', () => {
+    const pro = baseProfessional({ can_transport_citizen: true, has_drivers_license: true, has_own_car: false })
+    const c = baseCase({ transport_needs: 'JA' })
+    const scores = scoreCandidate(pro, c)
+    expect(scores.logistics_score).toBe(0)
+  })
+
+  it('does not check transport when the case does not require it', () => {
+    const pro = baseProfessional({ can_transport_citizen: false })
+    const c = baseCase({ transport_needs: 'NEJ' })
+    const scores = scoreCandidate(pro, c)
+    expect(scores.logistics_score).toBeNull()
+  })
+
+  it('penalizes a professional who cannot take acute cases when the case is AKUT', () => {
+    const pro = baseProfessional({ can_take_acute: false })
+    const c = baseCase({ urgency: 'AKUT' })
+    const scores = scoreCandidate(pro, c)
+    expect(scores.logistics_score).toBe(0)
+    expect(scores.attention_points.some(a => a.includes('akutte'))).toBe(true)
+  })
+
+  it('rewards matching the municipality\'s stated gender preference', () => {
+    const pro = baseProfessional({ gender: 'FEMALE' })
+    const c = baseCase({ preferred_prof_gender: 'FEMALE' })
+    const scores = scoreCandidate(pro, c)
+    expect(scores.logistics_score).toBe(100)
+  })
+
+  it('ignores gender preference when the case has none (NO_PREF)', () => {
+    const pro = baseProfessional({ gender: 'MALE' })
+    const c = baseCase({ preferred_prof_gender: 'NO_PREF' })
+    const scores = scoreCandidate(pro, c)
+    expect(scores.logistics_score).toBeNull()
+  })
+
+  it('checks gender experience only when the professional has stated any', () => {
+    const proWithNoData = baseProfessional({ experience_with_genders: [] })
+    const proWithMatch = baseProfessional({ experience_with_genders: ['BOYS'] })
+    const c = baseCase({ citizen_gender: 'MALE' })
+    expect(scoreCandidate(proWithNoData, c).logistics_score).toBeNull()
+    expect(scoreCandidate(proWithMatch, c).logistics_score).toBe(100)
+  })
+
+  it('checks geography only when the professional has stated any coverage area', () => {
+    const proWithNoData = baseProfessional({ geography: [] })
+    const proWithCoverage = baseProfessional({ geography: ['Aarhus'] })
+    const proWithoutCoverage = baseProfessional({ geography: ['Odense'] })
+    const c = baseCase({ geographical_area: 'Aarhus' })
+    expect(scoreCandidate(proWithNoData, c).logistics_score).toBeNull()
+    expect(scoreCandidate(proWithCoverage, c).logistics_score).toBe(100)
+    expect(scoreCandidate(proWithoutCoverage, c).logistics_score).toBe(0)
+  })
+
+  it('averages multiple applicable checks together', () => {
+    const pro = baseProfessional({
+      can_transport_citizen: true, has_drivers_license: true, has_own_car: true, // passes
+      can_take_acute: false, // fails
+    })
+    const c = baseCase({ transport_needs: 'JA', urgency: 'AKUT' })
+    const scores = scoreCandidate(pro, c)
+    expect(scores.logistics_score).toBe(50)
+  })
+
+  it('joins overall_score as a fifth dimension only when applicable', () => {
+    const pro = baseProfessional({ can_take_acute: true })
+    const c = baseCase({ urgency: 'AKUT' })
+    const scores = scoreCandidate(pro, c)
+    const manualAverage = parseFloat((
+      (scores.qualifications_score + scores.availability_score + scores.capacity_score + scores.complexity_fit_score + 100) / 5
+    ).toFixed(2))
+    expect(scores.overall_score).toBe(manualAverage)
+  })
+})

@@ -34,9 +34,10 @@ interface Props {
   initialRequests: any[]
   cases: any[]
   professionals: any[]
+  casesWithoutRequest: any[]
 }
 
-export function AdminStatusReportsClient({ initialRequests, cases, professionals }: Props) {
+export function AdminStatusReportsClient({ initialRequests, cases, professionals, casesWithoutRequest }: Props) {
   const router = useRouter()
   const [filter, setFilter] = useState<FilterKey>('all')
   const [creating, setCreating] = useState(false)
@@ -90,6 +91,41 @@ export function AdminStatusReportsClient({ initialRequests, cases, professionals
 
   return (
     <>
+      {/* Blind spots — active cases with no pending request */}
+      {casesWithoutRequest.length > 0 && (
+        <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92660A" strokeWidth="2" strokeLinecap="round" className="shrink-0">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <span className="text-xs font-semibold text-amber-900">
+              {casesWithoutRequest.length} {casesWithoutRequest.length === 1 ? 'aktiv sag' : 'aktive sager'} mangler rapport-anmodning
+            </span>
+          </div>
+          <div className="space-y-1.5">
+            {casesWithoutRequest.map(c => (
+              <div key={c.id} className="flex items-center justify-between gap-3 bg-white rounded-xl px-3 py-2 border border-amber-100">
+                <div className="min-w-0">
+                  <span className="text-xs font-medium text-[#1A1F1C]">Borger {c.citizen_initials}</span>
+                  <span className="text-xs text-[#6B7569] ml-2">{c.citizen_age_range} · {c.municipalities?.name ?? ''}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setForm(f => ({ ...f, case_id: c.id }))
+                    setCreating(true)
+                  }}
+                  className="shrink-0 text-[10px] font-semibold text-white bg-[#1C3829] hover:bg-[#2D5840] transition-colors rounded-lg px-2.5 py-1.5"
+                >
+                  Anmod
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Header actions */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex gap-1 bg-[#F6F3EE] rounded-xl p-1 overflow-x-auto scrollbar-none">

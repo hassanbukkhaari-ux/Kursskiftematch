@@ -58,7 +58,12 @@ export async function POST(request: NextRequest) {
       status: 'REGISTERED',
       availability_status: 'UNAVAILABLE',
       capacity_hours_week: 0,
-      max_concurrent_cases: 1,
+      // 1 was too tight a default — the same shape of silent-block bug as
+      // capacity_hours_week and availability_status: a professional could
+      // be activated, already have one case, and be permanently excluded
+      // from a second because nobody thought to raise this. Admin can still
+      // lower or raise it per professional.
+      max_concurrent_cases: 10,
       experience_years: 0,
     })
     .select()

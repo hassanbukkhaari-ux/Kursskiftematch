@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { sendNotification } from '@/lib/notifications/service'
+import { REPORT_TYPE_LABEL as REPORT_LABEL } from '@/lib/labels'
 
 // POST /api/status-report-requests/[id]/submit — professional submits the filled report
 export async function POST(
@@ -91,12 +92,6 @@ export async function POST(
       .select('citizen_initials')
       .eq('id', req.case_id)
       .single()
-
-    const REPORT_LABEL: Record<string, string> = {
-      MONTHLY: 'Kort månedlig status',
-      EXTENDED: 'Udvidet statusrapport',
-      FINAL: 'Afsluttende statusrapport',
-    }
 
     await sendNotification({
       db: svc,

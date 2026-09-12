@@ -2,12 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { requireCronSecret } from '@/lib/cron-auth'
 import { sendNotification } from '@/lib/notifications/service'
-
-const REPORT_LABEL: Record<string, string> = {
-  MONTHLY: 'Kort månedlig status',
-  EXTENDED: 'Udvidet statusrapport',
-  FINAL: 'Afsluttende statusrapport',
-}
+import { REPORT_TYPE_LABEL as REPORT_LABEL } from '@/lib/labels'
 
 // GET /api/cron/status-report-reminders — send 14-day and 7-day reminders
 export async function GET(request: NextRequest) {

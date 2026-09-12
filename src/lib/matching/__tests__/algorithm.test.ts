@@ -271,6 +271,64 @@ describe('calculateComplexityLevel', () => {
 })
 
 // ================================================================
+// Real-world relevance: profession/daily-work matched against the
+// case's tagged problem areas (e.g. a teacher's "Skolevægring"
+// experience matched to a case tagged with the same problem area)
+// ================================================================
+describe('Qualifications: problem-area relevance', () => {
+  it('falls back to the flat baseline (25) when neither side has tags', () => {
+    const pro = baseProfessional({ experience_years: 0, has_certifications: false })
+    const c = baseCase()
+    const scores = scoreCandidate(pro, c)
+    // qualifications: experience=0 + relevance=25 (no data) + certification=0 = 25
+    expect(scores.qualifications_score).toBe(25)
+  })
+
+  it('scores full relevance when the professional covers every tagged problem area', () => {
+    const pro = baseProfessional({
+      experience_years: 0,
+      has_certifications: false,
+      target_group_names: ['Skolevægring', 'Angst'],
+    })
+    const c = baseCase({ problem_area_labels: ['Skolevægring'] })
+    const scores = scoreCandidate(pro, c)
+    // qualifications: experience=0 + relevance=25 (full coverage) + certification=0 = 25
+    expect(scores.qualifications_score).toBe(25)
+  })
+
+  it('scores zero relevance when the professional has stated groups but none match', () => {
+    const pro = baseProfessional({
+      experience_years: 0,
+      has_certifications: false,
+      target_group_names: ['Misbrug'],
+    })
+    const c = baseCase({ problem_area_labels: ['Skolevægring'] })
+    const scores = scoreCandidate(pro, c)
+    // qualifications: experience=0 + relevance=0 (no overlap) + certification=0 = 0
+    expect(scores.qualifications_score).toBe(0)
+  })
+
+  it('scores partial relevance proportional to coverage', () => {
+    const pro = baseProfessional({
+      experience_years: 0,
+      has_certifications: false,
+      target_group_names: ['Skolevægring'],
+    })
+    const c = baseCase({ problem_area_labels: ['Skolevægring', 'Angst'] })
+    const scores = scoreCandidate(pro, c)
+    // relevance: 1/2 coverage × 25 = 12.5 → rounds to 13
+    expect(scores.qualifications_score).toBe(13)
+  })
+
+  it('names the matched problem area in the explanation text', () => {
+    const pro = baseProfessional({ target_group_names: ['Skolevægring'] })
+    const c = baseCase({ problem_area_labels: ['Skolevægring'] })
+    const scores = scoreCandidate(pro, c)
+    expect(scores.scoring_explanation).toContain('Skolevægring')
+  })
+})
+
+// ================================================================
 // Score caps and edge cases
 // ================================================================
 describe('Score boundary conditions', () => {

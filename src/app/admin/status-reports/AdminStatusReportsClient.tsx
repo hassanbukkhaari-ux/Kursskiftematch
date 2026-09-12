@@ -7,12 +7,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
-
-const REPORT_TYPE_LABEL: Record<string, string> = {
-  MONTHLY: 'Kort månedlig status',
-  EXTENDED: 'Udvidet statusrapport',
-  FINAL: 'Afsluttende statusrapport',
-}
+import { REPORT_TYPE_LABEL } from '@/lib/labels'
 
 const STATUS_LABEL: Record<string, string> = {
   PENDING: 'Afventer',

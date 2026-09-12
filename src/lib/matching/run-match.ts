@@ -33,6 +33,16 @@ export async function runMatchForCase(
 
   const complexity = complexityRows?.[0] || null
 
+  // The case's tagged problem areas (e.g. "Skolevægring") — used to weigh
+  // candidates by relevant real-world experience, not just years worked.
+  const { data: caseProblemAreas } = await (db as any)
+    .from('case_problem_areas')
+    .select('problem_areas(label_da)')
+    .eq('case_id', caseId)
+  const problemAreaLabels: string[] = (caseProblemAreas ?? [])
+    .map((r: any) => r.problem_areas?.label_da)
+    .filter(Boolean)
+
   const { data: matchRun, error: runError } = await db
     .from('match_runs')
     .insert({
@@ -59,6 +69,22 @@ export async function runMatchForCase(
     return { runId: matchRun.id, candidateCount: 0, status: 'CANCELLED' }
   }
 
+  // Each candidate's stated target-group experience (e.g. a teacher who has
+  // selected "Skolevægring" on their profile), fetched in one batched query.
+  const proIds = (professionals ?? []).map(p => p.id)
+  const { data: targetGroupRows } = proIds.length > 0
+    ? await (db as any)
+        .from('professional_target_groups')
+        .select('professional_id, target_group_types(name)')
+        .in('professional_id', proIds)
+    : { data: [] }
+  const targetGroupsByPro = new Map<string, string[]>()
+  for (const row of targetGroupRows ?? []) {
+    const list = targetGroupsByPro.get(row.professional_id) ?? []
+    if (row.target_group_types?.name) list.push(row.target_group_types.name)
+    targetGroupsByPro.set(row.professional_id, list)
+  }
+
   const caseInput = {
     complexity_level: caseRow.complexity_level as ComplexityLevel,
     weekly_hours: caseRow.weekly_hours,
@@ -66,6 +92,7 @@ export async function runMatchForCase(
     violence: complexity?.violence ?? false,
     substance_use: complexity?.substance_use ?? false,
     criminality: complexity?.criminality ?? false,
+    problem_area_labels: problemAreaLabels,
   }
 
   const scored = (professionals || []).map(pro => {
@@ -81,6 +108,7 @@ export async function runMatchForCase(
         current_hours_assigned: Number(pro.current_hours_assigned),
         has_certifications: Array.isArray(pro.qualifications) && pro.qualifications.length > 0,
         availability_status: pro.availability_status,
+        target_group_names: targetGroupsByPro.get(pro.id) ?? [],
       },
       caseInput,
     )

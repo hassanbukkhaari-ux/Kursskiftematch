@@ -1,12 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { sendNotification } from '@/lib/notifications/service'
-
-const REPORT_TYPE_LABEL: Record<string, string> = {
-  MONTHLY: 'Kort månedlig status',
-  EXTENDED: 'Udvidet statusrapport',
-  FINAL: 'Afsluttende statusrapport',
-}
+import { REPORT_TYPE_LABEL } from '@/lib/labels'
 
 // GET /api/admin/status-report-requests — admin overview of all requests
 export async function GET() {

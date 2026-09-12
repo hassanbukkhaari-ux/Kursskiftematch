@@ -83,7 +83,7 @@ export default async function DashboardPage() {
     <div>
         <PageHeader
           label="Mit overblik"
-          title={`Hej, ${profile?.full_name?.split(' ')[0] ?? 'konsulent'}`}
+          title={`Hej, ${profile?.full_name?.split(' ')[0] ?? 'kontaktperson'}`}
           subtitle="Kursskifte — din platform"
         />
         <ContentContainer>
@@ -92,7 +92,7 @@ export default async function DashboardPage() {
             <StatCard label="Aktive sager" value={totalCases} color="brand" />
             <StatCard label="Sessionslogs" value={totalLogs} color="green" />
             <StatCard label="Timer denne uge" value={weeklyHours > 0 ? `${weeklyHours} t` : '0 t'} color="gold" />
-            <StatCard label="Konsulentstatus" value={proStatusDisplay} color={proStatusColorValue} />
+            <StatCard label="Kontaktpersonstatus" value={proStatusDisplay} color={proStatusColorValue} />
           </div>
 
           {/* Recent cases */}

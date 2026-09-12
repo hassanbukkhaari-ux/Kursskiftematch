@@ -5,12 +5,7 @@ import { PageHeader, ContentContainer } from '@/components/layout/page-header'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { AdminStatusReportActions } from './AdminStatusReportActions'
-
-const REPORT_TYPE_LABEL: Record<string, string> = {
-  MONTHLY: 'Kort månedlig status',
-  EXTENDED: 'Udvidet statusrapport',
-  FINAL: 'Afsluttende statusrapport',
-}
+import { REPORT_TYPE_LABEL } from '@/lib/labels'
 
 const STATUS_LABEL: Record<string, string> = {
   PENDING: 'Afventer',

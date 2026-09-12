@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { WORK_TYPE_LABEL } from '@/lib/labels'
 import type { AdminHoursRow } from './page'
 
 const STATUS_LABEL: Record<string, string> = {
@@ -11,15 +12,6 @@ const STATUS_LABEL: Record<string, string> = {
 }
 const STATUS_BADGE: Record<string, 'amber' | 'green' | 'red'> = {
   SUBMITTED: 'amber', APPROVED: 'green', REJECTED: 'red',
-}
-const WORK_TYPE_LABEL: Record<string, string> = {
-  DIRECT_SESSION: 'Direkte session',
-  TRANSPORT: 'Transport',
-  DOCUMENTATION: 'Dokumentation',
-  COORDINATION: 'Koordinering',
-  CRISIS_RESPONSE: 'Krisehåndtering',
-  TRAINING: 'Kompetenceudvikling',
-  OTHER: 'Andet',
 }
 
 type FilterStatus = 'SUBMITTED' | 'ALL' | 'APPROVED' | 'REJECTED'

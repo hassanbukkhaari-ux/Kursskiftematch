@@ -1,12 +1,7 @@
 import { notFound } from 'next/navigation'
 import { createServiceClient } from '@/lib/supabase/server'
 import { PrintButton } from './PrintButton'
-
-const REPORT_TYPE_LABEL: Record<string, string> = {
-  MONTHLY: 'Kort månedlig status',
-  EXTENDED: 'Udvidet statusrapport',
-  FINAL: 'Afsluttende statusrapport',
-}
+import { REPORT_TYPE_LABEL } from '@/lib/labels'
 
 const CONCERN_LABEL: Record<string, string> = {
   NONE: 'Ingen bekymring',

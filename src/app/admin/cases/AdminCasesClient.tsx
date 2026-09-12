@@ -67,6 +67,11 @@ type NewCaseForm = {
   weekly_hours: string
   urgency: string
   expected_duration_months: string
+  // Bevilling — kommunens bevilgede timetal for perioden. Ugentlige timer
+  // beregnes automatisk herfra, så de to tal ikke kan løbe fra hinanden.
+  granted_hours: string
+  grant_period_start: string
+  grant_period_end: string
   // Borgerens profil
   diagnoses: string
   daily_function: string
@@ -100,6 +105,9 @@ const EMPTY_FORM: NewCaseForm = {
   weekly_hours: '5',
   urgency: 'NORMAL',
   expected_duration_months: '',
+  granted_hours: '',
+  grant_period_start: '',
+  grant_period_end: '',
   diagnoses: '',
   daily_function: '',
   citizen_interests: '',
@@ -117,6 +125,11 @@ const EMPTY_FORM: NewCaseForm = {
 
 function toggleInArray(arr: string[], value: string): string[] {
   return arr.includes(value) ? arr.filter(v => v !== value) : [...arr, value]
+}
+
+function weeksBetween(start: string, end: string): number {
+  const days = (new Date(end).getTime() - new Date(start).getTime()) / (1000 * 60 * 60 * 24)
+  return Math.max(1, days / 7)
 }
 
 function ageRangeFromDob(dob: string): string {
@@ -185,6 +198,24 @@ export function AdminCasesClient({
       setForm(f => ({ ...f, [key]: e.target.value }))
   }
 
+  // Bevilling (granted_hours over a period) drives what the case needs
+  // week-to-week — recompute "Ugentlige timer" every time any grant field
+  // changes, so the two numbers can't quietly drift apart.
+  function grantField(key: 'granted_hours' | 'grant_period_start' | 'grant_period_end') {
+    return (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value
+      setForm(f => {
+        const next = { ...f, [key]: value }
+        const hours = parseFloat(next.granted_hours)
+        if (!isNaN(hours) && hours > 0 && next.grant_period_start && next.grant_period_end && next.grant_period_end > next.grant_period_start) {
+          const weeks = weeksBetween(next.grant_period_start, next.grant_period_end)
+          next.weekly_hours = (Math.round((hours / weeks) * 4) / 4).toString()
+        }
+        return next
+      })
+    }
+  }
+
   function openNewCase() {
     setForm({ ...EMPTY_FORM, municipality_id: municipalities[0]?.id ?? '' })
     setError(null)
@@ -200,6 +231,21 @@ export function AdminCasesClient({
     const initials = form.citizen_initials.trim().toUpperCase()
     if (initials.length !== 2) { setError('Initialer skal være præcis 2 bogstaver'); return }
     if (!form.municipality_id) { setError('Vælg en kommune'); return }
+    // Bevilling er sagens vigtigste oplysning — den skal registreres ved
+    // oprettelsen, ikke tilføjes separat bagefter (og let overses).
+    const grantedHours = Number(form.granted_hours)
+    if (!form.granted_hours || isNaN(grantedHours) || grantedHours <= 0) {
+      setError('Bevilling (timer) er påkrævet')
+      return
+    }
+    if (!form.grant_period_start || !form.grant_period_end) {
+      setError('Bevillingsperiode (start og slut) er påkrævet')
+      return
+    }
+    if (form.grant_period_end <= form.grant_period_start) {
+      setError('Bevillingens slutdato skal være efter startdato')
+      return
+    }
 
     startSave(async () => {
       setError(null)
@@ -239,6 +285,24 @@ export function AdminCasesClient({
         setError((d as { error?: string }).error ?? 'Noget gik galt')
         return
       }
+      const newCase = await res.json() as { id: string }
+
+      const grantRes = await fetch(`/api/cases/${newCase.id}/grant`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          granted_hours: grantedHours,
+          period_start: form.grant_period_start,
+          period_end: form.grant_period_end,
+        }),
+      })
+      if (!grantRes.ok) {
+        const d = await grantRes.json().catch(() => ({}))
+        setError(`Sagen blev oprettet, men bevillingen kunne ikke gemmes: ${(d as { error?: string }).error ?? 'ukendt fejl'}. Tilføj den manuelt på sagen.`)
+        router.refresh()
+        return
+      }
+
       closeDrawer()
       router.refresh()
     })
@@ -574,6 +638,42 @@ export function AdminCasesClient({
                   onChange={field('weekly_hours')}
                   className={inputClass}
                 />
+                <p className="text-xs text-[#9B9589] mt-1">Beregnes automatisk fra bevillingen nedenfor — kan justeres manuelt.</p>
+              </div>
+            </div>
+
+            <div className="border-t border-[#E0DAD0] pt-4">
+              <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#6B7569] mb-3">Bevilling</div>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className={labelClass}>Timer *</label>
+                  <input
+                    type="number"
+                    min={0}
+                    step={0.5}
+                    value={form.granted_hours}
+                    onChange={grantField('granted_hours')}
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Fra *</label>
+                  <input
+                    type="date"
+                    value={form.grant_period_start}
+                    onChange={grantField('grant_period_start')}
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Til *</label>
+                  <input
+                    type="date"
+                    value={form.grant_period_end}
+                    onChange={grantField('grant_period_end')}
+                    className={inputClass}
+                  />
+                </div>
               </div>
             </div>
 

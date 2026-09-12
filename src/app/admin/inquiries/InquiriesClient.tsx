@@ -78,6 +78,11 @@ const URGENCY_OPTIONS = [
   { value: 'AKUT' as const, label: '🔴 Akut (24t)' },
 ]
 
+function weeksBetween(start: string, end: string): number {
+  const days = (new Date(end).getTime() - new Date(start).getTime()) / (1000 * 60 * 60 * 24)
+  return Math.max(1, days / 7)
+}
+
 export function InquiriesClient({
   initialData,
   municipalities,
@@ -130,6 +135,24 @@ export function InquiriesClient({
     setConvertForm(EMPTY_CONVERT)
     setConvertError(null)
     setConvertStep(true)
+  }
+
+  // Bevilling (granted_hours over a period) drives what the case needs
+  // week-to-week — recompute "Ugentlige timer" every time any grant field
+  // changes, so the two numbers can't quietly drift apart.
+  function grantField(key: 'granted_hours' | 'grant_period_start' | 'grant_period_end') {
+    return (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value
+      setConvertForm(f => {
+        const next = { ...f, [key]: value }
+        const hours = parseFloat(next.granted_hours)
+        if (!isNaN(hours) && hours > 0 && next.grant_period_start && next.grant_period_end && next.grant_period_end > next.grant_period_start) {
+          const weeks = weeksBetween(next.grant_period_start, next.grant_period_end)
+          next.weekly_hours = (Math.round((hours / weeks) * 4) / 4).toString()
+        }
+        return next
+      })
+    }
   }
 
   async function handleConvert() {
@@ -477,6 +500,7 @@ export function InquiriesClient({
                         onChange={e => setConvertForm(f => ({ ...f, weekly_hours: e.target.value }))}
                         className="w-full h-10 px-3 bg-[#F6F3EE] rounded-xl text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829]"
                       />
+                      <p className="text-xs text-[#9B9589] mt-1">Beregnes automatisk fra bevillingen nedenfor — kan justeres manuelt.</p>
                     </div>
 
                     <div>
@@ -514,7 +538,7 @@ export function InquiriesClient({
                             min={0}
                             step={0.5}
                             value={convertForm.granted_hours}
-                            onChange={e => setConvertForm(f => ({ ...f, granted_hours: e.target.value }))}
+                            onChange={grantField('granted_hours')}
                             className="w-full h-10 px-3 bg-[#F6F3EE] rounded-xl text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829]"
                           />
                         </div>
@@ -523,7 +547,7 @@ export function InquiriesClient({
                           <input
                             type="date"
                             value={convertForm.grant_period_start}
-                            onChange={e => setConvertForm(f => ({ ...f, grant_period_start: e.target.value }))}
+                            onChange={grantField('grant_period_start')}
                             className="w-full h-10 px-3 bg-[#F6F3EE] rounded-xl text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829]"
                           />
                         </div>
@@ -532,7 +556,7 @@ export function InquiriesClient({
                           <input
                             type="date"
                             value={convertForm.grant_period_end}
-                            onChange={e => setConvertForm(f => ({ ...f, grant_period_end: e.target.value }))}
+                            onChange={grantField('grant_period_end')}
                             className="w-full h-10 px-3 bg-[#F6F3EE] rounded-xl text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829]"
                           />
                         </div>

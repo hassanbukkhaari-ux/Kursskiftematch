@@ -24,16 +24,23 @@ export default async function DashboardPage() {
   monday.setDate(now.getDate() - daysToMonday)
   const mondayStr = monday.toISOString().slice(0, 10)
   const sundayStr = new Date(monday.getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+  const firstOfMonthStr = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
 
   const { createServiceClient } = await import('@/lib/supabase/server')
   const svc = createServiceClient() as any
 
-  const [casesRes, logsRes, proRes, weeklyHoursRes, pendingReportsRes] = await Promise.all([
+  const [casesRes, allActiveCasesRes, logsRes, proRes, weeklyHoursRes, monthlyHoursRes, pendingReportsRes] = await Promise.all([
     db.from('v_cases_with_professional')
       .select('id, citizen_initials, status, weekly_hours', { count: 'exact' })
       .eq('professional_id', userId)
       .neq('status', 'ARCHIVED')
       .limit(3),
+    // Unlimited — used to sum grant/hours totals across every active case,
+    // not just the 3 shown in the "Mine sager" preview below.
+    db.from('v_cases_with_professional')
+      .select('id, active_grant_hours, approved_hours_used')
+      .eq('professional_id', userId)
+      .in('status', ['ACTIVE', 'MATCHED']),
     db.from('session_logs')
       .select('id', { count: 'exact', head: true })
       .eq('professional_id', userId),
@@ -41,13 +48,20 @@ export default async function DashboardPage() {
       .select('status')
       .eq('id', userId)
       .single(),
+    // "Godkendte timer" — strictly APPROVED, not just "not rejected", so
+    // this reflects hours the contact person can actually rely on as
+    // confirmed, combined across every active case (no case_id filter).
     db.from('registered_hours')
       .select('hours')
       .eq('professional_id', userId)
+      .eq('status', 'APPROVED')
       .gte('work_date', mondayStr)
-      .lte('work_date', sundayStr)
-      .neq('status', 'REJECTED')
-      .is('archived_at', null),
+      .lte('work_date', sundayStr),
+    db.from('registered_hours')
+      .select('hours')
+      .eq('professional_id', userId)
+      .eq('status', 'APPROVED')
+      .gte('work_date', firstOfMonthStr),
     svc.from('status_report_requests')
       .select('id, report_type, deadline, status, cases!inner(citizen_initials)')
       .eq('professional_id', userId)
@@ -59,7 +73,11 @@ export default async function DashboardPage() {
   const activeCases = casesRes.data ?? []
   const totalCases = casesRes.count ?? 0
   const totalLogs = logsRes.count ?? 0
-  const weeklyHours = (weeklyHoursRes.data ?? []).reduce((sum, r) => sum + (r.hours ?? 0), 0)
+  const weeklyApprovedHours = (weeklyHoursRes.data ?? []).reduce((sum, r) => sum + (r.hours ?? 0), 0)
+  const monthlyApprovedHours = (monthlyHoursRes.data ?? []).reduce((sum, r) => sum + (r.hours ?? 0), 0)
+  const allActiveCases = allActiveCasesRes.data ?? []
+  const totalGrantedHours = allActiveCases.reduce((sum, c: any) => sum + (c.active_grant_hours ?? 0), 0)
+  const totalApprovedHours = allActiveCases.reduce((sum, c: any) => sum + (c.approved_hours_used ?? 0), 0)
   const pendingReports = pendingReportsRes.data ?? []
   const today = new Date().toISOString().slice(0, 10)
 
@@ -91,8 +109,38 @@ export default async function DashboardPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
             <StatCard label="Aktive sager" value={totalCases} color="brand" />
             <StatCard label="Sessionslogs" value={totalLogs} color="green" />
-            <StatCard label="Timer denne uge" value={weeklyHours > 0 ? `${weeklyHours} t` : '0 t'} color="gold" />
+            <StatCard label="Godkendte timer (uge)" value={weeklyApprovedHours > 0 ? `${weeklyApprovedHours} t` : '0 t'} color="gold" />
             <StatCard label="Kontaktpersonstatus" value={proStatusDisplay} color={proStatusColorValue} />
+          </div>
+
+          {/* Approved hours breakdown — combined across every active case */}
+          <SectionHeader
+            title="Mine godkendte timer"
+            description="Samlet på tværs af alle dine aktive sager"
+            actions={
+              <Link href="/dashboard/planning" className="text-xs font-semibold text-[#1C3829] hover:underline">
+                Planlæg kommende uger →
+              </Link>
+            }
+          />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+            <Card>
+              <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-1.5">Denne uge</div>
+              <div className="text-2xl font-serif font-semibold text-[#1A1F1C]">{weeklyApprovedHours} t</div>
+              <div className="text-xs text-[#9B9589] mt-0.5">Godkendt, alle sager</div>
+            </Card>
+            <Card>
+              <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-1.5">Denne måned</div>
+              <div className="text-2xl font-serif font-semibold text-[#1A1F1C]">{monthlyApprovedHours} t</div>
+              <div className="text-xs text-[#9B9589] mt-0.5">Godkendt, alle sager</div>
+            </Card>
+            <Card>
+              <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-1.5">Bevillingsperiode</div>
+              <div className="text-2xl font-serif font-semibold text-[#1A1F1C]">
+                {totalApprovedHours} <span className="text-[#9B9589] text-base font-sans font-normal">/ {totalGrantedHours} t</span>
+              </div>
+              <div className="text-xs text-[#9B9589] mt-0.5">Godkendt af bevilget, alle sager</div>
+            </Card>
           </div>
 
           {/* Recent cases */}

@@ -47,15 +47,36 @@ type ConvertForm = {
   municipality_id: string
   citizen_initials: string
   citizen_age_range: string
+  weekly_hours: string
+  urgency: 'NORMAL' | 'HURTIG' | 'AKUT'
+  intake_contact_name: string
+  intake_contact_email: string
+  intake_contact_phone: string
+  granted_hours: string
+  grant_period_start: string
+  grant_period_end: string
 }
 
 const EMPTY_CONVERT: ConvertForm = {
   municipality_id: '',
   citizen_initials: '',
   citizen_age_range: '',
+  weekly_hours: '5',
+  urgency: 'NORMAL',
+  intake_contact_name: '',
+  intake_contact_email: '',
+  intake_contact_phone: '',
+  granted_hours: '',
+  grant_period_start: '',
+  grant_period_end: '',
 }
 
 const AGE_RANGES = ['0-5', '6-12', '13-18', '18+'] as const
+const URGENCY_OPTIONS = [
+  { value: 'NORMAL' as const, label: '⚪ Normal' },
+  { value: 'HURTIG' as const, label: '🟡 Hurtig' },
+  { value: 'AKUT' as const, label: '🔴 Akut (24t)' },
+]
 
 export function InquiriesClient({
   initialData,
@@ -120,6 +141,26 @@ export function InquiriesClient({
       return
     }
     if (!convertForm.citizen_age_range) { setConvertError('Vælg aldersgruppe'); return }
+    const weeklyHours = Number(convertForm.weekly_hours)
+    if (!convertForm.weekly_hours || isNaN(weeklyHours) || weeklyHours <= 0) {
+      setConvertError('Angiv ugentlige timer')
+      return
+    }
+    // Bevilling og hastighed skal registreres ved oprettelsen — ikke tilføjes
+    // separat bagefter, hvor det historisk er blevet glemt.
+    const grantedHours = Number(convertForm.granted_hours)
+    if (!convertForm.granted_hours || isNaN(grantedHours) || grantedHours <= 0) {
+      setConvertError('Bevilling (timer) er påkrævet')
+      return
+    }
+    if (!convertForm.grant_period_start || !convertForm.grant_period_end) {
+      setConvertError('Bevillingsperiode (start og slut) er påkrævet')
+      return
+    }
+    if (convertForm.grant_period_end <= convertForm.grant_period_start) {
+      setConvertError('Bevillingens slutdato skal være efter startdato')
+      return
+    }
 
     setConverting(true)
     try {
@@ -130,6 +171,11 @@ export function InquiriesClient({
           municipality_id: convertForm.municipality_id,
           citizen_initials: convertForm.citizen_initials.toUpperCase(),
           citizen_age_range: convertForm.citizen_age_range,
+          weekly_hours: weeklyHours,
+          urgency: convertForm.urgency,
+          intake_contact_name: convertForm.intake_contact_name || undefined,
+          intake_contact_email: convertForm.intake_contact_email || undefined,
+          intake_contact_phone: convertForm.intake_contact_phone || undefined,
           inquiry_id: selected.id,
         }),
       })
@@ -138,6 +184,24 @@ export function InquiriesClient({
         setConvertError((json as { error?: string }).error ?? 'Noget gik galt')
         return
       }
+      const newCase = await res.json() as { id: string }
+
+      const grantRes = await fetch(`/api/cases/${newCase.id}/grant`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          granted_hours: grantedHours,
+          period_start: convertForm.grant_period_start,
+          period_end: convertForm.grant_period_end,
+        }),
+      })
+      if (!grantRes.ok) {
+        const json = await grantRes.json().catch(() => ({}))
+        setConvertError(`Sagen blev oprettet, men bevillingen kunne ikke gemmes: ${(json as { error?: string }).error ?? 'ukendt fejl'}. Tilføj den manuelt på sagen.`)
+        router.refresh()
+        return
+      }
+
       closeDrawer()
       router.refresh()
     } catch {
@@ -401,6 +465,108 @@ export function InquiriesClient({
                           ))}
                         </select>
                       </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-[#6B7569] mb-1.5">Ugentlige timer *</label>
+                      <input
+                        type="number"
+                        min={0}
+                        max={40}
+                        value={convertForm.weekly_hours}
+                        onChange={e => setConvertForm(f => ({ ...f, weekly_hours: e.target.value }))}
+                        className="w-full h-10 px-3 bg-[#F6F3EE] rounded-xl text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-[#6B7569] mb-1.5">Hastighed *</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {URGENCY_OPTIONS.map(opt => (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => setConvertForm(f => ({ ...f, urgency: opt.value }))}
+                            className={[
+                              'h-10 rounded-xl text-xs font-semibold border transition-all',
+                              convertForm.urgency === opt.value
+                                ? opt.value === 'AKUT'
+                                  ? 'bg-red-700 text-white border-red-700'
+                                  : opt.value === 'HURTIG'
+                                    ? 'bg-amber-500 text-white border-amber-500'
+                                    : 'bg-[#1C3829] text-white border-[#1C3829]'
+                                : 'bg-white text-[#6B7569] border-[#E0DAD0] hover:border-[#1C3829]',
+                            ].join(' ')}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="border-t border-[#E0DAD0] pt-4">
+                      <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Bevilling</div>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-[#6B7569] mb-1.5">Timer *</label>
+                          <input
+                            type="number"
+                            min={0}
+                            step={0.5}
+                            value={convertForm.granted_hours}
+                            onChange={e => setConvertForm(f => ({ ...f, granted_hours: e.target.value }))}
+                            className="w-full h-10 px-3 bg-[#F6F3EE] rounded-xl text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-[#6B7569] mb-1.5">Fra *</label>
+                          <input
+                            type="date"
+                            value={convertForm.grant_period_start}
+                            onChange={e => setConvertForm(f => ({ ...f, grant_period_start: e.target.value }))}
+                            className="w-full h-10 px-3 bg-[#F6F3EE] rounded-xl text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-[#6B7569] mb-1.5">Til *</label>
+                          <input
+                            type="date"
+                            value={convertForm.grant_period_end}
+                            onChange={e => setConvertForm(f => ({ ...f, grant_period_end: e.target.value }))}
+                            className="w-full h-10 px-3 bg-[#F6F3EE] rounded-xl text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-[#E0DAD0] pt-4">
+                      <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Sagsbehandler (kommunens kontaktperson)</div>
+                      <div className="space-y-3">
+                        <input
+                          type="text"
+                          placeholder="Navn"
+                          value={convertForm.intake_contact_name}
+                          onChange={e => setConvertForm(f => ({ ...f, intake_contact_name: e.target.value }))}
+                          className="w-full h-10 px-3 bg-[#F6F3EE] rounded-xl text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829]"
+                        />
+                        <div className="grid grid-cols-2 gap-3">
+                          <input
+                            type="email"
+                            placeholder="E-mail"
+                            value={convertForm.intake_contact_email}
+                            onChange={e => setConvertForm(f => ({ ...f, intake_contact_email: e.target.value }))}
+                            className="w-full h-10 px-3 bg-[#F6F3EE] rounded-xl text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829]"
+                          />
+                          <input
+                            type="tel"
+                            placeholder="Telefon"
+                            value={convertForm.intake_contact_phone}
+                            onChange={e => setConvertForm(f => ({ ...f, intake_contact_phone: e.target.value }))}
+                            className="w-full h-10 px-3 bg-[#F6F3EE] rounded-xl text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829]"
+                          />
+                        </div>
+                      </div>
+                      <p className="text-xs text-[#9B9589] mt-2">Vises til kontaktpersonen under sagen som kommunens direkte kontakt.</p>
                     </div>
 
                     {convertError && (

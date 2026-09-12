@@ -44,7 +44,7 @@ export default async function DashboardCasePage({ params }: PageProps) {
       .eq('professional_id', user.id)
       .order('session_date', { ascending: false })
       .limit(10),
-    db.from('cases').select('citizen_gender, citizen_notes').eq('id', id).single(),
+    db.from('cases').select('citizen_gender, citizen_notes, intake_contact_name, intake_contact_email, intake_contact_phone').eq('id', id).single(),
     db.from('v_case_tags').select('problem_area_codes, goal_codes, special_wish_codes').eq('case_id', id).single(),
     db.from('problem_areas').select('code, label_da'),
     db.from('goals_lookup').select('code, label_da'),
@@ -56,6 +56,15 @@ export default async function DashboardCasePage({ params }: PageProps) {
   const problemAreaLabels = labelMap(problemAreasRes.data)
   const goalLabels = labelMap(goalsRes.data)
   const specialWishLabels = labelMap(specialWishesRes.data)
+
+  // The per-case sagsbehandler (set at case creation) takes priority over the
+  // municipality's default — it's who's actually handling this citizen's case.
+  const caseDetail = caseDetailRes.data as { intake_contact_name?: string | null; intake_contact_email?: string | null; intake_contact_phone?: string | null } | null
+  const sagsbehandler = {
+    name: caseDetail?.intake_contact_name || muniRes.data?.sagsbehandler_name || null,
+    email: caseDetail?.intake_contact_email || muniRes.data?.sagsbehandler_email || null,
+    phone: caseDetail?.intake_contact_phone || muniRes.data?.sagsbehandler_phone || null,
+  }
 
   return (
     <div>
@@ -258,18 +267,21 @@ export default async function DashboardCasePage({ params }: PageProps) {
                 <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-3">Kommunekontakt</div>
                 <div className="space-y-1.5">
                   <div className="text-sm font-medium text-[#1A1F1C]">{muniRes.data.name}</div>
-                  {muniRes.data.sagsbehandler_name && (
-                    <div className="text-xs text-[#6B7569]">{muniRes.data.sagsbehandler_name}</div>
+                  {sagsbehandler.name && (
+                    <div className="text-xs text-[#6B7569]">{sagsbehandler.name} <span className="text-[#C8C0B0]">(sagsbehandler)</span></div>
                   )}
-                  {muniRes.data.sagsbehandler_email && (
-                    <a href={`mailto:${muniRes.data.sagsbehandler_email}`} className="text-xs text-[#1C3829] hover:underline block">
-                      {muniRes.data.sagsbehandler_email}
+                  {sagsbehandler.email && (
+                    <a href={`mailto:${sagsbehandler.email}`} className="text-xs text-[#1C3829] hover:underline block">
+                      {sagsbehandler.email}
                     </a>
                   )}
-                  {muniRes.data.sagsbehandler_phone && (
-                    <a href={`tel:${muniRes.data.sagsbehandler_phone}`} className="text-xs text-[#1C3829] hover:underline block">
-                      {muniRes.data.sagsbehandler_phone}
+                  {sagsbehandler.phone && (
+                    <a href={`tel:${sagsbehandler.phone}`} className="text-xs text-[#1C3829] hover:underline block">
+                      {sagsbehandler.phone}
                     </a>
+                  )}
+                  {!sagsbehandler.name && !sagsbehandler.email && !sagsbehandler.phone && (
+                    <div className="text-xs text-[#9B9589]">Ingen sagsbehandler angivet endnu — kontakt Kursskifte.</div>
                   )}
                 </div>
               </Card>
@@ -290,9 +302,9 @@ export default async function DashboardCasePage({ params }: PageProps) {
               <p className="text-xs text-[#6B5020] leading-relaxed mb-3">
                 Du har en personlig og øjeblikkelig pligt til at underrette kommunen direkte, hvis du har bekymring for borgerens sikkerhed eller trivsel. Registrering i platformen er et supplement og erstatter <strong>ikke</strong> din direkte underretningspligt.
               </p>
-              {muniRes.data?.sagsbehandler_email ? (
+              {sagsbehandler.email ? (
                 <a
-                  href={`mailto:${muniRes.data.sagsbehandler_email}?subject=Underretning%20vedr.%20borger%20${encodeURIComponent(caseData.citizen_initials)}`}
+                  href={`mailto:${sagsbehandler.email}?subject=Underretning%20vedr.%20borger%20${encodeURIComponent(caseData.citizen_initials)}`}
                   className="flex items-center gap-1.5 w-full h-9 px-3 bg-[#C8993A] text-white rounded-xl text-xs font-semibold hover:bg-[#B8891A] transition-colors justify-center"
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">

@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { PageHeader, ContentContainer } from '@/components/layout/page-header'
-import { AdminPlanningClient, type PlannedRow, type ProfessionalRow, type ActualRow } from './AdminPlanningClient'
+import { AdminPlanningClient, type PlannedRow, type ProfessionalRow, type ActualRow, type MatchingHoursRow } from './AdminPlanningClient'
 
 function mondayOf(d: Date) {
   const day = d.getDay()
@@ -19,7 +19,7 @@ export default async function AdminPlanningPage() {
   weekEndDate.setDate(weekEndDate.getDate() + 6)
   const weekEnd = weekEndDate.toISOString().slice(0, 10)
 
-  const [{ data: planned }, { data: professionals }, { data: actual }] = await Promise.all([
+  const [{ data: planned }, { data: professionals }, { data: actual }, { data: assignments }] = await Promise.all([
     dba.from('planned_hours')
       .select('id, case_id, professional_id, planned_hours, cases!inner(citizen_initials, citizen_age_range)')
       .eq('week_start', weekStart),
@@ -32,7 +32,19 @@ export default async function AdminPlanningPage() {
       .lte('work_date', weekEnd)
       .neq('status', 'REJECTED')
       .is('archived_at', null),
+    // Read-only mirror of v_professionals_available.current_hours_assigned —
+    // see the matching route for why this doesn't touch that view directly.
+    dba.from('case_assignments')
+      .select('professional_id, cases!inner(weekly_hours, status)')
+      .is('ended_at', null),
   ])
+
+  const matchingHoursByPro = new Map<string, number>()
+  for (const row of assignments ?? []) {
+    if (row.cases?.status !== 'ACTIVE') continue
+    matchingHoursByPro.set(row.professional_id, (matchingHoursByPro.get(row.professional_id) ?? 0) + (row.cases?.weekly_hours ?? 0))
+  }
+  const matchingHours: MatchingHoursRow[] = Array.from(matchingHoursByPro.entries()).map(([professional_id, hours]) => ({ professional_id, hours }))
 
   return (
     <div>
@@ -51,6 +63,7 @@ export default async function AdminPlanningPage() {
           initialPlanned={(planned ?? []) as PlannedRow[]}
           initialProfessionals={(professionals ?? []) as ProfessionalRow[]}
           initialActual={(actual ?? []) as ActualRow[]}
+          initialMatchingHours={matchingHours}
         />
       </ContentContainer>
     </div>

@@ -25,11 +25,17 @@ export type ActualRow = {
   hours: number
 }
 
+export type MatchingHoursRow = {
+  professional_id: string
+  hours: number
+}
+
 interface Props {
   initialWeekStart: string
   initialPlanned: PlannedRow[]
   initialProfessionals: ProfessionalRow[]
   initialActual: ActualRow[]
+  initialMatchingHours: MatchingHoursRow[]
 }
 
 function shiftWeek(weekStart: string, deltaWeeks: number) {
@@ -59,11 +65,12 @@ function fmtHours(n: number) {
   return Math.round(n * 100) / 100
 }
 
-export function AdminPlanningClient({ initialWeekStart, initialPlanned, initialProfessionals, initialActual }: Props) {
+export function AdminPlanningClient({ initialWeekStart, initialPlanned, initialProfessionals, initialActual, initialMatchingHours }: Props) {
   const [weekStart, setWeekStart] = useState(initialWeekStart)
   const [planned, setPlanned] = useState<PlannedRow[]>(initialPlanned)
   const [professionals, setProfessionals] = useState<ProfessionalRow[]>(initialProfessionals)
   const [actual, setActual] = useState<ActualRow[]>(initialActual)
+  const [matchingHours, setMatchingHours] = useState<MatchingHoursRow[]>(initialMatchingHours)
   const [loading, setLoading] = useState(false)
   const [expanded, setExpanded] = useState<string | null>(null)
 
@@ -75,6 +82,7 @@ export function AdminPlanningClient({ initialWeekStart, initialPlanned, initialP
       if (json.planned) setPlanned(json.planned)
       if (json.professionals) setProfessionals(json.professionals)
       if (json.actual) setActual(json.actual)
+      if (json.matchingHours) setMatchingHours(json.matchingHours)
     } finally {
       setLoading(false)
     }
@@ -117,14 +125,21 @@ export function AdminPlanningClient({ initialWeekStart, initialPlanned, initialP
     return map
   }, [actual])
 
+  const matchingHoursByPro = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const m of matchingHours) map.set(m.professional_id, Number(m.hours))
+    return map
+  }, [matchingHours])
+
   const rows = professionals
     .map(pro => {
       const cases = byProfessional.get(pro.id) ?? []
       const totalPlanned = cases.reduce((sum, c) => sum + Number(c.planned_hours), 0)
       const totalActual = actualTotalByPro.get(pro.id) ?? 0
-      return { pro, cases, totalPlanned, totalActual }
+      const totalMatching = matchingHoursByPro.get(pro.id) ?? 0
+      return { pro, cases, totalPlanned, totalActual, totalMatching }
     })
-    .filter(r => r.cases.length > 0 || r.totalActual > 0)
+    .filter(r => r.cases.length > 0 || r.totalActual > 0 || r.totalMatching > 0)
     .sort((a, b) => b.totalPlanned - a.totalPlanned)
 
   const isCurrentWeek = weekStart === todayMonday
@@ -165,6 +180,10 @@ export function AdminPlanningClient({ initialWeekStart, initialPlanned, initialP
         )}
       </div>
 
+      <p className="text-xs text-[#9B9589] mb-4 leading-relaxed">
+        Tre tal per kontaktperson: <strong className="text-[#6B7569]">planlagt</strong> (timeplanlægningen), <strong className="text-[#6B7569]">faktisk</strong> (godkendte/registrerede timer) og <strong className="text-[#6B3FA0]">matching-kapacitet</strong> (det tal matching-algoritmen bruger i dag til at vurdere ledig kapacitet). De tre beregnes uafhængigt af hinanden — vises her side om side så I kan se om de stemmer overens, før noget i selve matchingen ændres.
+      </p>
+
       {loading ? (
         <div className="py-16 flex justify-center">
           <div className="w-6 h-6 border-2 border-[#1C3829] border-t-transparent rounded-full animate-spin" />
@@ -177,11 +196,12 @@ export function AdminPlanningClient({ initialWeekStart, initialPlanned, initialP
         />
       ) : (
         <div className="space-y-2">
-          {rows.map(({ pro, cases, totalPlanned, totalActual }) => {
+          {rows.map(({ pro, cases, totalPlanned, totalActual, totalMatching }) => {
             const capacity = pro.capacity_hours_week
             const overCapacity = capacity != null && totalPlanned > capacity
             const variance = totalActual - totalPlanned
             const showVariance = isPastWeek && Math.abs(variance) >= 0.25
+            const matchingMismatch = Math.abs(totalMatching - totalPlanned) >= 0.25
             const isExpanded = expanded === pro.id
             return (
               <Card key={pro.id} className="!p-0 overflow-hidden">
@@ -212,6 +232,12 @@ export function AdminPlanningClient({ initialWeekStart, initialPlanned, initialP
                         {showVariance ? ` (${variance > 0 ? '+' : ''}${fmtHours(variance)})` : ''}
                       </span>
                     )}
+                    <span
+                      className={`text-[11px] ${matchingMismatch ? 'text-[#6B3FA0] font-medium' : 'text-[#9B9589]'}`}
+                      title="Det tal matching-algoritmen i dag bruger til at vurdere denne kontaktpersons ledige kapacitet — vist til sammenligning, ændrer intet i matchingen"
+                    >
+                      Matching-kapacitet {fmtHours(totalMatching)}t
+                    </span>
                   </div>
                 </button>
                 {isExpanded && (

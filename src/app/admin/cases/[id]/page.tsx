@@ -36,9 +36,9 @@ const GENDER_LABEL: Record<string, string> = {
   MALE: 'Dreng/mand', FEMALE: 'Pige/kvinde', OTHER: 'Andet',
 }
 const HANDOVER_REASON_LABEL: Record<HandoverReason, string> = {
-  PROFESSIONAL_UNAVAILABLE: 'Fagperson utilgængelig',
+  PROFESSIONAL_UNAVAILABLE: 'Kontaktperson utilgængelig',
   WORKLOAD_EXCEEDED: 'For høj arbejdsbyrde',
-  REQUEST_PROFESSIONAL: 'Ønske fra fagperson',
+  REQUEST_PROFESSIONAL: 'Ønske fra kontaktperson',
   REQUEST_CASE: 'Ønske fra borger/sag',
   BETTER_MATCH: 'Bedre match tilgængeligt',
   SAFEGUARDING_CONCERN: 'Bekymring for borger',
@@ -433,7 +433,7 @@ export default async function AdminCasePage({ params }: PageProps) {
 
             {/* Assigned professional */}
             <Card>
-              <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-3">Tildelt fagperson</div>
+              <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-3">Tildelt kontaktperson</div>
               {proData ? (
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-[#EEF4F0] flex items-center justify-center text-sm font-semibold text-[#1C3829] shrink-0">
@@ -448,7 +448,7 @@ export default async function AdminCasePage({ params }: PageProps) {
                   </div>
                 </div>
               ) : (
-                <div className="text-sm text-[#6B7569]">Ingen fagperson tildelt endnu</div>
+                <div className="text-sm text-[#6B7569]">Ingen kontaktperson tildelt endnu</div>
               )}
             </Card>
 

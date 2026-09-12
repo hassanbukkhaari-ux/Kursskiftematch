@@ -11,7 +11,7 @@ import type { InquiryRow, MunicipalityOption } from './page'
 
 const TYPE_LABEL: Record<string, string> = {
   MUNICIPALITY_INQUIRY: 'Kommunehenvendelse',
-  PROFESSIONAL_APPLICATION: 'Fagpersonansøgning',
+  PROFESSIONAL_APPLICATION: 'Kontaktpersonansøgning',
   PARTNER_LEAD: 'Partnerhenvendelse',
 }
 

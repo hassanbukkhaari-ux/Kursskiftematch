@@ -23,9 +23,9 @@ export default async function ProfessionalsPage() {
     <div>
       <PageHeader
         label="Kursskifte Administration"
-        title="Fagpersoner"
+        title="Kontaktpersoner"
         subtitle="Administrer profiler, status og dokumenter"
-        breadcrumb={[{ label: 'Kursskifte Administration', href: '/admin' }, { label: 'Fagpersoner' }]}
+        breadcrumb={[{ label: 'Kursskifte Administration', href: '/admin' }, { label: 'Kontaktpersoner' }]}
       />
       <ContentContainer>
         <ProfessionalsClient initialData={(professionals ?? []) as unknown as ProfessionalRow[]} />

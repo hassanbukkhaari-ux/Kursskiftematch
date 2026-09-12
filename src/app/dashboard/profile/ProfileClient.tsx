@@ -508,7 +508,7 @@ function S2Profession({ pro, professionTypes }: { pro: Pro | null; professionTyp
   )
 }
 
-// ── Section: Om mig som fagperson ────────────────────────────────────────
+// ── Section: Om mig som kontaktperson ────────────────────────────────────────
 
 function S3Bio({ pro }: { pro: Pro | null }) {
   const { busy, error, saved, save, setError } = useSave()
@@ -1048,7 +1048,7 @@ function calcProgress(props: Props): { pct: number; missing: string[] } {
   const checks: [boolean, string][] = [
     [!!(p?.job_title || p?.phone || p?.city), 'Personlig information (job, telefon eller by)'],
     [!!p?.profession_type_id, 'Profession'],
-    [!!(p?.bio && p.bio.length > 50), 'Om mig som fagperson'],
+    [!!(p?.bio && p.bio.length > 50), 'Om mig som kontaktperson'],
     [props.selectedCompetencies.length > 0, 'Kernekompetencer'],
     [props.selectedMethods.length > 0, 'Pædagogiske metoder'],
     [props.selectedTargetGroups.length > 0, 'Erfaring med målgrupper'],
@@ -1086,7 +1086,7 @@ export function ProfileClient(props: Props) {
       content: <S2Profession pro={pro} professionTypes={props.professionTypes} />,
     },
     {
-      id: 'bio', title: 'Om mig som fagperson',
+      id: 'bio', title: 'Om mig som kontaktperson',
       complete: !!(pro?.bio && pro.bio.length > 50),
       content: <S3Bio pro={pro} />,
     },

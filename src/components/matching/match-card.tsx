@@ -46,7 +46,7 @@ interface MatchCardProps {
 export function MatchCard({ candidate, onSelect, isSelected, rank }: MatchCardProps) {
   const pro = candidate.professionals
   const profile = pro?.profiles
-  const name = profile?.full_name ?? 'Ukendt fagperson'
+  const name = profile?.full_name ?? 'Ukendt kontaktperson'
   const score = candidate.overall_score
 
   return (

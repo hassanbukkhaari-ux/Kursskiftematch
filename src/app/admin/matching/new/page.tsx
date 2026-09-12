@@ -49,7 +49,7 @@ export default async function NewMatchRunPage({
       <PageHeader
         label="Matching"
         title="Ny match-kørsel"
-        subtitle={`Scorer fagpersoner mod borger ${caseData.citizen_initials as string} · ${caseData.citizen_age_range as string}`}
+        subtitle={`Scorer kontaktpersoner mod borger ${caseData.citizen_initials as string} · ${caseData.citizen_age_range as string}`}
         breadcrumb={[
           { label: 'Kursskifte Administration', href: '/admin' },
           { label: 'Matching', href: '/admin/matching' },

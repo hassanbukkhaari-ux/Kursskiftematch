@@ -121,7 +121,7 @@ const adminNav: NavItem[] = [
   },
   {
     href: '/admin/professionals',
-    label: 'Fagpersoner',
+    label: 'Kontaktpersoner',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />

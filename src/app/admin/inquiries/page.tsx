@@ -23,7 +23,7 @@ export default async function InquiriesPage() {
       <PageHeader
         label="Kursskifte Administration"
         title="Henvendelser"
-        subtitle="Indkomne kommunehenvendelser og fagpersonansøgninger"
+        subtitle="Indkomne kommunehenvendelser og kontaktpersonansøgninger"
         breadcrumb={[{ label: 'Kursskifte Administration', href: '/admin' }, { label: 'Henvendelser' }]}
       />
       <ContentContainer>

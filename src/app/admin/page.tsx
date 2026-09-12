@@ -35,13 +35,13 @@ export default async function AdminPage() {
     {
       href: '/admin/matching',
       title: 'Matching',
-      description: 'Start match-kørsler og tildel fagpersoner',
+      description: 'Start match-kørsler og tildel kontaktpersoner',
       icon: <MatchIcon />,
       badge: pendingMatchRuns > 0 ? { label: `${pendingMatchRuns} klar`, variant: 'green' } : undefined,
     },
     {
       href: '/admin/professionals',
-      title: 'Fagpersoner',
+      title: 'Kontaktpersoner',
       description: 'Administrer profiler og dokumenter',
       icon: <ProsIcon />,
     },
@@ -83,7 +83,7 @@ export default async function AdminPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
           <StatCard label="Aktive sager" value={casesRes.count ?? 0} color="brand" href="/admin/cases" />
-          <StatCard label="Aktive fagpersoner" value={prosRes.count ?? 0} color="green" href="/admin/professionals" />
+          <StatCard label="Aktive kontaktpersoner" value={prosRes.count ?? 0} color="green" href="/admin/professionals" />
           <StatCard label="Nye henvendelser" value={inquiriesRes.count ?? 0} color="amber" href="/admin/inquiries" />
           <StatCard label="Klar til tildeling" value={pendingMatchRuns} color="gold" sublabel="match-kørsler" href="/admin/matching" />
         </div>

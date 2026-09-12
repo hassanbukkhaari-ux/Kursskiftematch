@@ -1052,6 +1052,7 @@ export type Database = {
           logistics_score: number | null
           eligible: boolean
           ineligibility_reason: string | null
+          current_hours_assigned: number
           algorithm_version: string
           scoring_explanation: string
           created_at: string
@@ -1069,6 +1070,7 @@ export type Database = {
           logistics_score?: number | null
           eligible?: boolean
           ineligibility_reason?: string | null
+          current_hours_assigned?: number
           algorithm_version?: string
           scoring_explanation: string
           created_at?: string

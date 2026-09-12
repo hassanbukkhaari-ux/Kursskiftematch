@@ -77,6 +77,33 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const { createClient } = await import('@/lib/supabase/server')
     const db = await createClient()
 
+    // A complexity tier is a claim about how much real-world experience
+    // backs it up — self-declared or admin-declared, it shouldn't be
+    // reachable on paper alone. Minimum years required per tier: under 1
+    // year is only LOW, 1-2 years unlocks MEDIUM, 2+ years unlocks HIGH and
+    // CRITICAL (CRITICAL cases still need admin's own judgment beyond this
+    // floor — this only blocks the clearly-too-low combinations).
+    if (parsed.data.max_complexity_level != null || parsed.data.experience_years != null) {
+      const MIN_YEARS_FOR_COMPLEXITY: Record<string, number> = { LOW: 0, MEDIUM: 1, HIGH: 2, CRITICAL: 2 }
+      let effectiveComplexity = parsed.data.max_complexity_level
+      let effectiveYears = parsed.data.experience_years
+      if (effectiveComplexity == null || effectiveYears == null) {
+        const { data: existing } = await db
+          .from('professionals')
+          .select('experience_years, max_complexity_level')
+          .eq('id', id)
+          .single()
+        effectiveComplexity ??= existing?.max_complexity_level
+        effectiveYears ??= existing?.experience_years
+      }
+      if (effectiveComplexity && effectiveYears != null) {
+        const required = MIN_YEARS_FOR_COMPLEXITY[effectiveComplexity] ?? 0
+        if (effectiveYears < required) {
+          return badRequest(`Maks. kompleksitet "${effectiveComplexity}" kræver mindst ${required} års erfaring — fagpersonen har ${effectiveYears}.`)
+        }
+      }
+    }
+
     type ProfessionalUpdate = Database['public']['Tables']['professionals']['Update']
     const update: ProfessionalUpdate = {
       ...parsed.data,

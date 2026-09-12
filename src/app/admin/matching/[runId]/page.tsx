@@ -31,7 +31,7 @@ export default async function MatchRunPage({ params }: PageProps) {
     .select(`
       id, rank, overall_score,
       qualifications_score, availability_score, capacity_score, complexity_fit_score, logistics_score,
-      eligible, ineligibility_reason,
+      eligible, ineligibility_reason, current_hours_assigned,
       scoring_explanation, professional_id,
       professionals!inner(
         id, profession, experience_years, max_complexity_level,

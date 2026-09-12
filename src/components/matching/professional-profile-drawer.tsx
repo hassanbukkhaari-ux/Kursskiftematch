@@ -104,7 +104,11 @@ export function ProfessionalProfileDrawer({
   const proComplexOrder = complexityOrder[pro?.max_complexity_level ?? 'LOW'] ?? 0
   const caseComplexOrder = complexityOrder[caseData?.complexity_level ?? 'LOW'] ?? 0
   const complexityMatch = proComplexOrder >= caseComplexOrder
-  const hoursMatch = (pro?.capacity_hours_week ?? 0) >= (caseData?.weekly_hours ?? 0)
+  // What matters for taking on this specific case is capacity actually left
+  // over after existing active cases, not the raw weekly figure — a
+  // professional at 37t/uge who's already committed to 10t only has 27t free.
+  const freeCapacity = Math.max(0, (pro?.capacity_hours_week ?? 0) - (candidate?.current_hours_assigned ?? 0))
+  const hoursMatch = freeCapacity >= (caseData?.weekly_hours ?? 0)
   const ageMatch = !pro?.target_age_groups?.length ||
     (pro.target_age_groups.includes(caseData?.citizen_age_range ?? '') ||
      pro.target_age_groups.some(g => g === '18+' && (caseData?.citizen_age_range ?? '').startsWith('18')))
@@ -228,7 +232,7 @@ export function ProfessionalProfileDrawer({
                 <RequirementRow
                   label="Timer / uge"
                   required={`${caseData.weekly_hours} t/uge`}
-                  actual={`${pro?.capacity_hours_week ?? 0} t/uge`}
+                  actual={`${freeCapacity} t ledig (af ${pro?.capacity_hours_week ?? 0})`}
                   match={hoursMatch}
                 />
                 <RequirementRow
@@ -287,7 +291,10 @@ export function ProfessionalProfileDrawer({
                 <AvailabilityBadge status={pro?.availability_status ?? 'UNAVAILABLE'} />
               </DetailRow>
               <DetailRow label="Kapacitet">
-                <span className="text-sm text-[#1A1F1C]">{pro?.capacity_hours_week ?? 0} timer/uge</span>
+                <span className="text-sm text-[#1A1F1C]">
+                  {freeCapacity} timer/uge ledig
+                  <span className="text-[#9B9589]"> (af {pro?.capacity_hours_week ?? 0} t/uge samlet)</span>
+                </span>
               </DetailRow>
               <DetailRow label="Max. samtidige sager">
                 <span className="text-sm text-[#1A1F1C]">{pro?.max_concurrent_cases ?? 0}</span>

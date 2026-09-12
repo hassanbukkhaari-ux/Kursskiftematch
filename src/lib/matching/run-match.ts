@@ -191,6 +191,7 @@ export async function runMatchForCase(
       ...dbScores,
       eligible,
       ineligibility_reason: reasons.length > 0 ? reasons.join('; ') : null,
+      current_hours_assigned: currentHoursAssigned,
     }
   })
 

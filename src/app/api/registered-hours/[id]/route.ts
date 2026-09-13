@@ -117,7 +117,7 @@ export async function PATCH(
         const body = `Dine registrerede timer er blevet ${label}.${noteText}\n\nSe dine timer:\n${base}/dashboard/hours`
         await sendNotification({
           db,
-          notification_type: action === 'APPROVE' ? 'HOURS_SUBMITTED' : 'HOURS_SUBMITTED',
+          notification_type: action === 'APPROVE' ? 'HOURS_APPROVED' : 'HOURS_REJECTED',
           related_entity_type: 'registered_hours',
           related_entity_id: id,
           recipient_profile_id: data.professional_id,

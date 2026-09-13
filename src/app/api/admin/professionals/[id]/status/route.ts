@@ -1,6 +1,7 @@
 import { withAdminAuth } from '@/lib/api-response'
 import { badRequest, ok, serverError } from '@/lib/api-response'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { sendNotification } from '@/lib/notifications/service'
 import type { NextRequest } from 'next/server'
 
 const REQUIRED_VERIFIED_DOCS: Record<string, string> = {
@@ -81,6 +82,24 @@ export async function PATCH(
       .eq('id', id)
 
     if (error) return serverError(error.message)
+
+    if (status === 'ACTIVE') {
+      const { data: profile } = await db.from('profiles').select('email').eq('id', id).single()
+      if (profile?.email) {
+        const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://kursskifte.dk'
+        await sendNotification({
+          db,
+          notification_type: 'PROFESSIONAL_ACTIVATED',
+          related_entity_type: 'professionals',
+          related_entity_id: id,
+          recipient_profile_id: id,
+          recipient_email: profile.email,
+          subject: 'Din profil er godkendt — Kursskifte',
+          body: `Din profil er nu aktiveret. Du kan blive tildelt sager fremover.\n\nSe din profil:\n${base}/dashboard/profile`,
+        })
+      }
+    }
+
     return ok({ ok: true, status })
   })
 }

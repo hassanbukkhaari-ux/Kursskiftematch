@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { ok, badRequest, notFound, serverError, withAdminAuth } from '@/lib/api-response'
 import { logAuditEvent } from '@/lib/audit'
+import { sendNotification } from '@/lib/notifications/service'
 
 const CompleteSchema = z.object({
   overlap_meeting_completed: z.boolean().default(false),
@@ -99,6 +100,27 @@ export async function PATCH(
         incoming_professional_id: handover.incoming_professional_id ?? null,
       },
     })
+
+    const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://kursskifte.dk'
+    const recipientIds = [handover.outgoing_professional_id, handover.incoming_professional_id].filter(
+      (v): v is string => !!v
+    )
+    if (recipientIds.length > 0) {
+      const { data: profiles } = await db.from('profiles').select('id, email').in('id', recipientIds)
+      for (const p of profiles ?? []) {
+        if (!p.email) continue
+        await sendNotification({
+          db,
+          notification_type: 'HANDOVER_COMPLETED',
+          related_entity_type: 'case_handovers',
+          related_entity_id: handoverId,
+          recipient_profile_id: p.id,
+          recipient_email: p.email,
+          subject: 'Overdragelse fuldført — Kursskifte',
+          body: `Overdragelsen af en sag er nu fuldført.${handover.incoming_professional_id ? '' : ' Sagen er gået tilbage i matching-puljen.'}\n\nSe dine sager:\n${base}/dashboard/cases`,
+        })
+      }
+    }
 
     return ok(updated)
   })

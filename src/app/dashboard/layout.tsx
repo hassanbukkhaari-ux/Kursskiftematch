@@ -25,11 +25,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
     { data: consentsData },
     { data: compData },
     { data: geoData },
+    { count: unreadNotificationCount },
   ] = await Promise.all([
     dba.from('professionals').select('profile_image_url, phone, profession_type_id').eq('id', user.id).maybeSingle(),
     dba.from('professional_consents').select('consent_type').eq('professional_id', user.id),
     dba.from('professional_competencies').select('competency_type_id').eq('professional_id', user.id),
     dba.from('professional_geography').select('municipality_id').eq('professional_id', user.id),
+    dba.from('notification_log').select('id', { count: 'exact', head: true }).eq('recipient_profile_id', user.id).is('read_at', null),
   ])
 
   const REQUIRED_CONSENTS = ['GDPR', 'PRIVACY', 'CONFIDENTIALITY', 'ETHICS', 'TERMS', 'DOCUMENT_STORAGE']
@@ -43,7 +45,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (!onboardingComplete) redirect('/onboarding')
 
   return (
-    <DashboardShell userName={profile?.full_name} role="professional" profileImageUrl={pro?.profile_image_url as string | undefined}>
+    <DashboardShell
+      userName={profile?.full_name}
+      role="professional"
+      profileImageUrl={pro?.profile_image_url as string | undefined}
+      unreadNotificationCount={unreadNotificationCount ?? 0}
+    >
       {children}
     </DashboardShell>
   )

@@ -12,6 +12,8 @@ interface NavItem {
   icon: React.ReactNode
 }
 
+const NOTIFICATIONS_HREF = '/dashboard/notifications'
+
 const professionalNav: NavItem[] = [
   {
     href: '/dashboard',
@@ -78,6 +80,16 @@ const professionalNav: NavItem[] = [
         <line x1="16" y1="2" x2="16" y2="6" />
         <line x1="8" y1="2" x2="8" y2="6" />
         <line x1="3" y1="10" x2="21" y2="10" />
+      </svg>
+    ),
+  },
+  {
+    href: NOTIFICATIONS_HREF,
+    label: 'Notifikationer',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
       </svg>
     ),
   },
@@ -235,8 +247,8 @@ function LogoMark({ size = 'md' }: { size?: 'sm' | 'md' }) {
 }
 
 function SidebarNav({
-  nav, pathname, isRootRoute,
-}: { nav: NavItem[]; pathname: string; isRootRoute: string }) {
+  nav, pathname, isRootRoute, unreadNotificationCount = 0,
+}: { nav: NavItem[]; pathname: string; isRootRoute: string; unreadNotificationCount?: number }) {
   return (
     <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto" aria-label="Primær navigation">
       {nav.map((item) => {
@@ -257,6 +269,11 @@ function SidebarNav({
           >
             <span className="shrink-0">{item.icon}</span>
             {item.label}
+            {item.href === NOTIFICATIONS_HREF && unreadNotificationCount > 0 && (
+              <span className="ml-auto shrink-0 min-w-[18px] h-[18px] px-1 rounded-full bg-[#C8993A] text-[#1A1F1C] text-[10px] font-bold flex items-center justify-center">
+                {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
+              </span>
+            )}
           </Link>
         )
       })}
@@ -311,11 +328,12 @@ interface DashboardShellProps {
   userName?: string | null
   role?: 'admin' | 'professional'
   profileImageUrl?: string | null
+  unreadNotificationCount?: number
 }
 
 // ── Main component ──────────────────────────────────────────────────────
 
-export function DashboardShell({ children, userName, role = 'admin', profileImageUrl }: DashboardShellProps) {
+export function DashboardShell({ children, userName, role = 'admin', profileImageUrl, unreadNotificationCount = 0 }: DashboardShellProps) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -359,7 +377,7 @@ export function DashboardShell({ children, userName, role = 'admin', profileImag
             <div className="text-white font-serif font-semibold text-sm leading-none">Kursskifte</div>
           </Link>
         </div>
-        <SidebarNav nav={nav} pathname={pathname} isRootRoute={isRootRoute} />
+        <SidebarNav nav={nav} pathname={pathname} isRootRoute={isRootRoute} unreadNotificationCount={unreadNotificationCount} />
         <SidebarUser userName={userName} roleLabel={roleLabel} defaultInitial={defaultInitial} profileImageUrl={profileImageUrl} />
       </aside>
 
@@ -431,7 +449,7 @@ export function DashboardShell({ children, userName, role = 'admin', profileImag
           </div>
         </div>
 
-        <SidebarNav nav={nav} pathname={pathname} isRootRoute={isRootRoute} />
+        <SidebarNav nav={nav} pathname={pathname} isRootRoute={isRootRoute} unreadNotificationCount={unreadNotificationCount} />
         <SidebarUser userName={userName} roleLabel={roleLabel} defaultInitial={defaultInitial} profileImageUrl={profileImageUrl} />
       </aside>
 

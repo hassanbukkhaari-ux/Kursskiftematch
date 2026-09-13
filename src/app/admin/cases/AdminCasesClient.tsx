@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useTransition, useMemo } from 'react'
+import { useState, useTransition, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
+import { Pagination, SearchInput, PAGE_SIZE } from '@/components/ui/pagination'
 import { SectionHeader } from '@/components/layout/page-header'
 import { calculateComplexityLevel } from '@/lib/matching/algorithm'
 import type { AdminCase, MunicipalityOption, LookupOption } from './page'
@@ -203,6 +204,8 @@ export function AdminCasesClient({
 }) {
   const router = useRouter()
   const [filter, setFilter] = useState<FilterKey>('all')
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [form, setForm] = useState<NewCaseForm>(EMPTY_FORM)
   const [saving, startSave] = useTransition()
@@ -217,9 +220,20 @@ export function AdminCasesClient({
   }), [initialCases])
 
   const filtered = useMemo(() => {
-    if (filter === 'all') return initialCases.filter(c => c.status !== 'ARCHIVED')
-    return initialCases.filter(c => c.status === filter)
-  }, [initialCases, filter])
+    const byStatus = filter === 'all' ? initialCases.filter(c => c.status !== 'ARCHIVED') : initialCases.filter(c => c.status === filter)
+    const q = search.trim().toLowerCase()
+    if (!q) return byStatus
+    return byStatus.filter(c =>
+      c.citizen_initials.toLowerCase().includes(q) ||
+      c.municipality_name.toLowerCase().includes(q) ||
+      c.case_number?.toLowerCase().includes(q)
+    )
+  }, [initialCases, filter, search])
+
+  useEffect(() => { setPage(1) }, [filter, search])
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const paged = useMemo(() => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [filtered, page])
 
   function field(key: keyof NewCaseForm) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
@@ -392,35 +406,38 @@ export function AdminCasesClient({
         }
       />
 
-      {/* Filter tabs */}
-      <div className="flex gap-1 mb-5 bg-[#F6F3EE] rounded-xl p-1 overflow-x-auto scrollbar-none">
-        {tabs.map(tab => (
-          <button
-            key={tab.key}
-            onClick={() => setFilter(tab.key)}
-            className={[
-              'px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
-              filter === tab.key
-                ? 'bg-white text-[#1A1F1C] shadow-sm'
-                : 'text-[#6B7569] hover:text-[#1A1F1C]',
-            ].join(' ')}
-          >
-            {tab.label}
-            {counts[tab.key] > 0 && (
-              <span className={`ml-1.5 tabular-nums ${filter === tab.key ? 'text-[#1C3829]' : 'text-[#C8C0B0]'}`}>
-                {counts[tab.key]}
-              </span>
-            )}
-          </button>
-        ))}
+      {/* Filter tabs + search */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-5">
+        <div className="flex gap-1 bg-[#F6F3EE] rounded-xl p-1 overflow-x-auto scrollbar-none">
+          {tabs.map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setFilter(tab.key)}
+              className={[
+                'px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap',
+                filter === tab.key
+                  ? 'bg-white text-[#1A1F1C] shadow-sm'
+                  : 'text-[#6B7569] hover:text-[#1A1F1C]',
+              ].join(' ')}
+            >
+              {tab.label}
+              {counts[tab.key] > 0 && (
+                <span className={`ml-1.5 tabular-nums ${filter === tab.key ? 'text-[#1C3829]' : 'text-[#C8C0B0]'}`}>
+                  {counts[tab.key]}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+        <SearchInput value={search} onChange={setSearch} placeholder="Søg på sagsnr., initialer eller kommune..." />
       </div>
 
       {filtered.length === 0 ? (
         <EmptyState
           icon={<CaseIcon />}
-          title="Ingen sager fundet"
-          description={filter === 'all' ? 'Opret den første sag for at komme i gang' : undefined}
-          action={filter === 'all' ? (
+          title={search.trim() ? 'Ingen match på søgningen' : 'Ingen sager fundet'}
+          description={!search.trim() && filter === 'all' ? 'Opret den første sag for at komme i gang' : undefined}
+          action={!search.trim() && filter === 'all' ? (
             <Button variant="primary" icon={<PlusIcon />} onClick={openNewCase}>
               Opret sag
             </Button>
@@ -428,7 +445,7 @@ export function AdminCasesClient({
         />
       ) : (
         <div className="space-y-3">
-          {filtered.map(c => (
+          {paged.map(c => (
             <Link key={c.id} href={`/admin/cases/${c.id}`}>
               <Card
                 hover
@@ -453,6 +470,7 @@ export function AdminCasesClient({
                       {c.urgency === 'HURTIG' && <span className="text-[10px] font-bold uppercase tracking-widest text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">🟡 Hurtig</span>}
                     </div>
                     <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                      {c.case_number && <span className="text-xs text-[#C8C0B0]">{c.case_number}</span>}
                       <Badge variant={COMPLEXITY_BADGE[c.complexity_level] ?? 'default'}>
                         {COMPLEXITY_LABEL[c.complexity_level] ?? c.complexity_level}
                       </Badge>
@@ -474,6 +492,7 @@ export function AdminCasesClient({
           ))}
         </div>
       )}
+      <Pagination page={page} totalPages={totalPages} onChange={setPage} />
 
       {/* Backdrop */}
       <div

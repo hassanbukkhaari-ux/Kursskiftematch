@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Pagination, SearchInput, PAGE_SIZE } from '@/components/ui/pagination'
 import type { NotificationType } from '@/types/database'
 import {
   NOTIFICATION_TYPE_LABEL as TYPE_LABEL,
@@ -50,12 +51,28 @@ export default function NotificationsClient({ notifications: initial, total }: P
   const [expanded, setExpanded] = useState<string | null>(null)
   const [feedback, setFeedback] = useState<{ id: string; msg: string; ok: boolean } | null>(null)
   const [filter, setFilter] = useState<'ALL' | 'SENT' | 'PENDING' | 'FAILED'>('ALL')
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
 
   const failedCount = notifications.filter(n => n.status === 'FAILED').length
   const pendingCount = notifications.filter(n => n.status === 'PENDING').length
   const sentCount = notifications.filter(n => n.status === 'SENT').length
 
-  const visible = filter === 'ALL' ? notifications : notifications.filter(n => n.status === filter)
+  const visible = useMemo(() => {
+    const byStatus = filter === 'ALL' ? notifications : notifications.filter(n => n.status === filter)
+    const q = search.trim().toLowerCase()
+    if (!q) return byStatus
+    return byStatus.filter(n =>
+      n.recipient_email?.toLowerCase().includes(q) ||
+      n.subject?.toLowerCase().includes(q) ||
+      (TYPE_LABEL[n.notification_type] ?? n.notification_type).toLowerCase().includes(q)
+    )
+  }, [notifications, filter, search])
+
+  useEffect(() => { setPage(1) }, [filter, search])
+
+  const totalPages = Math.max(1, Math.ceil(visible.length / PAGE_SIZE))
+  const paged = useMemo(() => visible.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [visible, page])
 
   function handleRetry(notif: NotificationRow) {
     setRetrying(notif.id)
@@ -104,14 +121,18 @@ export default function NotificationsClient({ notifications: initial, total }: P
         ))}
       </div>
 
+      <SearchInput value={search} onChange={setSearch} placeholder="Søg på modtager, emne eller type..." />
+
       {/* Log */}
       {visible.length === 0 ? (
         <Card className="text-center py-16">
-          <p className="text-sm text-[#6B7569]">Ingen notifikationer {filter !== 'ALL' ? 'med denne status' : 'endnu'}</p>
+          <p className="text-sm text-[#6B7569]">
+            {search.trim() ? 'Ingen match på søgningen' : `Ingen notifikationer ${filter !== 'ALL' ? 'med denne status' : 'endnu'}`}
+          </p>
         </Card>
       ) : (
         <div className="space-y-2">
-          {visible.map(n => (
+          {paged.map(n => (
             <Card key={n.id}>
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
@@ -194,6 +215,7 @@ export default function NotificationsClient({ notifications: initial, total }: P
           ))}
         </div>
       )}
+      <Pagination page={page} totalPages={totalPages} onChange={setPage} />
     </div>
   )
 }

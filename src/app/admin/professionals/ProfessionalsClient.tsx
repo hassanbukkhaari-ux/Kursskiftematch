@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
+import { Pagination, SearchInput, PAGE_SIZE } from '@/components/ui/pagination'
 import { SectionHeader } from '@/components/layout/page-header'
 import type { ProfessionalRow } from './page'
 
@@ -87,6 +88,8 @@ type DocStatus = { document_type: string; status: string; file_name: string | nu
 export function ProfessionalsClient({ initialData }: { initialData: ProfessionalRow[] }) {
   const router = useRouter()
   const [filter, setFilter] = useState<FilterKey>('all')
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const selected = selectedId ? (initialData.find(p => p.id === selectedId) ?? null) : null
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -154,10 +157,20 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
     INACTIVE: initialData.filter(p => p.status === 'INACTIVE').length,
   }), [initialData])
 
-  const filtered = useMemo(() =>
-    filter === 'all' ? initialData : initialData.filter(p => p.status === filter),
-    [initialData, filter],
-  )
+  const filtered = useMemo(() => {
+    const byStatus = filter === 'all' ? initialData : initialData.filter(p => p.status === filter)
+    const q = search.trim().toLowerCase()
+    if (!q) return byStatus
+    return byStatus.filter(p =>
+      p.profiles?.full_name?.toLowerCase().includes(q) ||
+      p.profiles?.email?.toLowerCase().includes(q)
+    )
+  }, [initialData, filter, search])
+
+  useEffect(() => { setPage(1) }, [filter, search])
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const paged = useMemo(() => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [filtered, page])
 
   function openDrawer(pro: ProfessionalRow) {
     setSelectedId(pro.id)
@@ -340,50 +353,53 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
         </div>
       )}
 
-      {/* Filter tabs */}
-      <div className="flex gap-1 mb-5 bg-[#F6F3EE] rounded-xl p-1 overflow-x-auto scrollbar-none">
-        {tabs.map(tab => (
-          <button
-            key={tab.key}
-            onClick={() => setFilter(tab.key)}
-            className={[
-              'px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
-              filter === tab.key
-                ? 'bg-white text-[#1A1F1C] shadow-sm'
-                : 'text-[#6B7569] hover:text-[#1A1F1C]',
-            ].join(' ')}
-          >
-            {tab.label}
-            {counts[tab.key] > 0 && (
-              <span className={`ml-1.5 tabular-nums ${filter === tab.key ? 'text-[#1C3829]' : 'text-[#C8C0B0]'}`}>
-                {counts[tab.key]}
-              </span>
-            )}
-          </button>
-        ))}
+      {/* Filter tabs + search */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-5">
+        <div className="flex gap-1 bg-[#F6F3EE] rounded-xl p-1 overflow-x-auto scrollbar-none">
+          {tabs.map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setFilter(tab.key)}
+              className={[
+                'px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap',
+                filter === tab.key
+                  ? 'bg-white text-[#1A1F1C] shadow-sm'
+                  : 'text-[#6B7569] hover:text-[#1A1F1C]',
+              ].join(' ')}
+            >
+              {tab.label}
+              {counts[tab.key] > 0 && (
+                <span className={`ml-1.5 tabular-nums ${filter === tab.key ? 'text-[#1C3829]' : 'text-[#C8C0B0]'}`}>
+                  {counts[tab.key]}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+        <SearchInput value={search} onChange={setSearch} placeholder="Søg på navn eller e-mail..." />
       </div>
 
       {filtered.length === 0 ? (
         <EmptyState
           icon={<PeopleIcon />}
-          title={filter === 'all' ? 'Ingen kontaktpersoner endnu' : `Ingen ${STATUS_LABEL[filter]?.toLowerCase() ?? ''} kontaktpersoner`}
-          description={filter === 'REGISTERED' ? 'Nye registreringer vises her' : undefined}
+          title={search.trim() ? 'Ingen match på søgningen' : filter === 'all' ? 'Ingen kontaktpersoner endnu' : `Ingen ${STATUS_LABEL[filter]?.toLowerCase() ?? ''} kontaktpersoner`}
+          description={!search.trim() && filter === 'REGISTERED' ? 'Nye registreringer vises her' : undefined}
         />
       ) : (
         <div className="space-y-3">
-          {filtered.map(pro => (
+          {paged.map(pro => (
             <button key={pro.id} onClick={() => openDrawer(pro)} className="w-full text-left block">
               <Card hover className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 min-w-0">
                   {(pro as any).profile_image_url ? (
-                    <img src={(pro as any).profile_image_url} alt={pro.profiles.full_name} className="w-9 h-9 rounded-full object-cover shrink-0 border border-[#E0DAD0]" />
+                    <img src={(pro as any).profile_image_url} alt={pro.profiles?.full_name ?? ''} className="w-9 h-9 rounded-full object-cover shrink-0 border border-[#E0DAD0]" />
                   ) : (
                     <div className="w-9 h-9 rounded-full bg-[#EEF4F0] flex items-center justify-center text-sm font-semibold text-[#1C3829] shrink-0">
                       {pro.profiles?.full_name?.charAt(0)?.toUpperCase() ?? '?'}
                     </div>
                   )}
                   <div className="min-w-0">
-                    <div className="font-medium text-[#1A1F1C] text-sm">{pro.profiles.full_name}</div>
+                    <div className="font-medium text-[#1A1F1C] text-sm">{pro.profiles?.full_name ?? 'Ukendt bruger — profil mangler'}</div>
                     <div className="text-xs text-[#6B7569]">
                       {(pro as any).profession_types?.name ?? PROFESSION_LABEL[pro.profession] ?? pro.profession}
                       {pro.experience_years > 0 && ` · ${pro.experience_years} år erfaring`}
@@ -403,6 +419,7 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
           ))}
         </div>
       )}
+      <Pagination page={page} totalPages={totalPages} onChange={setPage} />
 
       {/* Backdrop */}
       <div
@@ -431,15 +448,15 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
             <div className="flex items-center justify-between px-6 py-5 border-b border-[#E0DAD0] shrink-0">
               <div className="flex items-center gap-3 min-w-0">
                 {(selected as any).profile_image_url ? (
-                  <img src={(selected as any).profile_image_url} alt={selected.profiles.full_name} className="w-10 h-10 rounded-full object-cover shrink-0 border border-[#E0DAD0]" />
+                  <img src={(selected as any).profile_image_url} alt={selected.profiles?.full_name ?? ''} className="w-10 h-10 rounded-full object-cover shrink-0 border border-[#E0DAD0]" />
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-[#EEF4F0] flex items-center justify-center text-base font-semibold text-[#1C3829] shrink-0">
                     {selected.profiles?.full_name?.charAt(0)?.toUpperCase() ?? '?'}
                   </div>
                 )}
                 <div className="min-w-0">
-                  <div className="font-serif font-semibold text-[#1A1F1C] truncate">{selected.profiles.full_name}</div>
-                  <div className="text-xs text-[#6B7569] truncate">{selected.profiles.email}</div>
+                  <div className="font-serif font-semibold text-[#1A1F1C] truncate">{selected.profiles?.full_name ?? 'Ukendt bruger — profil mangler'}</div>
+                  <div className="text-xs text-[#6B7569] truncate">{selected.profiles?.email ?? '—'}</div>
                 </div>
               </div>
               <button

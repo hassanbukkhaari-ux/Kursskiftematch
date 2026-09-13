@@ -7,7 +7,7 @@ export default async function AdminCasesPage() {
 
   const [casesRes, munisRes, problemAreasRes, goalsRes, specialWishesRes] = await Promise.all([
     db.from('cases')
-      .select('id, citizen_initials, citizen_age_range, status, complexity_level, weekly_hours, municipality_id, urgency, created_at')
+      .select('id, case_number, citizen_initials, citizen_age_range, status, complexity_level, weekly_hours, municipality_id, urgency, created_at')
       .order('created_at', { ascending: false })
       .limit(200),
     db.from('municipalities')
@@ -55,6 +55,7 @@ export default async function AdminCasesPage() {
 
 export type AdminCase = {
   id: string
+  case_number: string | null
   citizen_initials: string
   citizen_age_range: string
   status: 'OPEN' | 'MATCHED' | 'PROPOSED' | 'ACTIVE' | 'COMPLETED' | 'ARCHIVED'

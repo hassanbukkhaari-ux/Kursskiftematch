@@ -15,7 +15,7 @@ export default async function ProfessionalsPage() {
       experience_with_genders, created_at, updated_at,
       profile_image_url, profession_type_id, max_hours_per_week,
       profession_types(name),
-      profiles!inner(full_name, email)
+      profiles(full_name, email)
     `)
     .order('created_at', { ascending: false })
 
@@ -57,5 +57,5 @@ export type ProfessionalRow = {
   profession_type_id: string | null
   max_hours_per_week: number | null
   profession_types: { name: string } | null
-  profiles: { full_name: string; email: string }
+  profiles: { full_name: string; email: string } | null
 }

@@ -164,6 +164,10 @@ export type Database = {
           specialization: string | null
           authorization_note: string | null
           bio: string | null
+          bio_status: 'DRAFT' | 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED'
+          bio_reviewed_at: string | null
+          bio_reviewed_by: string | null
+          bio_review_note: string | null
           max_hours_per_week: number | null
           available_now: boolean
           can_take_acute: boolean
@@ -209,6 +213,10 @@ export type Database = {
           specialization?: string | null
           authorization_note?: string | null
           bio?: string | null
+          bio_status?: 'DRAFT' | 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED'
+          bio_reviewed_at?: string | null
+          bio_reviewed_by?: string | null
+          bio_review_note?: string | null
           max_hours_per_week?: number | null
           available_now?: boolean
           can_take_acute?: boolean
@@ -253,6 +261,10 @@ export type Database = {
           specialization?: string | null
           authorization_note?: string | null
           bio?: string | null
+          bio_status?: 'DRAFT' | 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED'
+          bio_reviewed_at?: string | null
+          bio_reviewed_by?: string | null
+          bio_review_note?: string | null
           max_hours_per_week?: number | null
           available_now?: boolean
           can_take_acute?: boolean

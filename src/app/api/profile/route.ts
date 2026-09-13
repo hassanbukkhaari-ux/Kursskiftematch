@@ -26,6 +26,18 @@ export async function PATCH(request: NextRequest) {
 
     if (Object.keys(patch).length === 0) return badRequest('No valid fields provided')
 
+    // Any bio edit needs a fresh admin review before it can reach a
+    // municipality — even one already approved before, since the approval
+    // was for that exact text, not a blank check on whatever gets typed
+    // next. PENDING_REVIEW only once it clears the same minimum length the
+    // UI already enforces; a shorter draft was never reviewable anyway.
+    if (typeof patch.bio === 'string') {
+      patch.bio_status = patch.bio.trim().length >= 50 ? 'PENDING_REVIEW' : 'DRAFT'
+      patch.bio_reviewed_at = null
+      patch.bio_reviewed_by = null
+      patch.bio_review_note = null
+    }
+
     // Standard full-time work week (37 timer) is the legal cap here — a
     // professional can never self-declare more; only an admin editing
     // capacity_hours_week directly can go higher.

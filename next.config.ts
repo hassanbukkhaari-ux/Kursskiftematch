@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next'
+import { withSentryConfig } from '@sentry/nextjs/config'
 
 const securityHeaders = [
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
@@ -29,4 +30,12 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+// Wraps the config to upload source maps to Sentry on build — silently
+// skipped (no build failure) when SENTRY_AUTH_TOKEN/org/project aren't
+// configured, which is the default until the team sets up a Sentry project.
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: true,
+})

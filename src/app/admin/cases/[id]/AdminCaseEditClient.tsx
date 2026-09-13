@@ -292,14 +292,15 @@ export default function AdminCaseEditClient(props: Props) {
           </div>
 
           <div>
-            <label className={labelClass}>Interne noter</label>
+            <label className={labelClass}>Sagsnoter</label>
             <textarea
               value={form.citizen_notes}
               onChange={e => setForm(f => ({ ...f, citizen_notes: e.target.value }))}
               rows={3}
               className={`${inputClass} resize-none`}
-              placeholder="Interne noter om sagen..."
+              placeholder="Baggrundsinformation, særlige hensyn, øvrige bemærkninger..."
             />
+            <p className="text-[11px] text-[#9B9589] mt-1">Deles med den tildelte kontaktperson — deles aldrig med kommunen.</p>
           </div>
 
           <div className="pt-1 border-t border-[#E0DAD0] space-y-2">

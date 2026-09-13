@@ -115,6 +115,7 @@ export default async function AdminCasePage({ params }: PageProps) {
     handoversRes,
     reportRequestsRes,
     proposalsRes,
+    complexityFactorsRes,
   ] = await Promise.all([
     db.from('municipalities').select('name, sagsbehandler_name, sagsbehandler_email').eq('id', caseData.municipality_id).single(),
     createServiceClient().from('session_logs' as any).select('id, session_date, duration_minutes, observations, citizen_mood_tone, follow_up_needed, follow_up_reason, status, professional_id', { count: 'exact' }).eq('case_id', id).order('session_date', { ascending: false }).limit(20),
@@ -128,6 +129,7 @@ export default async function AdminCasePage({ params }: PageProps) {
     dba.from('case_handovers').select('id, reason, status, handover_note, is_urgent, session_logs_transferred, transferred_session_logs, created_at, completed_at, outgoing_professional_id, incoming_professional_id, created_by').eq('case_id', id).order('created_at', { ascending: false }),
     (createServiceClient() as any).from('status_report_requests').select('id, report_type, deadline, promised_date, status, created_at, professionals!inner(profiles!inner(full_name))').eq('case_id', id).order('created_at', { ascending: false }).limit(5),
     (createServiceClient() as any).from('case_proposals').select('id, status, sent_at, responded_at, municipality_response_note, professionals!inner(profiles!inner(full_name))').eq('case_id', id).order('created_at', { ascending: false }),
+    dba.from('case_complexity_factors').select('violence, substance_use, mental_health, criminality, family_instability, school, multiple_agencies, diagnosis, notes').eq('case_id', id).maybeSingle(),
   ])
 
   const labelMap = (rows: { code: string; label_da: string }[] | null) =>
@@ -712,6 +714,25 @@ export default async function AdminCasePage({ params }: PageProps) {
               intakeContactName={caseDetailRes.data?.intake_contact_name ?? null}
               intakeContactEmail={caseDetailRes.data?.intake_contact_email ?? null}
               intakeContactPhone={(caseDetailRes.data as any)?.intake_contact_phone ?? null}
+              citizenGender={caseDetailRes.data?.citizen_gender ?? null}
+              legalBasis={caseDetailRes.data?.legal_basis ?? null}
+              expectedDurationMonths={caseDetailRes.data?.expected_duration_months ?? null}
+              diagnoses={caseDetailRes.data?.diagnoses ?? null}
+              dailyFunction={caseDetailRes.data?.daily_function ?? null}
+              citizenInterests={caseDetailRes.data?.citizen_interests ?? null}
+              preferredProfGender={caseDetailRes.data?.preferred_prof_gender ?? null}
+              transportNeeds={caseDetailRes.data?.transport_needs ?? null}
+              geographicalArea={caseDetailRes.data?.geographical_area ?? null}
+              requiresEvening={caseDetailRes.data?.requires_evening ?? false}
+              requiresWeekend={caseDetailRes.data?.requires_weekend ?? false}
+              requiresNight={caseDetailRes.data?.requires_night ?? false}
+              problemAreaCodes={tagsRes.data?.problem_area_codes ?? []}
+              goalCodes={tagsRes.data?.goal_codes ?? []}
+              specialWishCodes={tagsRes.data?.special_wish_codes ?? []}
+              problemAreaOptions={problemAreasRes.data ?? []}
+              goalOptions={goalsRes.data ?? []}
+              specialWishOptions={specialWishesRes.data ?? []}
+              complexityFactors={complexityFactorsRes.data ?? null}
             />
 
             {/* Dynamic admin actions */}

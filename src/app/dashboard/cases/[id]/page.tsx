@@ -44,7 +44,11 @@ export default async function DashboardCasePage({ params }: PageProps) {
       .eq('professional_id', user.id)
       .order('session_date', { ascending: false })
       .limit(10),
-    db.from('cases').select('citizen_gender, citizen_notes, intake_contact_name, intake_contact_email, intake_contact_phone').eq('id', id).single(),
+    // citizen_notes is deliberately excluded — it's admin's "Interne noter"
+    // field, and its own form copy promises it is "never shared with the
+    // municipality or the contact person" ("deles aldrig med kommunen eller
+    // kontaktpersonen"). It must not be selected here.
+    db.from('cases').select('citizen_gender, intake_contact_name, intake_contact_email, intake_contact_phone, diagnoses, daily_function, citizen_interests, required_languages, transport_needs, geographical_area, requires_evening, requires_weekend, requires_night').eq('id', id).single(),
     db.from('v_case_tags').select('problem_area_codes, goal_codes, special_wish_codes').eq('case_id', id).single(),
     db.from('problem_areas').select('code, label_da'),
     db.from('goals_lookup').select('code, label_da'),
@@ -120,13 +124,69 @@ export default async function DashboardCasePage({ params }: PageProps) {
                   </InfoBlock>
                 )}
               </div>
-              {caseDetailRes.data?.citizen_notes && (
-                <div className="mt-4 pt-4 border-t border-[#E0DAD0]">
-                  <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-1.5">Noter</div>
-                  <p className="text-sm text-[#1A1F1C] whitespace-pre-wrap">{caseDetailRes.data.citizen_notes}</p>
-                </div>
-              )}
             </Card>
+
+            {/* Citizen profile + logistics requirements */}
+            {(caseDetailRes.data?.diagnoses || caseDetailRes.data?.daily_function || caseDetailRes.data?.citizen_interests ||
+              (caseDetailRes.data?.required_languages?.length ?? 0) > 0 || caseDetailRes.data?.transport_needs === 'JA' ||
+              caseDetailRes.data?.geographical_area || caseDetailRes.data?.requires_evening ||
+              caseDetailRes.data?.requires_weekend || caseDetailRes.data?.requires_night) && (
+              <Card>
+                <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-4">Borgerprofil</div>
+                <div className="space-y-3">
+                  {caseDetailRes.data?.diagnoses && (
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8C0B0] mb-1">Diagnoser</div>
+                      <p className="text-sm text-[#1A1F1C] whitespace-pre-wrap">{caseDetailRes.data.diagnoses}</p>
+                    </div>
+                  )}
+                  {caseDetailRes.data?.daily_function && (
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8C0B0] mb-1">Daglig funktion</div>
+                      <p className="text-sm text-[#1A1F1C] whitespace-pre-wrap">{caseDetailRes.data.daily_function}</p>
+                    </div>
+                  )}
+                  {caseDetailRes.data?.citizen_interests && (
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8C0B0] mb-1">Interesser</div>
+                      <p className="text-sm text-[#1A1F1C] whitespace-pre-wrap">{caseDetailRes.data.citizen_interests}</p>
+                    </div>
+                  )}
+                  <div className="flex gap-1.5 flex-wrap">
+                    {(caseDetailRes.data?.required_languages ?? []).map(lang => (
+                      <span key={lang} className="text-xs bg-[#F6F3EE] border border-[#E0DAD0] rounded-lg px-2 py-1 text-[#6B7569]">
+                        {lang}
+                      </span>
+                    ))}
+                    {caseDetailRes.data?.transport_needs === 'JA' && (
+                      <span className="text-xs bg-[#FEF2E2] border border-[#F5DDB0] rounded-lg px-2 py-1 text-[#92660A]">
+                        Transport nødvendig
+                      </span>
+                    )}
+                    {caseDetailRes.data?.geographical_area && (
+                      <span className="text-xs bg-[#F6F3EE] border border-[#E0DAD0] rounded-lg px-2 py-1 text-[#6B7569]">
+                        {caseDetailRes.data.geographical_area}
+                      </span>
+                    )}
+                    {caseDetailRes.data?.requires_evening && (
+                      <span className="text-xs bg-[#FEF2E2] border border-[#F5DDB0] rounded-lg px-2 py-1 text-[#92660A]">
+                        Aften
+                      </span>
+                    )}
+                    {caseDetailRes.data?.requires_weekend && (
+                      <span className="text-xs bg-[#FEF2E2] border border-[#F5DDB0] rounded-lg px-2 py-1 text-[#92660A]">
+                        Weekend
+                      </span>
+                    )}
+                    {caseDetailRes.data?.requires_night && (
+                      <span className="text-xs bg-[#FEF2E2] border border-[#F5DDB0] rounded-lg px-2 py-1 text-[#92660A]">
+                        Nat
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            )}
 
             {/* Intake tags: problem areas, goals, special wishes */}
             {((tagsRes.data?.problem_area_codes?.length ?? 0) > 0 ||

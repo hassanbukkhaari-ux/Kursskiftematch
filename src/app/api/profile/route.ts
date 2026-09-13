@@ -1,6 +1,7 @@
 import { withAuth } from '@/lib/api-response'
 import { badRequest, ok, serverError } from '@/lib/api-response'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { ensureProfessionalRecord } from '@/lib/professionals/ensure-record'
 import type { NextRequest } from 'next/server'
 
 const ALLOWED_FIELDS = new Set([
@@ -34,12 +35,10 @@ export async function PATCH(request: NextRequest) {
     }
 
     // INSERT policy on professionals restricts to admin — use service client
-    // to ensure the row exists, then the update goes through either way.
+    // to ensure the row exists (and notify admin, the first time), then the
+    // update goes through either way.
     const svc = createServiceClient()
-    await (svc as any).from('professionals').upsert(
-      { id: userId, profession: 'OTHER' },
-      { onConflict: 'id', ignoreDuplicates: true }
-    )
+    await ensureProfessionalRecord(svc, userId)
 
     const db = await createClient()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

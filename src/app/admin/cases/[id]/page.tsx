@@ -9,6 +9,7 @@ import AdminCaseEditClient from './AdminCaseEditClient'
 import CaseDocumentsClient from './CaseDocumentsClient'
 import { CaseSessionLogsClient, type CaseSessionLog } from './CaseSessionLogsClient'
 import { HandoverActionsClient } from './HandoverActionsClient'
+import { WithdrawProposalClient } from './WithdrawProposalClient'
 import type { HandoverReason, HandoverStatus } from '@/types/database'
 
 const STATUS_LABEL: Record<string, string> = {
@@ -74,6 +75,15 @@ interface HandoverRow {
   created_by_name: string
 }
 
+interface ProposalRow {
+  id: string
+  status: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'WITHDRAWN' | 'CHANGES_REQUESTED'
+  sent_at: string | null
+  responded_at: string | null
+  municipality_response_note: string | null
+  professional_name: string
+}
+
 interface PageProps {
   params: Promise<{ id: string }>
 }
@@ -103,10 +113,11 @@ export default async function AdminCasePage({ params }: PageProps) {
     prosRes,
     handoversRes,
     reportRequestsRes,
+    proposalsRes,
   ] = await Promise.all([
     db.from('municipalities').select('name, sagsbehandler_name, sagsbehandler_email').eq('id', caseData.municipality_id).single(),
     createServiceClient().from('session_logs' as any).select('id, session_date, duration_minutes, observations, citizen_mood_tone, follow_up_needed, follow_up_reason, status, professional_id', { count: 'exact' }).eq('case_id', id).order('session_date', { ascending: false }).limit(20),
-    dba.from('cases').select('citizen_gender, citizen_notes, intake_contact_name, intake_contact_email, intake_contact_phone, legal_basis, diagnoses, daily_function, citizen_interests, expected_duration_months, preferred_prof_gender, transport_needs, created_at').eq('id', id).single(),
+    dba.from('cases').select('citizen_gender, citizen_notes, intake_contact_name, intake_contact_email, intake_contact_phone, legal_basis, diagnoses, daily_function, citizen_interests, expected_duration_months, preferred_prof_gender, transport_needs, required_languages, geographical_area, requires_evening, requires_weekend, requires_night, urgency, case_number, created_at').eq('id', id).single(),
     db.from('v_case_tags').select('problem_area_codes, goal_codes, special_wish_codes').eq('case_id', id).single(),
     db.from('problem_areas').select('code, label_da'),
     db.from('goals_lookup').select('code, label_da'),
@@ -115,6 +126,7 @@ export default async function AdminCasePage({ params }: PageProps) {
     createServiceClient().from('professionals' as any).select('id, profiles!inner(full_name)').eq('status', 'ACTIVE'),
     dba.from('case_handovers').select('id, reason, status, handover_note, is_urgent, session_logs_transferred, transferred_session_logs, created_at, completed_at, outgoing_professional_id, incoming_professional_id, created_by').eq('case_id', id).order('created_at', { ascending: false }),
     (createServiceClient() as any).from('status_report_requests').select('id, report_type, deadline, promised_date, status, created_at, professionals!inner(profiles!inner(full_name))').eq('case_id', id).order('created_at', { ascending: false }).limit(5),
+    (createServiceClient() as any).from('case_proposals').select('id, status, sent_at, responded_at, municipality_response_note, professionals!inner(profiles!inner(full_name))').eq('case_id', id).order('created_at', { ascending: false }),
   ])
 
   const labelMap = (rows: { code: string; label_da: string }[] | null) =>
@@ -190,6 +202,24 @@ export default async function AdminCasePage({ params }: PageProps) {
     })
   )
 
+  const proposals: ProposalRow[] = (proposalsRes.data ?? []).map((p: any) => ({
+    id: p.id,
+    status: p.status,
+    sent_at: p.sent_at,
+    responded_at: p.responded_at,
+    municipality_response_note: p.municipality_response_note,
+    professional_name: p.professionals?.profiles?.full_name ?? 'Ukendt',
+  }))
+
+  const PROPOSAL_STATUS_LABEL: Record<string, string> = {
+    DRAFT: 'Kladde', SENT: 'Afventer kommunen', ACCEPTED: 'Accepteret',
+    DECLINED: 'Afvist', WITHDRAWN: 'Trukket tilbage', CHANGES_REQUESTED: 'Bad om ændring',
+  }
+  const PROPOSAL_STATUS_BADGE: Record<string, 'amber' | 'green' | 'red' | 'default'> = {
+    DRAFT: 'default', SENT: 'amber', ACCEPTED: 'green',
+    DECLINED: 'red', WITHDRAWN: 'default', CHANGES_REQUESTED: 'amber',
+  }
+
   function fmt(iso: string) {
     return new Intl.DateTimeFormat('da-DK', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(iso))
   }
@@ -198,7 +228,7 @@ export default async function AdminCasePage({ params }: PageProps) {
     <div>
       <PageHeader
         label="Sag"
-        title={caseData.case_number ?? `Borger ${caseData.citizen_initials}`}
+        title={caseDetailRes.data?.case_number ?? `Borger ${caseData.citizen_initials}`}
         subtitle={`${caseData.citizen_initials} · ${caseData.citizen_age_range} · ${muniRes.data?.name ?? 'Ukendt kommune'}${caseDetailRes.data?.created_at ? ` · Oprettet ${fmt(caseDetailRes.data.created_at)}` : ''}`}
         breadcrumb={[
           { label: 'Kursskifte Administration', href: '/admin' },
@@ -234,9 +264,9 @@ export default async function AdminCasePage({ params }: PageProps) {
                   <span className="font-semibold text-[#1A1F1C]">{caseData.citizen_age_range}</span>
                 </InfoBlock>
                 <InfoBlock label="Hastighed">
-                  {caseData.urgency === 'AKUT' && <span className="font-semibold text-red-700">🔴 Akut (24 timer)</span>}
-                  {caseData.urgency === 'HURTIG' && <span className="font-semibold text-amber-700">🟡 Hurtig</span>}
-                  {(!caseData.urgency || caseData.urgency === 'NORMAL') && <span className="font-semibold text-[#6B7569]">⚪ Normal</span>}
+                  {caseDetailRes.data?.urgency === 'AKUT' && <span className="font-semibold text-red-700">🔴 Akut (24 timer)</span>}
+                  {caseDetailRes.data?.urgency === 'HURTIG' && <span className="font-semibold text-amber-700">🟡 Hurtig</span>}
+                  {(!caseDetailRes.data?.urgency || caseDetailRes.data.urgency === 'NORMAL') && <span className="font-semibold text-[#6B7569]">⚪ Normal</span>}
                 </InfoBlock>
                 {caseDetailRes.data?.citizen_gender && (
                   <InfoBlock label="Køn">
@@ -321,7 +351,10 @@ export default async function AdminCasePage({ params }: PageProps) {
             )}
 
             {/* Citizen profile */}
-            {(caseDetailRes.data?.diagnoses || caseDetailRes.data?.daily_function || caseDetailRes.data?.citizen_interests || caseDetailRes.data?.preferred_prof_gender || caseDetailRes.data?.transport_needs) && (
+            {(caseDetailRes.data?.diagnoses || caseDetailRes.data?.daily_function || caseDetailRes.data?.citizen_interests ||
+              caseDetailRes.data?.preferred_prof_gender || caseDetailRes.data?.transport_needs ||
+              (caseDetailRes.data?.required_languages?.length ?? 0) > 0 || caseDetailRes.data?.geographical_area ||
+              caseDetailRes.data?.requires_evening || caseDetailRes.data?.requires_weekend || caseDetailRes.data?.requires_night) && (
               <Card>
                 <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-4">Borgerprofil</div>
                 <div className="space-y-3">
@@ -349,14 +382,69 @@ export default async function AdminCasePage({ params }: PageProps) {
                         {PREF_GENDER_LABEL[caseDetailRes.data.preferred_prof_gender] ?? caseDetailRes.data.preferred_prof_gender}
                       </span>
                     )}
+                    {(caseDetailRes.data?.required_languages ?? []).map((lang: string) => (
+                      <span key={lang} className="text-xs bg-[#F6F3EE] border border-[#E0DAD0] rounded-lg px-2 py-1 text-[#6B7569]">
+                        {lang}
+                      </span>
+                    ))}
                     {caseDetailRes.data?.transport_needs === 'JA' && (
                       <span className="text-xs bg-[#FEF2E2] border border-[#F5DDB0] rounded-lg px-2 py-1 text-[#92660A]">
                         Transport nødvendig
                       </span>
                     )}
+                    {caseDetailRes.data?.geographical_area && (
+                      <span className="text-xs bg-[#F6F3EE] border border-[#E0DAD0] rounded-lg px-2 py-1 text-[#6B7569]">
+                        {caseDetailRes.data.geographical_area}
+                      </span>
+                    )}
+                    {caseDetailRes.data?.requires_evening && (
+                      <span className="text-xs bg-[#FEF2E2] border border-[#F5DDB0] rounded-lg px-2 py-1 text-[#92660A]">Aften</span>
+                    )}
+                    {caseDetailRes.data?.requires_weekend && (
+                      <span className="text-xs bg-[#FEF2E2] border border-[#F5DDB0] rounded-lg px-2 py-1 text-[#92660A]">Weekend</span>
+                    )}
+                    {caseDetailRes.data?.requires_night && (
+                      <span className="text-xs bg-[#FEF2E2] border border-[#F5DDB0] rounded-lg px-2 py-1 text-[#92660A]">Nat</span>
+                    )}
                   </div>
                 </div>
               </Card>
+            )}
+
+            {/* Proposals to the municipality */}
+            {proposals.length > 0 && (
+              <div>
+                <SectionHeader
+                  title="Forslag til kommunen"
+                  description={`${proposals.length} ${proposals.length === 1 ? 'forslag' : 'forslag'}`}
+                />
+                <div className="space-y-2">
+                  {proposals.map(p => (
+                    <Card key={p.id}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-semibold text-[#1A1F1C] mb-1">{p.professional_name}</div>
+                          <div className="text-xs text-[#6B7569] space-y-0.5">
+                            {p.sent_at && <div>Sendt {fmt(p.sent_at)}</div>}
+                            {p.responded_at && <div>Besvaret {fmt(p.responded_at)}</div>}
+                          </div>
+                          {p.municipality_response_note && (
+                            <p className="mt-2 text-xs text-[#6B7569] italic border-l-2 border-[#E0DAD0] pl-2">
+                              {p.municipality_response_note}
+                            </p>
+                          )}
+                        </div>
+                        <Badge variant={PROPOSAL_STATUS_BADGE[p.status] ?? 'default'}>
+                          {PROPOSAL_STATUS_LABEL[p.status] ?? p.status}
+                        </Badge>
+                      </div>
+                      {p.status === 'SENT' && !p.responded_at && (
+                        <WithdrawProposalClient caseId={id} proposalId={p.id} />
+                      )}
+                    </Card>
+                  ))}
+                </div>
+              </div>
             )}
 
             {/* Handover history */}
@@ -614,7 +702,7 @@ export default async function AdminCasePage({ params }: PageProps) {
               caseId={id}
               status={caseData.status as 'OPEN' | 'MATCHED' | 'ACTIVE' | 'COMPLETED' | 'ARCHIVED'}
               complexityLevel={caseData.complexity_level as 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'}
-              urgency={caseData.urgency as 'NORMAL' | 'HURTIG' | 'AKUT'}
+              urgency={(caseDetailRes.data?.urgency ?? 'NORMAL') as 'NORMAL' | 'HURTIG' | 'AKUT'}
               weeklyHours={caseData.weekly_hours}
               citizenNotes={caseDetailRes.data?.citizen_notes ?? null}
               intakeContactName={caseDetailRes.data?.intake_contact_name ?? null}

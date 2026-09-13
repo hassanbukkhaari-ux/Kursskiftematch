@@ -1299,6 +1299,9 @@ export type Database = {
           overall_assessment: 'ON_TRACK' | 'ADJUSTING' | 'RECOMMEND_CLOSE' | null
           overall_assessment_note: string | null
           submitted_at: string | null
+          response_token: string | null
+          shared_with_municipality_at: string | null
+          shared_by: string | null
           created_at: string
           updated_at: string
         }
@@ -1320,6 +1323,9 @@ export type Database = {
           overall_assessment?: 'ON_TRACK' | 'ADJUSTING' | 'RECOMMEND_CLOSE' | null
           overall_assessment_note?: string | null
           submitted_at?: string | null
+          response_token?: string | null
+          shared_with_municipality_at?: string | null
+          shared_by?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -1337,6 +1343,9 @@ export type Database = {
           overall_assessment?: 'ON_TRACK' | 'ADJUSTING' | 'RECOMMEND_CLOSE' | null
           overall_assessment_note?: string | null
           submitted_at?: string | null
+          response_token?: string | null
+          shared_with_municipality_at?: string | null
+          shared_by?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -1667,7 +1676,7 @@ export type DocumentStatus =
 export type CaseStatus = 'OPEN' | 'MATCHED' | 'PROPOSED' | 'ACTIVE' | 'COMPLETED' | 'ARCHIVED'
 export type CaseUrgency = 'NORMAL' | 'HURTIG' | 'AKUT'
 
-export type ProposalStatus = 'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED'
+export type ProposalStatus = 'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'WITHDRAWN' | 'CHANGES_REQUESTED'
 
 export type AgeRange = '0-5' | '6-12' | '13-18' | '18+'
 
@@ -1722,6 +1731,8 @@ export type NotificationType =
   | 'STATUS_REPORT_REMINDER'
   | 'STATUS_REPORT_SUBMITTED'
   | 'GRANT_ACTIVATED'
+  | 'PROPOSAL_CHANGES_REQUESTED'
+  | 'STATUS_REPORT_SHARED'
 
 // ================================================================
 // Convenience row types

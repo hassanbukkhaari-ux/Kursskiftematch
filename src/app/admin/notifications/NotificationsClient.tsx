@@ -41,6 +41,8 @@ const TYPE_LABEL: Record<NotificationType, string> = {
   STATUS_REPORT_REMINDER: 'Påmindelse om statusrapport',
   STATUS_REPORT_SUBMITTED: 'Statusrapport indsendt',
   GRANT_ACTIVATED: 'Bevilling oprettet',
+  PROPOSAL_CHANGES_REQUESTED: 'Kommune bad om ændring',
+  STATUS_REPORT_SHARED: 'Statusrapport sendt til kommune',
 }
 
 const STATUS_BADGE: Record<string, 'green' | 'amber' | 'red'> = {

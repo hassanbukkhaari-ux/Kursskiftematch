@@ -1,6 +1,7 @@
 import { withAuth } from '@/lib/api-response'
 import { badRequest, ok, serverError } from '@/lib/api-response'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { ensureProfessionalRecord } from '@/lib/professionals/ensure-record'
 import type { NextRequest } from 'next/server'
 
 type SelectionConfig = { table: string; field: string; max?: number }
@@ -37,11 +38,13 @@ export async function PUT(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dba = db as any
 
-    // Ensure professionals record exists before inserting junction rows
-    await db.from('professionals').upsert(
-      { id: userId, profession: 'OTHER' },
-      { onConflict: 'id', ignoreDuplicates: true }
-    )
+    // Ensure professionals record exists before inserting junction rows.
+    // INSERT on professionals requires is_admin(), so this must run on the
+    // service client — the RLS-bound `db` client used here previously would
+    // silently be blocked, leaving no professionals row for a professional
+    // whose very first save was a selection (competencies, geography, …)
+    // rather than a PATCH to /api/profile.
+    await ensureProfessionalRecord(createServiceClient(), userId)
 
     // Replace all selections atomically
     const { error: delErr } = await dba

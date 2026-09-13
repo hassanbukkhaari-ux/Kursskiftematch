@@ -124,11 +124,15 @@ export function adminEmailBody(type: NotificationType, entityId: string): { subj
     },
     PROPOSAL_ACCEPTED: {
       subject: 'Kommunen har accepteret forslaget — Kursskifte',
-      body: `Kommunen har accepteret forslaget for sag ${entityId}.\n\nAktivér sagen og del kontaktoplysninger:\n${base}/admin/cases/${entityId}`,
+      body: `Kommunen har accepteret forslaget for sag ${entityId} — sagen er nu aktiv.\n\nSe sagen:\n${base}/admin/cases/${entityId}`,
     },
     PROPOSAL_DECLINED: {
       subject: 'Kommunen har afvist forslaget — Kursskifte',
-      body: `Kommunen har afvist forslaget for sag ${entityId}.\n\nGennemgå og send et nyt forslag:\n${base}/admin/cases/${entityId}`,
+      body: `Kommunen har afvist forslaget for sag ${entityId}.\n\nGennemgå begrundelsen og send et nyt forslag:\n${base}/admin/cases/${entityId}`,
+    },
+    PROPOSAL_CHANGES_REQUESTED: {
+      subject: 'Kommunen har bedt om ændringer — Kursskifte',
+      body: `Kommunen har bedt om ændringer til forslaget for sag ${entityId}, i stedet for at afvise det.\n\nSe kommunens note og send evt. et justeret forslag:\n${base}/admin/cases/${entityId}`,
     },
     FOLLOW_UP_NEEDED: {
       subject: 'Opfølgning påkrævet — Kursskifte',
@@ -149,6 +153,10 @@ export function adminEmailBody(type: NotificationType, entityId: string): { subj
     GRANT_ACTIVATED: {
       subject: 'Bevilling oprettet — Kursskifte',
       body: `En ny bevilling er oprettet for en sag.\n\nBevillings-ID: ${entityId}\n\nSe sagen:\n${base}/admin/cases`,
+    },
+    STATUS_REPORT_SHARED: {
+      subject: 'Statusrapport sendt til kommunen — Kursskifte',
+      body: `En statusrapport er sendt til kommunens sagsbehandler.\n\nAnmodnings-ID: ${entityId}\n\nSe anmodningen:\n${base}/admin/status-reports/${entityId}`,
     },
   }
   return map[type]

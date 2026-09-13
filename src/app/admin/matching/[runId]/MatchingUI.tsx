@@ -68,7 +68,7 @@ export function MatchingUI({ candidates, runId, caseId, runStatus, caseData }: M
           body: JSON.stringify({
             professional_id: candidate.professional_id,
             candidate_id: candidate.id,
-            notes: `Tildelt via matching UI — score: ${candidate.overall_score}`,
+            notes: `Foreslået via matching UI — score: ${candidate.overall_score}`,
           }),
         })
         if (!res.ok) {
@@ -104,8 +104,8 @@ export function MatchingUI({ candidates, runId, caseId, runStatus, caseData }: M
             <polyline points="22 4 12 14.01 9 11.01" />
           </svg>
         </div>
-        <h3 className="font-serif text-xl font-semibold text-[#1A1F1C] mb-1">Tildeling gennemført</h3>
-        <p className="text-[#6B7569] text-sm">{assignedName} er nu tildelt sagen.</p>
+        <h3 className="font-serif text-xl font-semibold text-[#1A1F1C] mb-1">Forslag sendt til kommunen</h3>
+        <p className="text-[#6B7569] text-sm">{assignedName} er foreslået — sagen bliver aktiv når kommunen godkender.</p>
         <a
           href={`/admin/cases/${caseId}`}
           className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-[#1C3829] hover:underline"
@@ -281,18 +281,18 @@ export function MatchingUI({ candidates, runId, caseId, runStatus, caseData }: M
                 <path d="M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
             </div>
-            <h3 className="font-serif text-lg font-semibold text-[#1A1F1C] mb-1">Bekræft tildeling</h3>
+            <h3 className="font-serif text-lg font-semibold text-[#1A1F1C] mb-1">Bekræft forslag til kommunen</h3>
             {confirmCandidate.eligible === false && (
               <div className="mb-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                <span className="font-semibold">Ikke kvalificeret automatisk:</span> {confirmCandidate.ineligibility_reason ?? 'ukendt årsag'}. Du tildeler alligevel, som et bevidst valg.
+                <span className="font-semibold">Ikke kvalificeret automatisk:</span> {confirmCandidate.ineligibility_reason ?? 'ukendt årsag'}. Du foreslår alligevel, som et bevidst valg.
               </div>
             )}
             <p className="text-sm text-[#6B7569] mb-6 leading-relaxed">
-              Er du sikker på, at du vil tildele{' '}
+              Er du sikker på, at du vil foreslå{' '}
               <strong className="text-[#1A1F1C]">
                 {confirmCandidate.professionals?.profiles?.full_name ?? 'denne kontaktperson'}
               </strong>{' '}
-              til sagen? Handlingen registreres i systemet.
+              til sagen? Kommunen får besked og skal godkende, før sagen bliver aktiv.
             </p>
             <div className="flex gap-3">
               <Button
@@ -308,7 +308,7 @@ export function MatchingUI({ candidates, runId, caseId, runStatus, caseData }: M
                 loading={assigning}
                 onClick={() => executeAssign(confirmCandidate)}
               >
-                Tildel
+                Foreslå kommunen
               </Button>
             </div>
           </div>

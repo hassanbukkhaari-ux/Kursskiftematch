@@ -94,6 +94,7 @@ export default async function AdminStatusReportDetailPage({ params }: PageProps)
               status={data.status}
               isOverdue={isOverdue}
               professionalName={data.professionals?.profiles?.full_name ?? 'Kontaktpersonen'}
+              sharedWithMunicipalityAt={report?.shared_with_municipality_at ?? null}
             />
           </div>
         }

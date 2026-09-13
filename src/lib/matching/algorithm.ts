@@ -31,7 +31,10 @@ export interface ProfessionalInput {
   has_drivers_license?: boolean
   has_own_car?: boolean
   can_take_acute?: boolean
-  geography?: string[]
+  // Municipality IDs the professional has stated they cover — the same
+  // structured selection they make on their own profile (professional_geography),
+  // not a free-text field. Optional — omitted or empty means no signal.
+  covered_municipality_ids?: string[]
   languages?: string[]
   can_work_evening?: boolean
   can_work_weekend?: boolean
@@ -56,7 +59,9 @@ export interface CaseInput {
   preferred_prof_gender?: 'MALE' | 'FEMALE' | 'NO_PREF' | null
   citizen_gender?: 'MALE' | 'FEMALE' | 'OTHER' | null
   transport_needs?: 'JA' | 'NEJ' | null
-  geographical_area?: string | null
+  // The municipality the case belongs to — always set on a real case,
+  // compared against the professional's own covered_municipality_ids.
+  municipality_id?: string | null
   required_languages?: string[] | null
   requires_evening?: boolean
   requires_weekend?: boolean
@@ -199,6 +204,13 @@ function computeComplexityFitScore(
 interface LogisticsCheck {
   label: string
   ok: boolean
+  // A failed critical check means the professional cannot actually do what
+  // the case needs — not just a weaker fit than another candidate. Averaging
+  // it in at the same weight as a soft preference let a candidate who can't
+  // take an Akut case, or can't transport the citizen when transport is
+  // required, still surface with a reasonable-looking logistics_score just
+  // because they happened to pass a couple of unrelated soft checks.
+  critical?: boolean
 }
 
 // Every point of contact between a case's stated requirements and a
@@ -214,15 +226,15 @@ function computeLogisticsChecks(professional: ProfessionalInput, caseData: CaseI
 
   if (caseData.transport_needs === 'JA') {
     const canTransport = !!(professional.can_transport_citizen && professional.has_drivers_license && professional.has_own_car)
-    checks.push({ label: 'Kan transportere borgeren', ok: canTransport })
+    checks.push({ label: 'Kan transportere borgeren', ok: canTransport, critical: true })
   }
 
   if (caseData.urgency === 'AKUT') {
-    checks.push({ label: 'Kan tage akutte sager', ok: !!professional.can_take_acute })
+    checks.push({ label: 'Kan tage akutte sager', ok: !!professional.can_take_acute, critical: true })
   }
 
   if (caseData.preferred_prof_gender && caseData.preferred_prof_gender !== 'NO_PREF') {
-    checks.push({ label: 'Opfylder kommunens køns-ønske', ok: professional.gender === caseData.preferred_prof_gender })
+    checks.push({ label: 'Opfylder kommunens køns-ønske', ok: professional.gender === caseData.preferred_prof_gender, critical: true })
   }
 
   if (caseData.citizen_gender === 'MALE' || caseData.citizen_gender === 'FEMALE') {
@@ -233,10 +245,10 @@ function computeLogisticsChecks(professional: ProfessionalInput, caseData: CaseI
     }
   }
 
-  if (caseData.geographical_area) {
-    const geography = professional.geography ?? []
-    if (geography.length > 0) {
-      checks.push({ label: 'Dækker sagens geografi', ok: geography.includes(caseData.geographical_area) })
+  if (caseData.municipality_id) {
+    const covered = professional.covered_municipality_ids ?? []
+    if (covered.length > 0) {
+      checks.push({ label: 'Dækker sagens kommune', ok: covered.includes(caseData.municipality_id) })
     }
   }
 
@@ -266,6 +278,14 @@ function computeLogisticsChecks(professional: ProfessionalInput, caseData: CaseI
 function computeLogisticsScore(professional: ProfessionalInput, caseData: CaseInput): number | null {
   const checks = computeLogisticsChecks(professional, caseData)
   if (checks.length === 0) return null
+
+  // A failed critical check (can't transport when transport is required,
+  // can't take an Akut case, doesn't meet the municipality's stated gender
+  // requirement) means the candidate cannot actually do the job — floor the
+  // whole dimension at 0 rather than let it be diluted by unrelated soft
+  // checks the candidate happens to pass.
+  if (checks.some(c => c.critical && !c.ok)) return 0
+
   const passed = checks.filter(c => c.ok).length
   return Math.round((passed / checks.length) * 100)
 }

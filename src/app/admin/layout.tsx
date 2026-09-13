@@ -16,8 +16,21 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   if (profile?.role !== 'admin') redirect('/login')
 
+  // Admin notifications mostly go to SYSTEM_ADMIN_EMAIL rather than a
+  // specific recipient_profile_id, so "unread" isn't a meaningful metric
+  // here — PENDING/FAILED count instead, since those are the ones that
+  // actually need an admin to look and possibly retry a delivery.
+  const { count: actionableNotificationCount } = await supabase
+    .from('notification_log')
+    .select('id', { count: 'exact', head: true })
+    .in('status', ['PENDING', 'FAILED'])
+
   return (
-    <DashboardShell userName={profile?.full_name} role="admin">
+    <DashboardShell
+      userName={profile?.full_name}
+      role="admin"
+      unreadNotificationCount={actionableNotificationCount ?? 0}
+    >
       {children}
     </DashboardShell>
   )

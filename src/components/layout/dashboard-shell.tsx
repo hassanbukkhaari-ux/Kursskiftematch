@@ -10,9 +10,8 @@ interface NavItem {
   href: string
   label: string
   icon: React.ReactNode
+  isNotifications?: boolean
 }
-
-const NOTIFICATIONS_HREF = '/dashboard/notifications'
 
 const professionalNav: NavItem[] = [
   {
@@ -84,8 +83,9 @@ const professionalNav: NavItem[] = [
     ),
   },
   {
-    href: NOTIFICATIONS_HREF,
+    href: '/dashboard/notifications',
     label: 'Notifikationer',
+    isNotifications: true,
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -231,10 +231,20 @@ const adminNav: NavItem[] = [
   {
     href: '/admin/notifications',
     label: 'Notifikationer',
+    isNotifications: true,
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
         <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+      </svg>
+    ),
+  },
+  {
+    href: '/admin/gdpr-sletninger',
+    label: 'GDPR-sletninger',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
       </svg>
     ),
   },
@@ -269,7 +279,7 @@ function SidebarNav({
           >
             <span className="shrink-0">{item.icon}</span>
             {item.label}
-            {item.href === NOTIFICATIONS_HREF && unreadNotificationCount > 0 && (
+            {item.isNotifications && unreadNotificationCount > 0 && (
               <span className="ml-auto shrink-0 min-w-[18px] h-[18px] px-1 rounded-full bg-[#C8993A] text-[#1A1F1C] text-[10px] font-bold flex items-center justify-center">
                 {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
               </span>

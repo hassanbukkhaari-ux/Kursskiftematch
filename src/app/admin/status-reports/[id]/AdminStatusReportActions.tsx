@@ -9,16 +9,19 @@ interface Props {
   status: string
   isOverdue: boolean
   professionalName: string
+  sharedWithMunicipalityAt: string | null
 }
 
-export function AdminStatusReportActions({ requestId, status, isOverdue, professionalName }: Props) {
+export function AdminStatusReportActions({ requestId, status, isOverdue, professionalName, sharedWithMunicipalityAt }: Props) {
   const router = useRouter()
   const [markingReviewed, startMarkReviewed] = useTransition()
   const [sending, startSend] = useTransition()
+  const [sharing, startShare] = useTransition()
   const [showReminderModal, setShowReminderModal] = useState(false)
   const [reminderMessage, setReminderMessage] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [reminderSent, setReminderSent] = useState(false)
+  const [shared, setShared] = useState(!!sharedWithMunicipalityAt)
 
   function handleMarkReviewed() {
     setError(null)
@@ -54,10 +57,22 @@ export function AdminStatusReportActions({ requestId, status, isOverdue, profess
     })
   }
 
+  function handleShare() {
+    setError(null)
+    startShare(async () => {
+      const res = await fetch(`/api/admin/status-report-requests/${requestId}/share`, { method: 'POST' })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) { setError(json.error ?? 'Noget gik galt'); return }
+      setShared(true)
+      router.refresh()
+    })
+  }
+
   const canMarkReviewed = status === 'SUBMITTED'
   const canRemind = (status === 'PENDING' || status === 'ACKNOWLEDGED') && isOverdue
+  const canShare = (status === 'SUBMITTED' || status === 'REVIEWED') && !shared
 
-  if (!canMarkReviewed && !canRemind) return null
+  if (!canMarkReviewed && !canRemind && !canShare && !shared) return null
 
   return (
     <>
@@ -96,7 +111,26 @@ export function AdminStatusReportActions({ requestId, status, isOverdue, profess
             Rykker sendt
           </span>
         )}
+        {canShare && (
+          <Button variant="secondary" size="sm" loading={sharing} onClick={handleShare}>
+            Godkend og send til kommune
+          </Button>
+        )}
+        {shared && (
+          <span className="text-xs text-[#1C3829] font-medium flex items-center gap-1">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            Sendt til kommune
+          </span>
+        )}
       </div>
+
+      {canShare && (
+        <p className="mt-1.5 text-[11px] text-[#9B9589]">
+          Tjek at borgerens rigtige navn ikke fremgår af fritekstfelterne, før du sender.
+        </p>
+      )}
 
       {error && (
         <p className="mt-2 text-xs text-red-600 bg-red-50 rounded-xl px-3 py-2">{error}</p>

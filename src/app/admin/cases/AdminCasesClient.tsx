@@ -1057,8 +1057,8 @@ export function AdminCasesClient({
             </div>
           </FormSection>
 
-          {/* ── Interne noter ── */}
-          <FormSection title="Interne noter">
+          {/* ── Sagsnoter ── */}
+          <FormSection title="Sagsnoter">
             <div>
               <label className={labelClass}>Sagsnoter (valgfri)</label>
               <textarea
@@ -1068,7 +1068,7 @@ export function AdminCasesClient({
                 placeholder="Baggrundsinformation, særlige hensyn, kommunikation med kommunen, øvrige bemærkninger..."
                 className={`${inputClass} resize-none`}
               />
-              <p className="text-[10px] text-[#6B7569] mt-1.5">Gemmes kun internt — deles aldrig med kommunen eller kontaktpersonen</p>
+              <p className="text-[10px] text-[#6B7569] mt-1.5">Deles med den tildelte kontaktperson når sagen bliver aktiv — deles aldrig med kommunen</p>
             </div>
           </FormSection>
 

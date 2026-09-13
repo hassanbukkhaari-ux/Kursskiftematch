@@ -44,11 +44,11 @@ export default async function DashboardCasePage({ params }: PageProps) {
       .eq('professional_id', user.id)
       .order('session_date', { ascending: false })
       .limit(10),
-    // citizen_notes is deliberately excluded — it's admin's "Interne noter"
-    // field, and its own form copy promises it is "never shared with the
-    // municipality or the contact person" ("deles aldrig med kommunen eller
-    // kontaktpersonen"). It must not be selected here.
-    db.from('cases').select('citizen_gender, intake_contact_name, intake_contact_email, intake_contact_phone, diagnoses, daily_function, citizen_interests, required_languages, transport_needs, geographical_area, requires_evening, requires_weekend, requires_night').eq('id', id).single(),
+    // citizen_notes ("Sagsnoter") is shared with the assigned contact person —
+    // it's case context (background, special considerations, communication
+    // with the municipality) they need to do the job. Still never exposed to
+    // the municipality (its own token/public pages never select this column).
+    db.from('cases').select('citizen_gender, citizen_notes, intake_contact_name, intake_contact_email, intake_contact_phone, diagnoses, daily_function, citizen_interests, required_languages, transport_needs, geographical_area, requires_evening, requires_weekend, requires_night').eq('id', id).single(),
     db.from('v_case_tags').select('problem_area_codes, goal_codes, special_wish_codes').eq('case_id', id).single(),
     db.from('problem_areas').select('code, label_da'),
     db.from('goals_lookup').select('code, label_da'),
@@ -128,6 +128,7 @@ export default async function DashboardCasePage({ params }: PageProps) {
 
             {/* Citizen profile + logistics requirements */}
             {(caseDetailRes.data?.diagnoses || caseDetailRes.data?.daily_function || caseDetailRes.data?.citizen_interests ||
+              caseDetailRes.data?.citizen_notes ||
               (caseDetailRes.data?.required_languages?.length ?? 0) > 0 || caseDetailRes.data?.transport_needs === 'JA' ||
               caseDetailRes.data?.geographical_area || caseDetailRes.data?.requires_evening ||
               caseDetailRes.data?.requires_weekend || caseDetailRes.data?.requires_night) && (
@@ -184,6 +185,12 @@ export default async function DashboardCasePage({ params }: PageProps) {
                       </span>
                     )}
                   </div>
+                  {caseDetailRes.data?.citizen_notes && (
+                    <div className="pt-3 border-t border-[#E0DAD0]">
+                      <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8C0B0] mb-1">Sagsnoter</div>
+                      <p className="text-sm text-[#1A1F1C] whitespace-pre-wrap">{caseDetailRes.data.citizen_notes}</p>
+                    </div>
+                  )}
                 </div>
               </Card>
             )}

@@ -10,6 +10,7 @@ import CaseDocumentsClient from './CaseDocumentsClient'
 import { CaseSessionLogsClient, type CaseSessionLog } from './CaseSessionLogsClient'
 import { HandoverActionsClient } from './HandoverActionsClient'
 import { WithdrawProposalClient } from './WithdrawProposalClient'
+import { ProposalAdminActionsClient } from './ProposalAdminActionsClient'
 import type { HandoverReason, HandoverStatus } from '@/types/database'
 
 const STATUS_LABEL: Record<string, string> = {
@@ -439,7 +440,10 @@ export default async function AdminCasePage({ params }: PageProps) {
                         </Badge>
                       </div>
                       {p.status === 'SENT' && !p.responded_at && (
-                        <WithdrawProposalClient caseId={id} proposalId={p.id} />
+                        <>
+                          <ProposalAdminActionsClient proposalId={p.id} />
+                          <WithdrawProposalClient caseId={id} proposalId={p.id} />
+                        </>
                       )}
                     </Card>
                   ))}

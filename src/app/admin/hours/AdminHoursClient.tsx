@@ -16,7 +16,21 @@ const STATUS_BADGE: Record<string, 'amber' | 'green' | 'red'> = {
 
 type FilterStatus = 'SUBMITTED' | 'ALL' | 'APPROVED' | 'REJECTED'
 
-export function AdminHoursClient({ initialHours }: { initialHours: AdminHoursRow[] }) {
+function currentMonthRange() {
+  const now = new Date()
+  const first = new Date(now.getFullYear(), now.getMonth(), 1)
+  const last = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+  const fmt = (d: Date) => d.toISOString().slice(0, 10)
+  return { from: fmt(first), to: fmt(last) }
+}
+
+export function AdminHoursClient({
+  initialHours,
+  professionalOptions,
+}: {
+  initialHours: AdminHoursRow[]
+  professionalOptions: { id: string; full_name: string }[]
+}) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [filter, setFilter] = useState<FilterStatus>('SUBMITTED')
@@ -24,6 +38,8 @@ export function AdminHoursClient({ initialHours }: { initialHours: AdminHoursRow
   const [error, setError] = useState<string | null>(null)
   const [rejectTarget, setRejectTarget] = useState<string | null>(null)
   const [rejectNote, setRejectNote] = useState('')
+  const [exportRange, setExportRange] = useState(currentMonthRange())
+  const [exportProfessional, setExportProfessional] = useState('')
 
   const filtered = filter === 'ALL' ? initialHours : initialHours.filter(h => h.status === filter)
 
@@ -75,8 +91,57 @@ export function AdminHoursClient({ initialHours }: { initialHours: AdminHoursRow
     { label: 'Afvist', value: 'REJECTED' },
   ]
 
+  const exportHref = (() => {
+    const params = new URLSearchParams({ from: exportRange.from, to: exportRange.to })
+    if (exportProfessional) params.set('professional_id', exportProfessional)
+    return `/api/admin/hours/export?${params.toString()}`
+  })()
+
   return (
     <>
+      <Card className="mb-4">
+        <div className="flex items-end gap-3 flex-wrap">
+          <div>
+            <label className="block text-xs font-medium text-[#6B7569] mb-1">Fra</label>
+            <input
+              type="date"
+              value={exportRange.from}
+              onChange={e => setExportRange(r => ({ ...r, from: e.target.value }))}
+              className="h-9 px-3 bg-[#F6F3EE] rounded-lg text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829]"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[#6B7569] mb-1">Til</label>
+            <input
+              type="date"
+              value={exportRange.to}
+              onChange={e => setExportRange(r => ({ ...r, to: e.target.value }))}
+              className="h-9 px-3 bg-[#F6F3EE] rounded-lg text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829]"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[#6B7569] mb-1">Fagperson (valgfri)</label>
+            <select
+              value={exportProfessional}
+              onChange={e => setExportProfessional(e.target.value)}
+              className="h-9 px-3 bg-[#F6F3EE] rounded-lg text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-[#1C3829]"
+            >
+              <option value="">Alle fagpersoner</option>
+              {professionalOptions.map(p => (
+                <option key={p.id} value={p.id}>{p.full_name}</option>
+              ))}
+            </select>
+          </div>
+          <a
+            href={exportHref}
+            className="h-9 px-4 flex items-center rounded-lg bg-[#1C3829] text-white text-sm font-semibold hover:bg-[#2D5840] transition-colors"
+          >
+            Eksportér til CSV
+          </a>
+        </div>
+        <p className="text-[11px] text-[#9B9589] mt-2">Eksporterer alle godkendte timer i perioden, grupperet pr. fagperson med subtotal — uafhængigt af listen nedenfor.</p>
+      </Card>
+
       <div className="flex items-center mb-4 gap-4 flex-wrap">
         <div className="flex gap-1 bg-white border border-[#E0DAD0] rounded-xl p-1 overflow-x-auto scrollbar-none">
           {TABS.map(t => (

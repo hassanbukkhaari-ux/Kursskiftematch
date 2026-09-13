@@ -717,9 +717,23 @@ function DocUploadRow({ dt, doc }: { dt: typeof DOC_TYPES[0]; doc: DocumentRow |
   const router = useRouter()
   const [, startT] = useTransition()
   const [uploading, setUploading] = useState(false)
+  const [downloading, setDownloading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const inputRef = React.useRef<HTMLInputElement>(null)
   const status = doc?.status ?? 'MISSING'
+  const hasFile = !!doc && status !== 'MISSING' && status !== 'PENDING_UPLOAD'
+
+  async function handleDownload() {
+    if (!doc) return
+    setDownloading(true); setError(null)
+    try {
+      const res = await fetch(`/api/profile/documents/${doc.id}/download`)
+      if (!res.ok) { setError('Kunne ikke hente dokumentet'); return }
+      const { url } = await res.json()
+      window.open(url, '_blank', 'noopener,noreferrer')
+    } catch { setError('Netværksfejl — prøv igen') }
+    finally { setDownloading(false) }
+  }
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -768,6 +782,15 @@ function DocUploadRow({ dt, doc }: { dt: typeof DOC_TYPES[0]; doc: DocumentRow |
           <Badge variant={DOC_STATUS_BADGE[status] ?? 'default'}>
             {DOC_STATUS_LABEL[status] ?? status}
           </Badge>
+          {hasFile && (
+            <button
+              onClick={handleDownload}
+              disabled={downloading}
+              className="text-xs font-semibold text-[#1C3829] hover:underline disabled:opacity-50"
+            >
+              {downloading ? 'Åbner…' : 'Se dokument'}
+            </button>
+          )}
           {!dt.managed && (
             <>
               <input ref={inputRef} type="file" className="hidden" onChange={handleFile}
@@ -785,6 +808,13 @@ function DocUploadRow({ dt, doc }: { dt: typeof DOC_TYPES[0]; doc: DocumentRow |
       </div>
       {doc?.file_name && (
         <p className="text-xs text-[#6B7569] mt-0.5 truncate">{doc.file_name}</p>
+      )}
+      {dt.type === 'DRIVING_LICENSE' && doc?.expiry_date && (
+        <p className="text-xs text-[#6B7569] mt-0.5">
+          {status === 'APPROVED'
+            ? `Godkendt af Kursskifte til ${new Date(doc.expiry_date).toLocaleDateString('da-DK')} — genindsend herefter`
+            : `Udløber ${new Date(doc.expiry_date).toLocaleDateString('da-DK')}`}
+        </p>
       )}
       {error && <p className="text-xs text-red-600 mt-0.5">{error}</p>}
     </div>

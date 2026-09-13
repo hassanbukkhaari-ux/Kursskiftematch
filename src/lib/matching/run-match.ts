@@ -57,6 +57,18 @@ export async function runMatchForCase(
     .map((r: any) => r.problem_areas?.label_da)
     .filter(Boolean)
 
+  // Special-wish codes that ask for a specific professional experience
+  // (autism/ADHD/substance abuse) — the only special-wish codes with no
+  // other signal already feeding the algorithm (gender/transport wishes
+  // are covered by preferred_prof_gender/transport_needs already read below).
+  const { data: caseSpecialWishes } = await (db as any)
+    .from('case_special_wishes')
+    .select('special_wishes_lookup(code)')
+    .eq('case_id', caseId)
+  const specialWishCodes: string[] = (caseSpecialWishes ?? [])
+    .map((r: any) => r.special_wishes_lookup?.code)
+    .filter(Boolean)
+
   const { data: matchRun, error: runError } = await db
     .from('match_runs')
     .insert({
@@ -196,6 +208,7 @@ export async function runMatchForCase(
     requires_evening: caseRow.requires_evening,
     requires_weekend: caseRow.requires_weekend,
     requires_night: caseRow.requires_night,
+    special_wish_codes: specialWishCodes,
   }
 
   const scored = (professionals || []).map(pro => {

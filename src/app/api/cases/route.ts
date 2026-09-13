@@ -1,10 +1,9 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
-import type { SupabaseClient } from '@supabase/supabase-js'
 import { ok, created, badRequest, serverError, withAuth, withAdminAuth } from '@/lib/api-response'
 import { logAuditEvent } from '@/lib/audit'
 import { sendNotification, adminEmailBody } from '@/lib/notifications/service'
-import type { Database } from '@/types/database'
+import { syncProblemAreas, syncGoals, syncSpecialWishes } from '@/lib/cases/case-tags'
 
 const CreateCaseSchema = z.object({
   municipality_id: z.string().uuid(),
@@ -104,9 +103,9 @@ export async function POST(request: NextRequest) {
 
     // Link intake tags (problem areas / goals / special wishes) by lookup code
     await Promise.all([
-      linkProblemAreas(db, newCase.id, problem_area_codes),
-      linkGoals(db, newCase.id, goal_codes),
-      linkSpecialWishes(db, newCase.id, special_wish_codes),
+      syncProblemAreas(db, newCase.id, problem_area_codes),
+      syncGoals(db, newCase.id, goal_codes),
+      syncSpecialWishes(db, newCase.id, special_wish_codes),
     ])
 
     await logAuditEvent(db, {
@@ -142,25 +141,4 @@ export async function POST(request: NextRequest) {
 
     return created(newCase)
   })
-}
-
-async function linkProblemAreas(db: SupabaseClient<Database>, caseId: string, codes?: string[]) {
-  if (!codes || codes.length === 0) return
-  const { data: lookups } = await db.from('problem_areas').select('id, code').in('code', codes)
-  if (!lookups || lookups.length === 0) return
-  await db.from('case_problem_areas').insert(lookups.map(l => ({ case_id: caseId, problem_area_id: l.id })))
-}
-
-async function linkGoals(db: SupabaseClient<Database>, caseId: string, codes?: string[]) {
-  if (!codes || codes.length === 0) return
-  const { data: lookups } = await db.from('goals_lookup').select('id, code').in('code', codes)
-  if (!lookups || lookups.length === 0) return
-  await db.from('case_goals').insert(lookups.map(l => ({ case_id: caseId, goal_id: l.id })))
-}
-
-async function linkSpecialWishes(db: SupabaseClient<Database>, caseId: string, codes?: string[]) {
-  if (!codes || codes.length === 0) return
-  const { data: lookups } = await db.from('special_wishes_lookup').select('id, code').in('code', codes)
-  if (!lookups || lookups.length === 0) return
-  await db.from('case_special_wishes').insert(lookups.map(l => ({ case_id: caseId, special_wish_id: l.id })))
 }

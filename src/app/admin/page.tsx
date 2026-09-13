@@ -30,14 +30,12 @@ export default async function AdminPage() {
       title: 'Sagsstyring',
       description: 'Opret og administrer sager',
       icon: <CasesIcon />,
-      badge: casesRes.count ? { label: `${casesRes.count} aktive`, variant: 'brand' } : undefined,
     },
     {
       href: '/admin/matching',
       title: 'Matching',
       description: 'Start match-kørsler og tildel kontaktpersoner',
       icon: <MatchIcon />,
-      badge: pendingMatchRuns > 0 ? { label: `${pendingMatchRuns} klar`, variant: 'green' } : undefined,
     },
     {
       href: '/admin/professionals',

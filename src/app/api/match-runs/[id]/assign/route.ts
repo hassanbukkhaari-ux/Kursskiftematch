@@ -86,6 +86,25 @@ export async function POST(
       return badRequest('Fagpersonen er ikke aktiv og kan ikke foreslås til en sag.')
     }
 
+    // Resolved and checked before anything is written — CLAUDE.md requires
+    // the municipality to be notified when a candidate is found, so a
+    // proposal with nowhere to send it must never silently "succeed" (case
+    // moved to PROPOSED, admin sees a confirmation) while no e-mail is ever
+    // sent. The per-case contact set at intake takes priority over the
+    // municipality's default, same pattern used in dashboard/cases/[id]/page.tsx.
+    const { data: muni } = await db
+      .from('municipalities')
+      .select('sagsbehandler_name, sagsbehandler_email')
+      .eq('id', caseRow.municipality_id)
+      .single()
+
+    const sagsbehandlerEmail = caseRow.intake_contact_email || muni?.sagsbehandler_email
+    if (!sagsbehandlerEmail) {
+      return badRequest(
+        'Ingen e-mailadresse er registreret for kommunens sagsbehandler på denne sag. Tilføj sagsbehandlerens e-mail på sagen (Rediger sag) eller på kommunen, før der kan sendes et forslag.'
+      )
+    }
+
     // Supersede any proposal still awaiting a response for this case —
     // there should only ever be one live token per case.
     await dba.from('case_proposals').update({ status: 'WITHDRAWN' }).eq('case_id', run.case_id).eq('status', 'SENT')
@@ -124,34 +143,23 @@ export async function POST(
 
     const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://kursskifte.dk'
 
-    // Notify the municipality's sagsbehandler — the per-case contact set at
-    // intake takes priority over the municipality's default, same pattern
-    // used in dashboard/cases/[id]/page.tsx. GDPR: never the professional's
-    // name, only their role — and only the citizen's initials + age range.
-    const { data: muni } = await db
-      .from('municipalities')
-      .select('sagsbehandler_name, sagsbehandler_email')
-      .eq('id', caseRow.municipality_id)
-      .single()
-
-    const sagsbehandlerEmail = caseRow.intake_contact_email || muni?.sagsbehandler_email
-    if (sagsbehandlerEmail) {
-      const roleLabel = PROFESSION_LABEL[pro.profession] ?? PROFESSION_LABEL.OTHER
-      await sendNotification({
-        db,
-        notification_type: 'PROPOSAL_SENT',
-        related_entity_type: 'case_proposals',
-        related_entity_id: proposal.id,
-        recipient_email: sagsbehandlerEmail,
-        subject: `Kursskifte: Forslag til kontaktperson — sag ${caseRow.case_number ?? ''}`,
-        body: [
-          `Kursskifte har fundet ${roleLabel} til sagen for borger ${caseRow.citizen_initials} (${caseRow.citizen_age_range}).`,
-          '',
-          `Se forslaget og godkend eller afvis her:`,
-          `${base}/municipality/proposals/${proposal.response_token}`,
-        ].join('\n'),
-      })
-    }
+    // GDPR: never the professional's name to the municipality, only their role
+    // — and only the citizen's initials + age range.
+    const roleLabel = PROFESSION_LABEL[pro.profession] ?? PROFESSION_LABEL.OTHER
+    await sendNotification({
+      db,
+      notification_type: 'PROPOSAL_SENT',
+      related_entity_type: 'case_proposals',
+      related_entity_id: proposal.id,
+      recipient_email: sagsbehandlerEmail,
+      subject: `Kursskifte: Forslag til kontaktperson — sag ${caseRow.case_number ?? ''}`,
+      body: [
+        `Kursskifte har fundet ${roleLabel} til sagen for borger ${caseRow.citizen_initials} (${caseRow.citizen_age_range}).`,
+        '',
+        `Se forslaget og godkend eller afvis her:`,
+        `${base}/municipality/proposals/${proposal.response_token}`,
+      ].join('\n'),
+    })
 
     // Let the professional know they've been proposed — not yet assigned.
     const { data: profile } = await db.from('profiles').select('email').eq('id', parsed.data.professional_id).single()

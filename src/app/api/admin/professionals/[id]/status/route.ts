@@ -47,6 +47,36 @@ export async function PATCH(
         return badRequest(`Kan ikke aktivere: ${labels} er ikke verificeret endnu. Godkend dokumentet/dokumenterne på fagpersonens profil først.`)
       }
 
+      // Driving licence documentation must be re-approved once a year — only
+      // enforced for professionals who have indicated they hold a licence
+      // (has_drivers_license), since it's not a requirement for everyone.
+      const { data: proWithLicense } = await svc
+        .from('professionals')
+        .select('has_drivers_license')
+        .eq('id', id)
+        .single()
+
+      if (proWithLicense?.has_drivers_license) {
+        const { data: licenseDoc, error: licenseError } = await (svc as any)
+          .from('professional_documents')
+          .select('status, expiry_date')
+          .eq('professional_id', id)
+          .eq('document_type', 'DRIVING_LICENSE')
+          .maybeSingle()
+
+        if (licenseError) return serverError(licenseError.message)
+
+        const today = new Date().toISOString().slice(0, 10)
+        const isApproved = licenseDoc?.status === 'APPROVED'
+        const isExpired = !licenseDoc?.expiry_date || licenseDoc.expiry_date < today
+
+        if (!isApproved || isExpired) {
+          return badRequest(
+            'Kan ikke aktivere: kørekort-dokumentation mangler eller er udløbet. Kørekort skal godkendes af admin en gang om året — godkend dokumentet på fagpersonens profil først.'
+          )
+        }
+      }
+
       // capacity_hours_week and availability_status both default to 0 /
       // UNAVAILABLE at registration and are only ever changed by an admin
       // editing the profile separately. v_professionals_available (the

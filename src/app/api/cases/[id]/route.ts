@@ -2,21 +2,48 @@ import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { ok, notFound, badRequest, forbidden, serverError, withAuth, withAdminAuth } from '@/lib/api-response'
 import { logAuditEvent } from '@/lib/audit'
+import { syncProblemAreas, syncGoals, syncSpecialWishes } from '@/lib/cases/case-tags'
 import type { Database } from '@/types/database'
 
 const UpdateCaseSchema = z.object({
   status: z.enum(['OPEN', 'MATCHED', 'ACTIVE', 'COMPLETED', 'ARCHIVED']).optional(),
   weekly_hours: z.number().min(0).optional(),
   complexity_level: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).optional(),
+  urgency: z.enum(['NORMAL', 'HURTIG', 'AKUT']).optional(),
   citizen_notes: z.string().optional(),
   data_retention_expires_at: z.string().datetime().optional(),
   municipality_id: z.string().uuid().optional(),
   intake_contact_name: z.string().nullable().optional(),
   intake_contact_email: z.string().email().nullable().optional(),
   intake_contact_phone: z.string().nullable().optional(),
+  // One-shot intake fields — originally only ever set at case creation,
+  // with no way back if something was wrong or changed since.
+  citizen_gender: z.enum(['MALE', 'FEMALE', 'OTHER']).nullable().optional(),
+  legal_basis: z.enum(['BARNETS_LOV_32', 'SEL_76', 'SEL_85', 'SEL_99']).nullable().optional(),
+  expected_duration_months: z.number().int().min(1).nullable().optional(),
+  diagnoses: z.string().nullable().optional(),
+  daily_function: z.string().nullable().optional(),
+  citizen_interests: z.string().nullable().optional(),
+  preferred_prof_gender: z.enum(['MALE', 'FEMALE', 'NO_PREF']).nullable().optional(),
+  required_languages: z.array(z.string()).nullable().optional(),
+  transport_needs: z.enum(['JA', 'NEJ']).nullable().optional(),
+  geographical_area: z.string().nullable().optional(),
+  requires_evening: z.boolean().optional(),
+  requires_weekend: z.boolean().optional(),
+  requires_night: z.boolean().optional(),
+  problem_area_codes: z.array(z.string()).optional(),
+  goal_codes: z.array(z.string()).optional(),
+  special_wish_codes: z.array(z.string()).optional(),
 })
 
-const ADMIN_ONLY_FIELDS = ['status', 'complexity_level', 'data_retention_expires_at', 'municipality_id', 'intake_contact_name', 'intake_contact_email', 'intake_contact_phone']
+const ADMIN_ONLY_FIELDS = [
+  'status', 'complexity_level', 'urgency', 'data_retention_expires_at', 'municipality_id',
+  'intake_contact_name', 'intake_contact_email', 'intake_contact_phone',
+  'citizen_gender', 'legal_basis', 'expected_duration_months', 'diagnoses', 'daily_function',
+  'citizen_interests', 'preferred_prof_gender', 'required_languages', 'transport_needs',
+  'geographical_area', 'requires_evening', 'requires_weekend', 'requires_night',
+  'problem_area_codes', 'goal_codes', 'special_wish_codes',
+]
 
 export async function GET(
   request: NextRequest,
@@ -62,8 +89,10 @@ export async function PATCH(
     const { createClient } = await import('@/lib/supabase/server')
     const db = await createClient()
 
+    const { problem_area_codes, goal_codes, special_wish_codes, ...caseFields } = parsed.data
+
     const update: Database['public']['Tables']['cases']['Update'] = {
-      ...parsed.data,
+      ...caseFields,
       updated_at: new Date().toISOString(),
       ...(parsed.data.status === 'ARCHIVED' && role === 'admin'
         ? { archived_at: new Date().toISOString() }
@@ -78,6 +107,12 @@ export async function PATCH(
       .single()
 
     if (error || !data) return notFound('Case')
+
+    await Promise.all([
+      syncProblemAreas(db, id, problem_area_codes),
+      syncGoals(db, id, goal_codes),
+      syncSpecialWishes(db, id, special_wish_codes),
+    ])
 
     await logAuditEvent(db, {
       event_type: 'CASE_UPDATED',

@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { PageHeader, ContentContainer } from '@/components/layout/page-header'
 import { PlanningClient } from './PlanningClient'
@@ -70,6 +71,11 @@ export default async function PlanningPage() {
         breadcrumb={[{ label: 'Mit overblik', href: '/dashboard' }, { label: 'Timeplanlægning' }]}
       />
       <ContentContainer>
+        <div className="mb-4">
+          <Link href="/dashboard/hours" className="text-xs font-semibold text-[#1C3829] hover:underline">
+            ← Se registrerede timer
+          </Link>
+        </div>
         <PlanningClient
           cases={cases}
           initialPlanned={(plannedRes.data ?? []) as PlannedHoursRow[]}

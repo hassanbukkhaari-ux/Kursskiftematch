@@ -479,9 +479,21 @@ function DocumentSection({ documents, professionalId }: { documents: DocumentRow
   const [acting, setActing] = useState<string | null>(null)
   const [rejectNote, setRejectNote] = useState<Record<string, string>>({})
   const [showReject, setShowReject] = useState<Record<string, boolean>>({})
+  const [downloading, setDownloading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const docMap = Object.fromEntries(documents.map(d => [d.document_type, d]))
+
+  async function download(docId: string) {
+    setDownloading(docId); setError(null)
+    try {
+      const res = await fetch(`/api/admin/professionals/${professionalId}/documents/${docId}/download`)
+      if (!res.ok) { setError('Kunne ikke hente dokumentet'); return }
+      const { url } = await res.json()
+      window.open(url, '_blank', 'noopener,noreferrer')
+    } catch { setError('Netværksfejl') }
+    finally { setDownloading(null) }
+  }
 
   async function approve(docId: string) {
     setActing(docId); setError(null)
@@ -554,10 +566,26 @@ function DocumentSection({ documents, professionalId }: { documents: DocumentRow
                     ✓ Godkendt {new Date(doc.verified_at).toLocaleDateString('da-DK')}
                   </div>
                 )}
+                {dt.type === 'DRIVING_LICENSE' && doc?.expiry_date && (
+                  <div className="text-xs text-[#6B7569]">
+                    Skal genindsendes/godkendes igen: {new Date(doc.expiry_date).toLocaleDateString('da-DK')}
+                  </div>
+                )}
               </div>
-              <Badge variant={DOC_STATUS_BADGE[status] ?? 'default'}>
-                {DOC_STATUS_LABEL[status] ?? status}
-              </Badge>
+              <div className="flex flex-col items-end gap-1">
+                <Badge variant={DOC_STATUS_BADGE[status] ?? 'default'}>
+                  {DOC_STATUS_LABEL[status] ?? status}
+                </Badge>
+                {doc?.file_name && (
+                  <button
+                    onClick={() => download(doc.id)}
+                    disabled={downloading === doc.id}
+                    className="text-xs font-semibold text-[#1C3829] hover:underline disabled:opacity-50"
+                  >
+                    {downloading === doc.id ? 'Åbner…' : 'Se dokument'}
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Managed docs: admin marks as verified without file upload */}

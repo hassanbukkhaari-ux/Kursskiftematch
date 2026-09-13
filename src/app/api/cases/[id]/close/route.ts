@@ -51,6 +51,14 @@ export async function POST(
 
     if (error || !data) return serverError(error?.message)
 
+    // Capture who was actively assigned before ending the assignment, so
+    // they can be notified the case is closed.
+    const { data: activeAssignments } = await db
+      .from('case_assignments')
+      .select('professional_id')
+      .eq('case_id', id)
+      .is('ended_at', null)
+
     // End all active assignments
     await db
       .from('case_assignments')
@@ -76,6 +84,25 @@ export async function POST(
       subject,
       body: emailBody,
     })
+
+    const professionalIds = [...new Set((activeAssignments ?? []).map(a => a.professional_id))]
+    if (professionalIds.length > 0) {
+      const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://kursskifte.dk'
+      const { data: profiles } = await db.from('profiles').select('id, email').in('id', professionalIds)
+      for (const p of profiles ?? []) {
+        if (!p.email) continue
+        await sendNotification({
+          db,
+          notification_type: 'CASE_CLOSED',
+          related_entity_type: 'cases',
+          related_entity_id: id,
+          recipient_profile_id: p.id,
+          recipient_email: p.email,
+          subject: 'Sag afsluttet — Kursskifte',
+          body: `En sag du var tilknyttet er nu afsluttet.\n\nSe dine sager:\n${base}/dashboard/cases`,
+        })
+      }
+    }
 
     return ok(data)
   })

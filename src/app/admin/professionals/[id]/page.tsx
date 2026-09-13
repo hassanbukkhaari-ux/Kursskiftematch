@@ -30,6 +30,7 @@ export default async function ProfessionalDetailPage({
         status, gender, education, daily_occupation,
         job_title, phone, address, postal_code, city, region,
         profile_image_url, profession_type_id, specialization, authorization_note, bio,
+        bio_status, bio_reviewed_at, bio_review_note,
         max_hours_per_week, available_now, can_take_acute,
         can_work_evening, can_work_weekend, can_work_night,
         has_drivers_license, has_own_car, can_transport_citizen,
@@ -163,6 +164,9 @@ export type ProfessionalDetail = {
   specialization: string | null
   authorization_note: string | null
   bio: string | null
+  bio_status: 'DRAFT' | 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED'
+  bio_reviewed_at: string | null
+  bio_review_note: string | null
   max_hours_per_week: number | null
   available_now: boolean
   can_take_acute: boolean

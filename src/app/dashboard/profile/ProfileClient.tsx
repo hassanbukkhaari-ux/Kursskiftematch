@@ -18,6 +18,8 @@ type Pro = {
   profession_type_id?: string | null; specialization?: string | null
   authorization_note?: string | null; experience_years?: number | null
   education?: string | null; bio?: string | null
+  bio_status?: 'DRAFT' | 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED' | null
+  bio_review_note?: string | null
   max_hours_per_week?: number | null
   available_now?: boolean; can_take_acute?: boolean
   can_work_evening?: boolean; can_work_weekend?: boolean; can_work_night?: boolean
@@ -510,20 +512,48 @@ function S2Profession({ pro, professionTypes }: { pro: Pro | null; professionTyp
 
 // ── Section: Om mig som kontaktperson ────────────────────────────────────────
 
+const BIO_STATUS_LABEL: Record<string, string> = {
+  DRAFT: 'Kladde', PENDING_REVIEW: 'Afventer godkendelse', APPROVED: 'Godkendt', REJECTED: 'Skal rettes',
+}
+const BIO_STATUS_BADGE: Record<string, 'default' | 'amber' | 'green' | 'red'> = {
+  DRAFT: 'default', PENDING_REVIEW: 'amber', APPROVED: 'green', REJECTED: 'red',
+}
+
 function S3Bio({ pro }: { pro: Pro | null }) {
   const { busy, error, saved, save, setError } = useSave()
   const [bio, setBio] = useState(pro?.bio ?? '')
   const MIN = 50
+  const status = pro?.bio_status ?? 'DRAFT'
+  const dirty = bio !== (pro?.bio ?? '')
 
   return (
     <div className="space-y-3 mt-4">
-      <p className="text-xs text-[#6B7569]">Beskriv din arbejdsstil, værdier og faglige tilgang. Vises for administrator. Mindst {MIN} tegn. Maks. 1000 tegn.</p>
+      {pro?.bio && !dirty && (
+        <Badge variant={BIO_STATUS_BADGE[status] ?? 'default'}>{BIO_STATUS_LABEL[status] ?? status}</Badge>
+      )}
+      {status === 'REJECTED' && pro?.bio_review_note && !dirty && (
+        <p className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+          Kursskifte har bedt om en rettelse: {pro.bio_review_note}
+        </p>
+      )}
+      <div className="text-xs text-[#6B7569] space-y-1.5 bg-[#F6F3EE] rounded-xl p-3">
+        <p>
+          Denne tekst godkendes af Kursskifte og vises derefter for kommunens sagsbehandler, når du foreslås til en sag —
+          det er ofte det eneste "menneskelige" indtryk sagsbehandleren får af dig, så en gennemarbejdet tekst gør en reel forskel.
+        </p>
+        <p>
+          Skriv gerne om: din tilgang til arbejdet, erfaring med relevante målgrupper, og hvad borgeren/kommunen kan forvente af dig som kontaktperson.
+        </p>
+        <p className="font-medium text-[#92660A]">
+          Skriv aldrig dit navn, telefonnummer, e-mail, arbejdsplads eller andet der kan identificere dig — kommunen må kun kende dig gennem denne tekst.
+        </p>
+      </div>
       <Textarea
         value={bio}
         onChange={setBio}
         rows={6}
         maxLength={1000}
-        placeholder="Jeg arbejder relationsorienteret og tror på, at tillid er fundamentet for udvikling…"
+        placeholder="Jeg arbejder relationsorienteret og tror på, at tillid er fundamentet for udvikling. Jeg har erfaring med unge i skolevægring og lægger vægt på faste rammer kombineret med tålmodighed…"
       />
       <div className={`text-xs text-right ${bio.trim().length < MIN ? 'text-[#B45309]' : 'text-[#C8C0B0]'}`}>
         {bio.length}/1000{bio.trim().length < MIN ? ` — mindst ${MIN - bio.trim().length} tegn mangler` : ''}

@@ -473,6 +473,88 @@ const DOC_STATUS_BADGE: Record<string, 'default' | 'amber' | 'green' | 'red'> = 
   REJECTED: 'red', EXPIRING_SOON: 'amber', ARCHIVED: 'default',
 }
 
+const BIO_STATUS_LABEL: Record<string, string> = {
+  DRAFT: 'Kladde', PENDING_REVIEW: 'Afventer godkendelse', APPROVED: 'Godkendt til kommunen', REJECTED: 'Afvist',
+}
+const BIO_STATUS_BADGE: Record<string, 'default' | 'amber' | 'green' | 'red'> = {
+  DRAFT: 'default', PENDING_REVIEW: 'amber', APPROVED: 'green', REJECTED: 'red',
+}
+
+// Gate before a professional's self-written bio can ever reach a
+// municipality (see migration 20260913000006) — admin must read this exact
+// text and approve it, since it's free text a professional could put
+// identifying details into, and CLAUDE.md's data-separation rule for
+// professional identity is non-negotiable.
+function BioReviewActions({ professionalId }: { professionalId: string }) {
+  const router = useRouter()
+  const [pending, startT] = useTransition()
+  const [acting, setActing] = useState(false)
+  const [showReject, setShowReject] = useState(false)
+  const [note, setNote] = useState('')
+  const [error, setError] = useState<string | null>(null)
+
+  async function act(action: 'APPROVE' | 'REJECT') {
+    setActing(true); setError(null)
+    try {
+      const res = await fetch(`/api/admin/professionals/${professionalId}/bio`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, note: action === 'REJECT' ? note : undefined }),
+      })
+      if (!res.ok) { const j = await res.json().catch(() => ({})); setError((j as { error?: string }).error ?? 'Fejl'); return }
+      startT(() => router.refresh())
+    } catch { setError('Netværksfejl') }
+    finally { setActing(false) }
+  }
+
+  return (
+    <div className="space-y-2">
+      {error && <p className="text-xs text-red-600">{error}</p>}
+      {!showReject ? (
+        <div className="flex gap-2">
+          <button
+            onClick={() => act('APPROVE')}
+            disabled={acting || pending}
+            className="h-8 px-4 bg-[#1C3829] text-white text-xs font-semibold rounded-lg hover:bg-[#2D5840] transition-colors disabled:opacity-50"
+          >
+            {acting ? 'Behandler…' : 'Godkend til kommunen'}
+          </button>
+          <button
+            onClick={() => setShowReject(true)}
+            className="h-8 px-4 border border-red-300 text-red-600 text-xs font-semibold rounded-lg hover:bg-red-50 transition-colors"
+          >
+            Afvis
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <input
+            type="text"
+            placeholder="Begrundelse — sendes ikke til fagpersonen automatisk"
+            value={note}
+            onChange={e => setNote(e.target.value)}
+            className="w-full h-9 px-3 bg-[#F6F3EE] rounded-lg text-sm text-[#1A1F1C] border-0 focus:outline-none focus:ring-2 focus:ring-red-300"
+          />
+          <div className="flex gap-2">
+            <button
+              onClick={() => act('REJECT')}
+              disabled={acting || pending || !note.trim()}
+              className="h-8 px-4 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+            >
+              Bekræft afvisning
+            </button>
+            <button
+              onClick={() => setShowReject(false)}
+              className="h-8 px-4 border border-[#E0DAD0] text-xs font-semibold rounded-lg hover:bg-[#F6F3EE] transition-colors"
+            >
+              Annuller
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function DocumentSection({ documents, professionalId }: { documents: DocumentRow[]; professionalId: string }) {
   const router = useRouter()
   const [pending, startT] = useTransition()
@@ -977,8 +1059,26 @@ export function ProfessionalDetailClient({
       {/* Om kontaktperson */}
       {pro.bio && (
         <Card className="!p-5">
-          <SectionTitle>Om kontaktperson</SectionTitle>
-          <p className="text-sm text-[#1A1F1C] whitespace-pre-wrap leading-relaxed">{pro.bio}</p>
+          <div className="flex items-center justify-between mb-3">
+            <SectionTitle>Om kontaktperson</SectionTitle>
+            <Badge variant={BIO_STATUS_BADGE[pro.bio_status] ?? 'default'}>
+              {BIO_STATUS_LABEL[pro.bio_status] ?? pro.bio_status}
+            </Badge>
+          </div>
+          <p className="text-sm text-[#1A1F1C] whitespace-pre-wrap leading-relaxed mb-3">{pro.bio}</p>
+          {pro.bio_status === 'REJECTED' && pro.bio_review_note && (
+            <p className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-3">
+              Afvist: {pro.bio_review_note}
+            </p>
+          )}
+          {pro.bio_status === 'PENDING_REVIEW' && (
+            <BioReviewActions professionalId={professionalId} />
+          )}
+          {pro.bio_status === 'APPROVED' && pro.bio_reviewed_at && (
+            <p className="text-xs text-[#6B7569]">
+              Godkendt til at vises for kommunen {new Date(pro.bio_reviewed_at).toLocaleDateString('da-DK')}
+            </p>
+          )}
         </Card>
       )}
 

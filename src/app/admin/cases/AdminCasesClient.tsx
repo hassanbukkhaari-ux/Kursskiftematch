@@ -33,6 +33,11 @@ const GENDER_OPTIONS = ['MALE', 'FEMALE', 'OTHER'] as const
 const GENDER_LABEL: Record<string, string> = { MALE: 'Dreng/mand', FEMALE: 'Pige/kvinde', OTHER: 'Andet' }
 const PROF_GENDER_OPTIONS = ['MALE', 'FEMALE', 'NO_PREF'] as const
 const PROF_GENDER_LABEL: Record<string, string> = { MALE: 'Mand', FEMALE: 'Kvinde', NO_PREF: 'Ingen præference' }
+// These special-wish codes duplicate dedicated fields below (Foretrukket
+// kontaktperson køn, Transportbehov) that actually feed the matching
+// algorithm — the special-wish version never did. Hidden here so admins
+// don't fill in the same preference twice with only one half doing anything.
+const DUPLICATE_SPECIAL_WISH_CODES = new Set(['MALE_PROFESSIONAL', 'FEMALE_PROFESSIONAL', 'DRIVERS_LICENSE'])
 const TRANSPORT_OPTIONS = ['JA', 'NEJ'] as const
 const LEGAL_BASIS_OPTIONS = [
   { value: 'BARNETS_LOV_32', label: '§32 barnets lov', note: 'Børn 0–17 år' },
@@ -927,7 +932,7 @@ export function AdminCasesClient({
             <div>
               <label className={labelClass}>Særlige ønsker (valgfri)</label>
               <div className="flex flex-wrap gap-1.5">
-                {lookups.specialWishes.map(opt => {
+                {lookups.specialWishes.filter(opt => !DUPLICATE_SPECIAL_WISH_CODES.has(opt.code)).map(opt => {
                   const active = form.special_wish_codes.includes(opt.code)
                   return (
                     <button

@@ -66,6 +66,27 @@ export interface CaseInput {
   requires_evening?: boolean
   requires_weekend?: boolean
   requires_night?: boolean
+  // Special-wish codes from case intake (special_wishes_lookup) that ask
+  // for a specific professional experience — gender and driving-license
+  // wishes are excluded here since preferred_prof_gender/transport_needs
+  // already cover those and feed the algorithm; only the experience wishes
+  // (autism/ADHD/substance abuse) have no other signal to compare against.
+  special_wish_codes?: string[] | null
+}
+
+// Maps a case's "special wish" for a specific professional experience to the
+// keyword that experience shows up as in a professional's own stated
+// target-group experience (professional_target_groups) — the two lists use
+// different label text, so a plain string-equality match would never fire.
+const EXPERIENCE_WISH_KEYWORDS: Record<string, string> = {
+  EXPERIENCE_AUTISM: 'autis',
+  EXPERIENCE_ADHD: 'adhd',
+  EXPERIENCE_SUBSTANCE_ABUSE: 'misbrug',
+}
+const EXPERIENCE_WISH_LABEL: Record<string, string> = {
+  EXPERIENCE_AUTISM: 'Erfaring med autisme (ønsket)',
+  EXPERIENCE_ADHD: 'Erfaring med ADHD (ønsket)',
+  EXPERIENCE_SUBSTANCE_ABUSE: 'Erfaring med misbrug (ønsket)',
 }
 
 export interface MatchScores {
@@ -270,6 +291,17 @@ function computeLogisticsChecks(professional: ProfessionalInput, caseData: CaseI
 
   if (caseData.requires_night) {
     checks.push({ label: 'Kan arbejde nat', ok: !!professional.can_work_night })
+  }
+
+  const wishCodes = caseData.special_wish_codes ?? []
+  const proTargetGroups = professional.target_group_names ?? []
+  if (wishCodes.length > 0 && proTargetGroups.length > 0) {
+    for (const code of Object.keys(EXPERIENCE_WISH_KEYWORDS)) {
+      if (!wishCodes.includes(code)) continue
+      const keyword = EXPERIENCE_WISH_KEYWORDS[code]
+      const hasExperience = proTargetGroups.some(name => name.toLowerCase().includes(keyword))
+      checks.push({ label: EXPERIENCE_WISH_LABEL[code], ok: hasExperience })
+    }
   }
 
   return checks

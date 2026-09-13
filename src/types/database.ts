@@ -1129,6 +1129,7 @@ export type Database = {
           created_at: string
           sent_at: string | null
           failed_at: string | null
+          read_at: string | null
         }
         Insert: {
           id?: string
@@ -1146,6 +1147,7 @@ export type Database = {
           created_at?: string
           sent_at?: string | null
           failed_at?: string | null
+          read_at?: string | null
         }
         Update: {
           status?: 'PENDING' | 'SENT' | 'FAILED'
@@ -1155,6 +1157,7 @@ export type Database = {
           body_text?: string | null
           sent_at?: string | null
           failed_at?: string | null
+          read_at?: string | null
         }
         Relationships: []
       }
@@ -1733,6 +1736,10 @@ export type NotificationType =
   | 'GRANT_ACTIVATED'
   | 'PROPOSAL_CHANGES_REQUESTED'
   | 'STATUS_REPORT_SHARED'
+  | 'HOURS_APPROVED'
+  | 'HOURS_REJECTED'
+  | 'PROFESSIONAL_ACTIVATED'
+  | 'HANDOVER_COMPLETED'
 
 // ================================================================
 // Convenience row types

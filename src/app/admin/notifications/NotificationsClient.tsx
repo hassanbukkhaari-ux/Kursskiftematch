@@ -6,6 +6,12 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { NotificationType } from '@/types/database'
+import {
+  NOTIFICATION_TYPE_LABEL as TYPE_LABEL,
+  NOTIFICATION_STATUS_BADGE as STATUS_BADGE,
+  NOTIFICATION_STATUS_LABEL as STATUS_LABEL,
+  NOTIFICATION_CHANNEL_LABEL as CHANNEL_LABEL,
+} from '@/lib/labels'
 
 export interface NotificationRow {
   id: string
@@ -22,37 +28,6 @@ export interface NotificationRow {
   created_at: string
   sent_at: string | null
   failed_at: string | null
-}
-
-const TYPE_LABEL: Record<NotificationType, string> = {
-  INQUIRY_RECEIVED: 'Henvendelse modtaget',
-  PROFESSIONAL_APPLICATION_RECEIVED: 'Kontaktpersonansøgning',
-  CASE_CREATED: 'Sag oprettet',
-  SAFEGUARDING_FLAGGED: 'Bekymring markeret',
-  HOURS_SUBMITTED: 'Timer indsendt',
-  DOCUMENT_ACTION_REQUIRED: 'Dokument kræver handling',
-  CASE_CLOSED: 'Sag lukket',
-  HANDOVER_INITIATED: 'Overdragelse initieret',
-  PROPOSAL_SENT: 'Forslag sendt',
-  PROPOSAL_ACCEPTED: 'Forslag accepteret',
-  PROPOSAL_DECLINED: 'Forslag afvist',
-  FOLLOW_UP_NEEDED: 'Opfølgning påkrævet',
-  STATUS_REPORT_REQUESTED: 'Statusrapport anmodet',
-  STATUS_REPORT_REMINDER: 'Påmindelse om statusrapport',
-  STATUS_REPORT_SUBMITTED: 'Statusrapport indsendt',
-  GRANT_ACTIVATED: 'Bevilling oprettet',
-  PROPOSAL_CHANGES_REQUESTED: 'Kommune bad om ændring',
-  STATUS_REPORT_SHARED: 'Statusrapport sendt til kommune',
-}
-
-const STATUS_BADGE: Record<string, 'green' | 'amber' | 'red'> = {
-  SENT: 'green', PENDING: 'amber', FAILED: 'red',
-}
-const STATUS_LABEL: Record<string, string> = {
-  SENT: 'Sendt', PENDING: 'Afventer', FAILED: 'Fejl',
-}
-const CHANNEL_LABEL: Record<string, string> = {
-  EMAIL: 'E-mail', SMS: 'SMS', IN_APP: 'App',
 }
 
 function formatDatetime(iso: string) {

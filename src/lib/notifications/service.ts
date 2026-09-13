@@ -158,6 +158,22 @@ export function adminEmailBody(type: NotificationType, entityId: string): { subj
       subject: 'Statusrapport sendt til kommunen — Kursskifte',
       body: `En statusrapport er sendt til kommunens sagsbehandler.\n\nAnmodnings-ID: ${entityId}\n\nSe anmodningen:\n${base}/admin/status-reports/${entityId}`,
     },
+    HOURS_APPROVED: {
+      subject: 'Timer godkendt — Kursskifte',
+      body: `Registrerede timer er godkendt.\n\nTime-ID: ${entityId}\n\nSe timerne:\n${base}/admin/hours`,
+    },
+    HOURS_REJECTED: {
+      subject: 'Timer afvist — Kursskifte',
+      body: `Registrerede timer er afvist.\n\nTime-ID: ${entityId}\n\nSe timerne:\n${base}/admin/hours`,
+    },
+    PROFESSIONAL_ACTIVATED: {
+      subject: 'Fagperson aktiveret — Kursskifte',
+      body: `En fagperson er aktiveret og kan nu tildeles sager.\n\nFagperson-ID: ${entityId}\n\nSe profilen:\n${base}/admin/professionals/${entityId}`,
+    },
+    HANDOVER_COMPLETED: {
+      subject: 'Overdragelse fuldført — Kursskifte',
+      body: `En overdragelse er fuldført.\n\nSags-ID: ${entityId}\n\nSe sagen:\n${base}/admin/cases/${entityId}`,
+    },
   }
   return map[type]
 }

@@ -1,8 +1,7 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { ok, badRequest, notFound, serverError, withAdminAuth } from '@/lib/api-response'
-import { logAuditEvent } from '@/lib/audit'
-import { sendNotification } from '@/lib/notifications/service'
+import { activateAssignment } from '@/lib/cases/activate-assignment'
 
 const AssignSchema = z.object({
   professional_id: z.string().uuid(),
@@ -10,10 +9,11 @@ const AssignSchema = z.object({
 })
 
 // POST /api/cases/:id/assign — manual assignment, bypassing the matching
-// algorithm entirely. For when a real candidate exists but doesn't surface
-// through automatic matching (e.g. their capacity/availability was never
-// set up correctly) and admin needs to assign them directly. Active cases
-// go through /handover instead, which enforces the overlap-meeting step.
+// algorithm (and the municipality proposal step it goes through) entirely.
+// For when a real candidate exists but doesn't surface through automatic
+// matching (e.g. their capacity/availability was never set up correctly)
+// and admin needs to assign them directly. Active cases go through
+// /handover instead, which enforces the overlap-meeting step.
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -46,7 +46,7 @@ export async function POST(
 
     const { data: pro, error: proError } = await db
       .from('professionals')
-      .select('id, status, profiles!inner(full_name, email)')
+      .select('id, status')
       .eq('id', parsed.data.professional_id)
       .single()
 
@@ -55,53 +55,26 @@ export async function POST(
       return badRequest('Fagpersonen er ikke aktiv og kan ikke tildeles en sag.')
     }
 
-    // End any existing active assignment for this case (defensive — matches
-    // the same-shape logic in the algorithmic assign route).
-    await db
-      .from('case_assignments')
-      .update({ ended_at: new Date().toISOString() })
+    // A manual assign supersedes any proposal awaiting a municipality
+    // response — withdraw it so a stale token link can't still act on it.
+    await (db as any)
+      .from('case_proposals')
+      .update({ status: 'WITHDRAWN' })
       .eq('case_id', id)
-      .is('ended_at', null)
+      .eq('status', 'SENT')
 
-    const { data: assignment, error: assignError } = await db
-      .from('case_assignments')
-      .insert({
-        case_id: id,
-        professional_id: parsed.data.professional_id,
-        assigned_by: userId,
-        assignment_reason: parsed.data.notes
-          ? `Manuel tildeling: ${parsed.data.notes}`
-          : 'Manuel tildeling',
-      })
-      .select()
-      .single()
-
-    if (assignError || !assignment) return serverError(assignError?.message)
-
-    const dba = db as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    await dba.from('cases').update({ status: 'ACTIVE', updated_at: new Date().toISOString() }).eq('id', id)
-
-    await logAuditEvent(db, {
-      event_type: 'PROFESSIONAL_ASSIGNED',
-      actor_id: userId,
-      resource_type: 'case_assignments',
-      resource_id: assignment.id,
-      metadata: { case_id: id, professional_id: parsed.data.professional_id, manual: true },
-    })
-
-    const proProfile = (pro as any).profiles
-    if (proProfile?.email) {
-      const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://kursskifte.dk'
-      await sendNotification({
+    let assignment
+    try {
+      assignment = await activateAssignment({
         db,
-        notification_type: 'CASE_CREATED',
-        related_entity_type: 'case_assignments',
-        related_entity_id: assignment.id,
-        recipient_profile_id: parsed.data.professional_id,
-        recipient_email: proProfile.email,
-        subject: 'Du er tildelt en ny sag — Kursskifte',
-        body: `Du er blevet tildelt en ny sag.\n\nSe sagen og tilhørende dokumentation:\n${base}/dashboard/cases/${id}`,
+        caseId: id,
+        professionalId: parsed.data.professional_id,
+        assignedBy: userId,
+        assignmentReason: parsed.data.notes ? `Manuel tildeling: ${parsed.data.notes}` : 'Manuel tildeling',
+        auditMetadata: { manual: true },
       })
+    } catch (e) {
+      return serverError(e instanceof Error ? e.message : 'Failed to assign')
     }
 
     return ok(assignment)

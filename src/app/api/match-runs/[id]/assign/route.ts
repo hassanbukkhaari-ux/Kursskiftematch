@@ -10,7 +10,20 @@ const AssignSchema = z.object({
   notes: z.string().optional(),
 })
 
-// POST /api/match-runs/:id/assign — human decision step (WF-003)
+const PROFESSION_LABEL: Record<string, string> = {
+  TEACHER: 'en lærer', PEDAGOGUE: 'en pædagog', NURSE: 'en sygeplejerske',
+  PSYCHOLOGIST: 'en psykolog', SOCIAL_WORKER: 'en socialrådgiver',
+  COUNSELOR: 'en vejleder', OTHER: 'en kvalificeret fagperson',
+}
+
+// POST /api/match-runs/:id/assign — human decision step (WF-003). Sends a
+// proposal to the municipality instead of activating the case immediately:
+// CLAUDE.md requires the municipality to be notified when a candidate is
+// found and to remain an active actor in the case, and the schema for this
+// (case_proposals.response_token) has existed since 20260701120000 without
+// any application code ever using it. The case only becomes ACTIVE once the
+// municipality accepts via their token link (see
+// /api/municipality/proposals/[token]/respond).
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -25,6 +38,7 @@ export async function POST(
 
     const { createClient } = await import('@/lib/supabase/server')
     const db = await createClient()
+    const dba = db as any // eslint-disable-line @typescript-eslint/no-explicit-any
 
     // Verify match run exists and is COMPLETED
     const { data: run, error: runError } = await db
@@ -50,79 +64,110 @@ export async function POST(
       return badRequest('professional_id does not match the specified candidate')
     }
 
-    // End any existing active assignment for this case
-    await db
-      .from('case_assignments')
-      .update({ ended_at: new Date().toISOString() })
-      .eq('case_id', run.case_id)
-      .is('ended_at', null)
+    const { data: caseRow, error: caseError } = await dba
+      .from('cases')
+      .select('id, status, case_number, citizen_initials, citizen_age_range, complexity_level, weekly_hours, municipality_id, intake_contact_email, intake_contact_name')
+      .eq('id', run.case_id)
+      .single()
 
-    // Create the new assignment
-    const { data: assignment, error: assignError } = await db
-      .from('case_assignments')
+    if (caseError || !caseRow) return notFound('Case')
+    if (!['OPEN', 'MATCHED', 'PROPOSED'].includes(caseRow.status)) {
+      return badRequest('Sagen kan ikke få foreslået en kandidat i denne status.')
+    }
+
+    const { data: pro, error: proError } = await db
+      .from('professionals')
+      .select('id, profession, status')
+      .eq('id', parsed.data.professional_id)
+      .single()
+
+    if (proError || !pro) return notFound('Professional')
+    if (pro.status !== 'ACTIVE') {
+      return badRequest('Fagpersonen er ikke aktiv og kan ikke foreslås til en sag.')
+    }
+
+    // Supersede any proposal still awaiting a response for this case —
+    // there should only ever be one live token per case.
+    await dba.from('case_proposals').update({ status: 'WITHDRAWN' }).eq('case_id', run.case_id).eq('status', 'SENT')
+
+    const now = new Date().toISOString()
+    const { data: proposal, error: proposalError } = await dba
+      .from('case_proposals')
       .insert({
         case_id: run.case_id,
         professional_id: parsed.data.professional_id,
-        assigned_by: userId,
-        assignment_reason: parsed.data.notes || null,
+        proposal_note: parsed.data.notes || null,
+        status: 'SENT',
+        created_by: userId,
+        sent_at: now,
       })
       .select()
       .single()
 
-    if (assignError || !assignment) return serverError(assignError?.message)
+    if (proposalError || !proposal) return serverError(proposalError?.message || 'Failed to create proposal')
 
-    const dba = db as any // eslint-disable-line @typescript-eslint/no-explicit-any
-
-    // Link assignment back to match run + activate case
-    await Promise.all([
-      db.from('match_runs')
-        .update({
-          final_assignment_id: assignment.id,
-          selected_by: userId,
-          selected_at: new Date().toISOString(),
-          assigned_at: new Date().toISOString(),
-          status: 'ASSIGNED',
-        })
-        .eq('id', id),
-      dba.from('cases')
-        .update({ status: 'ACTIVE', updated_at: new Date().toISOString() })
-        .eq('id', run.case_id),
-    ])
+    await dba.from('cases').update({ status: 'PROPOSED', updated_at: now }).eq('id', run.case_id)
 
     await logAuditEvent(db, {
-      event_type: 'PROFESSIONAL_ASSIGNED',
+      event_type: 'PROPOSAL_SENT',
       actor_id: userId,
-      resource_type: 'case_assignments',
-      resource_id: assignment.id,
+      resource_type: 'case_proposals',
+      resource_id: proposal.id,
       metadata: {
         case_id: run.case_id,
         professional_id: parsed.data.professional_id,
         match_run_id: id,
         match_score: candidate.overall_score,
-        assigned_despite_ineligibility: candidate.eligible === false ? candidate.ineligibility_reason : undefined,
+        proposed_despite_ineligibility: candidate.eligible === false ? candidate.ineligibility_reason : undefined,
       },
     })
 
-    const { data: profile } = await db
-      .from('profiles')
-      .select('email')
-      .eq('id', parsed.data.professional_id)
+    const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://kursskifte.dk'
+
+    // Notify the municipality's sagsbehandler — the per-case contact set at
+    // intake takes priority over the municipality's default, same pattern
+    // used in dashboard/cases/[id]/page.tsx. GDPR: never the professional's
+    // name, only their role — and only the citizen's initials + age range.
+    const { data: muni } = await db
+      .from('municipalities')
+      .select('sagsbehandler_name, sagsbehandler_email')
+      .eq('id', caseRow.municipality_id)
       .single()
 
-    if (profile?.email) {
-      const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://kursskifte.dk'
+    const sagsbehandlerEmail = caseRow.intake_contact_email || muni?.sagsbehandler_email
+    if (sagsbehandlerEmail) {
+      const roleLabel = PROFESSION_LABEL[pro.profession] ?? PROFESSION_LABEL.OTHER
       await sendNotification({
         db,
-        notification_type: 'CASE_CREATED',
-        related_entity_type: 'case_assignments',
-        related_entity_id: assignment.id,
-        recipient_profile_id: parsed.data.professional_id,
-        recipient_email: profile.email,
-        subject: 'Du er tildelt en ny sag — Kursskifte',
-        body: `Du er blevet tildelt en ny sag.\n\nSe sagen og tilhørende dokumentation:\n${base}/dashboard/cases/${run.case_id}`,
+        notification_type: 'PROPOSAL_SENT',
+        related_entity_type: 'case_proposals',
+        related_entity_id: proposal.id,
+        recipient_email: sagsbehandlerEmail,
+        subject: `Kursskifte: Forslag til kontaktperson — sag ${caseRow.case_number ?? ''}`,
+        body: [
+          `Kursskifte har fundet ${roleLabel} til sagen for borger ${caseRow.citizen_initials} (${caseRow.citizen_age_range}).`,
+          '',
+          `Se forslaget og godkend eller afvis her:`,
+          `${base}/municipality/proposals/${proposal.response_token}`,
+        ].join('\n'),
       })
     }
 
-    return ok(assignment)
+    // Let the professional know they've been proposed — not yet assigned.
+    const { data: profile } = await db.from('profiles').select('email').eq('id', parsed.data.professional_id).single()
+    if (profile?.email) {
+      await sendNotification({
+        db,
+        notification_type: 'PROPOSAL_SENT',
+        related_entity_type: 'case_proposals',
+        related_entity_id: proposal.id,
+        recipient_profile_id: parsed.data.professional_id,
+        recipient_email: profile.email,
+        subject: 'Du er foreslået til en sag — Kursskifte',
+        body: `Du er foreslået som kontaktperson til en sag. Kommunen skal godkende forslaget, før sagen bliver aktiv — du hører fra os igen når det sker.`,
+      })
+    }
+
+    return ok(proposal)
   })
 }

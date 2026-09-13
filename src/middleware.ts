@@ -16,6 +16,10 @@ const PUBLIC_PATHS = [
   '/om-kursskifte',
   '/kontakt',
   '/privatlivspolitik',
+  // Token-authenticated pages the municipality's sagsbehandler reaches from
+  // an email link, with no login of their own — access is enforced by
+  // knowing the unguessable token in the URL, not by a session.
+  '/municipality',
 ]
 
 export async function middleware(request: NextRequest) {

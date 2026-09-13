@@ -28,6 +28,18 @@ export default async function AdminHoursPage() {
   const caseMap = Object.fromEntries((casesRes.data ?? []).map(c => [c.id, c]))
   const profMap = Object.fromEntries((profsRes.data ?? []).map(p => [p.id, p]))
 
+  // For the export filter's professional dropdown — independent of the
+  // 200-row capped list above, so someone without recent submissions still
+  // shows up as a choice.
+  const { data: activeProfessionals } = await (db as any)
+    .from('professionals')
+    .select('id, profiles!inner(full_name)')
+    .eq('status', 'ACTIVE')
+
+  const professionalOptions = (activeProfessionals ?? [])
+    .map((p: any) => ({ id: p.id, full_name: p.profiles?.full_name ?? 'Ukendt' }))
+    .sort((a: { full_name: string }, b: { full_name: string }) => a.full_name.localeCompare(b.full_name, 'da'))
+
   const enriched: AdminHoursRow[] = hours.map(h => ({
     id: h.id,
     case_id: h.case_id,
@@ -55,7 +67,7 @@ export default async function AdminHoursPage() {
         breadcrumb={[{ label: 'Kursskifte Administration', href: '/admin' }, { label: 'Timer' }]}
       />
       <ContentContainer>
-        <AdminHoursClient initialHours={enriched} />
+        <AdminHoursClient initialHours={enriched} professionalOptions={professionalOptions} />
       </ContentContainer>
     </div>
   )

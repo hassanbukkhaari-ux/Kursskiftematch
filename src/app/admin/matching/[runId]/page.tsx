@@ -47,9 +47,17 @@ export default async function MatchRunPage({ params }: PageProps) {
   const dba = db as any // eslint-disable-line @typescript-eslint/no-explicit-any
   const { data: caseData } = await dba
     .from('cases')
-    .select('id, citizen_initials, citizen_age_range, complexity_level, weekly_hours, status')
+    .select('id, citizen_initials, citizen_age_range, complexity_level, weekly_hours, status, municipality_id, intake_contact_email')
     .eq('id', run.case_id)
     .single()
+
+  // Resolved with the same precedence /api/match-runs/[id]/assign enforces —
+  // shown to admin before they send, instead of only surfacing as an error
+  // after clicking "Foreslå kommunen".
+  const { data: muni } = caseData
+    ? await dba.from('municipalities').select('sagsbehandler_email').eq('id', caseData.municipality_id).single()
+    : { data: null }
+  const sagsbehandlerEmail: string | null = caseData?.intake_contact_email || muni?.sagsbehandler_email || null
 
   const candidateList = (candidates ?? []) as unknown as Parameters<typeof MatchingUI>[0]['candidates']
 
@@ -112,6 +120,7 @@ export default async function MatchRunPage({ params }: PageProps) {
         caseId={run.case_id}
         runStatus={run.status}
         caseData={caseData ?? undefined}
+        sagsbehandlerEmail={sagsbehandlerEmail}
       />
     </div>
   )

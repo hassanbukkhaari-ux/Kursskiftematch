@@ -557,7 +557,7 @@ export function AdminCasesClient({
                   />
                 </div>
               </div>
-              <p className="text-[10px] text-[#6B7569] mt-1.5">Internt felt — vises kun i Kursskifte Administration</p>
+              <p className="text-[10px] text-[#6B7569] mt-1.5">Bruges til at sende forslag om match til kommunen, og vises for den tildelte kontaktperson når sagen bliver aktiv.</p>
             </div>
           </FormSection>
 

@@ -5,7 +5,7 @@ import { ProfessionalsClient } from './ProfessionalsClient'
 export default async function ProfessionalsPage() {
   const db = createServiceClient()
 
-  const { data: professionals } = await (db as any)
+  const { data: professionals, error } = await (db as any)
     .from('professionals')
     .select(`
       id, profession, experience_years, max_complexity_level,
@@ -19,6 +19,15 @@ export default async function ProfessionalsPage() {
     `)
     .order('created_at', { ascending: false })
 
+  // A failed query here (bad/missing SUPABASE_SERVICE_ROLE_KEY, an RLS
+  // surprise, a broken embed) used to look identical to "no professionals
+  // exist" — the list just rendered empty with nothing to explain why.
+  // Logged loudly so it shows up in Vercel's function logs instead of only
+  // being visible as "0 kontaktpersoner" with no further trace.
+  if (error) {
+    console.error('[admin/professionals] Failed to load professionals:', error)
+  }
+
   return (
     <div>
       <PageHeader
@@ -28,6 +37,11 @@ export default async function ProfessionalsPage() {
         breadcrumb={[{ label: 'Kursskifte Administration', href: '/admin' }, { label: 'Kontaktpersoner' }]}
       />
       <ContentContainer>
+        {error && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+            Kunne ikke hente kontaktpersoner: {error.message ?? 'ukendt fejl'}. Dette er en fejl, ikke en tom liste — kontakt support.
+          </div>
+        )}
         <ProfessionalsClient initialData={(professionals ?? []) as unknown as ProfessionalRow[]} />
       </ContentContainer>
     </div>

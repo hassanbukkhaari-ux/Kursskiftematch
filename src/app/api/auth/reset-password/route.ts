@@ -1,10 +1,20 @@
 import { createServiceClient } from '@/lib/supabase/server'
 import { badRequest, ok, serverError } from '@/lib/api-response'
+import { rateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit'
 import type { NextRequest } from 'next/server'
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://kursskifte.dk').replace(/\/$/, '')
 
+// Always returned for a well-formed request, whether or not the e-mail is
+// registered — the endpoint must never let a caller distinguish the two.
+// Rate limited per IP for the same reason: an unlimited public endpoint that
+// only sometimes sends an e-mail is a ready-made enumeration/abuse oracle.
+const GENERIC_RESPONSE = { sent: true }
+
 export async function POST(request: NextRequest) {
+  const { limited } = rateLimit(`reset-password:${getClientIp(request)}`, { windowMs: 15 * 60 * 1000, max: 5 })
+  if (limited) return rateLimitResponse()
+
   let body: { email?: string }
   try { body = await request.json() } catch { return badRequest('Invalid JSON') }
 
@@ -18,19 +28,17 @@ export async function POST(request: NextRequest) {
 
   const svc = createServiceClient()
 
-  // Generate recovery token — returns error if user does not exist
+  // Generate recovery token — fails if the user does not exist. That failure
+  // must look identical to success from the caller's side, so it's logged
+  // internally and answered with the same generic response, never surfaced.
   const { data: linkData, error: linkError } = await svc.auth.admin.generateLink({
     type: 'recovery',
     email,
   })
 
   if (linkError) {
-    console.error('[reset-password] generateLink error:', linkError)
-    // Map common Supabase errors to Danish
-    if (linkError.message.toLowerCase().includes('not found') || linkError.message.toLowerCase().includes('user')) {
-      return badRequest('Denne e-mail er ikke registreret i systemet.')
-    }
-    return serverError(linkError.message)
+    console.error('[reset-password] generateLink error (not shown to caller):', linkError)
+    return ok(GENERIC_RESPONSE)
   }
 
   const tokenHash = (linkData as any)?.properties?.hashed_token
@@ -72,5 +80,5 @@ export async function POST(request: NextRequest) {
     return serverError(`Kunne ikke sende e-mail: ${(resendBody as any)?.message ?? resendRes.status}`)
   }
 
-  return ok({ sent: true })
+  return ok(GENERIC_RESPONSE)
 }

@@ -566,6 +566,11 @@ function DocumentSection({ documents, professionalId }: { documents: DocumentRow
                     ✓ Godkendt {new Date(doc.verified_at).toLocaleDateString('da-DK')}
                   </div>
                 )}
+                {dt.type === 'DRIVING_LICENSE' && doc?.expiry_date && (
+                  <div className="text-xs text-[#6B7569]">
+                    Skal genindsendes/godkendes igen: {new Date(doc.expiry_date).toLocaleDateString('da-DK')}
+                  </div>
+                )}
               </div>
               <div className="flex flex-col items-end gap-1">
                 <Badge variant={DOC_STATUS_BADGE[status] ?? 'default'}>

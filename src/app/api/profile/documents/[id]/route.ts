@@ -25,6 +25,20 @@ export async function PATCH(
         patch.status = 'APPROVED'
         patch.verified_at = new Date().toISOString()
         patch.verified_by = userId
+
+        // Driving licence documentation must be re-approved annually — set
+        // the renewal deadline automatically so the activation check and
+        // the reminder cron both have a real date to work from.
+        const { data: doc } = await (db as any)
+          .from('professional_documents')
+          .select('document_type')
+          .eq('id', id)
+          .single()
+        if (doc?.document_type === 'DRIVING_LICENSE') {
+          const expiry = new Date()
+          expiry.setFullYear(expiry.getFullYear() + 1)
+          patch.expiry_date = expiry.toISOString().slice(0, 10)
+        }
       } else if (action === 'REJECT') {
         patch.status = 'REJECTED'
         patch.verification_notes = body.note ?? null

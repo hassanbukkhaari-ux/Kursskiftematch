@@ -47,6 +47,21 @@ function ArrowRight() {
   )
 }
 
+function SecureMailBadge({ light }: { light?: boolean }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1 text-[10px] font-semibold ${light ? 'text-white/50' : 'text-[#6B7569]'}`}
+      title="Vores mailserver kræver krypteret (TLS) forbindelse ved afsendelse og modtagelse"
+    >
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="11" width="18" height="10" rx="2" />
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+      </svg>
+      Sikker mail
+    </span>
+  )
+}
+
 export default function KontaktPage() {
   return (
     <div className="min-h-screen bg-[#F6F3EE]">
@@ -82,7 +97,10 @@ export default function KontaktPage() {
               </div>
               <div className="space-y-0">
                 <div className="py-2.5 border-b border-white/10">
-                  <div className="text-[10px] font-semibold uppercase tracking-widest text-white/40 mb-0.5">E-mail</div>
+                  <div className="flex items-center justify-between mb-0.5">
+                    <div className="text-[10px] font-semibold uppercase tracking-widest text-white/40">E-mail</div>
+                    <SecureMailBadge light />
+                  </div>
                   <a href="mailto:kontakt@kursskifte.dk" className="text-sm text-white hover:text-[#C8993A] transition-colors">kontakt@kursskifte.dk</a>
                 </div>
                 <div className="py-2.5 border-b border-white/10">
@@ -109,7 +127,10 @@ export default function KontaktPage() {
               </div>
               <div className="space-y-0">
                 <div className="py-2.5 border-b border-[#E0DAD0]">
-                  <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-0.5">E-mail</div>
+                  <div className="flex items-center justify-between mb-0.5">
+                    <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569]">E-mail</div>
+                    <SecureMailBadge />
+                  </div>
                   <a href="mailto:kontakt@kursskifte.dk" className="text-sm text-[#1A1F1C] hover:text-[#1C3829] transition-colors">kontakt@kursskifte.dk</a>
                 </div>
               </div>
@@ -136,6 +157,7 @@ export default function KontaktPage() {
                 <div>
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-2">E-mail</div>
                   <a href="mailto:kontakt@kursskifte.dk" className="text-sm text-[#1A1F1C] hover:text-[#1C3829] transition-colors">kontakt@kursskifte.dk</a>
+                  <div className="mt-1"><SecureMailBadge /></div>
                 </div>
                 <div>
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-2">Område</div>

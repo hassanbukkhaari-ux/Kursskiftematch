@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import PublicNav from '@/components/public/PublicNav'
 import PublicFooter from '@/components/public/PublicFooter'
+import { SecureMailBadge } from '@/components/public/SecureMailBadge'
 
 export const metadata: Metadata = {
   title: 'Kursskifte | Kvalitetssikrede kontaktpersoner til kommuner',
@@ -198,6 +199,7 @@ function ProcessSection() {
               <div className="flex flex-col gap-2">
                 <a href="mailto:kontakt@kursskifte.dk" className="text-sm text-white/70 hover:text-white transition-colors">kontakt@kursskifte.dk</a>
                 <a href="tel:+4531319594" className="text-sm text-white/70 hover:text-white transition-colors">31 31 95 94</a>
+                <SecureMailBadge light />
                 <Link href="/kontakt" className="mt-2 h-9 px-4 bg-[#C8993A] text-white text-sm font-semibold rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center gap-1.5 self-start">
                   Kontakt os <ArrowRight />
                 </Link>
@@ -330,9 +332,10 @@ function CtaStrip() {
               Klar til at tage kontakt?
             </h2>
             <p className="text-sm text-white/55 mb-2">Send en e-mail, og vi vender tilbage hurtigst muligt.</p>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap items-center gap-4">
               <a href="mailto:kontakt@kursskifte.dk" className="text-sm text-white/70 hover:text-white transition-colors">kontakt@kursskifte.dk</a>
               <a href="tel:+4531319594" className="text-sm text-white/70 hover:text-white transition-colors">31 31 95 94</a>
+              <SecureMailBadge light />
             </div>
           </div>
           <div className="flex flex-col items-start gap-3 shrink-0">

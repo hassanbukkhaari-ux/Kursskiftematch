@@ -15,6 +15,11 @@ function LogoMark() {
 
 const NAV_ITEMS = [
   {
+    label: 'Vision',
+    href: '/vision',
+    children: [],
+  },
+  {
     label: 'Kommuner',
     href: '/kommuner',
     children: [

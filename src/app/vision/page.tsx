@@ -38,7 +38,7 @@ const BRIDGE_STEPS = [
   {
     step: '03',
     title: 'Uddannelse og oplæring',
-    body: 'Når trivslen er på plads, bliver skole, praktik eller uddannelse en reel mulighed — ikke en kamp.',
+    body: 'Når relationen er på plads, bliver skole, praktik eller uddannelse en reel mulighed — ikke en kamp.',
   },
   {
     step: '04',

@@ -15,9 +15,13 @@ function LogoMark() {
 
 const NAV_ITEMS = [
   {
-    label: 'Vision',
-    href: '/vision',
-    children: [],
+    label: 'Om Kursskifte',
+    href: '/om-kursskifte',
+    children: [
+      { label: 'Vores vision', href: '/vision' },
+      { label: 'Vores metode', href: '/metode' },
+      { label: 'Foredrag', href: '/foredrag' },
+    ],
   },
   {
     label: 'Kommuner',

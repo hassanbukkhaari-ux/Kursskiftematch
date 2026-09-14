@@ -14,6 +14,7 @@ const PUBLIC_PATHS = [
   '/foredrag',
   '/metode',
   '/om-kursskifte',
+  '/vision',
   '/kontakt',
   '/privatlivspolitik',
   // Token-authenticated pages the municipality's sagsbehandler reaches from

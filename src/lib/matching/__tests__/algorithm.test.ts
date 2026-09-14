@@ -383,14 +383,21 @@ describe('Logistics fit', () => {
   })
 
   it('scores 100 when transport is required and the professional can provide it', () => {
-    const pro = baseProfessional({ can_transport_citizen: true, has_drivers_license: true, has_own_car: true })
+    const pro = baseProfessional({ can_transport_citizen: true, has_drivers_license: true, drivers_license_admin_verified: true, has_own_car: true })
     const c = baseCase({ transport_needs: 'JA' })
     const scores = scoreCandidate(pro, c)
     expect(scores.logistics_score).toBe(100)
   })
 
   it('scores 0 when transport is required and the professional is missing any part of it', () => {
-    const pro = baseProfessional({ can_transport_citizen: true, has_drivers_license: true, has_own_car: false })
+    const pro = baseProfessional({ can_transport_citizen: true, has_drivers_license: true, drivers_license_admin_verified: true, has_own_car: false })
+    const c = baseCase({ transport_needs: 'JA' })
+    const scores = scoreCandidate(pro, c)
+    expect(scores.logistics_score).toBe(0)
+  })
+
+  it('scores 0 when transport is required and the professional self-reports a licence admin has not verified yet', () => {
+    const pro = baseProfessional({ can_transport_citizen: true, has_drivers_license: true, drivers_license_admin_verified: false, has_own_car: true })
     const c = baseCase({ transport_needs: 'JA' })
     const scores = scoreCandidate(pro, c)
     expect(scores.logistics_score).toBe(0)
@@ -467,7 +474,7 @@ describe('Logistics fit', () => {
 
   it('floors logistics_score at 0 when a critical check fails, even if another critical check passes', () => {
     const pro = baseProfessional({
-      can_transport_citizen: true, has_drivers_license: true, has_own_car: true, // critical, passes
+      can_transport_citizen: true, has_drivers_license: true, drivers_license_admin_verified: true, has_own_car: true, // critical, passes
       can_take_acute: false, // critical, fails
     })
     const c = baseCase({ transport_needs: 'JA', urgency: 'AKUT' })
@@ -487,7 +494,7 @@ describe('Logistics fit', () => {
 
   it('does not floor logistics_score when only soft checks fail', () => {
     const pro = baseProfessional({
-      can_transport_citizen: true, has_drivers_license: true, has_own_car: true, // critical, passes
+      can_transport_citizen: true, has_drivers_license: true, drivers_license_admin_verified: true, has_own_car: true, // critical, passes
       covered_municipality_ids: ['muni-odense'], // soft, fails
     })
     const c = baseCase({ transport_needs: 'JA', municipality_id: 'muni-aarhus' })

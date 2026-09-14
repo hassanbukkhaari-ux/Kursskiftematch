@@ -555,6 +555,60 @@ function BioReviewActions({ professionalId }: { professionalId: string }) {
   )
 }
 
+// Admin-only switch for whether matching may treat this professional as
+// having a usable driving licence. has_drivers_license (shown above this)
+// is self-reported and never trusted directly by the algorithm — only
+// drivers_license_admin_verified is, and only admin can flip it. Independent
+// of the DRIVING_LICENSE document's own status, so admin decides when,
+// typically right after approving that document below.
+function DrivingLicenseToggle({
+  professionalId, verified,
+}: { professionalId: string; verified: boolean }) {
+  const router = useRouter()
+  const [pending, startT] = useTransition()
+  const [acting, setActing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function toggle() {
+    setActing(true); setError(null)
+    try {
+      const res = await fetch(`/api/admin/professionals/${professionalId}/driving-license`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ verified: !verified }),
+      })
+      if (!res.ok) { const j = await res.json().catch(() => ({})); setError((j as { error?: string }).error ?? 'Fejl'); return }
+      startT(() => router.refresh())
+    } catch { setError('Netværksfejl') }
+    finally { setActing(false) }
+  }
+
+  return (
+    <div className="flex items-center gap-3">
+      <button
+        onClick={toggle}
+        disabled={acting || pending}
+        role="switch"
+        aria-checked={verified}
+        className={[
+          'relative w-10 h-6 rounded-full transition-colors shrink-0 disabled:opacity-50',
+          verified ? 'bg-[#1C3829]' : 'bg-[#E0DAD0]',
+        ].join(' ')}
+      >
+        <span
+          className={[
+            'absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform',
+            verified ? 'translate-x-[18px]' : 'translate-x-0.5',
+          ].join(' ')}
+        />
+      </button>
+      <span className="text-sm text-[#1A1F1C]">
+        {verified ? 'Aktivt i matching' : 'Ikke aktivt i matching'}
+      </span>
+      {error && <span className="text-xs text-red-600">{error}</span>}
+    </div>
+  )
+}
+
 function DocumentSection({ documents, professionalId }: { documents: DocumentRow[]; professionalId: string }) {
   const router = useRouter()
   const [pending, startT] = useTransition()
@@ -1119,6 +1173,12 @@ export function ProfessionalDetailClient({
         <SectionTitle>Geografi og transport</SectionTitle>
         <dl className="space-y-0">
           <InfoRow label="Har kørekort" value={pro.has_drivers_license ? boolLabel(pro.has_drivers_license) : null} />
+          {pro.has_drivers_license && (
+            <InfoRow
+              label="Kørekort i matching"
+              value={<DrivingLicenseToggle professionalId={professionalId} verified={pro.drivers_license_admin_verified} />}
+            />
+          )}
           <InfoRow label="Har bil" value={pro.has_own_car ? boolLabel(pro.has_own_car) : null} />
           <InfoRow label="Kan transportere borger" value={pro.can_transport_citizen ? boolLabel(pro.can_transport_citizen) : null} />
           <InfoRow label="Kørselsradius" value={pro.max_driving_radius_km ? `${pro.max_driving_radius_km} km` : null} />

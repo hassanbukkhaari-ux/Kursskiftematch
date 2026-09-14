@@ -175,6 +175,7 @@ export type Database = {
           can_work_weekend: boolean
           can_work_night: boolean
           has_drivers_license: boolean
+          drivers_license_admin_verified: boolean
           has_own_car: boolean
           can_transport_citizen: boolean
           max_driving_radius_km: number | null
@@ -224,6 +225,7 @@ export type Database = {
           can_work_weekend?: boolean
           can_work_night?: boolean
           has_drivers_license?: boolean
+          drivers_license_admin_verified?: boolean
           has_own_car?: boolean
           can_transport_citizen?: boolean
           max_driving_radius_km?: number | null
@@ -272,6 +274,7 @@ export type Database = {
           can_work_weekend?: boolean
           can_work_night?: boolean
           has_drivers_license?: boolean
+          drivers_license_admin_verified?: boolean
           has_own_car?: boolean
           can_transport_citizen?: boolean
           max_driving_radius_km?: number | null

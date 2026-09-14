@@ -29,6 +29,11 @@ export interface ProfessionalInput {
   experience_with_genders?: ('BOYS' | 'GIRLS')[]
   can_transport_citizen?: boolean
   has_drivers_license?: boolean
+  // Admin-only gate — has_drivers_license is self-reported by the
+  // professional and is never enough on its own for the critical transport
+  // check below; only an explicit admin toggle (drivers_license_admin_verified)
+  // on the professional's profile makes it count.
+  drivers_license_admin_verified?: boolean
   has_own_car?: boolean
   can_take_acute?: boolean
   // Municipality IDs the professional has stated they cover — the same
@@ -246,7 +251,12 @@ function computeLogisticsChecks(professional: ProfessionalInput, caseData: CaseI
   const checks: LogisticsCheck[] = []
 
   if (caseData.transport_needs === 'JA') {
-    const canTransport = !!(professional.can_transport_citizen && professional.has_drivers_license && professional.has_own_car)
+    const canTransport = !!(
+      professional.can_transport_citizen &&
+      professional.has_drivers_license &&
+      professional.drivers_license_admin_verified &&
+      professional.has_own_car
+    )
     checks.push({ label: 'Kan transportere borgeren', ok: canTransport, critical: true })
   }
 

@@ -839,12 +839,18 @@ function DocUploadRow({ dt, doc }: { dt: typeof DOC_TYPES[0]; doc: DocumentRow |
       {doc?.file_name && (
         <p className="text-xs text-[#6B7569] mt-0.5 truncate">{doc.file_name}</p>
       )}
-      {dt.type === 'DRIVING_LICENSE' && doc?.expiry_date && (
-        <p className="text-xs text-[#6B7569] mt-0.5">
-          {status === 'APPROVED'
-            ? `Godkendt af Kursskifte til ${new Date(doc.expiry_date).toLocaleDateString('da-DK')} — genindsend herefter`
-            : `Udløber ${new Date(doc.expiry_date).toLocaleDateString('da-DK')}`}
-        </p>
+      {dt.type === 'DRIVING_LICENSE' && (
+        doc?.expiry_date ? (
+          <p className="text-xs text-[#6B7569] mt-0.5">
+            {status === 'APPROVED'
+              ? `Godkendt af Kursskifte til ${new Date(doc.expiry_date).toLocaleDateString('da-DK')} — genindsend herefter`
+              : `Udløber ${new Date(doc.expiry_date).toLocaleDateString('da-DK')}`}
+          </p>
+        ) : (
+          <p className="text-xs text-[#6B7569] mt-0.5">
+            Skal godkendes af Kursskifte, før det bruges i matching af transportkrævende sager.
+          </p>
+        )
       )}
       {error && <p className="text-xs text-red-600 mt-0.5">{error}</p>}
     </div>

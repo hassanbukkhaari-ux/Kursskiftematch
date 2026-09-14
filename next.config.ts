@@ -28,6 +28,19 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: '/(.*)', headers: securityHeaders }]
   },
+  // Stale URLs still indexed by Google from a previous (non-Next.js, likely
+  // ASP.NET — hence the PascalCase path) version of kursskifte.dk. A 404
+  // would eventually get them dropped from search results too, but a
+  // permanent redirect fixes the broken link immediately for anyone who
+  // still has it bookmarked or finds it via search, and gets Google to
+  // update its index toward the real page faster than a bare 404 would.
+  async redirects() {
+    return [
+      { source: '/home', destination: '/', permanent: true },
+      { source: '/Auth/Login', destination: '/login', permanent: true },
+      { source: '/auth/login', destination: '/login', permanent: true },
+    ]
+  },
 }
 
 // Wraps the config to upload source maps to Sentry on build — silently

@@ -104,7 +104,7 @@ export default function PublicNav() {
           ))}
           <Link
             href="/login"
-            className="ml-2 px-3 py-1.5 text-sm text-[#6B7569] hover:text-[#1C3829] transition-colors"
+            className="ml-2 h-9 px-4 bg-[#C8993A] text-white text-sm font-semibold rounded-xl hover:bg-[#B8891A] transition-colors inline-flex items-center"
           >
             Log ind
           </Link>
@@ -173,11 +173,11 @@ export default function PublicNav() {
               ))}
             </div>
           ))}
-          <div className="border-t border-[#E0DAD0] mt-2 pt-2">
+          <div className="border-t border-[#E0DAD0] mt-2 pt-3">
             <Link
               href="/login"
               onClick={() => setOpen(false)}
-              className="block px-3 py-2.5 text-sm text-[#6B7569] hover:text-[#1C3829] rounded-lg transition-colors"
+              className="flex items-center justify-center h-10 px-3 bg-[#C8993A] text-white text-sm font-semibold rounded-xl hover:bg-[#B8891A] transition-colors"
             >
               Log ind
             </Link>

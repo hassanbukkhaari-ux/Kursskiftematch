@@ -924,15 +924,14 @@ function S10Availability({ pro }: { pro: Pro | null }) {
 // ── Section: Geografi ────────────────────────────────────────────────────
 
 function S11Geography({
-  initialMunis, municipalities, pro,
-}: { initialMunis: string[]; municipalities: LT[]; pro: Pro | null }) {
+  initialMunis, municipalities,
+}: { initialMunis: string[]; municipalities: LT[] }) {
   const router = useRouter()
   const [pending, startT] = useTransition()
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
   const [selected, setSelected] = useState<string[]>(initialMunis)
-  const [radius, setRadius] = useState(pro?.max_driving_radius_km?.toString() ?? '')
   const [search, setSearch] = useState('')
 
   const filtered = municipalities.filter(m =>
@@ -947,17 +946,11 @@ function S11Geography({
     if (selected.length === 0) { setError('Vælg mindst én kommune du dækker'); return }
     setSaving(true); setError(null); setSaved(false)
     try {
-      const [r1, r2] = await Promise.all([
-        fetch('/api/profile/selections/geography', {
-          method: 'PUT', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ids: selected }),
-        }),
-        fetch('/api/profile', {
-          method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ max_driving_radius_km: radius ? parseInt(radius) : null }),
-        }),
-      ])
-      if (!r1.ok || !r2.ok) { setError('Noget gik galt — prøv igen'); return }
+      const r1 = await fetch('/api/profile/selections/geography', {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selected }),
+      })
+      if (!r1.ok) { setError('Noget gik galt — prøv igen'); return }
       setSaved(true)
       startT(() => router.refresh())
     } catch { setError('Netværksfejl — prøv igen') }
@@ -966,9 +959,6 @@ function S11Geography({
 
   return (
     <div className="space-y-4 mt-4">
-      <Field label="Maks. kørselsradius (km)">
-        <Input type="number" value={radius} onChange={setRadius} placeholder="50" />
-      </Field>
       <Field label="Kommuner du dækker">
         <Input value={search} onChange={setSearch} placeholder="Søg kommune…" />
       </Field>
@@ -1013,6 +1003,7 @@ function S12Transport({ pro }: { pro: Pro | null }) {
     has_own_car: pro?.has_own_car ?? false,
     can_transport_citizen: pro?.can_transport_citizen ?? false,
   })
+  const [radius, setRadius] = useState(pro?.max_driving_radius_km?.toString() ?? '')
 
   return (
     <div className="space-y-1 mt-4 divide-y divide-[#F0EBE3]">
@@ -1020,7 +1011,15 @@ function S12Transport({ pro }: { pro: Pro | null }) {
       <Toggle label="Har egen bil" value={f.has_own_car} onChange={v => setF(p => ({ ...p, has_own_car: v }))} />
       <Toggle label="Kan transportere borger" value={f.can_transport_citizen} onChange={v => setF(p => ({ ...p, can_transport_citizen: v }))} />
       <div className="pt-4">
-        <SaveBar busy={busy} error={error} saved={saved} onSave={() => save('/api/profile', f)} />
+        <Field label="Maks. kørselsradius (km)">
+          <Input type="number" value={radius} onChange={setRadius} placeholder="50" />
+        </Field>
+      </div>
+      <div className="pt-4">
+        <SaveBar
+          busy={busy} error={error} saved={saved}
+          onSave={() => save('/api/profile', { ...f, max_driving_radius_km: radius ? parseInt(radius) : null })}
+        />
       </div>
     </div>
   )
@@ -1194,7 +1193,7 @@ export function ProfileClient(props: Props) {
     {
       id: 'geography', title: 'Geografi',
       complete: props.selectedGeography.length > 0,
-      content: <S11Geography initialMunis={props.selectedGeography} municipalities={props.municipalities} pro={pro} />,
+      content: <S11Geography initialMunis={props.selectedGeography} municipalities={props.municipalities} />,
     },
     {
       id: 'transport', title: 'Transport',

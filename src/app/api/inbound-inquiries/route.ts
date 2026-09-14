@@ -1,9 +1,11 @@
 import { NextRequest } from 'next/server'
+import { createHash } from 'crypto'
 import { z } from 'zod'
 import { createServiceClient } from '@/lib/supabase/server'
 import { ok, created, badRequest, serverError, withAdminAuth } from '@/lib/api-response'
 import { logAuditEvent } from '@/lib/audit'
 import { sendNotification, adminEmailBody } from '@/lib/notifications/service'
+import { rateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit'
 import type { Json } from '@/types/database'
 
 const InquirySchema = z.object({
@@ -15,11 +17,14 @@ const InquirySchema = z.object({
   message: z.string().optional(),
   form_data: z.record(z.string(), z.unknown()).default({}),
   source_url: z.string().url().optional(),
-  captcha_verified: z.boolean().default(false),
 })
 
 // POST /api/inbound-inquiries — public endpoint (no auth required, uses service role)
 export async function POST(request: NextRequest) {
+  const ip = getClientIp(request)
+  const { limited } = rateLimit(`inbound-inquiries:${ip}`, { windowMs: 15 * 60 * 1000, max: 5 })
+  if (limited) return rateLimitResponse()
+
   let body: unknown
   try {
     body = await request.json()
@@ -35,11 +40,10 @@ export async function POST(request: NextRequest) {
   const data = parsed.data
   const db = createServiceClient()
 
-  // Capture IP hash for spam detection (hash for privacy)
-  const forwarded = request.headers.get('x-forwarded-for')
-  const ip = forwarded?.split(',')[0]?.trim() || 'unknown'
+  // One-way hash for spam detection — SHA-256, not reversible like the
+  // previous base64 encoding (which only obscured the IP, never hid it).
   const ip_hash = ip !== 'unknown'
-    ? Buffer.from(ip).toString('base64').substring(0, 16)
+    ? createHash('sha256').update(ip).digest('hex').substring(0, 16)
     : null
 
   const { data: inquiry, error } = await db
@@ -54,7 +58,10 @@ export async function POST(request: NextRequest) {
       form_data: data.form_data as Json,
       source_url: data.source_url || null,
       ip_hash,
-      captcha_verified: data.captcha_verified,
+      // No captcha provider is wired up yet — a client-supplied boolean here
+      // would be meaningless (trivially spoofable), so it's always recorded
+      // as unverified rather than pretending to check something it can't.
+      captcha_verified: false,
     })
     .select('id, submission_type, status, submitted_at')
     .single()

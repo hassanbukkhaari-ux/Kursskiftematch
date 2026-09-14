@@ -97,7 +97,7 @@ export default function VisionPage() {
               Fra mistrivsel til uddannelse er ikke et automatisk spring
             </h2>
             <p className="text-sm text-[#6B7569] leading-relaxed">
-              Børn og unge der vokser op i mistrivsel eller udsatte positioner, ender statistisk oftere i gruppen af unge uden uddannelse eller beskæftigelse — ofte kaldet NEET-gruppen. Det er ikke fordi de ikke kan, men fordi vejen derhen kræver en form for stabilitet, mange af dem ikke har haft mulighed for at opbygge. Det er dér, en stabil kontaktperson gør en reel forskel.
+              Børn og unge der vokser op i mistrivsel eller udsatte positioner, ender statistisk oftere i gruppen af unge uden uddannelse eller beskæftigelse — ofte kaldet NEET-gruppen. Det er ikke fordi de ikke vil — det er fordi de ikke kan, før der er en form for stabilitet i deres liv, som mange af dem aldrig har haft mulighed for at opbygge. Det er dér, en stabil kontaktperson gør en reel forskel.
             </p>
           </div>
         </section>

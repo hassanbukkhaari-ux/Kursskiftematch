@@ -6,7 +6,7 @@ import PublicFooter from '@/components/public/PublicFooter'
 export const metadata: Metadata = {
   title: 'Kontakt Kursskifte | §32 og §85-forløb i Nordjylland',
   description:
-    'Kontakt Kursskifte om kontaktpersonforløb, sagsindsendelse eller spørgsmål. Vi betjener kommuner i Nordjylland — Aalborg, Hjørring, Brønderslev og Frederikshavn.',
+    'Kontakt Kursskifte om kontaktpersonforløb, sagsindsendelse eller spørgsmål. Vi betjener kommuner i Nordjylland: Aalborg, Hjørring, Brønderslev og Frederikshavn.',
   alternates: { canonical: '/kontakt' },
   openGraph: {
     title: 'Kontakt Kursskifte',
@@ -80,7 +80,7 @@ export default function KontaktPage() {
             Tag kontakt til Kursskifte
           </h1>
           <p className="text-[17px] text-[#6B7569] leading-relaxed max-w-lg">
-            Vi besvarer henvendelser fra kommuner og fagpersoner hurtigt og fagligt. Vi betjener kommuner i Nordjylland — herunder Aalborg, Hjørring, Brønderslev og Frederikshavn.
+            Vi besvarer henvendelser fra kommuner og fagpersoner hurtigt og fagligt. Vi betjener kommuner i Nordjylland, herunder Aalborg, Hjørring, Brønderslev og Frederikshavn.
           </p>
         </section>
 
@@ -92,7 +92,7 @@ export default function KontaktPage() {
                 <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-3">For kommuner</div>
                 <h2 className="font-serif text-2xl text-white font-normal mb-3">Har du en sag eller et spørgsmål?</h2>
                 <p className="text-sm text-white/65 leading-relaxed">
-                  Send en e-mail til kontakt@kursskifte.dk. Vi afklarer behov, formål, målgruppe, timeantal og forventninger — og finder den rette kontaktperson til sagen.
+                  Send en e-mail til kontakt@kursskifte.dk. Vi afklarer behov, formål, målgruppe, timeantal og forventninger, og finder den rette kontaktperson til sagen.
                 </p>
               </div>
               <div className="space-y-0">
@@ -122,7 +122,7 @@ export default function KontaktPage() {
                 <div className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A] mb-3">For kontaktpersoner</div>
                 <h2 className="font-serif text-2xl text-[#1A1F1C] font-normal mb-3">Spørgsmål om din profil eller ansøgning?</h2>
                 <p className="text-sm text-[#6B7569] leading-relaxed">
-                  Ønsker du at oprette en profil som kontaktperson, eller har du spørgsmål til processen — kontakt os her.
+                  Ønsker du at oprette en profil som kontaktperson, eller har du spørgsmål til processen, så kontakt os her.
                 </p>
               </div>
               <div className="space-y-0">

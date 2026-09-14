@@ -6,12 +6,12 @@ import PublicFooter from '@/components/public/PublicFooter'
 export const metadata: Metadata = {
   title: 'Mit kursskifte | Foredrag af Kursskifte',
   description:
-    'Kursskifte holder foredrag til skoler og SSP om eget kursskifte — og om unge vi har set stå ved det samme valg. Ærligt. Personligt. Kontakt os for pris og tilgængelighed.',
+    'Kursskifte holder foredrag til skoler og SSP om eget kursskifte, og om unge vi har set stå ved det samme valg. Ærligt. Personligt. Kontakt os for pris og tilgængelighed.',
   alternates: { canonical: '/foredrag' },
   openGraph: {
     title: 'Mit kursskifte | Foredrag af Kursskifte',
     description:
-      'Et personligt foredrag om vendepunktet — af én der selv nåede at skifte kurs. Til skoler, gymnasier og SSP.',
+      'Et personligt foredrag om vendepunktet, af én der selv nåede at skifte kurs. Til skoler, gymnasier og SSP.',
     url: '/foredrag',
   },
 }
@@ -27,11 +27,11 @@ function ArrowRight() {
 const THEMES = [
   {
     heading: 'Vi nåede det',
-    body: 'Vi taler ud fra eget liv. Om de øjeblikke der kunne have ført os et helt andet sted hen — og hvad der gjorde forskellen.',
+    body: 'Vi taler ud fra eget liv. Om de øjeblikke der kunne have ført os et helt andet sted hen, og hvad der gjorde forskellen.',
   },
   {
     heading: 'Andre nåede det ikke',
-    body: 'Vi har set det på tæt hold. Folk vi kendte. Vi taler om dem med respekt — og om hvad der var anderledes for dem der nåede det.',
+    body: 'Vi har set det på tæt hold. Folk vi kendte. Vi taler om dem med respekt, og om hvad der var anderledes for dem der nåede det.',
   },
   {
     heading: 'Det forkerte fællesskab',
@@ -62,7 +62,7 @@ export default function ForedragPage() {
                 Mit kursskifte.
               </h1>
               <p className="text-[18px] text-[#6B7569] leading-relaxed mb-4 max-w-lg">
-                Det er ikke et firmanavn vi fandt på. Det er noget vi har levet. Og noget vi har set andre leve — og set andre ikke nå.
+                Det er ikke et firmanavn vi fandt på. Det er noget vi har levet. Og noget vi har set andre leve, og set andre ikke nå.
               </p>
               <p className="text-[18px] text-[#6B7569] leading-relaxed mb-10 max-w-lg">
                 Vi holder foredrag til skoler, gymnasier og SSP om vendepunktet. Ærligt. Fra eget liv.
@@ -88,7 +88,7 @@ export default function ForedragPage() {
                   </div>
                 </div>
                 <p className="text-sm text-[#6B7569] leading-relaxed">
-                  Kursskifte kom til som en forlængelse af det vi selv oplevede — og det vi har set i andres liv. Vi holder foredrag til folkeskoler, gymnasier, SSP og kommunale forebyggelsesindsatser.
+                  Kursskifte kom til som en forlængelse af det vi selv oplevede, og det vi har set i andres liv. Vi holder foredrag til folkeskoler, gymnasier, SSP og kommunale forebyggelsesindsatser.
                 </p>
                 <div className="mt-5 pt-5 border-t border-[#E0DAD0]">
                   <a href="mailto:kontakt@kursskifte.dk?subject=Foredrag – kontakt fra skole/SSP" className="text-sm text-[#6B7569] hover:text-[#1C3829] transition-colors">
@@ -104,9 +104,9 @@ export default function ForedragPage() {
         <section className="bg-[#1C3829]">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16">
             <blockquote className="font-serif text-2xl sm:text-3xl text-white font-normal leading-snug max-w-2xl">
-              "Vi er ikke her for at skræmme nogen. Vi er her fordi vi har stået der selv — og ved at det gør en forskel at høre det fra nogen der har."
+              "Vi er ikke her for at skræmme nogen. Vi er her fordi vi har stået der selv, og ved at det gør en forskel at høre det fra nogen der har."
             </blockquote>
-            <p className="text-sm text-white/40 mt-5">— Grundlægger, Kursskifte</p>
+            <p className="text-sm text-white/40 mt-5">Grundlægger, Kursskifte</p>
           </div>
         </section>
 

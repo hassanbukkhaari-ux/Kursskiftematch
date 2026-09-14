@@ -169,7 +169,7 @@ export default async function KommuneLandingPage({ params }: { params: Promise<{
               <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Processen</span>
             </div>
             <h2 className="font-serif text-3xl sm:text-4xl text-[#1A1F1C] font-normal">
-              Fra sag til forslag — typisk inden for 1–3 arbejdsdage
+              Fra sag til forslag: typisk inden for 1–3 arbejdsdage
             </h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

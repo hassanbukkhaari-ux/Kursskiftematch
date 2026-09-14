@@ -7,7 +7,7 @@ import PublicFooter from '@/components/public/PublicFooter'
 export const metadata: Metadata = {
   title: 'Kursskifte | Kvalitetssikrede kontaktpersoner til kommuner',
   description:
-    'Mangler I en kontaktperson til en §85- eller §32-sag? Kursskifte finder og kvalitetssikrer fagpersoner til kommuner i Nordjylland. Straffeattest, børneattest og dokumentation — vi klarer det.',
+    'Mangler I en kontaktperson til en §85- eller §32-sag? Kursskifte finder og kvalitetssikrer fagpersoner til kommuner i Nordjylland. Straffeattest, børneattest og dokumentation: vi klarer det.',
   alternates: { canonical: '/' },
   openGraph: {
     title: 'Kursskifte | Kvalitetssikrede kontaktpersoner til kommuner',
@@ -62,7 +62,7 @@ function Hero() {
           Kvalitetssikrede kontaktpersoner til udsatte borgere
         </h1>
         <p className="text-[15px] sm:text-[17px] text-white/80 leading-relaxed max-w-lg mb-7 sm:mb-8">
-          Vi leverer mentor-, støtte- og kontaktpersonforløb til kommuner og jobcentre i Nordjylland. Én henvendelse — Kursskifte varetager match, opstart og opfølgning.
+          Vi leverer mentor-, støtte- og kontaktpersonforløb til kommuner og jobcentre i Nordjylland. Én henvendelse, og Kursskifte varetager match, opstart og opfølgning.
         </p>
         <div className="flex flex-col sm:flex-row gap-3">
           <Link
@@ -98,7 +98,7 @@ function AudiencePaths() {
               Én henvendelse.<br />Et fagligt begrundet forslag.
             </h2>
             <p className="text-sm text-white/65 leading-relaxed">
-              Kursskifte varetager match, verifikation og faglig anbefaling til §32 og §85-forløb — sikkert og dokumenteret. Vi betjener kommuner i Nordjylland.
+              Kursskifte varetager match, verifikation og faglig anbefaling til §32 og §85-forløb, sikkert og dokumenteret. Vi betjener kommuner i Nordjylland.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-4">
@@ -118,7 +118,7 @@ function AudiencePaths() {
               Bliv tilknyttet forløb der svarer til dine kompetencer.
             </h2>
             <p className="text-sm text-[#6B7569] leading-relaxed">
-              Send en e-mail med din baggrund — vi kobler dig med sager der matcher din faglige profil.
+              Send en e-mail med din baggrund, og vi kobler dig med sager der matcher din faglige profil.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-4">
@@ -140,7 +140,7 @@ function AudiencePaths() {
 // they commit. 5-step summary answers that question without the full
 // detail that lives on /kommuner. No CTA here — purely informational.
 const STEPS = [
-  { n: '01', title: 'I kontakter os', body: 'Send en e-mail til kontakt@kursskifte.dk eller ring på 31 31 95 94 — ingen åben database at gennemse.' },
+  { n: '01', title: 'I kontakter os', body: 'Send en e-mail til kontakt@kursskifte.dk eller ring på 31 31 95 94. Ingen åben database at gennemse.' },
   { n: '02', title: 'Kursskifte vurderer', body: 'Vi gennemgår kompleksitet, aldersgruppe og kompetencebehov.' },
   { n: '03', title: 'Kursskifte udvælger', body: 'Egnede fagpersoner identificeres og vurderes på kompetencer, kapacitet og tilgængelighed.' },
   { n: '04', title: 'I modtager forslag', body: 'Et dokumenteret forslag med anbefalet kontaktperson og faglig begrundelse.' },
@@ -229,7 +229,7 @@ const TRUST_ITEMS = [
   },
   {
     label: 'Ansvarlig samarbejdspartner',
-    desc: 'Kursskifte er fast koordinator under hele forløbet — ikke blot en formidler.',
+    desc: 'Kursskifte er fast koordinator under hele forløbet, ikke blot en formidler.',
   },
 ]
 
@@ -258,15 +258,15 @@ function TrustSection() {
 const FAQ = [
   {
     q: 'Hvilke kommuner betjener I?',
-    a: 'Vi betjener primært kommuner i Nordjylland — herunder Aalborg, Hjørring, Brønderslev og Frederikshavn. Er du usikker på om din kommune er dækket, er du altid velkommen til at kontakte os.',
+    a: 'Vi betjener primært kommuner i Nordjylland, herunder Aalborg, Hjørring, Brønderslev og Frederikshavn. Er du usikker på om din kommune er dækket, er du altid velkommen til at kontakte os.',
   },
   {
     q: 'Hvad sker der, når vi sender en henvendelse?',
-    a: 'Vi gennemgår jeres sag og vurderer kompleksitet, aldersgruppe og kompetencebehov. Herefter vender vi tilbage med en faglig begrundet anbefaling og et forslag til kontaktperson. Én henvendelse er alt der kræves — ingen åben database at gennemse.',
+    a: 'Vi gennemgår jeres sag og vurderer kompleksitet, aldersgruppe og kompetencebehov. Herefter vender vi tilbage med en faglig begrundet anbefaling og et forslag til kontaktperson. Én henvendelse er alt der kræves. Ingen åben database at gennemse.',
   },
   {
     q: 'Hvad koster det at bruge Kursskifte?',
-    a: 'Honorar aftales ud fra opgavens karakter, omfang og varighed. Kontakt os direkte — vi giver dig et klart og konkret overblik tilpasset jeres situation.',
+    a: 'Honorar aftales ud fra opgavens karakter, omfang og varighed. Kontakt os direkte, og vi giver dig et klart og konkret overblik tilpasset jeres situation.',
   },
   {
     q: 'Hvordan verificerer I fagpersonernes kvalifikationer?',
@@ -274,10 +274,10 @@ const FAQ = [
   },
   {
     q: 'Hvad er Kursskiftes rolle under et forløb?',
-    a: 'Kursskifte er fast koordinator fra match til afslutning — ikke blot formidler. Vi følger op på forløbet og er ansvarlig samarbejdspartner for både kommunen og fagpersonen under hele perioden.',
+    a: 'Kursskifte er fast koordinator fra match til afslutning, ikke blot formidler. Vi følger op på forløbet og er ansvarlig samarbejdspartner for både kommunen og fagpersonen under hele perioden.',
   },
   {
-    q: 'Jeg er fagperson — hvordan tilknytter jeg mig?',
+    q: 'Jeg er fagperson, hvordan tilknytter jeg mig?',
     a: 'Send en e-mail til kontakt@kursskifte.dk med din faglige baggrund og erfaring. Vi gennemgår din profil og vender hurtigt tilbage. Er der et match, aftaler vi et indledende møde.',
   },
 ]
@@ -329,7 +329,7 @@ function CtaStrip() {
             <h2 className="font-serif text-2xl sm:text-3xl text-white font-normal mb-2">
               Klar til at tage kontakt?
             </h2>
-            <p className="text-sm text-white/55 mb-2">Send en e-mail — vi vender tilbage hurtigst muligt.</p>
+            <p className="text-sm text-white/55 mb-2">Send en e-mail, og vi vender tilbage hurtigst muligt.</p>
             <div className="flex flex-wrap gap-4">
               <a href="mailto:kontakt@kursskifte.dk" className="text-sm text-white/70 hover:text-white transition-colors">kontakt@kursskifte.dk</a>
               <a href="tel:+4531319594" className="text-sm text-white/70 hover:text-white transition-colors">31 31 95 94</a>
@@ -370,7 +370,7 @@ export default function Home() {
     name: 'Kursskifte ApS',
     url: 'https://kursskifte.dk',
     description:
-      'Kursskifte forbinder kommuner med kvalitetssikrede kontaktpersoner til §32 og §85-forløb — socialpædagogisk støtte, bostøtte og relationsbaseret indsats til borgere i mistrivsel i Nordjylland.',
+      'Kursskifte forbinder kommuner med kvalitetssikrede kontaktpersoner til §32 og §85-forløb: socialpædagogisk støtte, bostøtte og relationsbaseret indsats til borgere i mistrivsel i Nordjylland.',
     email: 'kontakt@kursskifte.dk',
     areaServed: [
       { '@type': 'City', name: 'Aalborg' },

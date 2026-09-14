@@ -4,12 +4,12 @@ import PublicNav from '@/components/public/PublicNav'
 import PublicFooter from '@/components/public/PublicFooter'
 
 export const metadata: Metadata = {
-  title: 'Til kommuner | Kontaktperson §32 og §85 — Kursskifte',
+  title: 'Til kommuner | Kontaktperson §32 og §85 hos Kursskifte',
   description:
     'Kursskifte leverer mentor-, støtte- og kontaktpersonforløb til kommuner og jobcentre i Nordjylland. §32 barnets lov og §85 serviceloven. Tydelig proces, dokumentation og fast samarbejdspartner.',
   alternates: { canonical: '/kommuner' },
   openGraph: {
-    title: 'Til kommuner | Kontaktperson §32 og §85 — Kursskifte',
+    title: 'Til kommuner | Kontaktperson §32 og §85 hos Kursskifte',
     description:
       'Kursskifte hjælper kommuner i Nordjylland med kvalitetssikrede kontaktpersoner og mentorer til §32 og §85-forløb. Vi betjener Aalborg, Hjørring, Brønderslev og Frederikshavn.',
     url: '/kommuner',
@@ -37,7 +37,7 @@ const STEPS = [
   {
     n: '01',
     title: 'Indledende dialog',
-    body: 'Send en e-mail til kontakt@kursskifte.dk eller ring på 31 31 95 94. Vi afklarer behov, formål, målgruppe, timeantal og forventninger — direkte til os.',
+    body: 'Send en e-mail til kontakt@kursskifte.dk eller ring på 31 31 95 94. Vi afklarer behov, formål, målgruppe, timeantal og forventninger direkte med jer.',
   },
   {
     n: '02',
@@ -52,7 +52,7 @@ const STEPS = [
   {
     n: '04',
     title: 'I modtager et forslag',
-    body: 'Et fagligt begrundet forslag med anbefalet kontaktperson sendes til jer — med profil, begrundelse og estimeret opstart.',
+    body: 'Et fagligt begrundet forslag med anbefalet kontaktperson sendes til jer, med profil, begrundelse og estimeret opstart.',
   },
   {
     n: '05',
@@ -70,7 +70,7 @@ const STEPS = [
 const YDELSER = [
   {
     title: 'Støtte til kriminalitetstruede unge',
-    desc: 'Vi forstår kompleksiteten i de fællesskaber, der kan være svære at forlade. Med en stabil og troværdig relation udenfor miljøet arbejder vi målrettet med den unge mod en normal hverdag — i tæt samarbejde med SSP og kommunen.',
+    desc: 'Vi forstår kompleksiteten i de fællesskaber, der kan være svære at forlade. Med en stabil og troværdig relation udenfor miljøet arbejder vi målrettet med den unge mod en normal hverdag, i tæt samarbejde med SSP og kommunen.',
     para: '§32 barnets lov / SSP-samarbejde',
   },
   {
@@ -85,7 +85,7 @@ const YDELSER = [
   },
   {
     title: 'Struktur- og motivationsstøtte',
-    desc: 'Hjælp til at skabe rutiner, overholde aftaler og opbygge stabilitet — særligt til borgere med lav motivation eller ustabilt fremmøde.',
+    desc: 'Hjælp til at skabe rutiner, overholde aftaler og opbygge stabilitet, særligt til borgere med lav motivation eller ustabilt fremmøde.',
     para: '§85 SEL / beskæftigelsesrettet',
   },
   {
@@ -95,7 +95,7 @@ const YDELSER = [
   },
   {
     title: 'Støtte til hverdagsmestring',
-    desc: 'Praktisk støtte til fremmøde, aftaler, daglig struktur og selvstændighed — for borgere der har brug for tæt opfølgning.',
+    desc: 'Praktisk støtte til fremmøde, aftaler, daglig struktur og selvstændighed, for borgere der har brug for tæt opfølgning.',
     para: '§85 SEL',
   },
   {
@@ -111,7 +111,7 @@ const serviceSchema = {
   name: 'Kontaktpersonforløb og mentorforløb til kommuner',
   provider: { '@type': 'Organization', name: 'Kursskifte ApS', url: 'https://kursskifte.dk' },
   description:
-    'Kursskifte leverer mentor-, støtte- og kontaktpersonforløb til kommuner og jobcentre i Nordjylland — §32 barnets lov, §85 serviceloven og beskæftigelsesrettede mentorordninger.',
+    'Kursskifte leverer mentor-, støtte- og kontaktpersonforløb til kommuner og jobcentre i Nordjylland: §32 barnets lov, §85 serviceloven og beskæftigelsesrettede mentorordninger.',
   areaServed: [
     { '@type': 'City', name: 'Aalborg' },
     { '@type': 'City', name: 'Hjørring' },
@@ -145,7 +145,7 @@ export default function KommunerPage() {
                 Én henvendelse.<br />Et fagligt begrundet forslag.
               </h1>
               <p className="text-[17px] text-white/75 leading-relaxed mb-8 max-w-lg">
-                Kursskifte leverer mentor-, støtte- og kontaktpersonforløb til kommuner og jobcentre i Nordjylland. Visitation og bevilling foretages af kommunen — vi leverer den konkrete indsats.
+                Kursskifte leverer mentor-, støtte- og kontaktpersonforløb til kommuner og jobcentre i Nordjylland. Visitation og bevilling foretages af kommunen, vi leverer den konkrete indsats.
               </p>
               <div className="flex flex-wrap gap-3">
                 <a
@@ -171,7 +171,7 @@ export default function KommunerPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               {[
                 {
-                  title: 'I kontakter — vi finder',
+                  title: 'I kontakter, vi finder',
                   body: 'Send os behovet, og vi finder de rette kandidater ud fra kompetencer, kapacitet og erfaring.',
                 },
                 {
@@ -180,7 +180,7 @@ export default function KommunerPage() {
                 },
                 {
                   title: 'Faglig kvalitetssikring',
-                  body: 'Alle kontaktpersoner og mentorer er dokumenteret og verificeret — straffeattest, børneattest, CV og uddannelse kontrolleres inden aktivering.',
+                  body: 'Alle kontaktpersoner og mentorer er dokumenteret og verificeret: straffeattest, børneattest, CV og uddannelse kontrolleres inden aktivering.',
                 },
               ].map(c => (
                 <div key={c.title} className="bg-[#F6F3EE] rounded-2xl p-6">
@@ -260,7 +260,7 @@ export default function KommunerPage() {
               {
                 para: '§32 barnets lov / §85 serviceloven',
                 title: 'Kriminalitetstruet ung eller person der ønsker exit fra bandemiljø',
-                body: 'Ung eller voksen der befinder sig i eller tæt på et kriminelt miljø og har brug for en stabil, troværdig relation uden for det. Kontaktpersonen fungerer som alternativ tilknytning i en sårbar overgangsperiode — koordineret tæt med kommunen og SSP.',
+                body: 'Ung eller voksen der befinder sig i eller tæt på et kriminelt miljø og har brug for en stabil, troværdig relation uden for det. Kontaktpersonen fungerer som alternativ tilknytning i en sårbar overgangsperiode, koordineret tæt med kommunen og SSP.',
               },
               {
                 para: '§32 barnets lov',
@@ -270,7 +270,7 @@ export default function KommunerPage() {
               {
                 para: '§85 serviceloven',
                 title: 'Voksen med psykiske udfordringer og behov for daglig struktur',
-                body: 'Borger med angst eller depression der har svært ved at overholde aftaler, passe bolig og klare hverdagens krav. Støtten er praktisk og relationsbaseret — ikke behandling.',
+                body: 'Borger med angst eller depression der har svært ved at overholde aftaler, passe bolig og klare hverdagens krav. Støtten er praktisk og relationsbaseret, ikke behandling.',
               },
               {
                 para: '§32 barnets lov / beskæftigelsesrettet',
@@ -285,7 +285,7 @@ export default function KommunerPage() {
               {
                 para: '§32 barnets lov / §85 serviceloven',
                 title: 'Tosproget borger eller borger med anden etnisk baggrund',
-                body: 'Borger hvor tillid, kommunikation og kulturel forståelse er afgørende for forløbet. Vi matcher på sprogkompetencer og kulturel indsigt — ikke kun faglig profil.',
+                body: 'Borger hvor tillid, kommunikation og kulturel forståelse er afgørende for forløbet. Vi matcher på sprogkompetencer og kulturel indsigt, ikke kun faglig profil.',
               },
             ].map(c => (
               <div key={c.title} className="bg-white border border-[#E0DAD0] rounded-2xl p-6 flex flex-col gap-3">
@@ -340,7 +340,7 @@ export default function KommunerPage() {
                     'Behandlingstilbud eller psykiatrisk tilbud',
                     'Botilbud eller døgntilbud',
                     'Døgnberedskab eller akut krisetjeneste',
-                    'Myndighedsinstans — vi visiterer ikke',
+                    'Myndighedsinstans: vi visiterer ikke',
                   ].map(item => (
                     <div key={item} className="flex items-start gap-2.5">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B45309" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5">
@@ -363,7 +363,7 @@ export default function KommunerPage() {
           <div className="bg-[#1C3829] rounded-2xl p-8 sm:p-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div>
               <h2 className="font-serif text-2xl sm:text-3xl text-white font-normal mb-2">Klar til at tage kontakt?</h2>
-              <p className="text-sm text-white/65">Send en e-mail — vi vender hurtigt tilbage.</p>
+              <p className="text-sm text-white/65">Send en e-mail, og vi vender hurtigt tilbage.</p>
             </div>
             <div className="flex flex-col gap-3 items-start shrink-0">
               <a

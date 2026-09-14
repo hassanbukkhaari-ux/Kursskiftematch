@@ -6,12 +6,12 @@ import PublicFooter from '@/components/public/PublicFooter'
 export const metadata: Metadata = {
   title: 'Vores vision | Kursskifte',
   description:
-    'Kursskiftes vision er ikke kun at stoppe mistrivsel og kriminalitet blandt børn og unge — men at bygge en vej til beskæftigelse og et voksenliv, hvor de bidrager til samfundet på lige fod med alle andre.',
+    'Kursskiftes vision er ikke kun at stoppe mistrivsel og kriminalitet blandt børn og unge, men at bygge en vej til beskæftigelse og et voksenliv, hvor de bidrager til samfundet på lige fod med alle andre.',
   alternates: { canonical: '/vision' },
   openGraph: {
     title: 'Vores vision | Kursskifte',
     description:
-      'Vejen fra mistrivsel til beskæftigelse — Kursskiftes langsigtede vision for de børn og unge vi hjælper.',
+      'Vejen fra mistrivsel til beskæftigelse: Kursskiftes langsigtede vision for de børn og unge vi hjælper.',
     url: '/vision',
   },
 }
@@ -28,22 +28,22 @@ const BRIDGE_STEPS = [
   {
     step: '01',
     title: 'Tidlig, stabil relation',
-    body: 'En kontaktperson der bliver ved — ikke en midlertidig indsats, men en tryg relation over tid.',
+    body: 'En kontaktperson der bliver ved, ikke en midlertidig indsats, men en tryg relation over tid.',
   },
   {
     step: '02',
     title: 'Stabilitet i hverdagen',
-    body: 'Struktur, tillid og en voksen der ser barnet eller den unge — grundlaget for at kunne rette blikket fremad.',
+    body: 'Struktur, tillid og en voksen der ser barnet eller den unge: grundlaget for at kunne rette blikket fremad.',
   },
   {
     step: '03',
     title: 'Uddannelse og oplæring',
-    body: 'Når relationen er på plads, bliver skole, praktik eller uddannelse en reel mulighed — ikke en kamp.',
+    body: 'Når relationen er på plads, bliver skole, praktik eller uddannelse en reel mulighed, ikke en kamp.',
   },
   {
     step: '04',
     title: 'Beskæftigelse og bidrag',
-    body: 'Målet er et voksenliv i job — hvor den unge bidrager til samfundet på lige fod med alle andre.',
+    body: 'Målet er et voksenliv i job, hvor den unge bidrager til samfundet på lige fod med alle andre.',
   },
 ]
 
@@ -62,7 +62,7 @@ export default function VisionPage() {
             Det er ikke nok at stoppe mistrivslen
           </h1>
           <p className="text-[17px] text-[#6B7569] leading-relaxed max-w-2xl">
-            For os handler kontaktpersonforløb ikke kun om at få børn og unge ud af mistrivsel eller væk fra kriminalitet her og nu. Vores vision er større: at de børn og unge vi hjælper, som voksne kommer i beskæftigelse og bidrager til samfundet på lige fod med alle andre. Ikke som en undtagelse — men som det naturlige udfald af den rigtige støtte i tide.
+            For os handler kontaktpersonforløb ikke kun om at få børn og unge ud af mistrivsel eller væk fra kriminalitet her og nu. Vores vision er større: at de børn og unge vi hjælper, som voksne kommer i beskæftigelse og bidrager til samfundet på lige fod med alle andre. Ikke som en undtagelse, men som det naturlige udfald af den rigtige støtte i tide.
           </p>
         </section>
 
@@ -79,7 +79,7 @@ export default function VisionPage() {
                   Anstændige jobs og økonomisk vækst
                 </h2>
                 <p className="text-sm text-[#6B7569] leading-relaxed max-w-2xl">
-                  Vores vision er forankret i FN's Verdensmål 8, som blandt andet handler om at fremme fuld og produktiv beskæftigelse for alle. Vi ser hvert kontaktpersonforløb som et lille, konkret bidrag til det mål — én relation, én stabil hverdag og ét skridt tættere på uddannelse eller job ad gangen.
+                  Vores vision er forankret i FN's Verdensmål 8, som blandt andet handler om at fremme fuld og produktiv beskæftigelse for alle. Vi ser hvert kontaktpersonforløb som et lille, konkret bidrag til det mål: én relation, én stabil hverdag og ét skridt tættere på uddannelse eller job ad gangen.
                 </p>
               </div>
             </div>
@@ -97,7 +97,7 @@ export default function VisionPage() {
               Fra mistrivsel til uddannelse er ikke et automatisk spring
             </h2>
             <p className="text-sm text-[#6B7569] leading-relaxed">
-              Børn og unge der vokser op i mistrivsel eller udsatte positioner, ender statistisk oftere i gruppen af unge uden uddannelse eller beskæftigelse — ofte kaldet NEET-gruppen. Det er ikke fordi de ikke vil — det er fordi de ikke kan, før der er en form for stabilitet i deres liv, som mange af dem aldrig har haft mulighed for at opbygge. Det er dér, en stabil kontaktperson gør en reel forskel.
+              Børn og unge der vokser op i mistrivsel eller udsatte positioner, ender statistisk oftere i gruppen af unge uden uddannelse eller beskæftigelse, ofte kaldet NEET-gruppen. Det er ikke fordi de ikke vil. Det er fordi de ikke kan, før der er en form for stabilitet i deres liv, som mange af dem aldrig har haft mulighed for at opbygge. Det er dér, en stabil kontaktperson gør en reel forskel.
             </p>
           </div>
         </section>

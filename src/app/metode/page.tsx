@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     'Kursskiftes matchingsproces er baseret på faglige kvalifikationer, dokumenteret erfaring og kapacitet. Kontaktpersoner verificeres på straffeattest, børneattest og uddannelse inden aktivering. Kvalitetssikret og GDPR-compliant.',
   alternates: { canonical: '/metode' },
   openGraph: {
-    title: 'Vores metode | Socialfaglig matching — Kursskifte',
+    title: 'Vores metode | Socialfaglig matching hos Kursskifte',
     description:
       'Fagligt begrundet matching af kontaktpersoner til sociale indsatser. Kursskifte verificerer alle fagpersoner manuelt inden de tilknyttes kontaktpersonforløb.',
     url: '/metode',
@@ -43,7 +43,7 @@ export default function MetodePage() {
             <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Metode</span>
           </div>
           <h1 className="font-serif text-4xl sm:text-5xl text-[#1A1F1C] font-normal max-w-2xl mb-5 leading-tight tracking-tight">
-            Socialfaglig matching — kvalitetssikret og dokumenteret
+            Socialfaglig matching: kvalitetssikret og dokumenteret
           </h1>
           <p className="text-[17px] text-[#6B7569] leading-relaxed max-w-xl">
             Kursskiftes matchningsproces er baseret på faglige kvalifikationer, dokumenteret erfaring og tilgængelighed. Kun verificerede fagpersoner tilknyttes kontaktpersonforløb og socialfaglige indsatser.
@@ -59,7 +59,7 @@ export default function MetodePage() {
                 <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Matchmotoren</span>
               </div>
               <h2 className="font-serif text-3xl sm:text-4xl text-[#1A1F1C] font-normal mb-4">
-                Fire dimensioner — én samlet score
+                Fire dimensioner, én samlet score
               </h2>
               <p className="text-sm text-[#6B7569] leading-relaxed max-w-xl">
                 Vi gennemgår alle egnede fagpersoner ud fra fire kriterier og anbefaler den der matcher bedst. Kun tilgængelige og verificerede fagpersoner indgår i vurderingen.

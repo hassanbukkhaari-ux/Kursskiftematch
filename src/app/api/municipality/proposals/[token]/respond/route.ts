@@ -129,20 +129,11 @@ export async function POST(
     })
   }
 
-  const { data: proProfile } = await db.from('profiles').select('email').eq('id', proposal.professional_id).single()
-  if (proProfile?.email) {
-    const label = newStatus === 'DECLINED' ? 'afvist' : 'bedt om ændringer til'
-    await sendNotification({
-      db,
-      notification_type: newStatus === 'DECLINED' ? 'PROPOSAL_DECLINED' : 'PROPOSAL_CHANGES_REQUESTED',
-      related_entity_type: 'case_proposals',
-      related_entity_id: proposal.id,
-      recipient_profile_id: proposal.professional_id,
-      recipient_email: proProfile.email,
-      subject: 'Opdatering på et foreslået forløb — Kursskifte',
-      body: `Kommunen har ${label} forslaget om et forløb du var foreslået til. Kursskifte følger op.`,
-    })
-  }
+  // Fagpersonen underrettes bevidst ikke direkte her. Kursskifte er den
+  // faste koordinator mellem kommune og fagperson — kommunens tilbagemelding
+  // (afvisning/ønske om ændringer) går kun til admin, som vurderer og
+  // eventuelt selv tager kontakt til fagpersonen. Undgår også at fagpersonen
+  // får rå, ufiltreret feedback direkte fra kommunen.
 
   return ok({ ok: true, status: newStatus })
 }

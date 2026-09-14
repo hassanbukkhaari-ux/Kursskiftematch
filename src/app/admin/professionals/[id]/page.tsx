@@ -33,7 +33,7 @@ export default async function ProfessionalDetailPage({
         bio_status, bio_reviewed_at, bio_review_note,
         max_hours_per_week, available_now, can_take_acute,
         can_work_evening, can_work_weekend, can_work_night,
-        has_drivers_license, has_own_car, can_transport_citizen,
+        has_drivers_license, drivers_license_admin_verified, has_own_car, can_transport_citizen,
         max_driving_radius_km, updated_at, created_at,
         profession_types(name)
       `)
@@ -174,6 +174,7 @@ export type ProfessionalDetail = {
   can_work_weekend: boolean
   can_work_night: boolean
   has_drivers_license: boolean
+  drivers_license_admin_verified: boolean
   has_own_car: boolean
   can_transport_citizen: boolean
   max_driving_radius_km: number | null

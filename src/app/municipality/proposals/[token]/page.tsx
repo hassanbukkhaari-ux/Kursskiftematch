@@ -44,7 +44,7 @@ export default async function ProposalResponsePage({ params }: PageProps) {
     .select(`
       id, status, responded_at, municipality_response_note,
       professionals(id, profession, experience_years, bio, bio_status,
-        can_transport_citizen, has_drivers_license, has_own_car,
+        can_transport_citizen, has_drivers_license, drivers_license_admin_verified, has_own_car,
         can_work_evening, can_work_weekend, can_work_night),
       cases(id, case_number, citizen_initials, citizen_age_range, complexity_level,
         weekly_hours, transport_needs, requires_evening, requires_weekend,
@@ -82,7 +82,7 @@ export default async function ProposalResponsePage({ params }: PageProps) {
       matchHighlights.push(`Taler ${matchedLanguages.join(', ')}`)
     }
 
-    if (caseRow.transport_needs === 'JA' && pro.can_transport_citizen && pro.has_drivers_license && pro.has_own_car) {
+    if (caseRow.transport_needs === 'JA' && pro.can_transport_citizen && pro.has_drivers_license && pro.drivers_license_admin_verified && pro.has_own_car) {
       matchHighlights.push('Kan transportere borgeren ved behov')
     }
 

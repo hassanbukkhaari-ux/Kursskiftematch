@@ -94,7 +94,7 @@ export async function runMatchForCase(
       id, experience_years, target_age_groups, max_complexity_level,
       capacity_hours_week, max_concurrent_cases, availability_status,
       gender, experience_with_genders, can_transport_citizen,
-      has_drivers_license, has_own_car, can_take_acute,
+      has_drivers_license, drivers_license_admin_verified, has_own_car, can_take_acute,
       can_work_evening, can_work_weekend, can_work_night
     `)
     .eq('status', 'ACTIVE')
@@ -245,6 +245,7 @@ export async function runMatchForCase(
         experience_with_genders: pro.experience_with_genders as ('BOYS' | 'GIRLS')[] | undefined,
         can_transport_citizen: pro.can_transport_citizen ?? undefined,
         has_drivers_license: pro.has_drivers_license ?? undefined,
+        drivers_license_admin_verified: pro.drivers_license_admin_verified ?? undefined,
         has_own_car: pro.has_own_car ?? undefined,
         can_take_acute: pro.can_take_acute ?? undefined,
         covered_municipality_ids: municipalityIdsByPro.get(pro.id) ?? undefined,

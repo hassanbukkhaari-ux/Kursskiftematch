@@ -20,7 +20,6 @@ const NAV_ITEMS = [
     children: [
       { label: 'Vores vision', href: '/vision' },
       { label: 'Vores metode', href: '/metode' },
-      { label: 'Foredrag', href: '/foredrag' },
     ],
   },
   {

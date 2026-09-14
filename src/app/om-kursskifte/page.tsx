@@ -6,7 +6,7 @@ import PublicFooter from '@/components/public/PublicFooter'
 export const metadata: Metadata = {
   title: 'Om Kursskifte | Kontaktpersonforløb i Nordjylland',
   description:
-    'Kursskifte er en nordjysk platform der forbinder kommuner med kvalitetssikrede fagpersoner til kontaktpersonforløb og socialfaglige indsatser. Vi varetager matching, dokumentation og opfølgning — så kommunen kan fokusere på borgeren.',
+    'Kursskifte er en nordjysk platform der forbinder kommuner med kvalitetssikrede fagpersoner til kontaktpersonforløb og socialfaglige indsatser. Vi varetager matching, dokumentation og opfølgning, så kommunen kan fokusere på borgeren.',
   alternates: { canonical: '/om-kursskifte' },
   openGraph: {
     title: 'Om Kursskifte | Kontaktpersonforløb i Nordjylland',
@@ -36,10 +36,10 @@ export default function OmKursskiftePage() {
             <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">Om os</span>
           </div>
           <h1 className="font-serif text-4xl sm:text-5xl text-[#1A1F1C] font-normal max-w-2xl mb-5 leading-tight tracking-tight">
-            Kursskifte — kontaktpersonforløb og socialfaglig indsats i Nordjylland
+            Kursskifte: kontaktpersonforløb og socialfaglig indsats i Nordjylland
           </h1>
           <p className="text-[17px] text-[#6B7569] leading-relaxed max-w-xl">
-            Kursskifte er ikke blot en hjemmeside — det er en fuldt administreret, kvalitetssikret platform til at finde, koordinere og dokumentere kontaktpersonforløb for borgere i mistrivsel.
+            Kursskifte er ikke blot en hjemmeside. Det er en fuldt administreret, kvalitetssikret platform til at finde, koordinere og dokumentere kontaktpersonforløb for borgere i mistrivsel.
           </p>
         </section>
 
@@ -59,14 +59,14 @@ export default function OmKursskiftePage() {
                   Vi hjælper kommuner i Nordjylland med at finde og koordinere kontaktpersonforløb for borgere i udsatte positioner. Vi betjener bl.a. Aalborg, Hjørring, Brønderslev og Frederikshavn Kommune.
                 </p>
                 <p className="text-sm text-[#6B7569] leading-relaxed">
-                  Alle fagpersoner i vores netværk er kvalitetssikrede. Vi verificerer dokumenter, certifikater og baggrund inden aktivering — og matcher kun på kompetencer og kapacitet.
+                  Alle fagpersoner i vores netværk er kvalitetssikrede. Vi verificerer dokumenter, certifikater og baggrund inden aktivering, og matcher kun på kompetencer og kapacitet.
                 </p>
               </div>
               <div className="grid grid-cols-1 gap-4">
                 {[
                   { title: 'Vi hjælper kommuner', body: 'Sikkert, overskueligt og uden at kommunen skal gennemse en åben database.' },
                   { title: 'Vi kvalitetssikrer fagpersoner', body: 'Dokumentation, certifikater og kompetencer verificeres manuelt.' },
-                  { title: 'Vi håndterer koordinationen', body: 'Takst, papirarbejde og forslag — Kursskifte klarer det.' },
+                  { title: 'Vi håndterer koordinationen', body: 'Takst, papirarbejde og forslag: Kursskifte klarer det.' },
                 ].map(c => (
                   <div key={c.title} className="bg-[#F6F3EE] rounded-2xl p-6">
                     <h3 className="font-semibold text-sm text-[#1A1F1C] mb-1.5">{c.title}</h3>
@@ -91,7 +91,7 @@ export default function OmKursskiftePage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
-              { label: 'Relationsbaseret', body: 'Vi tror på at den rigtige relation er afgørende. Matching er ikke tilfældig — det er fagligt begrundet.' },
+              { label: 'Relationsbaseret', body: 'Vi tror på at den rigtige relation er afgørende. Matching er ikke tilfældig, det er fagligt begrundet.' },
               { label: 'Fagligt funderet', body: 'Alle beslutninger i platformen er baseret på kompetencer, kapacitet og dokumenteret erfaring.' },
               { label: 'Trygt og sikkert', body: 'GDPR-compliant. Al persondata behandles sikkert og fortroligt i overensstemmelse med dansk og europæisk lovgivning.' },
             ].map(v => (
@@ -116,13 +116,13 @@ export default function OmKursskiftePage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
               <div>
                 <h2 className="font-serif text-3xl text-[#1A1F1C] font-normal mb-4">
-                  Grundlagt i Nordjylland — tæt på de kommuner vi betjener
+                  Grundlagt i Nordjylland, tæt på de kommuner vi betjener
                 </h2>
                 <p className="text-sm text-[#6B7569] leading-relaxed mb-4">
-                  Kursskifte er grundlagt af fagfolk med over 10 års samlet erfaring i det sociale arbejde. Vi ved hvad der kræves for at finde de rette kontaktpersoner til borgere i mistrivsel — og vi har bygget en platform der gør processen enkel, dokumenteret og fagligt forsvarlig.
+                  Kursskifte er grundlagt af fagfolk med over 10 års samlet erfaring i det sociale arbejde. Vi ved hvad der kræves for at finde de rette kontaktpersoner til borgere i mistrivsel, og vi har bygget en platform der gør processen enkel, dokumenteret og fagligt forsvarlig.
                 </p>
                 <p className="text-sm text-[#6B7569] leading-relaxed">
-                  Vi arbejder tæt med kommunale sagsbehandlere og fagpersoner i Nordjylland for at sikre at hvert match er begrundet — ikke tilfældigt.
+                  Vi arbejder tæt med kommunale sagsbehandlere og fagpersoner i Nordjylland for at sikre at hvert match er begrundet, ikke tilfældigt.
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -130,7 +130,7 @@ export default function OmKursskiftePage() {
                   { label: '10+ år', desc: 'Samlet erfaring i det sociale arbejde bag Kursskiftes grundlæggere.' },
                   { label: '§32 og §85', desc: 'Vi er specialiserede i kontaktpersonforløb under barnets lov og serviceloven.' },
                   { label: 'Invite-only netværk', desc: 'Alle fagpersoner i vores netværk er manuelt gennemgået og godkendt af Kursskifte.' },
-                  { label: 'Nordjylland', desc: 'Vi betjener kommuner i Nordjylland — Aalborg, Hjørring, Brønderslev og Frederikshavn.' },
+                  { label: 'Nordjylland', desc: 'Vi betjener kommuner i Nordjylland: Aalborg, Hjørring, Brønderslev og Frederikshavn.' },
                 ].map(item => (
                   <div key={item.label} className="bg-[#F6F3EE] rounded-2xl p-5">
                     <h3 className="font-semibold text-sm text-[#1A1F1C] mb-1.5">{item.label}</h3>

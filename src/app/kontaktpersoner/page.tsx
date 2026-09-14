@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Bliv kontaktperson | Kursskifte',
     description:
-      'Kursskifte søger fagpersoner til kontaktpersonforløb, støttekontaktpersonordninger og socialpædagogisk indsats i Nordjylland — Aalborg, Hjørring, Brønderslev og Frederikshavn.',
+      'Kursskifte søger fagpersoner til kontaktpersonforløb, støttekontaktpersonordninger og socialpædagogisk indsats i Nordjylland: Aalborg, Hjørring, Brønderslev og Frederikshavn.',
     url: '/kontaktpersoner',
   },
 }
@@ -51,10 +51,10 @@ export default function KontaktpersonerPage() {
             <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">For kontaktpersoner</span>
           </div>
           <h1 className="font-serif text-4xl sm:text-5xl text-[#1A1F1C] font-normal max-w-2xl mb-5 leading-tight tracking-tight">
-            Bliv kontaktperson — socialpædagogisk støtte til borgere i mistrivsel
+            Bliv kontaktperson: socialpædagogisk støtte til borgere i mistrivsel
           </h1>
           <p className="text-[17px] text-[#6B7569] leading-relaxed max-w-xl mb-8">
-            Vi søger fagpersoner, studerende på relevante uddannelser og ufaglærte med dokumenteret erfaring til kontaktpersonforløb, støttekontaktpersonordninger og socialpædagogiske indsatser. Din profil verificeres og du tilknyttes relevante forløb i Nordjylland — herunder Aalborg, Hjørring, Brønderslev og Frederikshavn.
+            Vi søger fagpersoner, studerende på relevante uddannelser og ufaglærte med dokumenteret erfaring til kontaktpersonforløb, støttekontaktpersonordninger og socialpædagogiske indsatser. Din profil verificeres og du tilknyttes relevante forløb i Nordjylland, herunder Aalborg, Hjørring, Brønderslev og Frederikshavn.
           </p>
           <a
             href="mailto:kontakt@kursskifte.dk"
@@ -161,7 +161,7 @@ export default function KontaktpersonerPage() {
             <div className="bg-[#1C3829] rounded-2xl p-8 sm:p-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
               <div>
                 <h2 className="font-serif text-2xl sm:text-3xl text-white font-normal mb-2">Klar til at sende en ansøgning?</h2>
-                <p className="text-sm text-white/65">Send os en e-mail — vi gennemgår din ansøgning og vender typisk tilbage inden for 3–5 arbejdsdage.</p>
+                <p className="text-sm text-white/65">Send os en e-mail, og vi gennemgår din ansøgning og vender typisk tilbage inden for 3–5 arbejdsdage.</p>
               </div>
               <a
                 href="mailto:kontakt@kursskifte.dk"

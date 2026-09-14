@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Viden om kontaktpersonforløb | Kursskifte Indsigt',
     description:
-      'Faglige artikler og vejledninger om kontaktpersonforløb, §32 i barnets lov og §85, socialpædagogisk støtte og matchning — fra Kursskifte.',
+      'Faglige artikler og vejledninger om kontaktpersonforløb, §32 i barnets lov og §85, socialpædagogisk støtte og matchning fra Kursskifte.',
     url: '/indsigt',
   },
 }
@@ -96,7 +96,7 @@ export default async function IndsightPage({
           </h1>
           <p className="text-[17px] text-[#6B7569] leading-relaxed max-w-xl">
             {activeCategory?.description ??
-              'Faglige artikler og vejledninger om kontaktpersonforløb, §32 i barnets lov og §85, socialpædagogisk støtte og matchning — skrevet til kommuner, socialrådgivere og fagpersoner.'}
+              'Faglige artikler og vejledninger om kontaktpersonforløb, §32 i barnets lov og §85, socialpædagogisk støtte og matchning, skrevet til kommuner, socialrådgivere og fagpersoner.'}
           </p>
         </section>
 

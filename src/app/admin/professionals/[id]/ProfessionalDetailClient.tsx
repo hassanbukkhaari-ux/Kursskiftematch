@@ -596,8 +596,8 @@ function DrivingLicenseToggle({
       >
         <span
           className={[
-            'absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform',
-            verified ? 'translate-x-0.5' : 'translate-x-[18px]',
+            'absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform',
+            verified ? 'translate-x-5' : 'translate-x-1',
           ].join(' ')}
         />
       </button>

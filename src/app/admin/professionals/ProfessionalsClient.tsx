@@ -773,7 +773,11 @@ function DeletePermanentlySection({ professionalId, onDeleted }: { professionalI
     try {
       const res = await fetch(`/api/admin/professionals/${professionalId}/delete-permanently`, { method: 'DELETE' })
       const j = await res.json().catch(() => ({}))
-      if (!res.ok) { setError((j as { error?: string }).error ?? 'Noget gik galt'); return }
+      if (!res.ok) {
+        const msg = (j as { error?: unknown }).error
+        setError(typeof msg === 'string' && msg.trim() ? msg : `Noget gik galt (fejl ${res.status}) — prøv igen`)
+        return
+      }
       onDeleted()
       router.refresh()
     } catch { setError('Netværksfejl — prøv igen') }

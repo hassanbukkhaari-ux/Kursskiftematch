@@ -585,21 +585,26 @@ function DrivingLicenseToggle({
   return (
     <div className="flex items-center gap-3">
       <button
+        type="button"
         onClick={toggle}
         disabled={acting || pending}
         role="switch"
         aria-checked={verified}
-        className={[
-          'relative w-10 h-6 rounded-full transition-colors shrink-0 disabled:opacity-50',
-          verified ? 'bg-[#1C3829]' : 'bg-[#E0DAD0]',
-        ].join(' ')}
+        className="shrink-0 disabled:opacity-50"
       >
-        <span
+        <div
           className={[
-            'absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform',
-            verified ? 'translate-x-5' : 'translate-x-1',
+            'w-10 h-6 rounded-full transition-colors relative',
+            verified ? 'bg-[#1C3829]' : 'bg-[#E0DAD0]',
           ].join(' ')}
-        />
+        >
+          <div
+            className={[
+              'absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform',
+              verified ? 'translate-x-5' : 'translate-x-1',
+            ].join(' ')}
+          />
+        </div>
       </button>
       <span className="text-sm text-[#1A1F1C]">
         {verified ? 'Aktivt i matching' : 'Ikke aktivt i matching'}

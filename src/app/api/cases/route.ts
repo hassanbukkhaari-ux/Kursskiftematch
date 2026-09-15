@@ -5,10 +5,20 @@ import { logAuditEvent } from '@/lib/audit'
 import { sendNotification, adminEmailBody } from '@/lib/notifications/service'
 import { syncProblemAreas, syncGoals, syncSpecialWishes } from '@/lib/cases/case-tags'
 
+function calculateAge(dob: string): number | null {
+  const birth = new Date(dob)
+  if (isNaN(birth.getTime())) return null
+  const today = new Date()
+  let age = today.getFullYear() - birth.getFullYear()
+  const m = today.getMonth() - birth.getMonth()
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
+  return age
+}
+
 const CreateCaseSchema = z.object({
   municipality_id: z.string().uuid(),
   citizen_initials: z.string().length(2),
-  citizen_age_range: z.enum(['0-5', '6-12', '13-18', '18+']),
+  citizen_age_range: z.enum(['6-12', '13-18', '18+']),
   citizen_gender: z.enum(['MALE', 'FEMALE', 'OTHER']).optional(),
   citizen_notes: z.string().optional(),
   weekly_hours: z.number().min(0).default(0),
@@ -86,6 +96,11 @@ export async function POST(request: NextRequest) {
 
     const parsed = CreateCaseSchema.safeParse(body)
     if (!parsed.success) return badRequest(parsed.error.issues.map(e => e.message).join(', '))
+
+    if (parsed.data.citizen_dob) {
+      const age = calculateAge(parsed.data.citizen_dob)
+      if (age !== null && age < 8) return badRequest('Kursskifte tager ikke imod borgere under 8 år')
+    }
 
     const { inquiry_id, problem_area_codes, goal_codes, special_wish_codes, intake_contact_email, ...rest } = parsed.data
     const caseData = {

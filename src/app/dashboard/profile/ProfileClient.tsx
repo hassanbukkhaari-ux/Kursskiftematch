@@ -4,13 +4,14 @@ import React, { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
-import type { DocumentRow, CertificateRow } from './page'
+import type { DocumentRow, CertificateRow, AvailabilityPeriod } from './page'
 
 // ── Types ────────────────────────────────────────────────────────────────
 
 type LT = { id: string; name: string }
 
 type Pro = {
+  id?: string
   job_title?: string | null; phone?: string | null
   address?: string | null; postal_code?: string | null; city?: string | null
   region?: string | null; profile_image_url?: string | null
@@ -38,6 +39,7 @@ interface Props {
   selectedLanguages: string[]; selectedGeography: string[]
   documents: DocumentRow[]; certificates: CertificateRow[]
   consents: string[]
+  availabilityPeriods: AvailabilityPeriod[]
 }
 
 // ── Shared hook ──────────────────────────────────────────────────────────
@@ -1025,6 +1027,146 @@ function S12Transport({ pro }: { pro: Pro | null }) {
   )
 }
 
+// ── Section: Ferie og pauser ─────────────────────────────────────────────
+
+const PERIOD_TYPE_LABEL: Record<string, string> = { VACATION: 'Ferie', PAUSE: 'Pause' }
+
+function formatDate(iso: string) {
+  return new Intl.DateTimeFormat('da-DK', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(iso))
+}
+
+function isActivePeriod(period: AvailabilityPeriod): boolean {
+  const today = new Date().toISOString().slice(0, 10)
+  return period.start_date <= today && (period.end_date == null || period.end_date >= today)
+}
+
+function S13VacationPeriods({ professionalId, initialPeriods }: { professionalId: string; initialPeriods: AvailabilityPeriod[] }) {
+  const router = useRouter()
+  const [, startT] = useTransition()
+  const [periods, setPeriods] = useState<AvailabilityPeriod[]>(initialPeriods)
+  const [adding, setAdding] = useState(false)
+  const [periodType, setPeriodType] = useState<'VACATION' | 'PAUSE'>('VACATION')
+  const [start, setStart] = useState('')
+  const [end, setEnd] = useState('')
+  const [note, setNote] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  const activePeriods = periods.filter(isActivePeriod)
+
+  async function addPeriod() {
+    if (!start) { setError('Angiv startdato'); return }
+    if (end && end < start) { setError('Slutdato kan ikke være før startdato'); return }
+    setSaving(true); setError(null)
+    try {
+      const res = await fetch(`/api/professionals/${professionalId}/availability-periods`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ period_type: periodType, start_date: start, end_date: end || null, note: note.trim() || null }),
+      })
+      if (!res.ok) { const j = await res.json().catch(() => ({})); setError((j as { error?: string }).error ?? 'Fejl'); return }
+      const data = await res.json()
+      setPeriods(prev => [...prev, data].sort((a, b) => a.start_date.localeCompare(b.start_date)))
+      setAdding(false); setStart(''); setEnd(''); setNote('')
+      startT(() => router.refresh())
+    } catch { setError('Netværksfejl') }
+    finally { setSaving(false) }
+  }
+
+  async function deletePeriod(id: string) {
+    setDeletingId(id)
+    try {
+      const res = await fetch(`/api/professionals/${professionalId}/availability-periods/${id}`, { method: 'DELETE' })
+      if (res.ok) {
+        setPeriods(prev => prev.filter(p => p.id !== id))
+        startT(() => router.refresh())
+      }
+    } catch { /* silent */ }
+    finally { setDeletingId(null) }
+  }
+
+  return (
+    <div className="space-y-4 mt-4">
+      <p className="text-xs text-[#6B7569] leading-relaxed">
+        Meld ferie eller pauser her. I den periode udelukkes du automatisk fra ny matching, og Kursskifte kan se det med det samme.
+      </p>
+
+      {activePeriods.length > 0 && (
+        <div className="px-3 py-2 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 font-medium">
+          Aktiv nu: {activePeriods.map(p =>
+            `${PERIOD_TYPE_LABEL[p.period_type]} (${formatDate(p.start_date)}${p.end_date ? ` – ${formatDate(p.end_date)}` : ' →'})`
+          ).join(', ')} — du er ekskluderet fra matching
+        </div>
+      )}
+
+      {periods.length > 0 && (
+        <div className="space-y-2">
+          {periods.map(p => (
+            <div key={p.id} className="flex items-center justify-between gap-3 px-3 py-2 bg-[#F6F3EE] rounded-xl">
+              <div className="text-sm text-[#1A1F1C]">
+                <span className="font-semibold">{PERIOD_TYPE_LABEL[p.period_type]}</span>{' '}
+                {formatDate(p.start_date)}{p.end_date ? ` – ${formatDate(p.end_date)}` : ' → (uden slutdato)'}
+                {p.note && <span className="text-[#6B7569]"> — {p.note}</span>}
+              </div>
+              <button
+                onClick={() => deletePeriod(p.id)}
+                disabled={deletingId === p.id}
+                className="text-xs font-semibold text-red-600 hover:underline disabled:opacity-50 shrink-0"
+              >
+                {deletingId === p.id ? 'Fjerner…' : 'Fjern'}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {!adding ? (
+        <button
+          onClick={() => setAdding(true)}
+          className="text-xs font-semibold text-[#1C3829] hover:underline"
+        >
+          + Tilføj ferie eller pause
+        </button>
+      ) : (
+        <div className="space-y-3 p-3 border border-[#E0DAD0] rounded-xl">
+          <div className="flex gap-2">
+            {(['VACATION', 'PAUSE'] as const).map(t => (
+              <button
+                key={t} type="button" onClick={() => setPeriodType(t)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                  periodType === t ? 'bg-[#1C3829] text-white border-[#1C3829]' : 'bg-white text-[#6B7569] border-[#E0DAD0]'
+                }`}
+              >
+                {PERIOD_TYPE_LABEL[t]}
+              </button>
+            ))}
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Fra"><Input type="date" value={start} onChange={setStart} /></Field>
+            <Field label="Til (valgfri)"><Input type="date" value={end} onChange={setEnd} /></Field>
+          </div>
+          <Field label="Note (valgfri)"><Input value={note} onChange={setNote} placeholder="F.eks. sommerferie" /></Field>
+          {error && <p className="text-xs text-red-600">{error}</p>}
+          <div className="flex gap-2">
+            <button
+              onClick={addPeriod} disabled={saving}
+              className="h-8 px-4 bg-[#1C3829] text-white text-xs font-semibold rounded-lg hover:bg-[#2D5840] transition-colors disabled:opacity-50"
+            >
+              {saving ? 'Gemmer…' : 'Gem'}
+            </button>
+            <button
+              onClick={() => { setAdding(false); setError(null) }}
+              className="h-8 px-4 border border-[#E0DAD0] text-xs font-semibold rounded-lg hover:bg-[#F6F3EE] transition-colors"
+            >
+              Annuller
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Section: Samtykker ───────────────────────────────────────────────────
 
 const CONSENT_ITEMS = [
@@ -1189,6 +1331,11 @@ export function ProfileClient(props: Props) {
       id: 'availability', title: 'Tilgængelighed',
       complete: !!pro?.max_hours_per_week,
       content: <S10Availability pro={pro} />,
+    },
+    {
+      id: 'vacation', title: 'Ferie og pauser',
+      complete: true,
+      content: <S13VacationPeriods professionalId={pro?.id ?? ''} initialPeriods={props.availabilityPeriods} />,
     },
     {
       id: 'geography', title: 'Geografi',

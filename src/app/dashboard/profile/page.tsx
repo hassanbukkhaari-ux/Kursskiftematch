@@ -23,6 +23,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
     certsRes,
     consentsRes,
     munisRes,
+    periodsRes,
   ] = await Promise.all([
     db.from('profiles').select('full_name, email').eq('id', user.id).single(),
     db.from('professionals').select('*').eq('id', user.id).maybeSingle(),
@@ -64,6 +65,11 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
       .eq('professional_id', user.id),
 
     db.from('municipalities').select('id, name').eq('status', 'ACTIVE').order('name'),
+
+    dba.from('professional_availability_periods')
+      .select('id, period_type, start_date, end_date, note, created_at')
+      .eq('professional_id', user.id)
+      .order('start_date', { ascending: true }),
   ])
 
   const [profTypes, compTypes, methTypes, tgTypes, wtTypes, langTypes, certTypes] = lookupsRes
@@ -112,6 +118,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
           documents={(docsRes.data ?? []) as DocumentRow[]}
           certificates={(certsRes.data ?? []) as CertificateRow[]}
           consents={(consentsRes.data ?? []).map((r: { consent_type: string }) => r.consent_type)}
+          availabilityPeriods={(periodsRes.data ?? []) as AvailabilityPeriod[]}
         />
       </ContentContainer>
     </div>
@@ -126,6 +133,15 @@ export type DocumentRow = {
   uploaded_at: string | null
   verified_at: string | null
   expiry_date: string | null
+}
+
+export type AvailabilityPeriod = {
+  id: string
+  period_type: 'VACATION' | 'PAUSE'
+  start_date: string
+  end_date: string | null
+  note: string | null
+  created_at: string
 }
 
 export type CertificateRow = {

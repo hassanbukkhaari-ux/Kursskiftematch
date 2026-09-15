@@ -106,6 +106,27 @@ export async function runMatchForCase(
 
   const proIds = (professionals ?? []).map(p => p.id)
 
+  // Ferie/pause-perioder (professional_availability_periods) — a vacation
+  // or pause a professional logs on their own profile must actually keep
+  // them out of new matches, not just show an "excluded from matching"
+  // banner on their admin page that nothing enforced. Fetched as raw rows,
+  // not filtered in SQL, since "active today" depends on today's date and
+  // an open-ended end_date (NULL = ongoing).
+  const today = new Date().toISOString().slice(0, 10)
+  const { data: periodRows } = proIds.length > 0
+    ? await (db as any)
+        .from('professional_availability_periods')
+        .select('professional_id, period_type, start_date, end_date')
+        .in('professional_id', proIds)
+        .lte('start_date', today)
+    : { data: [] }
+  const activePeriodByPro = new Map<string, { period_type: string; end_date: string | null }>()
+  for (const row of periodRows ?? []) {
+    if (row.end_date == null || row.end_date >= today) {
+      activePeriodByPro.set(row.professional_id, { period_type: row.period_type, end_date: row.end_date })
+    }
+  }
+
   // Each candidate's stated target-group experience (e.g. a teacher who has
   // selected "Skolevægring" on their profile), fetched in one batched query.
   const { data: targetGroupRows } = proIds.length > 0
@@ -221,12 +242,18 @@ export async function runMatchForCase(
     const availabilityOk = pro.availability_status !== 'UNAVAILABLE'
     const caseLoadOk = currentAssignments < (pro.max_concurrent_cases ?? 0)
     const capacityOk = currentHoursAssigned < (pro.capacity_hours_week ?? 0)
-    const eligible = availabilityOk && caseLoadOk && capacityOk
+    const activePeriod = activePeriodByPro.get(pro.id)
+    const noActivePeriod = !activePeriod
+    const eligible = availabilityOk && caseLoadOk && capacityOk && noActivePeriod
 
     const reasons: string[] = []
     if (!availabilityOk) reasons.push('Ikke tilgængelig')
     if (!caseLoadOk) reasons.push(`Nået maks. antal sager (${currentAssignments}/${pro.max_concurrent_cases ?? 0})`)
     if (!capacityOk) reasons.push(`Ingen ledig kapacitet (${currentHoursAssigned}/${pro.capacity_hours_week ?? 0} t)`)
+    if (activePeriod) {
+      const typeLabel = activePeriod.period_type === 'VACATION' ? 'Ferie' : 'Pause'
+      reasons.push(activePeriod.end_date ? `${typeLabel} til ${activePeriod.end_date}` : `${typeLabel} (uden slutdato)`)
+    }
 
     const scores = scoreCandidate(
       {

@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Email OTP / token_hash flow — password reset, magic link
+  // Email OTP / token_hash flow — password reset, magic link, invite
   if (tokenHash && type) {
     const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type })
     if (!error) {
@@ -29,5 +29,10 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.redirect(new URL('/login?error=auth_callback_failed', origin))
+  // Link was expired, already used, or malformed — send them somewhere that
+  // explains it and offers a way forward, instead of a bare login form with
+  // no context (which used to leave an invited contact person guessing they
+  // needed "forgot password" with no indication why).
+  const reason = type === 'invite' ? 'invite_link_failed' : 'auth_callback_failed'
+  return NextResponse.redirect(new URL(`/login?error=${reason}`, origin))
 }

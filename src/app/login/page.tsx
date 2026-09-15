@@ -15,6 +15,7 @@ function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const passwordUpdated = searchParams.get('message') === 'password_updated'
+  const authError = searchParams.get('error')
   const supabase = createClient()
 
   async function handleLogin(e: React.FormEvent) {
@@ -65,6 +66,35 @@ function LoginForm() {
               <polyline points="20 6 9 17 4 12" />
             </svg>
             Adgangskode opdateret. Log ind med din nye adgangskode.
+          </div>
+        )}
+
+        {authError === 'invite_link_failed' && (
+          <div className="flex items-start gap-2 p-3 bg-[#FFFBEB] border border-[#FDE68A] rounded-xl text-sm text-[#92400E] mb-5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="shrink-0 mt-0.5">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            <span>
+              Dit invitationslink er udløbet eller allerede brugt. Du har endnu ikke en adgangskode —
+              brug{' '}
+              <Link href="/forgot-password" className="underline font-medium">
+                Glemt adgangskode
+              </Link>{' '}
+              med din inviterede e-mailadresse for at oprette en.
+            </span>
+          </div>
+        )}
+
+        {authError === 'auth_callback_failed' && (
+          <div className="flex items-center gap-2 p-3 bg-[#FFFBEB] border border-[#FDE68A] rounded-xl text-sm text-[#92400E] mb-5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="shrink-0">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            Linket er udløbet eller allerede brugt. Prøv igen, eller brug &quot;Glemt adgangskode&quot;.
           </div>
         )}
 

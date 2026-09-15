@@ -13,7 +13,7 @@ import { calculateComplexityLevel } from '@/lib/matching/algorithm'
 import type { AdminCase, MunicipalityOption, LookupOption } from './page'
 
 const STATUS_LABEL: Record<string, string> = {
-  OPEN: 'Åben', MATCHED: 'Matchet', PROPOSED: 'Forslag sendt', ACTIVE: 'Aktiv', COMPLETED: 'Afsluttet', ARCHIVED: 'Arkiveret',
+  OPEN: 'Åben', MATCHED: 'Afventer fagperson', PROPOSED: 'Forslag sendt til kommune', ACTIVE: 'Aktiv', COMPLETED: 'Afsluttet', ARCHIVED: 'Arkiveret',
 }
 
 const STATUS_BADGE: Record<string, 'amber' | 'brand' | 'green' | 'default'> = {

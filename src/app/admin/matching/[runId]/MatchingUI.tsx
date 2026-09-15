@@ -105,9 +105,9 @@ export function MatchingUI({ candidates, runId, caseId, runStatus, caseData, sag
             <polyline points="22 4 12 14.01 9 11.01" />
           </svg>
         </div>
-        <h3 className="font-serif text-xl font-semibold text-[#1A1F1C] mb-1">Forslag sendt til kommunen</h3>
+        <h3 className="font-serif text-xl font-semibold text-[#1A1F1C] mb-1">Match tilbudt {assignedName}</h3>
         <p className="text-[#6B7569] text-sm">
-          {assignedName} er foreslået{sagsbehandlerEmail ? <> — besked sendt til <strong className="text-[#1A1F1C]">{sagsbehandlerEmail}</strong></> : null}. Sagen bliver aktiv når kommunen godkender.
+          {assignedName} har fået besked og skal bekræfte tilgængelighed, før forslaget sendes videre til kommunen{sagsbehandlerEmail ? <> (<strong className="text-[#1A1F1C]">{sagsbehandlerEmail}</strong>)</> : null}.
         </p>
         <a
           href={`/admin/cases/${caseId}`}
@@ -284,23 +284,23 @@ export function MatchingUI({ candidates, runId, caseId, runStatus, caseData, sag
                 <path d="M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
             </div>
-            <h3 className="font-serif text-lg font-semibold text-[#1A1F1C] mb-1">Bekræft forslag til kommunen</h3>
+            <h3 className="font-serif text-lg font-semibold text-[#1A1F1C] mb-1">Bekræft match</h3>
             {confirmCandidate.eligible === false && (
               <div className="mb-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                <span className="font-semibold">Ikke kvalificeret automatisk:</span> {confirmCandidate.ineligibility_reason ?? 'ukendt årsag'}. Du foreslår alligevel, som et bevidst valg.
+                <span className="font-semibold">Ikke kvalificeret automatisk:</span> {confirmCandidate.ineligibility_reason ?? 'ukendt årsag'}. Du tilbyder alligevel, som et bevidst valg.
               </div>
             )}
             {!sagsbehandlerEmail ? (
               <div className="mb-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                <span className="font-semibold">Ingen e-mail registreret for kommunens sagsbehandler.</span> Forslaget kan ikke sendes før du har tilføjet en e-mail på sagen (Rediger sag) eller kommunen.
+                <span className="font-semibold">Ingen e-mail registreret for kommunens sagsbehandler.</span> Matchet kan ikke tilbydes før du har tilføjet en e-mail på sagen (Rediger sag) eller kommunen — den skal være klar, når fagpersonen bekræfter.
               </div>
             ) : (
               <p className="text-sm text-[#6B7569] mb-6 leading-relaxed">
-                Er du sikker på, at du vil foreslå{' '}
+                Er du sikker på, at du vil tilbyde matchet til{' '}
                 <strong className="text-[#1A1F1C]">
                   {confirmCandidate.professionals?.profiles?.full_name ?? 'denne kontaktperson'}
-                </strong>{' '}
-                til sagen? Kommunen får besked på <strong className="text-[#1A1F1C]">{sagsbehandlerEmail}</strong> og skal godkende, før sagen bliver aktiv.
+                </strong>
+                ? De får besked og skal bekræfte tilgængelighed, før forslaget sendes til kommunen på <strong className="text-[#1A1F1C]">{sagsbehandlerEmail}</strong>.
               </p>
             )}
             <div className="flex gap-3">
@@ -318,7 +318,7 @@ export function MatchingUI({ candidates, runId, caseId, runStatus, caseData, sag
                 disabled={!sagsbehandlerEmail}
                 onClick={() => executeAssign(confirmCandidate)}
               >
-                Foreslå kommunen
+                Tilbyd matchet
               </Button>
             </div>
           </div>

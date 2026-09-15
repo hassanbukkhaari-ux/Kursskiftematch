@@ -10,18 +10,16 @@ const AssignSchema = z.object({
   notes: z.string().optional(),
 })
 
-const PROFESSION_LABEL: Record<string, string> = {
-  TEACHER: 'en lærer', PEDAGOGUE: 'en pædagog', NURSE: 'en sygeplejerske',
-  PSYCHOLOGIST: 'en psykolog', SOCIAL_WORKER: 'en socialrådgiver',
-  COUNSELOR: 'en vejleder', OTHER: 'en kvalificeret fagperson',
-}
-
-// POST /api/match-runs/:id/assign — human decision step (WF-003). Sends a
-// proposal to the municipality instead of activating the case immediately:
-// CLAUDE.md requires the municipality to be notified when a candidate is
-// found and to remain an active actor in the case, and the schema for this
-// (case_proposals.response_token) has existed since 20260701120000 without
-// any application code ever using it. The case only becomes ACTIVE once the
+// POST /api/match-runs/:id/assign — human decision step (WF-003). Offers the
+// match to the professional first, rather than sending a proposal straight
+// to the municipality: a professional's profile can be stale (capacity,
+// availability, a vacation logged after they were last scored), and finding
+// out only after the municipality has already approved a candidate is a bad
+// look for everyone. The professional confirms via
+// /api/case-proposals/[id]/respond — only on ACCEPT does the proposal
+// actually go to the municipality, same as before (CLAUDE.md requires the
+// municipality to be notified when a candidate is found and to remain an
+// active actor in the case). The case only becomes ACTIVE once the
 // municipality accepts via their token link (see
 // /api/municipality/proposals/[token]/respond).
 export async function POST(
@@ -106,8 +104,10 @@ export async function POST(
     }
 
     // Supersede any proposal still awaiting a response for this case —
-    // there should only ever be one live token per case.
-    await dba.from('case_proposals').update({ status: 'WITHDRAWN' }).eq('case_id', run.case_id).eq('status', 'SENT')
+    // there should only ever be one live offer/token per case, whether it's
+    // still waiting on the professional (DRAFT) or already with the
+    // municipality (SENT).
+    await dba.from('case_proposals').update({ status: 'WITHDRAWN' }).eq('case_id', run.case_id).in('status', ['DRAFT', 'SENT'])
 
     const now = new Date().toISOString()
     const { data: proposal, error: proposalError } = await dba
@@ -116,19 +116,18 @@ export async function POST(
         case_id: run.case_id,
         professional_id: parsed.data.professional_id,
         proposal_note: parsed.data.notes || null,
-        status: 'SENT',
+        status: 'DRAFT',
         created_by: userId,
-        sent_at: now,
       })
       .select()
       .single()
 
     if (proposalError || !proposal) return serverError(proposalError?.message || 'Failed to create proposal')
 
-    await dba.from('cases').update({ status: 'PROPOSED', updated_at: now }).eq('id', run.case_id)
+    await dba.from('cases').update({ status: 'MATCHED', updated_at: now }).eq('id', run.case_id)
 
     await logAuditEvent(db, {
-      event_type: 'PROPOSAL_SENT',
+      event_type: 'MATCH_OFFERED_TO_PROFESSIONAL',
       actor_id: userId,
       resource_type: 'case_proposals',
       resource_id: proposal.id,
@@ -141,38 +140,20 @@ export async function POST(
       },
     })
 
-    const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://kursskifte.dk'
-
-    // GDPR: never the professional's name to the municipality, only their role
-    // — and only the citizen's initials + age range.
-    const roleLabel = PROFESSION_LABEL[pro.profession] ?? PROFESSION_LABEL.OTHER
-    await sendNotification({
-      db,
-      notification_type: 'PROPOSAL_SENT',
-      related_entity_type: 'case_proposals',
-      related_entity_id: proposal.id,
-      recipient_email: sagsbehandlerEmail,
-      subject: `Kursskifte: Forslag til kontaktperson — sag ${caseRow.case_number ?? ''}`,
-      body: [
-        `Kursskifte har fundet ${roleLabel} til sagen for borger ${caseRow.citizen_initials} (${caseRow.citizen_age_range}).`,
-        '',
-        `Se forslaget og godkend eller afvis her:`,
-        `${base}/municipality/proposals/${proposal.response_token}`,
-      ].join('\n'),
-    })
-
-    // Let the professional know they've been proposed — not yet assigned.
+    // Ask the professional to confirm availability before the municipality
+    // ever hears about this match — sending the actual proposal happens in
+    // /api/case-proposals/[id]/respond, only once they accept.
     const { data: profile } = await db.from('profiles').select('email').eq('id', parsed.data.professional_id).single()
     if (profile?.email) {
       await sendNotification({
         db,
-        notification_type: 'PROPOSAL_SENT',
+        notification_type: 'MATCH_OFFERED',
         related_entity_type: 'case_proposals',
         related_entity_id: proposal.id,
         recipient_profile_id: parsed.data.professional_id,
         recipient_email: profile.email,
-        subject: 'Du er foreslået til en sag — Kursskifte',
-        body: `Du er foreslået som kontaktperson til en sag. Kommunen skal godkende forslaget, før sagen bliver aktiv — du hører fra os igen når det sker.`,
+        subject: 'Vi har et match — er du ledig? — Kursskifte',
+        body: `Vi har fundet en sag der matcher din profil. Log ind og bekræft om du er ledig til opgaven, så sender vi den videre til kommunen.`,
       })
     }
 

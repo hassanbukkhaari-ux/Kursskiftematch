@@ -1694,7 +1694,7 @@ export type DocumentStatus =
 export type CaseStatus = 'OPEN' | 'MATCHED' | 'PROPOSED' | 'ACTIVE' | 'COMPLETED' | 'ARCHIVED'
 export type CaseUrgency = 'NORMAL' | 'HURTIG' | 'AKUT'
 
-export type ProposalStatus = 'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'WITHDRAWN' | 'CHANGES_REQUESTED'
+export type ProposalStatus = 'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'WITHDRAWN' | 'CHANGES_REQUESTED' | 'PROFESSIONAL_DECLINED'
 
 export type AgeRange = '0-5' | '6-12' | '13-18' | '18+'
 
@@ -1756,6 +1756,8 @@ export type NotificationType =
   | 'PROFESSIONAL_ACTIVATED'
   | 'HANDOVER_COMPLETED'
   | 'PROFESSIONAL_AVAILABILITY_PERIOD_ADDED'
+  | 'MATCH_OFFERED'
+  | 'MATCH_OFFER_DECLINED'
 
 // ================================================================
 // Convenience row types

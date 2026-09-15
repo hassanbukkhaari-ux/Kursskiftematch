@@ -52,8 +52,8 @@ export default async function MatchRunPage({ params }: PageProps) {
     .single()
 
   // Resolved with the same precedence /api/match-runs/[id]/assign enforces —
-  // shown to admin before they send, instead of only surfacing as an error
-  // after clicking "Foreslå kommunen".
+  // shown to admin before they offer the match, instead of only surfacing
+  // as an error after clicking "Tilbyd matchet".
   const { data: muni } = caseData
     ? await dba.from('municipalities').select('sagsbehandler_email').eq('id', caseData.municipality_id).single()
     : { data: null }

@@ -3,6 +3,7 @@ import { PageHeader, ContentContainer, StatCard, SectionHeader } from '@/compone
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
+import { MatchOfferSection } from './MatchOfferSection'
 
 export default async function DashboardPage() {
   const db = await createClient()
@@ -29,7 +30,7 @@ export default async function DashboardPage() {
   const { createServiceClient } = await import('@/lib/supabase/server')
   const svc = createServiceClient() as any
 
-  const [casesRes, allActiveCasesRes, logsRes, proRes, weeklyHoursRes, monthlyHoursRes, pendingReportsRes] = await Promise.all([
+  const [casesRes, allActiveCasesRes, logsRes, proRes, weeklyHoursRes, monthlyHoursRes, pendingReportsRes, matchOffersRes] = await Promise.all([
     db.from('v_cases_with_professional')
       .select('id, citizen_initials, status, weekly_hours', { count: 'exact' })
       .eq('professional_id', userId)
@@ -68,6 +69,14 @@ export default async function DashboardPage() {
       .in('status', ['PENDING', 'ACKNOWLEDGED'])
       .order('deadline', { ascending: true })
       .limit(5),
+    // Matches awaiting this professional's confirmation before Kursskifte
+    // sends the proposal to the municipality — see
+    // /api/match-runs/[id]/assign and /api/case-proposals/[id]/respond.
+    db.from('case_proposals')
+      .select('id, created_at, cases(case_number, citizen_initials, citizen_age_range, weekly_hours)')
+      .eq('professional_id', userId)
+      .eq('status', 'DRAFT')
+      .order('created_at', { ascending: false }),
   ])
 
   const activeCases = casesRes.data ?? []
@@ -102,6 +111,14 @@ export default async function DashboardPage() {
   const proStatusDisplay = proStatusLabel[proStatusRaw] ?? proStatusRaw
   const proStatusColorValue = proStatusColor[proStatusRaw] ?? 'green'
 
+  const matchOffers = ((matchOffersRes.data ?? []) as any[]).map(o => ({
+    id: o.id as string,
+    caseNumber: o.cases?.case_number as string | null,
+    citizenInitials: o.cases?.citizen_initials as string,
+    citizenAgeRange: o.cases?.citizen_age_range as string,
+    weeklyHours: o.cases?.weekly_hours as number | null,
+  }))
+
   return (
     <div>
         <PageHeader
@@ -110,6 +127,8 @@ export default async function DashboardPage() {
           subtitle="Kursskifte — din platform"
         />
         <ContentContainer>
+          {matchOffers.length > 0 && <MatchOfferSection offers={matchOffers} />}
+
           {/* Stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
             <StatCard label="Aktive sager" value={totalCases} color="brand" />

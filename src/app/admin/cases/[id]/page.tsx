@@ -14,7 +14,7 @@ import { ProposalAdminActionsClient } from './ProposalAdminActionsClient'
 import type { HandoverReason, HandoverStatus } from '@/types/database'
 
 const STATUS_LABEL: Record<string, string> = {
-  OPEN: 'Åben', MATCHED: 'Matchet', PROPOSED: 'Forslag sendt', ACTIVE: 'Aktiv', COMPLETED: 'Afsluttet', ARCHIVED: 'Arkiveret',
+  OPEN: 'Åben', MATCHED: 'Afventer fagperson', PROPOSED: 'Forslag sendt til kommune', ACTIVE: 'Aktiv', COMPLETED: 'Afsluttet', ARCHIVED: 'Arkiveret',
 }
 const STATUS_BADGE: Record<string, 'amber' | 'brand' | 'green' | 'default'> = {
   OPEN: 'amber', MATCHED: 'brand', PROPOSED: 'amber', ACTIVE: 'green', COMPLETED: 'default', ARCHIVED: 'default',
@@ -78,7 +78,7 @@ interface HandoverRow {
 
 interface ProposalRow {
   id: string
-  status: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'WITHDRAWN' | 'CHANGES_REQUESTED'
+  status: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'WITHDRAWN' | 'CHANGES_REQUESTED' | 'PROFESSIONAL_DECLINED'
   sent_at: string | null
   responded_at: string | null
   municipality_response_note: string | null
@@ -215,12 +215,14 @@ export default async function AdminCasePage({ params }: PageProps) {
   }))
 
   const PROPOSAL_STATUS_LABEL: Record<string, string> = {
-    DRAFT: 'Kladde', SENT: 'Afventer kommunen', ACCEPTED: 'Accepteret',
+    DRAFT: 'Afventer fagperson', SENT: 'Afventer kommunen', ACCEPTED: 'Accepteret',
     DECLINED: 'Afvist', WITHDRAWN: 'Trukket tilbage', CHANGES_REQUESTED: 'Bad om ændring',
+    PROFESSIONAL_DECLINED: 'Fagperson afslog',
   }
   const PROPOSAL_STATUS_BADGE: Record<string, 'amber' | 'green' | 'red' | 'default'> = {
-    DRAFT: 'default', SENT: 'amber', ACCEPTED: 'green',
+    DRAFT: 'amber', SENT: 'amber', ACCEPTED: 'green',
     DECLINED: 'red', WITHDRAWN: 'default', CHANGES_REQUESTED: 'amber',
+    PROFESSIONAL_DECLINED: 'red',
   }
 
   function fmt(iso: string) {

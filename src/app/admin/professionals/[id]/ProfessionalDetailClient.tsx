@@ -926,31 +926,50 @@ function EditProfilePanel({
 
 function DeletePanel({ professionalId }: { professionalId: string }) {
   const router = useRouter()
-  const [confirming, setConfirming] = useState(false)
-  const [deleting, setDeleting] = useState(false)
+  const [mode, setMode] = useState<'archive' | 'delete' | null>(null)
+  const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   async function archive() {
-    setDeleting(true); setError(null)
+    setBusy(true); setError(null)
     try {
       const res = await fetch(`/api/admin/professionals/${professionalId}`, { method: 'DELETE' })
       const j = await res.json().catch(() => ({}))
       if (!res.ok) { setError((j as { error?: string }).error ?? 'Fejl'); return }
       router.push('/admin/professionals')
     } catch { setError('Netværksfejl') }
-    finally { setDeleting(false) }
+    finally { setBusy(false) }
   }
 
-  if (!confirming) return (
-    <button
-      onClick={() => setConfirming(true)}
-      className="text-xs font-semibold text-red-600 hover:underline"
-    >
-      Arkiver kontaktperson
-    </button>
+  async function deletePermanently() {
+    setBusy(true); setError(null)
+    try {
+      const res = await fetch(`/api/admin/professionals/${professionalId}/delete-permanently`, { method: 'DELETE' })
+      const j = await res.json().catch(() => ({}))
+      if (!res.ok) { setError((j as { error?: string }).error ?? 'Fejl'); return }
+      router.push('/admin/professionals')
+    } catch { setError('Netværksfejl') }
+    finally { setBusy(false) }
+  }
+
+  if (mode === null) return (
+    <div className="flex items-center gap-3">
+      <button
+        onClick={() => setMode('archive')}
+        className="text-xs font-semibold text-red-600 hover:underline"
+      >
+        Arkiver kontaktperson
+      </button>
+      <button
+        onClick={() => setMode('delete')}
+        className="text-xs font-semibold text-red-600 hover:underline"
+      >
+        Slet permanent
+      </button>
+    </div>
   )
 
-  return (
+  if (mode === 'archive') return (
     <div className="mt-3 p-4 bg-red-50 border border-red-200 rounded-xl space-y-3">
       <p className="text-sm font-medium text-red-800">Er du sikker?</p>
       <p className="text-xs text-red-700">
@@ -961,13 +980,40 @@ function DeletePanel({ professionalId }: { professionalId: string }) {
       <div className="flex gap-2">
         <button
           onClick={archive}
-          disabled={deleting}
+          disabled={busy}
           className="h-8 px-4 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
         >
-          {deleting ? 'Arkiverer…' : 'Bekræft arkivering'}
+          {busy ? 'Arkiverer…' : 'Bekræft arkivering'}
         </button>
         <button
-          onClick={() => { setConfirming(false); setError(null) }}
+          onClick={() => { setMode(null); setError(null) }}
+          className="h-8 px-4 border border-red-300 text-xs font-semibold rounded-lg hover:bg-red-100 transition-colors"
+        >
+          Annuller
+        </button>
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="mt-3 p-4 bg-red-50 border border-red-200 rounded-xl space-y-3">
+      <p className="text-sm font-medium text-red-800">Er du sikker?</p>
+      <p className="text-xs text-red-700">
+        Kontaktpersonen og profilen slettes permanent og kan ikke gendannes. Bruges til oprydning — fx
+        invitationer der aldrig blev færdiggjort, eller dubletter. Har personen sagshistorik, blokeres
+        sletningen, og du bør bruge &quot;Arkiver&quot; i stedet.
+      </p>
+      {error && <p className="text-xs text-red-600 font-medium">{error}</p>}
+      <div className="flex gap-2">
+        <button
+          onClick={deletePermanently}
+          disabled={busy}
+          className="h-8 px-4 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+        >
+          {busy ? 'Sletter…' : 'Bekræft sletning'}
+        </button>
+        <button
+          onClick={() => { setMode(null); setError(null) }}
           className="h-8 px-4 border border-red-300 text-xs font-semibold rounded-lg hover:bg-red-100 transition-colors"
         >
           Annuller

@@ -1,23 +1,28 @@
 import { createServiceClient } from '@/lib/supabase/server'
 import { PageHeader, ContentContainer } from '@/components/layout/page-header'
 import { ProfessionalsClient } from './ProfessionalsClient'
+import { PendingInvitationsSection } from './PendingInvitationsSection'
+import { getPendingInvitations } from '@/lib/professionals/pending-invitations'
 
 export default async function ProfessionalsPage() {
   const db = createServiceClient()
 
-  const { data: professionals, error } = await (db as any)
-    .from('professionals')
-    .select(`
-      id, profession, experience_years, max_complexity_level,
-      target_age_groups, qualifications, capacity_hours_week,
-      max_concurrent_cases, availability_status, availability_days,
-      status, gender, education, certificates, daily_occupation,
-      experience_with_genders, created_at, updated_at,
-      profile_image_url, profession_type_id, max_hours_per_week,
-      profession_types(name),
-      profiles(full_name, email)
-    `)
-    .order('created_at', { ascending: false })
+  const [{ data: professionals, error }, pendingInvitations] = await Promise.all([
+    (db as any)
+      .from('professionals')
+      .select(`
+        id, profession, experience_years, max_complexity_level,
+        target_age_groups, qualifications, capacity_hours_week,
+        max_concurrent_cases, availability_status, availability_days,
+        status, gender, education, certificates, daily_occupation,
+        experience_with_genders, created_at, updated_at,
+        profile_image_url, profession_type_id, max_hours_per_week,
+        profession_types(name),
+        profiles(full_name, email)
+      `)
+      .order('created_at', { ascending: false }),
+    getPendingInvitations(db),
+  ])
 
   // A failed query here (bad/missing SUPABASE_SERVICE_ROLE_KEY, an RLS
   // surprise, a broken embed) used to look identical to "no professionals
@@ -42,6 +47,7 @@ export default async function ProfessionalsPage() {
             Kunne ikke hente kontaktpersoner: {error.message ?? 'ukendt fejl'}. Dette er en fejl, ikke en tom liste — kontakt support.
           </div>
         )}
+        <PendingInvitationsSection pending={pendingInvitations} />
         <ProfessionalsClient initialData={(professionals ?? []) as unknown as ProfessionalRow[]} />
       </ContentContainer>
     </div>

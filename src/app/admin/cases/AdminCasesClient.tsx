@@ -28,7 +28,7 @@ const COMPLEXITY_BADGE: Record<string, 'green' | 'amber' | 'red' | 'default'> = 
   LOW: 'green', MEDIUM: 'amber', HIGH: 'red', CRITICAL: 'red',
 }
 
-const AGE_OPTIONS = ['0-5', '6-12', '13-18', '18+'] as const
+const AGE_OPTIONS = ['6-12', '13-18', '18+'] as const
 const COMPLEXITY_OPTIONS = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as const
 const GENDER_OPTIONS = ['MALE', 'FEMALE', 'OTHER'] as const
 const GENDER_LABEL: Record<string, string> = { MALE: 'Dreng/mand', FEMALE: 'Pige/kvinde', OTHER: 'Andet' }
@@ -41,7 +41,7 @@ const PROF_GENDER_LABEL: Record<string, string> = { MALE: 'Mand', FEMALE: 'Kvind
 const DUPLICATE_SPECIAL_WISH_CODES = new Set(['MALE_PROFESSIONAL', 'FEMALE_PROFESSIONAL', 'DRIVERS_LICENSE'])
 const TRANSPORT_OPTIONS = ['JA', 'NEJ'] as const
 const LEGAL_BASIS_OPTIONS = [
-  { value: 'BARNETS_LOV_32', label: '§32 barnets lov', note: 'Børn 0–17 år' },
+  { value: 'BARNETS_LOV_32', label: '§32 barnets lov', note: 'Børn 8–17 år' },
   { value: 'SEL_85', label: '§85 serviceloven', note: 'Voksne 18+' },
   { value: 'SEL_76', label: '§76 serviceloven', note: 'Unge 18–22 år (efterværn)' },
 ] as const
@@ -161,14 +161,22 @@ function weeksBetween(start: string, end: string): number {
   return Math.max(1, days / 7)
 }
 
-function ageRangeFromDob(dob: string): string {
-  if (!dob) return ''
+function ageFromDob(dob: string): number | null {
+  if (!dob) return null
   const birth = new Date(dob)
+  if (isNaN(birth.getTime())) return null
   const today = new Date()
   let age = today.getFullYear() - birth.getFullYear()
   const m = today.getMonth() - birth.getMonth()
   if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
-  if (age <= 5) return '0-5'
+  return age
+}
+
+// Kursskifte tager ikke imod borgere under 8 år — under den alder er der
+// ingen gyldig aldersgruppe at foreslå.
+function ageRangeFromDob(dob: string): string {
+  const age = ageFromDob(dob)
+  if (age === null || age < 8) return ''
   if (age <= 12) return '6-12'
   if (age <= 18) return '13-18'
   return '18+'
@@ -289,6 +297,8 @@ export function AdminCasesClient({
     const initials = form.citizen_initials.trim().toUpperCase()
     if (initials.length !== 2) { setError('Initialer skal være præcis 2 bogstaver'); return }
     if (!form.municipality_id) { setError('Vælg en kommune'); return }
+    const dobAge = ageFromDob(form.citizen_dob)
+    if (dobAge !== null && dobAge < 8) { setError('Kursskifte tager ikke imod borgere under 8 år'); return }
     // Bevilling er sagens vigtigste oplysning — den skal registreres ved
     // oprettelsen, ikke tilføjes separat bagefter (og let overses).
     const grantedHours = Number(form.granted_hours)
@@ -621,6 +631,12 @@ export function AdminCasesClient({
                   }}
                   className={inputClass}
                 />
+                {(() => {
+                  const dobAge = ageFromDob(form.citizen_dob)
+                  return dobAge !== null && dobAge < 8 ? (
+                    <p className="text-xs text-red-600 mt-1.5">Kursskifte tager ikke imod borgere under 8 år</p>
+                  ) : null
+                })()}
               </div>
               <div>
                 <label className={labelClass}>Aldersgruppe</label>

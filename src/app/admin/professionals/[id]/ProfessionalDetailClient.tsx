@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
@@ -621,9 +621,42 @@ function DocumentSection({ documents, professionalId }: { documents: DocumentRow
   const [rejectNote, setRejectNote] = useState<Record<string, string>>({})
   const [showReject, setShowReject] = useState<Record<string, boolean>>({})
   const [downloading, setDownloading] = useState<string | null>(null)
+  const [uploading, setUploading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const inputRefs = useRef<Record<string, HTMLInputElement | null>>({})
 
   const docMap = Object.fromEntries(documents.map(d => [d.document_type, d]))
+
+  // Admin uploads on behalf of a contact person who sent CV, education
+  // certificates or driving licence by email/phone/paper instead of
+  // uploading it themselves. Lands as UNVERIFIED, same as a self-upload —
+  // the approve/reject buttons below then work exactly as they already do.
+  async function uploadOnBehalf(docType: string, file: File) {
+    setUploading(docType); setError(null)
+    try {
+      const urlRes = await fetch(`/api/admin/professionals/${professionalId}/upload-url`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ document_type: docType, file_name: file.name }),
+      })
+      if (!urlRes.ok) { const j = await urlRes.json().catch(() => ({})); setError((j as { error?: string }).error ?? 'Kunne ikke oprette upload-URL'); return }
+      const { signed_url, path } = await urlRes.json()
+
+      const uploadRes = await fetch(signed_url, {
+        method: 'PUT', body: file,
+        headers: { 'Content-Type': file.type || 'application/octet-stream' },
+      })
+      if (!uploadRes.ok) { setError('Upload mislykkedes — prøv igen'); return }
+
+      const docRes = await fetch(`/api/admin/professionals/${professionalId}/documents/upload`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ document_type: docType, file_path: path, file_name: file.name }),
+      })
+      if (!docRes.ok) { const j = await docRes.json().catch(() => ({})); setError((j as { error?: string }).error ?? 'Kunne ikke registrere dokument'); return }
+
+      startT(() => router.refresh())
+    } catch { setError('Netværksfejl — prøv igen') }
+    finally { setUploading(null); const el = inputRefs.current[docType]; if (el) el.value = '' }
+  }
 
   async function download(docId: string) {
     setDownloading(docId); setError(null)
@@ -725,6 +758,24 @@ function DocumentSection({ documents, professionalId }: { documents: DocumentRow
                   >
                     {downloading === doc.id ? 'Åbner…' : 'Se dokument'}
                   </button>
+                )}
+                {!dt.managed && (
+                  <>
+                    <input
+                      ref={el => { inputRefs.current[dt.type] = el }}
+                      type="file"
+                      className="hidden"
+                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                      onChange={e => { const file = e.target.files?.[0]; if (file) uploadOnBehalf(dt.type, file) }}
+                    />
+                    <button
+                      onClick={() => inputRefs.current[dt.type]?.click()}
+                      disabled={uploading === dt.type}
+                      className="text-xs font-semibold text-[#1C3829] hover:underline disabled:opacity-50"
+                    >
+                      {uploading === dt.type ? 'Uploader…' : doc ? 'Upload nyt (på vegne af)' : 'Upload på vegne af'}
+                    </button>
+                  </>
                 )}
               </div>
             </div>

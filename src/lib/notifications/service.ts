@@ -178,6 +178,14 @@ export function adminEmailBody(type: NotificationType, entityId: string): { subj
       subject: 'Ferie/pause meldt af en kontaktperson — Kursskifte',
       body: `En kontaktperson har meldt ferie eller pause.\n\nFagperson-ID: ${entityId}\n\nSe profilen:\n${base}/admin/professionals/${entityId}`,
     },
+    MATCH_OFFERED: {
+      subject: 'Match tilbudt til en kontaktperson — Kursskifte',
+      body: `En kontaktperson er blevet tilbudt et match og skal bekræfte tilgængelighed.\n\nForslags-ID: ${entityId}`,
+    },
+    MATCH_OFFER_DECLINED: {
+      subject: 'Fagperson er ikke ledig — vælg en ny kandidat — Kursskifte',
+      body: `Den tilbudte kontaktperson er ikke ledig til sagen. Vælg en ny kandidat fra match-kørslen.\n\nSags-ID: ${entityId}\n\nSe sagen:\n${base}/admin/cases/${entityId}`,
+    },
   }
   return map[type]
 }

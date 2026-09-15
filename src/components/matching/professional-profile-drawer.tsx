@@ -349,7 +349,7 @@ export function ProfessionalProfileDrawer({
               loading={assignLoading}
               onClick={() => onAssign(candidate)}
             >
-              Foreslå kommunen
+              Tilbyd matchet
             </Button>
           </div>
         )}

@@ -15,7 +15,7 @@ const complexityLabel: Record<string, string> = {
   LOW: 'Lav', MEDIUM: 'Mellem', HIGH: 'Høj', CRITICAL: 'Kritisk',
 }
 const statusLabel: Record<string, string> = {
-  OPEN: 'Åben', MATCHED: 'Matchet', ACTIVE: 'Aktiv', COMPLETED: 'Afsluttet', ARCHIVED: 'Arkiveret',
+  OPEN: 'Åben', MATCHED: 'Afventer fagperson', ACTIVE: 'Aktiv', COMPLETED: 'Afsluttet', ARCHIVED: 'Arkiveret',
 }
 const statusColor: Record<string, 'default' | 'green' | 'amber' | 'brand'> = {
   OPEN: 'amber', MATCHED: 'brand', ACTIVE: 'green', COMPLETED: 'default', ARCHIVED: 'default',

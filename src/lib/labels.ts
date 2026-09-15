@@ -56,6 +56,9 @@ export const NOTIFICATION_TYPE_LABEL: Record<string, string> = {
   HOURS_REJECTED: 'Timer afvist',
   PROFESSIONAL_ACTIVATED: 'Profil aktiveret',
   HANDOVER_COMPLETED: 'Overdragelse fuldført',
+  PROFESSIONAL_AVAILABILITY_PERIOD_ADDED: 'Ferie/pause meldt',
+  MATCH_OFFERED: 'Match tilbudt',
+  MATCH_OFFER_DECLINED: 'Fagperson afslog match',
 }
 
 export const NOTIFICATION_STATUS_BADGE: Record<string, 'green' | 'amber' | 'red'> = {

@@ -38,7 +38,7 @@ type CaseEntry = {
 }
 
 const STATUS_LABEL: Record<string, string> = {
-  OPEN: 'Åben', MATCHED: 'Matchet', PROPOSED: 'Foreslået',
+  OPEN: 'Åben', MATCHED: 'Afventer fagperson', PROPOSED: 'Forslag sendt til kommune',
   ACTIVE: 'Aktiv', COMPLETED: 'Afsluttet', ARCHIVED: 'Arkiveret',
 }
 

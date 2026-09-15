@@ -946,7 +946,11 @@ function DeletePanel({ professionalId }: { professionalId: string }) {
     try {
       const res = await fetch(`/api/admin/professionals/${professionalId}/delete-permanently`, { method: 'DELETE' })
       const j = await res.json().catch(() => ({}))
-      if (!res.ok) { setError((j as { error?: string }).error ?? 'Fejl'); return }
+      if (!res.ok) {
+        const msg = (j as { error?: unknown }).error
+        setError(typeof msg === 'string' && msg.trim() ? msg : `Noget gik galt (fejl ${res.status}) — prøv igen`)
+        return
+      }
       router.push('/admin/professionals')
     } catch { setError('Netværksfejl') }
     finally { setBusy(false) }

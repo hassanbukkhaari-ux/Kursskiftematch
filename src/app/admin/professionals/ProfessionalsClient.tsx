@@ -735,6 +735,8 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
                   {error}
                 </div>
               )}
+
+              <DeletePermanentlySection professionalId={selected.id} onDeleted={closeDrawer} />
             </div>
 
             {/* Footer */}
@@ -753,6 +755,68 @@ export function ProfessionalsClient({ initialData }: { initialData: Professional
         )}
       </aside>
     </>
+  )
+}
+
+// Distinct from the status actions above ("Arkiver" keeps everything and just
+// hides the person from matching) — this actually removes the account.
+// Blocked server-side if the person has real case history; meant for
+// cleaning up junk entries like never-completed invitations or duplicates.
+function DeletePermanentlySection({ professionalId, onDeleted }: { professionalId: string; onDeleted: () => void }) {
+  const router = useRouter()
+  const [confirming, setConfirming] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function deletePermanently() {
+    setDeleting(true); setError(null)
+    try {
+      const res = await fetch(`/api/admin/professionals/${professionalId}/delete-permanently`, { method: 'DELETE' })
+      const j = await res.json().catch(() => ({}))
+      if (!res.ok) { setError((j as { error?: string }).error ?? 'Noget gik galt'); return }
+      onDeleted()
+      router.refresh()
+    } catch { setError('Netværksfejl — prøv igen') }
+    finally { setDeleting(false) }
+  }
+
+  if (!confirming) return (
+    <button
+      type="button"
+      onClick={() => setConfirming(true)}
+      className="text-xs font-semibold text-red-600 hover:underline"
+    >
+      Slet permanent
+    </button>
+  )
+
+  return (
+    <div className="p-4 bg-red-50 border border-red-200 rounded-xl space-y-3">
+      <p className="text-sm font-medium text-red-800">Er du sikker?</p>
+      <p className="text-xs text-red-700">
+        Kontaktpersonen og profilen slettes permanent og kan ikke gendannes. Bruges til oprydning —
+        fx invitationer der aldrig blev færdiggjort, eller dubletter. Har personen sagshistorik, blokeres sletningen,
+        og du bør bruge &quot;Arkiver&quot; i stedet.
+      </p>
+      {error && <p className="text-xs text-red-600 font-medium">{error}</p>}
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={deletePermanently}
+          disabled={deleting}
+          className="h-8 px-4 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+        >
+          {deleting ? 'Sletter…' : 'Bekræft sletning'}
+        </button>
+        <button
+          type="button"
+          onClick={() => { setConfirming(false); setError(null) }}
+          className="h-8 px-4 border border-red-300 text-xs font-semibold rounded-lg hover:bg-red-100 transition-colors"
+        >
+          Annuller
+        </button>
+      </div>
+    </div>
   )
 }
 

@@ -26,6 +26,15 @@ function wrapEmail(eyebrow: string, heading: string, greeting: string, bodyHtml:
 // Shared by the initial invite (invite-professional route) and by the
 // "resend" action on the pending-invitations list — same link generation,
 // same email, so admin re-sending gets the exact experience as the original.
+//
+// Uses properties.hashed_token to build a link straight to our own
+// /auth/callback?token_hash=...&type=invite, the same way the working
+// forgot-password flow (src/app/api/auth/reset-password/route.ts) already
+// does — instead of properties.action_link, which routes the recipient
+// through Supabase's own hosted /auth/v1/verify page first. That extra hop
+// was landing invited contact persons back on the plain login form instead
+// of /set-password (they'd have to use "forgot password" to recover), while
+// the direct token_hash link works reliably.
 export async function sendProfessionalInviteEmail(
   svc: SupabaseClient,
   { email, name }: { email: string; name?: string }
@@ -39,10 +48,12 @@ export async function sendProfessionalInviteEmail(
     email,
     options: {
       data: { full_name: name || undefined },
-      redirectTo: `${base}/auth/callback`,
     },
   })
   if (linkError) return { error: linkError.message }
+
+  const tokenHash = linkData.properties.hashed_token
+  const inviteUrl = `${base}/auth/callback?token_hash=${tokenHash}&type=invite`
 
   const greeting = name ? `Hej ${name},` : 'Hej,'
   const resend = new Resend(resendKey)
@@ -56,7 +67,7 @@ export async function sendProfessionalInviteEmail(
       greeting,
       'Du er blevet inviteret til at blive kontaktperson hos Kursskifte. Klik på knappen nedenfor for at oprette din konto og vælge en personlig adgangskode.',
       'Opret min konto',
-      linkData.properties.action_link,
+      inviteUrl,
       'Linket er personligt og udløber efter 24 timer. Hvis du ikke har bedt om denne invitation, kan du se bort fra denne e-mail.'
     ),
   })
@@ -67,7 +78,8 @@ export async function sendProfessionalInviteEmail(
 // For someone who has already clicked their first invite (so a fresh
 // "invite" link would fail — Supabase only issues those to unconfirmed
 // users) but never finished their profile. A magic link logs them straight
-// back in and resumes onboarding, no password needed.
+// back in and resumes onboarding, no password needed. Same direct
+// token_hash approach as sendProfessionalInviteEmail above.
 export async function sendOnboardingReminderEmail(
   svc: SupabaseClient,
   { email, name }: { email: string; name?: string }
@@ -79,11 +91,11 @@ export async function sendOnboardingReminderEmail(
   const { data: linkData, error: linkError } = await svc.auth.admin.generateLink({
     type: 'magiclink',
     email,
-    options: {
-      redirectTo: `${base}/auth/callback?next=/onboarding`,
-    },
   })
   if (linkError) return { error: linkError.message }
+
+  const tokenHash = linkData.properties.hashed_token
+  const reminderUrl = `${base}/auth/callback?token_hash=${tokenHash}&type=magiclink&next=/onboarding`
 
   const greeting = name ? `Hej ${name},` : 'Hej,'
   const resend = new Resend(resendKey)
@@ -97,7 +109,7 @@ export async function sendOnboardingReminderEmail(
       greeting,
       'Du oprettede en konto hos Kursskifte, men er ikke helt færdig med at udfylde din profil som kontaktperson. Klik på knappen nedenfor for at logge ind og fortsætte, hvor du slap.',
       'Fortsæt min profil',
-      linkData.properties.action_link,
+      reminderUrl,
       'Linket er personligt og udløber efter 24 timer.'
     ),
   })

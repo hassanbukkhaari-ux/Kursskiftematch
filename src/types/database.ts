@@ -1755,6 +1755,7 @@ export type NotificationType =
   | 'HOURS_REJECTED'
   | 'PROFESSIONAL_ACTIVATED'
   | 'HANDOVER_COMPLETED'
+  | 'PROFESSIONAL_AVAILABILITY_PERIOD_ADDED'
 
 // ================================================================
 // Convenience row types

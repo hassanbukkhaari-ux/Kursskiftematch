@@ -174,6 +174,10 @@ export function adminEmailBody(type: NotificationType, entityId: string): { subj
       subject: 'Overdragelse fuldført — Kursskifte',
       body: `En overdragelse er fuldført.\n\nSags-ID: ${entityId}\n\nSe sagen:\n${base}/admin/cases/${entityId}`,
     },
+    PROFESSIONAL_AVAILABILITY_PERIOD_ADDED: {
+      subject: 'Ferie/pause meldt af en kontaktperson — Kursskifte',
+      body: `En kontaktperson har meldt ferie eller pause.\n\nFagperson-ID: ${entityId}\n\nSe profilen:\n${base}/admin/professionals/${entityId}`,
+    },
   }
   return map[type]
 }

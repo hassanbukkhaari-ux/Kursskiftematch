@@ -116,3 +116,45 @@ export async function sendOnboardingReminderEmail(
   if (error) return { error: error.message }
   return {}
 }
+
+// For someone with a real profile already (professionals row exists) who
+// just hasn't filled in the fields matching needs — weekly capacity and/or
+// availability, the same two fields that block activation
+// (see /api/admin/professionals/[id]/status/route.ts). A magic link straight
+// to their profile page, no password needed.
+export async function sendProfileCompletionReminderEmail(
+  svc: SupabaseClient,
+  { email, name }: { email: string; name?: string }
+): Promise<{ error?: string }> {
+  const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://kursskifte.dk'
+  const resendKey = process.env.RESEND_API_KEY
+  if (!resendKey) return { error: 'Email service not configured' }
+
+  const { data: linkData, error: linkError } = await svc.auth.admin.generateLink({
+    type: 'magiclink',
+    email,
+  })
+  if (linkError) return { error: linkError.message }
+
+  const tokenHash = linkData.properties.hashed_token
+  const reminderUrl = `${base}/auth/callback?token_hash=${tokenHash}&type=magiclink&next=/dashboard/profile`
+
+  const greeting = name ? `Hej ${name},` : 'Hej,'
+  const resend = new Resend(resendKey)
+  const { error } = await resend.emails.send({
+    from: 'Kursskifte <noreply@kursskifte.dk>',
+    to: email,
+    subject: 'Din profil mangler oplysninger — Kursskifte',
+    html: wrapEmail(
+      'Kursskifte',
+      'Din profil mangler stadig lidt',
+      greeting,
+      'Vi mangler stadig ugentlig kapacitet og/eller din tilgængelighed på din profil hos Kursskifte, før du kan blive matchet til sager. Klik på knappen nedenfor for at logge ind og udfylde det.',
+      'Udfyld min profil',
+      reminderUrl,
+      'Linket er personligt og udløber efter 24 timer.'
+    ),
+  })
+  if (error) return { error: error.message }
+  return {}
+}

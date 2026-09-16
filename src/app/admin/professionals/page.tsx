@@ -3,6 +3,7 @@ import { PageHeader, ContentContainer } from '@/components/layout/page-header'
 import { ProfessionalsClient } from './ProfessionalsClient'
 import { PendingInvitationsSection } from './PendingInvitationsSection'
 import { getPendingInvitations } from '@/lib/professionals/pending-invitations'
+import { IncompleteProfilesSection, toIncompleteProfiles } from './IncompleteProfilesSection'
 
 export default async function ProfessionalsPage() {
   const db = createServiceClient()
@@ -48,6 +49,7 @@ export default async function ProfessionalsPage() {
           </div>
         )}
         <PendingInvitationsSection pending={pendingInvitations} />
+        <IncompleteProfilesSection profiles={toIncompleteProfiles((professionals ?? []) as unknown as ProfessionalRow[])} />
         <ProfessionalsClient initialData={(professionals ?? []) as unknown as ProfessionalRow[]} />
       </ContentContainer>
     </div>

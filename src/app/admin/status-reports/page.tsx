@@ -20,8 +20,11 @@ export default async function AdminStatusReportsPage({ searchParams }: PageProps
       `)
       .order('deadline', { ascending: true }),
 
+    // cases has no professional_id column directly — the current assignment
+    // lives on case_assignments (see v_cases_with_professional), fetched
+    // separately below and merged in.
     svc.from('cases')
-      .select('id, citizen_initials, citizen_age_range, status, municipality_id, professional_id, municipalities(name)')
+      .select('id, citizen_initials, citizen_age_range, status, municipality_id, municipalities(name)')
       .in('status', ['ACTIVE', 'OPEN', 'MATCHED']),
 
     svc.from('professionals')
@@ -29,14 +32,30 @@ export default async function AdminStatusReportsPage({ searchParams }: PageProps
       .eq('status', 'ACTIVE'),
   ])
 
+  const activeCaseIds = (activeCases ?? []).map((c: any) => c.id)
+  const { data: assignments } = activeCaseIds.length
+    ? await svc.from('case_assignments')
+        .select('case_id, professional_id')
+        .in('case_id', activeCaseIds)
+        .is('ended_at', null)
+    : { data: [] as { case_id: string; professional_id: string }[] }
+
+  const professionalIdByCaseId = new Map(
+    (assignments ?? []).map((a: any) => [a.case_id, a.professional_id])
+  )
+  const casesWithProfessional = (activeCases ?? []).map((c: any) => ({
+    ...c,
+    professional_id: professionalIdByCaseId.get(c.id) ?? null,
+  }))
+
   // Find active cases with no pending/acknowledged request (blind spots)
   const pendingCaseIds = new Set(
     (requests ?? [])
       .filter((r: any) => r.status === 'PENDING' || r.status === 'ACKNOWLEDGED')
       .map((r: any) => r.case_id)
   )
-  const casesWithoutRequest = (activeCases ?? []).filter((c: any) => !pendingCaseIds.has(c.id))
-  const cases = activeCases ?? []
+  const casesWithoutRequest = casesWithProfessional.filter((c: any) => !pendingCaseIds.has(c.id))
+  const cases = casesWithProfessional
 
   return (
     <div>

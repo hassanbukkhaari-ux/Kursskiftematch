@@ -34,14 +34,15 @@ function Row({ profile }: { profile: IncompleteProfile }) {
   ].filter(Boolean).join(' og ')
 
   return (
-    <Card className="flex items-center justify-between gap-4">
+    <Card className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
       <div className="min-w-0">
-        <div className="font-medium text-[#1A1F1C] text-sm">{profile.full_name || profile.email}</div>
-        <div className="text-xs text-[#6B7569] mt-0.5">
+        <div className="font-medium text-[#1A1F1C] text-sm truncate">{profile.full_name || profile.email}</div>
+        <div className="text-xs text-[#6B7569] mt-0.5 truncate">
           {profile.full_name ? `${profile.email} · ` : ''}Mangler {missing}
         </div>
+        {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
       </div>
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap sm:shrink-0">
         <Badge variant="amber" dot>Mangler oplysninger</Badge>
         {done ? (
           <span className="text-xs text-[#1C3829] font-medium">Sendt</span>
@@ -50,13 +51,12 @@ function Row({ profile }: { profile: IncompleteProfile }) {
             type="button"
             onClick={remind}
             disabled={sending}
-            className="h-8 px-3 bg-[#1C3829] text-white text-xs font-semibold rounded-lg hover:bg-[#2D5840] transition-colors disabled:opacity-50"
+            className="h-8 px-3 bg-[#1C3829] text-white text-xs font-semibold rounded-lg hover:bg-[#2D5840] transition-colors disabled:opacity-50 shrink-0"
           >
             {sending ? 'Sender…' : 'Send påmindelse'}
           </button>
         )}
       </div>
-      {error && <p className="text-xs text-red-600 shrink-0">{error}</p>}
     </Card>
   )
 }

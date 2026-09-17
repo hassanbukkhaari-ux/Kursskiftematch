@@ -3,32 +3,7 @@
 import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import type { ProfessionalRow } from './page'
-
-export type IncompleteProfile = {
-  id: string
-  full_name: string | null
-  email: string
-  capacityMissing: boolean
-  availabilityMissing: boolean
-}
-
-// Same two fields that block activation in
-// /api/admin/professionals/[id]/status/route.ts — reused here as the
-// definition of "profile still missing info", so this list and that gate
-// never disagree with each other.
-export function toIncompleteProfiles(professionals: ProfessionalRow[]): IncompleteProfile[] {
-  return professionals
-    .filter(p => p.status === 'REGISTERED')
-    .map(p => ({
-      id: p.id,
-      full_name: p.profiles?.full_name ?? null,
-      email: p.profiles?.email ?? '',
-      capacityMissing: !p.capacity_hours_week || p.capacity_hours_week <= 0,
-      availabilityMissing: p.availability_status === 'UNAVAILABLE',
-    }))
-    .filter(p => p.capacityMissing || p.availabilityMissing)
-}
+import type { IncompleteProfile } from './incomplete-profiles'
 
 function Row({ profile }: { profile: IncompleteProfile }) {
   const [sending, setSending] = useState(false)

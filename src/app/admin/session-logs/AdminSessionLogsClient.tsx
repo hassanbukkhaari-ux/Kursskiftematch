@@ -6,6 +6,14 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { SESSION_LOG_STATUS_LABEL as STATUS_LABEL, SESSION_LOG_STATUS_BADGE as STATUS_BADGE } from '@/lib/labels'
 
+// Temporarily off — Supabase project is on the Free plan and its small
+// connection pool is getting saturated (repeated "thread killed by timeout"
+// in the project logs). This realtime subscription plus its 60s polling
+// fallback held a persistent connection and re-fetched on every change,
+// adding to that pressure. Flip back to true once the plan is upgraded or
+// the underlying capacity issue is otherwise resolved.
+const LIVE_UPDATES_ENABLED = false
+
 export interface AdminLogRow {
   id: string
   case_id: string
@@ -130,6 +138,7 @@ export function AdminSessionLogsClient({ initialLogs }: Props) {
   }, [])
 
   useEffect(() => {
+    if (!LIVE_UPDATES_ENABLED) return
     const db = createClient()
     const channel = db
       .channel('admin-session-logs')
@@ -149,6 +158,7 @@ export function AdminSessionLogsClient({ initialLogs }: Props) {
 
   // Also subscribe to professionals table for daily_occupation changes
   useEffect(() => {
+    if (!LIVE_UPDATES_ENABLED) return
     // Polling fallback every 60s in case realtime misses something
     const interval = setInterval(fetchLogs, 60_000)
     return () => clearInterval(interval)

@@ -457,9 +457,9 @@ const DOC_TYPES = [
   { type: 'CRIMINAL_RECORD', label: 'Straffeattest', required: true, managed: true },
   { type: 'CHILD_PROTECTION', label: 'Børneattest', required: true, managed: true },
   { type: 'CV', label: 'CV', required: true, managed: false },
-  { type: 'EDUCATION', label: 'Uddannelsesbeviser', required: false, managed: false },
+  { type: 'QUALIFICATION', label: 'Uddannelsesbeviser', required: false, managed: false },
   { type: 'DRIVING_LICENSE', label: 'Kørekort', required: false, managed: false },
-  { type: 'AUTHORIZATION', label: 'Autorisation', required: false, managed: false },
+  { type: 'OTHER', label: 'Autorisation / andet', required: false, managed: false },
 ]
 
 const DOC_STATUS_LABEL: Record<string, string> = {

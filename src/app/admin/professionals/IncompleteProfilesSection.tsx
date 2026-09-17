@@ -42,7 +42,7 @@ function Row({ profile }: { profile: IncompleteProfile }) {
         </div>
         {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
       </div>
-      <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap sm:shrink-0">
+      <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:shrink-0">
         <Badge variant="amber" dot>Mangler oplysninger</Badge>
         {done ? (
           <span className="text-xs text-[#1C3829] font-medium">Sendt</span>

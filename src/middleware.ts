@@ -26,20 +26,33 @@ const PUBLIC_PATHS = [
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  const { response, user } = await updateSession(request)
-
   // API routes enforce their own auth (session check, Bearer token for cron,
   // or are intentionally public) and must return a JSON 401 — never an HTML
-  // redirect, which silently breaks fetch() callers and cron jobs alike.
+  // redirect, which silently breaks fetch() callers and cron jobs alike. The
+  // user/response computed by updateSession() below was never used on this
+  // branch — every /api/ request was paying for a full Supabase Auth
+  // round-trip (auth.getUser()) purely to throw the result away, doubling
+  // up with the auth check each route handler already does itself. Skipping
+  // it here halves the auth-service load from API traffic with no change in
+  // behavior.
   if (pathname.startsWith('/api/')) {
-    return response
+    return NextResponse.next()
   }
 
   const isPublic =
     pathname === '/' ||
     PUBLIC_PATHS.some(p => pathname === p || pathname.startsWith(p + '/'))
 
-  if (!isPublic && !user) {
+  // Public pages don't gate on `user` either — skip the Supabase Auth
+  // round-trip for them too, rather than paying for a getUser() call whose
+  // result only matters on protected routes.
+  if (isPublic) {
+    return NextResponse.next()
+  }
+
+  const { response, user } = await updateSession(request)
+
+  if (!user) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 

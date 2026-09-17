@@ -3,7 +3,8 @@ import { PageHeader, ContentContainer } from '@/components/layout/page-header'
 import { ProfessionalsClient } from './ProfessionalsClient'
 import { PendingInvitationsSection } from './PendingInvitationsSection'
 import { getPendingInvitations } from '@/lib/professionals/pending-invitations'
-import { IncompleteProfilesSection, toIncompleteProfiles } from './IncompleteProfilesSection'
+import { IncompleteProfilesSection } from './IncompleteProfilesSection'
+import { toIncompleteProfiles } from './incomplete-profiles'
 
 export default async function ProfessionalsPage() {
   const db = createServiceClient()

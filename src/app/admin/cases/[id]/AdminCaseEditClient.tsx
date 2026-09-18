@@ -74,7 +74,7 @@ const COMPLEXITY_OPTIONS: { value: Complexity; label: string }[] = [
 const URGENCY_OPTIONS: { value: Urgency; label: string }[] = [
   { value: 'NORMAL', label: '⚪ Normal' },
   { value: 'HURTIG', label: '🟡 Hurtig' },
-  { value: 'AKUT', label: '🔴 Akut' },
+  { value: 'AKUT', label: '🔴 Akut (24 timer)' },
 ]
 const GENDER_OPTIONS: { value: Gender | ''; label: string }[] = [
   { value: '', label: 'Ikke angivet' },

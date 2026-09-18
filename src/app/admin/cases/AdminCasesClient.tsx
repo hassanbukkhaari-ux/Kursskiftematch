@@ -812,7 +812,7 @@ export function AdminCasesClient({
                 {([
                   { value: 'NORMAL', label: '⚪ Normal' },
                   { value: 'HURTIG', label: '🟡 Hurtig' },
-                  { value: 'AKUT', label: '🔴 Akut (24t)' },
+                  { value: 'AKUT', label: '🔴 Akut (24 timer)' },
                 ] as const).map(opt => (
                   <button
                     key={opt.value}

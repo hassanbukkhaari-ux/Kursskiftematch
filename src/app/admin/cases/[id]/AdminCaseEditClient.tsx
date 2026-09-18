@@ -516,8 +516,78 @@ export default function AdminCaseEditClient(props: Props) {
               Annuller
             </Button>
           </div>
+
+          <div className="pt-3 border-t border-[#E0DAD0]">
+            <DeleteCaseSection caseId={props.caseId} />
+          </div>
         </div>
       )}
     </Card>
+  )
+}
+
+// For a case created by mistake (forkert kommune, dublet, tastefejl) — never
+// for a case with real citizen/municipality data that's actually been worked.
+// Irreversible: removes the case and everything under it (tildeling,
+// sessionslog, timer, bevilling, forslag til kommunen).
+function DeleteCaseSection({ caseId }: { caseId: string }) {
+  const router = useRouter()
+  const [confirming, setConfirming] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function deletePermanently() {
+    setDeleting(true); setError(null)
+    try {
+      const res = await fetch(`/api/admin/cases/${caseId}/delete-permanently`, { method: 'DELETE' })
+      const j = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        const msg = (j as { error?: unknown }).error
+        setError(typeof msg === 'string' && msg.trim() ? msg : `Noget gik galt (fejl ${res.status}) — prøv igen`)
+        return
+      }
+      router.push('/admin/cases')
+      router.refresh()
+    } catch { setError('Netværksfejl — prøv igen') }
+    finally { setDeleting(false) }
+  }
+
+  if (!confirming) return (
+    <button
+      type="button"
+      onClick={() => setConfirming(true)}
+      className="text-xs font-semibold text-red-600 hover:underline"
+    >
+      Slet sag permanent
+    </button>
+  )
+
+  return (
+    <div className="p-4 bg-red-50 border border-red-200 rounded-xl space-y-3">
+      <p className="text-sm font-medium text-red-800">Er du sikker?</p>
+      <p className="text-xs text-red-700">
+        Sagen og alt tilknyttet (tildeling, sessionslog, timer, bevilling, forslag til kommunen) slettes permanent
+        og kan ikke gendannes. Brug kun dette til en sag oprettet ved fejl — aldrig en sag med rigtige borgerdata.
+      </p>
+      {error && <p className="text-xs text-red-600 font-medium">{error}</p>}
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={deletePermanently}
+          disabled={deleting}
+          className="h-8 px-4 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+        >
+          {deleting ? 'Sletter…' : 'Bekræft sletning'}
+        </button>
+        <button
+          type="button"
+          onClick={() => { setConfirming(false); setError(null) }}
+          disabled={deleting}
+          className="h-8 px-4 border border-red-300 text-xs font-semibold rounded-lg hover:bg-red-100 transition-colors"
+        >
+          Annuller
+        </button>
+      </div>
+    </div>
   )
 }

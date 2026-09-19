@@ -460,43 +460,50 @@ export function AdminCasesClient({
               <Card
                 hover
                 className={[
-                  'flex items-center justify-between gap-4',
+                  'flex flex-col gap-3',
                   c.urgency === 'AKUT' ? 'border-red-200 bg-[#FEF2F2]' : '',
                 ].join(' ')}
               >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className={[
-                    'w-9 h-9 rounded-xl flex items-center justify-center shrink-0',
-                    c.urgency === 'AKUT' ? 'bg-red-100' : 'bg-[#FBF3E1]',
-                  ].join(' ')}>
-                    <span className={`text-sm font-bold ${c.urgency === 'AKUT' ? 'text-red-700' : 'text-[#92660A]'}`}>
-                      {c.citizen_initials}
-                    </span>
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className={[
+                      'w-9 h-9 rounded-xl flex items-center justify-center shrink-0',
+                      c.urgency === 'AKUT' ? 'bg-red-100' : 'bg-[#FBF3E1]',
+                    ].join(' ')}>
+                      <span className={`text-sm font-bold ${c.urgency === 'AKUT' ? 'text-red-700' : 'text-[#92660A]'}`}>
+                        {c.citizen_initials}
+                      </span>
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-medium text-[#1A1F1C] text-sm flex items-center gap-2">
+                        Borger {c.citizen_initials} · {c.citizen_age_range}
+                        {c.urgency === 'AKUT' && <span className="text-[10px] font-bold uppercase tracking-widest text-red-700 bg-red-100 border border-red-200 rounded px-1.5 py-0.5">🔴 Akut</span>}
+                        {c.urgency === 'HURTIG' && <span className="text-[10px] font-bold uppercase tracking-widest text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">🟡 Hurtig</span>}
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                        {c.case_number && <span className="text-xs text-[#C8C0B0]">{c.case_number}</span>}
+                        <Badge variant={COMPLEXITY_BADGE[c.complexity_level] ?? 'default'}>
+                          {COMPLEXITY_LABEL[c.complexity_level] ?? c.complexity_level}
+                        </Badge>
+                        <span className="text-xs text-[#6B7569]">{c.weekly_hours} t/uge</span>
+                        <span className="text-xs text-[#C8C0B0]">{c.municipality_name}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <div className="font-medium text-[#1A1F1C] text-sm flex items-center gap-2">
-                      Borger {c.citizen_initials} · {c.citizen_age_range}
-                      {c.urgency === 'AKUT' && <span className="text-[10px] font-bold uppercase tracking-widest text-red-700 bg-red-100 border border-red-200 rounded px-1.5 py-0.5">🔴 Akut</span>}
-                      {c.urgency === 'HURTIG' && <span className="text-[10px] font-bold uppercase tracking-widest text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">🟡 Hurtig</span>}
-                    </div>
-                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                      {c.case_number && <span className="text-xs text-[#C8C0B0]">{c.case_number}</span>}
-                      <Badge variant={COMPLEXITY_BADGE[c.complexity_level] ?? 'default'}>
-                        {COMPLEXITY_LABEL[c.complexity_level] ?? c.complexity_level}
-                      </Badge>
-                      <span className="text-xs text-[#6B7569]">{c.weekly_hours} t/uge</span>
-                      <span className="text-xs text-[#C8C0B0]">{c.municipality_name}</span>
-                    </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Badge variant={STATUS_BADGE[c.status] ?? 'default'} dot>
+                      {STATUS_LABEL[c.status] ?? c.status}
+                    </Badge>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C8C0B0" strokeWidth="1.75" strokeLinecap="round">
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Badge variant={STATUS_BADGE[c.status] ?? 'default'} dot>
-                    {STATUS_LABEL[c.status] ?? c.status}
-                  </Badge>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C8C0B0" strokeWidth="1.75" strokeLinecap="round">
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
-                </div>
+                {c.has_active_handover && (
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 w-fit">
+                    🟡 Overdragelse i gang — Kursskifte overtager koordineringen
+                  </div>
+                )}
               </Card>
             </Link>
           ))}

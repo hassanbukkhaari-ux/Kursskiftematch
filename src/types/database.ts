@@ -1758,6 +1758,7 @@ export type NotificationType =
   | 'PROFESSIONAL_AVAILABILITY_PERIOD_ADDED'
   | 'MATCH_OFFERED'
   | 'MATCH_OFFER_DECLINED'
+  | 'STARTUP_CONTACT_REMINDER'
 
 // ================================================================
 // Convenience row types

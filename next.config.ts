@@ -39,14 +39,13 @@ const nextConfig: NextConfig = {
       { source: '/home', destination: '/', permanent: true },
       { source: '/Auth/Login', destination: '/login', permanent: true },
       { source: '/auth/login', destination: '/login', permanent: true },
-      // bromaking.html was the old site's professional-recruitment page;
-      // /kontaktpersoner is its direct modern equivalent (see
-      // ARCHITECTURE_SEPARATION_PLAN.md). It was previously unmatched by
-      // any route, so middleware.ts's auth guard bounced it to /login with
-      // a temporary redirect — a stale, unauthenticated-feeling dead end
-      // for anyone still linking to it.
-      { source: '/Bromaking', destination: '/kontaktpersoner', permanent: true },
-      { source: '/bromaking', destination: '/kontaktpersoner', permanent: true },
+      // /Bromaking doesn't correspond to any page Kursskifte has ever had —
+      // just a stale URL Google indexed from somewhere. It matched no
+      // route, so middleware.ts's auth guard bounced it to /login with a
+      // temporary redirect. Send it to the homepage instead of guessing at
+      // an intended destination.
+      { source: '/Bromaking', destination: '/', permanent: true },
+      { source: '/bromaking', destination: '/', permanent: true },
     ]
   },
 }

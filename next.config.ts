@@ -39,6 +39,13 @@ const nextConfig: NextConfig = {
       { source: '/home', destination: '/', permanent: true },
       { source: '/Auth/Login', destination: '/login', permanent: true },
       { source: '/auth/login', destination: '/login', permanent: true },
+      // /Bromaking doesn't correspond to any page Kursskifte has ever had —
+      // just a stale URL Google indexed from somewhere. It matched no
+      // route, so middleware.ts's auth guard bounced it to /login with a
+      // temporary redirect. Send it to the homepage instead of guessing at
+      // an intended destination.
+      { source: '/Bromaking', destination: '/', permanent: true },
+      { source: '/bromaking', destination: '/', permanent: true },
     ]
   },
 }

@@ -6,12 +6,12 @@ import PublicFooter from '@/components/public/PublicFooter'
 export const metadata: Metadata = {
   title: 'Til kommuner | Kontaktperson §32 og §85 hos Kursskifte',
   description:
-    'Kursskifte leverer mentor-, kontaktperson- og bostøtteforløb til kommuner og jobcentre i Nordjylland. §32 barnets lov og §85 serviceloven. Tydelig proces, dokumentation og fast samarbejdspartner.',
+    'Kursskifte leverer mentor-, støtte- og kontaktpersonforløb til kommuner og jobcentre i Nordjylland. §32 barnets lov og §85 serviceloven. Tydelig proces, dokumentation og fast samarbejdspartner.',
   alternates: { canonical: '/kommuner' },
   openGraph: {
     title: 'Til kommuner | Kontaktperson §32 og §85 hos Kursskifte',
     description:
-      'Kursskifte hjælper kommuner i Nordjylland med kvalitetssikrede kontaktpersoner, mentorer og bostøtte til §32- og §85-forløb. Vi betjener Aalborg, Hjørring, Brønderslev og Frederikshavn.',
+      'Kursskifte hjælper kommuner i Nordjylland med kvalitetssikrede kontaktpersoner og mentorer til §32 og §85-forløb. Vi betjener Aalborg, Hjørring, Brønderslev og Frederikshavn.',
     url: '/kommuner',
   },
 }
@@ -69,8 +69,8 @@ const STEPS = [
 // Services in social sector language
 const YDELSER = [
   {
-    title: '§32-kontaktperson til kriminalitetstruede unge',
-    desc: 'Som §32-kontaktperson forstår vi kompleksiteten i de fællesskaber, der kan være svære at forlade. Med en stabil og troværdig relation udenfor miljøet arbejder vi målrettet med den unge mod en normal hverdag, i tæt samarbejde med SSP og kommunen.',
+    title: 'Støtte til kriminalitetstruede unge',
+    desc: 'Vi forstår kompleksiteten i de fællesskaber, der kan være svære at forlade. Med en stabil og troværdig relation udenfor miljøet arbejder vi målrettet med den unge mod en normal hverdag, i tæt samarbejde med SSP og kommunen.',
     para: '§32 barnets lov / SSP-samarbejde',
   },
   {
@@ -241,44 +241,6 @@ export default function KommunerPage() {
           </div>
         </section>
 
-        {/* Bostøtte §85 */}
-        <section id="bostoette" className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-16">
-          <div className="mb-10">
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-5 h-px bg-[#C8993A]" />
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-[#C8993A]">§85 serviceloven</span>
-            </div>
-            <h2 className="font-serif text-3xl sm:text-4xl text-[#1A1F1C] font-normal mb-3">
-              Bostøtte og socialpædagogisk støtte efter §85
-            </h2>
-            <p className="text-sm text-[#6B7569] max-w-2xl leading-relaxed">
-              Kursskifte leverer bostøtte og socialpædagogisk støtte til borgere, der bor i egen bolig og har behov for hjælp i hverdagen. Indsatsen er helhedsorienteret, relationsbaseret og recovery-orienteret — målet er, at borgeren selv oplever fremgang mod større selvstændighed, ikke at vi overtager opgaverne for dem.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            {[
-              { title: 'Struktur i hverdagen', body: 'Morgenvækning, hjælp til at komme i gang, faste rutiner og opfølgning på aftaler.' },
-              { title: 'Transport og fremmøde', body: 'Følgeskab og støtte til hente- og kørselsordninger til møder, behandling, uddannelse eller job.' },
-              { title: 'Økonomi og praktiske opgaver', body: 'Støtte til overblik over økonomi, post, indkøb og praktiske gøremål i hjemmet.' },
-              { title: 'Netværk og relationer', body: 'Hjælp til at opbygge og fastholde sunde relationer og sociale sammenhænge uden for hjemmet.' },
-            ].map(c => (
-              <div key={c.title} className="bg-[#F6F3EE] border border-[#E0DAD0] rounded-2xl p-6">
-                <h3 className="font-semibold text-sm text-[#1A1F1C] mb-2">{c.title}</h3>
-                <p className="text-xs text-[#6B7569] leading-relaxed">{c.body}</p>
-              </div>
-            ))}
-          </div>
-          <div className="bg-white border border-[#E0DAD0] rounded-2xl p-6 sm:p-8">
-            <h3 className="font-semibold text-sm text-[#1A1F1C] mb-3">Vores faglige fundament</h3>
-            <p className="text-xs text-[#6B7569] leading-relaxed mb-3">
-              Vores tilgang til §85-indsatsen tager afsæt i Voksenudredningsmetoden (VUM) og en recovery-orienteret praksis, i tråd med Social- og Boligstyrelsens vejledning på området. Der udarbejdes en støtteplan for forløbet, som følges op løbende sammen med kommunen.
-            </p>
-            <p className="text-xs text-[#6B7569] leading-relaxed">
-              Kursskifte leverer ambulant bostøtte og driver ikke et socialtilsynsgodkendt botilbud eller dagtilbud — indsatsen leveres som individuelle timer hos borgeren, ikke som et registreret tilbud under socialtilsynet.
-            </p>
-          </div>
-        </section>
-
         {/* Typiske forløb */}
         <section id="hvem-hjaelper-vi" className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-16">
           <div className="mb-10">
@@ -358,7 +320,7 @@ export default function KommunerPage() {
                   {[
                     'Matching og faglig anbefaling',
                     'Opstartsmøde og målbeskrivelse',
-                    'Løbende dokumentation, statusnotater og støtteplan',
+                    'Løbende dokumentation og statusnotater',
                     'Koordinering med relevante aktører',
                     'Fast opfølgning under hele forløbet',
                     'Håndtering af bekymringer og forværring',

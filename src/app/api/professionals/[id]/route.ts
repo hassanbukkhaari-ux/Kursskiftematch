@@ -79,11 +79,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     // A complexity tier is a claim about how much real-world experience
     // backs it up — self-declared or admin-declared, it shouldn't be
     // reachable on paper alone. Minimum years required per tier: under 1
-    // year is only LOW, 1-4 years unlocks MEDIUM, 5+ years unlocks HIGH and
-    // CRITICAL (CRITICAL cases still need admin's own judgment beyond this
-    // floor — this only blocks the clearly-too-low combinations).
+    // year is only LOW, 1-2 years unlocks MEDIUM, 3+ years unlocks HIGH,
+    // 4+ years unlocks CRITICAL (CRITICAL cases still need admin's own
+    // judgment beyond this floor — this only blocks the clearly-too-low
+    // combinations).
     if (parsed.data.max_complexity_level != null || parsed.data.experience_years != null) {
-      const MIN_YEARS_FOR_COMPLEXITY: Record<string, number> = { LOW: 0, MEDIUM: 1, HIGH: 5, CRITICAL: 5 }
+      const MIN_YEARS_FOR_COMPLEXITY: Record<string, number> = { LOW: 0, MEDIUM: 1, HIGH: 3, CRITICAL: 4 }
       let effectiveComplexity = parsed.data.max_complexity_level
       let effectiveYears = parsed.data.experience_years
       if (effectiveComplexity == null || effectiveYears == null) {

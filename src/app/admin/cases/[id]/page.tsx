@@ -116,6 +116,7 @@ export default async function AdminCasePage({ params }: PageProps) {
     reportRequestsRes,
     proposalsRes,
     complexityFactorsRes,
+    contactLogRes,
   ] = await Promise.all([
     db.from('municipalities').select('name, sagsbehandler_name, sagsbehandler_email').eq('id', caseData.municipality_id).single(),
     createServiceClient().from('session_logs' as any).select('id, session_date, duration_minutes, observations, citizen_mood_tone, follow_up_needed, follow_up_reason, status, professional_id', { count: 'exact' }).eq('case_id', id).order('session_date', { ascending: false }).limit(20),
@@ -130,6 +131,7 @@ export default async function AdminCasePage({ params }: PageProps) {
     (createServiceClient() as any).from('status_report_requests').select('id, report_type, deadline, promised_date, status, created_at, professionals!inner(profiles!inner(full_name))').eq('case_id', id).order('created_at', { ascending: false }).limit(5),
     (createServiceClient() as any).from('case_proposals').select('id, status, sent_at, responded_at, municipality_response_note, professionals!inner(profiles!inner(full_name))').eq('case_id', id).order('created_at', { ascending: false }),
     dba.from('case_complexity_factors').select('violence, substance_use, mental_health, criminality, family_instability, school, multiple_agencies, diagnosis, notes').eq('case_id', id).maybeSingle(),
+    dba.from('contact_logs').select('contact_type, logged_at').eq('case_id', id).order('logged_at', { ascending: false }).limit(1).maybeSingle(),
   ])
 
   const labelMap = (rows: { code: string; label_da: string }[] | null) =>
@@ -627,6 +629,22 @@ export default async function AdminCasePage({ params }: PageProps) {
                 </div>
               )}
             </Card>
+
+            {/* Opstartskontakt: har kontaktpersonen taget kontakt til sagsbehandler? */}
+            {caseData.professional_id && (
+              <Card>
+                <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6B7569] mb-2">Opstartskontakt</div>
+                {contactLogRes?.data ? (
+                  <div className="text-xs text-[#1C3829]">
+                    Logget {new Intl.DateTimeFormat('da-DK', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(contactLogRes.data.logged_at))}
+                    {' · '}
+                    {({ PHONE_CALL: 'Telefon', EMAIL: 'E-mail', IN_PERSON: 'Møde', OTHER: 'Andet' } as Record<string, string>)[contactLogRes.data.contact_type] ?? contactLogRes.data.contact_type}
+                  </div>
+                ) : (
+                  <div className="text-xs text-[#92660A]">Afventer — kontaktpersonen har endnu ikke logget kontakt til sagsbehandler</div>
+                )}
+              </Card>
+            )}
 
             {/* Status reports */}
             {(() => {

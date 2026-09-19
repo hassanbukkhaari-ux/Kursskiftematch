@@ -186,6 +186,10 @@ export function adminEmailBody(type: NotificationType, entityId: string): { subj
       subject: 'Fagperson er ikke ledig — vælg en ny kandidat — Kursskifte',
       body: `Den tilbudte kontaktperson er ikke ledig til sagen. Vælg en ny kandidat fra match-kørslen.\n\nSags-ID: ${entityId}\n\nSe sagen:\n${base}/admin/cases/${entityId}`,
     },
+    STARTUP_CONTACT_REMINDER: {
+      subject: 'Opstartskontakt til sagsbehandler ikke logget endnu — Kursskifte',
+      body: `En kontaktperson har endnu ikke logget kontakt til kommunens sagsbehandler for en nyligt aktiveret sag.\n\nSags-ID: ${entityId}\n\nSe sagen:\n${base}/admin/cases/${entityId}`,
+    },
   }
   return map[type]
 }

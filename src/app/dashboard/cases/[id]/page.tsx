@@ -4,6 +4,7 @@ import { PageHeader, ContentContainer, SectionHeader } from '@/components/layout
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
+import { StartupContactCard } from './StartupContactCard'
 
 const COMPLEXITY_LABEL: Record<string, string> = {
   LOW: 'Lav', MEDIUM: 'Mellem', HIGH: 'Høj', CRITICAL: 'Kritisk',
@@ -36,7 +37,7 @@ export default async function DashboardCasePage({ params }: PageProps) {
   // Professionals may only see their own cases
   if (caseData.professional_id !== user.id) notFound()
 
-  const [muniRes, logsRes, caseDetailRes, tagsRes, problemAreasRes, goalsRes, specialWishesRes] = await Promise.all([
+  const [muniRes, logsRes, caseDetailRes, tagsRes, problemAreasRes, goalsRes, specialWishesRes, contactLogRes] = await Promise.all([
     db.from('municipalities').select('name, sagsbehandler_name, sagsbehandler_email, sagsbehandler_phone').eq('id', caseData.municipality_id).single(),
     db.from('session_logs')
       .select('id, session_date, duration_minutes, observations, follow_up_needed, status')
@@ -53,6 +54,7 @@ export default async function DashboardCasePage({ params }: PageProps) {
     db.from('problem_areas').select('code, label_da'),
     db.from('goals_lookup').select('code, label_da'),
     db.from('special_wishes_lookup').select('code, label_da'),
+    db.from('contact_logs').select('contact_type, logged_at').eq('case_id', id).eq('professional_id', user.id).order('logged_at', { ascending: false }).limit(1).maybeSingle(),
   ])
 
   const labelMap = (rows: { code: string; label_da: string }[] | null) =>
@@ -327,6 +329,9 @@ export default async function DashboardCasePage({ params }: PageProps) {
                 </Link>
               </div>
             </Card>
+
+            {/* Opstartsmøde med sagsbehandler */}
+            <StartupContactCard caseId={id} loggedContact={contactLogRes.data ?? null} />
 
             {/* Municipality contact */}
             {muniRes.data && (

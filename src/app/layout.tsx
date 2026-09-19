@@ -30,6 +30,14 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  // Prevent iOS Safari from auto-styling emails/phone numbers in plain text
+  // as tappable links (blue + underline) — was making admin list rows look
+  // broken on mobile where the underline collided with adjacent badges.
+  formatDetection: {
+    telephone: false,
+    email: false,
+    address: false,
+  },
 }
 
 const localBusinessSchema = {

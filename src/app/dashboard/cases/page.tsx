@@ -31,6 +31,14 @@ export default async function DashboardCasesPage() {
 
   const activeCases = cases?.filter(c => c.status !== 'ARCHIVED') ?? []
 
+  // Cases with a handover in progress get the "Overdragelse i gang" badge —
+  // the professional should see this on the list, not just discover it when
+  // opening the case.
+  const { data: activeHandovers } = activeCases.length
+    ? await db.from('case_handovers').select('case_id').in('status', ['INITIATED', 'IN_PROGRESS']).in('case_id', activeCases.map(c => c.id))
+    : { data: [] }
+  const activeHandoverCaseIds = new Set((activeHandovers ?? []).map(h => h.case_id))
+
   return (
     <div>
       <PageHeader
@@ -55,29 +63,36 @@ export default async function DashboardCasesPage() {
           <div className="space-y-3">
             {activeCases.map(c => (
               <Link key={c.id} href={`/dashboard/cases/${c.id}`}>
-                <Card hover className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-[#FBF3E1] flex items-center justify-center shrink-0">
-                      <span className="text-sm font-bold text-[#92660A]">{c.citizen_initials}</span>
-                    </div>
-                    <div className="min-w-0">
-                      <div className="font-medium text-[#1A1F1C] text-sm">Borger {c.citizen_initials} · {c.citizen_age_range}</div>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <Badge variant={COMPLEXITY_BADGE[c.complexity_level] ?? 'default'}>
-                          {COMPLEXITY_LABEL[c.complexity_level] ?? c.complexity_level}
-                        </Badge>
-                        <span className="text-xs text-[#6B7569]">{c.weekly_hours} t/uge</span>
+                <Card hover className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-9 h-9 rounded-xl bg-[#FBF3E1] flex items-center justify-center shrink-0">
+                        <span className="text-sm font-bold text-[#92660A]">{c.citizen_initials}</span>
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-medium text-[#1A1F1C] text-sm">Borger {c.citizen_initials} · {c.citizen_age_range}</div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <Badge variant={COMPLEXITY_BADGE[c.complexity_level] ?? 'default'}>
+                            {COMPLEXITY_LABEL[c.complexity_level] ?? c.complexity_level}
+                          </Badge>
+                          <span className="text-xs text-[#6B7569]">{c.weekly_hours} t/uge</span>
+                        </div>
                       </div>
                     </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Badge variant={STATUS_BADGE[c.status] ?? 'default'} dot>
+                        {STATUS_LABEL[c.status] ?? c.status}
+                      </Badge>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C8C0B0" strokeWidth="1.75" strokeLinecap="round">
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Badge variant={STATUS_BADGE[c.status] ?? 'default'} dot>
-                      {STATUS_LABEL[c.status] ?? c.status}
-                    </Badge>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C8C0B0" strokeWidth="1.75" strokeLinecap="round">
-                      <polyline points="9 18 15 12 9 6" />
-                    </svg>
-                  </div>
+                  {activeHandoverCaseIds.has(c.id) && (
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 w-fit">
+                      🟡 Overdragelse i gang — Kursskifte overtager koordineringen
+                    </div>
+                  )}
                 </Card>
               </Link>
             ))}

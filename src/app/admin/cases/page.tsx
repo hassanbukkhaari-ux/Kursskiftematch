@@ -5,7 +5,7 @@ import { AdminCasesClient } from './AdminCasesClient'
 export default async function AdminCasesPage() {
   const db = await createClient()
 
-  const [casesRes, munisRes, problemAreasRes, goalsRes, specialWishesRes] = await Promise.all([
+  const [casesRes, munisRes, problemAreasRes, goalsRes, specialWishesRes, activeHandoversRes] = await Promise.all([
     db.from('cases')
       .select('id, case_number, citizen_initials, citizen_age_range, status, complexity_level, weekly_hours, municipality_id, urgency, created_at')
       .order('created_at', { ascending: false })
@@ -17,14 +17,23 @@ export default async function AdminCasesPage() {
     db.from('problem_areas').select('code, label_da').eq('active', true).order('sort_order', { ascending: true }),
     db.from('goals_lookup').select('code, label_da').eq('active', true).order('sort_order', { ascending: true }),
     db.from('special_wishes_lookup').select('code, label_da').eq('active', true).order('sort_order', { ascending: true }),
+    db.from('case_handovers').select('case_id').in('status', ['INITIATED', 'IN_PROGRESS']),
   ])
 
   const muniMap = Object.fromEntries(
     (munisRes.data ?? []).map(m => [m.id, m.name]),
   )
 
+  // Cases with a handover in progress get the "Overdragelse i gang" badge
+  // on the list, not just buried in the case's own handover history.
+  const activeHandoverCaseIds = new Set((activeHandoversRes.data ?? []).map(h => h.case_id))
+
   const cases = (casesRes.data ?? [])
-    .map(c => ({ ...c, municipality_name: muniMap[c.municipality_id] ?? 'Ukendt' }))
+    .map(c => ({
+      ...c,
+      municipality_name: muniMap[c.municipality_id] ?? 'Ukendt',
+      has_active_handover: activeHandoverCaseIds.has(c.id),
+    }))
     .sort((a, b) => {
       const urgencyOrder = { AKUT: 0, HURTIG: 1, NORMAL: 2 } as Record<string, number>
       return (urgencyOrder[a.urgency] ?? 2) - (urgencyOrder[b.urgency] ?? 2)
@@ -65,6 +74,7 @@ export type AdminCase = {
   municipality_id: string
   municipality_name: string
   created_at: string
+  has_active_handover: boolean
 }
 
 export type MunicipalityOption = {

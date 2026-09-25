@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import CookieBanner from '@/components/public/CookieBanner'
+import GoogleTag from '@/components/public/GoogleTag'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://kursskifte.dk'),
@@ -76,6 +77,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         {children}
         <CookieBanner />
+        <GoogleTag />
       </body>
     </html>
   )

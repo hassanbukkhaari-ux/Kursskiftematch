@@ -16,6 +16,7 @@ export default function CookieBanner() {
 
   function save(value: 'accepted' | 'declined') {
     try { localStorage.setItem('cookie-consent', value) } catch {}
+    window.dispatchEvent(new Event('cookie-consent-changed'))
     setShow(false)
   }
 
@@ -25,7 +26,7 @@ export default function CookieBanner() {
     <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-[#E0DAD0] bg-[#F6F3EE]/95 backdrop-blur-md">
       <div className="max-w-6xl mx-auto px-5 sm:px-8 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
         <p className="text-sm text-[#3A3F3C] leading-relaxed flex-1">
-          Vi bruger nødvendige cookies til at sikre en sikker og velfungerende brugeroplevelse. Læs mere i vores{' '}
+          Vi bruger nødvendige cookies til en sikker og velfungerende brugeroplevelse. Accepterer du, bruger vi også statistik- og marketingcookies (Google) til at måle effekten af vores annoncer. Læs mere i vores{' '}
           <Link href="/privatlivspolitik" className="underline text-[#1C3829] hover:no-underline">
             privatlivspolitik
           </Link>.
